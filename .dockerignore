@@ -45,3 +45,7 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+# Local bundle install paths and platform-specific gems must never be copied into the image.
+/vendor/bundle
+/vendor/ruby*

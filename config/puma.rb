@@ -34,7 +34,10 @@ port ENV.fetch("PORT", 3000)
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
 
-# Run the Solid Queue supervisor inside of Puma for single-server deployments.
+# Run the Solid Queue supervisor inside of Puma for single-server deployments. Leave SOLID_QUEUE_IN_PUMA
+# unset for now: the app defines no jobs and production has no Solid Queue tables or database (see
+# config/database.yml), so enabling it would only crash the supervisor. Add the queue schema and set
+# config.active_job.queue_adapter = :solid_queue first (docs/DEPLOY.md).
 plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.

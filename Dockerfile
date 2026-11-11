@@ -1,9 +1,11 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
+# This Dockerfile is designed for production, not development. Build and run by hand (see docs/DEPLOY.md
+# for every variable; RAILS_MASTER_KEY is only needed if secrets live in Rails credentials):
 # docker build -t battletown .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name battletown battletown
+# docker run -d -p 80:80 -e SECRET_KEY_BASE=... -e DATABASE_URL=... -e APP_URL=... -e HCA_CLIENT_ID=... -e HCA_CLIENT_SECRET=... --name battletown battletown
+# The container listens on port 80 (Thruster, which proxies to Puma on 3000); /up is the health check.
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
@@ -24,7 +26,7 @@ RUN apt-get update -qq && \
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development" \
+    BUNDLE_WITHOUT="development:test" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so"
 
 # Throw-away build stage to reduce size of final image
