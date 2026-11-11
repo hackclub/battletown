@@ -1,9 +1,11 @@
+<%# Attribute names are column names (prize_key), so show the labels people actually see on the form. %>
+<% labels = { prize_key: "Prize", project_kind: "Project type", project_idea: "Project idea", coding_time: "Time", coding_days: "Days", time_zone: "Time zone", referral_source: "How you found us" } %>
 <% if current_user.errors.any? %>
   <div class="onboarding__errors" role="alert">
     <p>Let's fix a couple of things:</p>
     <ul>
-      <% current_user.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
+      <% current_user.errors.each do |error| %>
+        <li><%= labels.fetch(error.attribute, error.attribute.to_s.humanize) %> <%= error.message %></li>
       <% end %>
     </ul>
   </div>

@@ -78,13 +78,14 @@
 .onboarding__field :is(textarea, input, select), .check select {
   width: 100%;
   padding: var(--space-2) var(--space-3);
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-text-muted);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
   color: var(--color-text);
   font: inherit;
 }
 .onboarding__field textarea { resize: vertical; }
+.onboarding__field ::placeholder { color: var(--color-text-muted); opacity: 1; }
 .onboarding__hint { margin: var(--space-2) 0 0; color: var(--color-text-muted); font-size: var(--text-sm); }
 .onboarding__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-6); }
 .onboarding__errors {
