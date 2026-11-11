@@ -68,6 +68,7 @@ Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (shared Soli
 
 ## Open questions / TODO
 
+- Before launch: register with the Hack Club yeet deletion service, see docs/DEPLOY.md ("Before launch (blocking)").
 - Real Hack Club Auth login: the redirect to auth.hackclub.com works with the registered app; the full round trip (login, consent, callback) still needs a manual run with a real account.
 - Final design tokens and copy (Figma style guide pending).
 - Privacy policy and terms are placeholders; a GDPR/data request is in progress. Email and Slack ID are stored unencrypted for now.

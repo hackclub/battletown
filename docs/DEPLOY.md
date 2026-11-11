@@ -63,6 +63,17 @@ Rack::Attack limits `POST /auth/*` and `/dev_login` to 10 per minute, `/api/priv
 
 Counters are stored in Solid Cache (PostgreSQL), so limits hold across Puma workers, containers and restarts. If the cache is unavailable (database down, table missing) throttling fails open: requests go through, one log line per minute reads `Rack::Attack cache store failed (...)` with the error class and no key or IP. Development and test use an in-process memory store and need no cache table.
 
+## Before launch (blocking)
+
+**Launch-blocking: do not open sign-ups until the Hack Club "yeet" deletion service is set up.** Hack Club's yeeter calls `POST /api/privacy/delete` and `POST /api/privacy/export` on every program when a person asks for their data to be deleted or exported, and there is no self-service alternative in this app. The endpoints are built and tested; what is left is the registration and a real dry run. Details of the API, token checks and responses are in `docs/PRIVACY_API.md`.
+
+- [ ] Ask Hack Club infrastructure to register Battletown as a deletion target with: program name `Battletown`; audience `battletown` (give them the `PRIVACY_AUDIENCE` value instead if you changed it); base URL = the public origin of the API server, for example `https://battletown.example.com`, with no `/api/privacy/...` path (the yeeter appends it). If the API runs on a different host than the frontend, use the API host: the frontend URL is wrong.
+- [ ] Make sure that host is in `APP_HOST` (production answers any other host with 403) and that `https://<host>/api/privacy/delete` is reachable over https with no redirect. The yeeter does not follow redirects and gives up after 15 seconds, so plain `http`, a `www` redirect or a slow cold start all fail.
+- [ ] Run `bin/rails db:prepare` against the production database so the `privacy_request_tokens` table exists (the default container command already does). Leave `PRIVACY_JWKS_URL` unset in production so the signing keys come from `https://yeet.hackclub.com/.well-known/jwks.json`.
+- [ ] Ask infrastructure to run a dry run against a test account (sign in once with your own email to create it). Check the response has `found: true`, `dry_run: true`, 1 user and your notifications, that the account still exists afterwards, and review the counts before approving a real deletion (which must produce the same numbers).
+- [ ] Decide how long to keep the `request_id` log lines (`privacy request_id=... outcome=...`; they hold no personal data) and which records, if any, must be kept after a deletion. If some must be kept, add entries to `RETENTION_RULES` in `Privacy::Deleter` and make those rows survive the cascade. Today nothing is retained.
+- [ ] Confirm the export response shape with infrastructure during the dry run. It is an assumption mirrored from Flavortown (the same fields as the delete response, computed as a dry run), not taken from a spec.
+
 ## Pre-deploy checklist
 
 1. Set at least `APP_URL`, `DATABASE_URL`, `SECRET_KEY_BASE`, `HCA_CLIENT_ID`, `HCA_CLIENT_SECRET`; set `APP_HOST` if there is more than one hostname.
@@ -76,7 +87,7 @@ Counters are stored in Solid Cache (PostgreSQL), so limits hold across Puma work
    - Throttle store check: `bin/rails runner 'p [Rails.cache.class, Rack::Attack.cache.store.class]'` prints `SolidCache::Store` and `FailOpenCacheStore`. Counters appear in `solid_cache_entries` (`select count(*) from solid_cache_entries;` grows as pages are requested). Sending 11 `POST /auth/hack_club` from one machine within a minute (without a valid CSRF token is fine) returns 429 on the 11th; that machine is then blocked for up to a minute.
    - No `Rack::Attack cache store failed` lines in the log.
 8. First-login smoke test with a real account: landing page, "Sign up with Hack Club", consent at auth.hackclub.com, callback, onboarding steps through to the dashboard, log out, log in again (goes straight to the dashboard). Check the log shows no parameters from the onboarding form (they are filtered).
-9. Remove any leftover test account you do not want. Data deletion and export are served by the Hack Club "yeet" API (`POST /api/privacy/delete` and `POST /api/privacy/export`, see `docs/PRIVACY_API.md`): ask Hack Club infrastructure to register this program with the audience `battletown` and the base URL of this app (the `APP_HOST` origin), then have them run a dry run.
+9. Remove any leftover test account you do not want. Then work through "Before launch (blocking)" above: registering with the Hack Club yeet deletion service is required before real users sign up.
 
 Dockerfile note: it has no `HEALTHCHECK` instruction, because a wrong one can mark a healthy container unhealthy on some platforms. If yours wants one, this matches the default layout: `HEALTHCHECK --interval=30s --timeout=5s --start-period=40s CMD curl -fsS http://localhost:${HTTP_PORT:-80}/up || exit 1`.
 
