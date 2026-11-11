@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Battletown" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="application-name" content="Battletown">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <%= link_to "Battletown", root_path, class: "site-header__brand" %>
+        <nav class="site-header__nav" aria-label="Account">
+          <% if signed_in? %>
+            <%= link_to "Dashboard", dashboard_path if current_user.onboarded? %>
+            <%= button_to "Sign out", logout_path, method: :delete, class: "btn btn--ghost" %>
+          <% else %>
+            <%= render "shared/signup_button", label: "Sign in", css: "btn btn--ghost" %>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+
+    <% flash.each do |type, message| %>
+      <div class="flash flash--<%= type %>" role="status"><%= message %></div>
+    <% end %>
+
+    <main class="page">
+      <%= yield %>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <span>A Hack Club program</span>
+        <nav aria-label="Legal">
+          <%= link_to "Privacy", privacy_path %>
+          <%= link_to "Terms", terms_path %>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>

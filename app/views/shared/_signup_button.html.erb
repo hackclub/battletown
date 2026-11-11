@@ -1,0 +1,6 @@
+<%# locals: (label: "Sign up with Hack Club", css: "btn btn--primary") -%>
+<%# Turbo is disabled: the OmniAuth redirect goes cross-origin, which fetch-based submits can't follow. -%>
+<%= button_to label, "/auth/hack_club", method: :post, class: css, form: { data: { turbo: false } } %>
+<% if Rails.env.development? %>
+  <%= button_to "Dev login", dev_login_path, class: "btn btn--ghost", form: { data: { turbo: false } } %>
+<% end %>
