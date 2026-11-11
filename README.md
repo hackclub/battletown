@@ -37,6 +37,7 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 | `HCA_CLIENT_ID` / `HCA_CLIENT_SECRET` | OAuth app from auth.hackclub.com (Developer Apps) |
 | `HCA_ISSUER` | Defaults to `https://auth.hackclub.com` |
 | `APP_URL` | Public URL; redirect URI is `$APP_URL/auth/hack_club/callback` |
+| `ADMIN_HCA_UIDS` | Comma-separated Hack Club Auth ids (OIDC `sub`) allowed into `/admin`; empty or unset means nobody (everyone else gets a 404). Locally, `ADMIN_HCA_UIDS=dev-user bin/rails s` makes Dev login an admin |
 | `APP_HOST` | Production only: comma-separated allowed hostnames (set it, otherwise any Host is accepted) |
 
 ## How auth works

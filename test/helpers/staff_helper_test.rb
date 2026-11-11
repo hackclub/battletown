@@ -54,7 +54,10 @@ class StaffHelperTest < ActionView::TestCase
     assert_dom_equal %(<div class="admin-only"><span class="visually-hidden">Admin only: </span>Ban hammer</div>), admin_tool { "Ban hammer" }
   end
 
-  test "nobody is an admin until the project defines how admins are identified" do
+  test "nobody is an admin unless ADMIN_HCA_UIDS lists them" do
+    original = ENV.delete("ADMIN_HCA_UIDS")
     assert User.all.none?(&:admin?)
+  ensure
+    ENV["ADMIN_HCA_UIDS"] = original if original
   end
 end
