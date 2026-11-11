@@ -1,0 +1,13 @@
+# Known referral slugs. Visiting /<slug> records the source for first-touch attribution.
+default: &default
+  referrals:
+    - slug: haven
+      name: Haven
+    - slug: stardance
+      name: Stardance
+    - slug: terra
+      name: Terra
+
+development: *default
+test: *default
+production: *default

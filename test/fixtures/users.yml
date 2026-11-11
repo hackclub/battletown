@@ -1,0 +1,16 @@
+new_user:
+  hca_uid: ident!new
+  email: new@example.com
+  display_name: Newbie
+
+onboarded:
+  hca_uid: ident!onboarded
+  email: done@example.com
+  display_name: Veteran
+  prize_key: tshirt
+  project_kind: game
+  coding_days: 5
+  coding_time: "18:30"
+  time_zone: UTC
+  onboarding_step: 4
+  onboarded_at: 2026-11-10 12:00:00

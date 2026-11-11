@@ -1,0 +1,82 @@
+# PLACEHOLDER prize catalog. Amber owns the final shop items (Village lock-in, 2026-11-09).
+# Budget assumption: ~$5/hr of coding. Upper bound ~$1,500 (about 50 hours at the top end).
+# Landing page shows `hours`; the shop will show currency. `image` is a slot for artwork.
+# tier: daily | weekly | shop
+default: &default
+  prizes:
+    - key: sticker_pack
+      name: Sticker pack
+      description: A pack of Hack Club stickers, mailed to you.
+      hours: 2
+      price_usd: 10
+      emoji: "🏷️"
+      image: null
+      tier: shop
+    - key: custom_sticker
+      name: Custom Battletown sticker
+      description: Limited-run sticker, designed for this program.
+      hours: 1
+      price_usd: 5
+      emoji: "✨"
+      image: null
+      tier: shop
+    - key: tshirt
+      name: Battletown T-shirt
+      description: Printed T-shirt with free shipping.
+      hours: 5
+      price_usd: 25
+      emoji: "👕"
+      image: null
+      tier: shop
+    - key: enamel_pin
+      name: Enamel pin
+      description: Hard enamel pin.
+      hours: 4
+      price_usd: 20
+      emoji: "📍"
+      image: null
+      tier: shop
+    - key: keychain
+      name: Keychain
+      description: Acrylic keychain.
+      hours: 3
+      price_usd: 15
+      emoji: "🔑"
+      image: null
+      tier: shop
+    - key: poster
+      name: Poster
+      description: Boss art poster.
+      hours: 4
+      price_usd: 20
+      emoji: "🖼️"
+      image: null
+      tier: shop
+    - key: orpheus_plushie
+      name: Orpheus plushie
+      description: Reserved for high-quality projects.
+      hours: 6
+      price_usd: 30
+      emoji: "🦖"
+      image: null
+      tier: shop
+    - key: mechanical_keyboard
+      name: Mechanical keyboard
+      description: Placeholder big prize.
+      hours: 30
+      price_usd: 150
+      emoji: "⌨️"
+      image: null
+      tier: shop
+    - key: headphones
+      name: Headphones
+      description: Placeholder big prize.
+      hours: 50
+      price_usd: 250
+      emoji: "🎧"
+      image: null
+      tier: shop
+
+development: *default
+test: *default
+production: *default
