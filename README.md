@@ -41,6 +41,7 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 | `APP_URL` | Public URL; redirect URI is `$APP_URL/auth/hack_club/callback` |
 | `ADMIN_HCA_UIDS` | Comma-separated Hack Club Auth ids (OIDC `sub`) allowed into `/admin`; empty or unset means nobody (everyone else gets a 404). Locally, `ADMIN_HCA_UIDS=dev-user bin/rails s` makes Dev login an admin |
 | `APP_HOST` | Production only: comma-separated allowed hostnames (unset: the host of `APP_URL`; other hosts get 403, except the `/up` health check) |
+| `SLACK_BOT_TOKEN` / `NOTIFICATIONS_ENABLED` | Slack DM reminders (`app/services/notifications`, tunables in `config/notifications.yml`). Needs a bot token with `chat:write`; nothing is ever sent unless `NOTIFICATIONS_ENABLED` is exactly `true` (default off). Cron `bin/rails notifications:dispatch` every minute, or run `DispatchNotificationsJob` |
 
 ## How auth works
 

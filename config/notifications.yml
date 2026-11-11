@@ -1,0 +1,30 @@
+# Tunables for the notification system (app/services/notifications/**). Read through Notifications::Config.
+# Nothing is sent unless the environment variable NOTIFICATIONS_ENABLED is exactly "true" (default off).
+shared:
+  # No Slack DMs between these user-local times (24h "HH:MM"). A reminder due inside the window is moved to the end.
+  # Set both to the same value to turn quiet hours off.
+  quiet_hours_start: "22:00"
+  quiet_hours_end: "07:00"
+
+  # Retries for a failed delivery: attempts are capped (hard maximum 10, enforced by the database) and the wait
+  # doubles each time, starting at backoff_base_seconds and never exceeding backoff_max_seconds.
+  max_attempts: 5
+  backoff_base_seconds: 60
+  backoff_max_seconds: 3600
+
+  # A reminder this far past its due time (for example the worker was down) is dropped rather than sent late.
+  max_lateness_seconds: 10800
+
+  # How long a row stays reserved for a dispatcher while it is being sent (protects against double sends).
+  lease_seconds: 300
+
+  # Rows reserved per database round trip.
+  batch_size: 25
+
+  # Rows that are no longer pending are deleted by `bin/rails notifications:prune` after this many days.
+  retention_days: 90
+
+  # Message copy, built at send time (never stored). PLACEHOLDER: the project owner will edit this.
+  # Keep it short and friendly, no prize promises.
+  templates:
+    daily_reminder: "Hey, it's your Battletown coding time. Open your project and get some time in today. Happy hacking! - the Hack Club Battletown team"
