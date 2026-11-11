@@ -1,9 +1,10 @@
-<%# locals: (css: "btn btn--primary btn--lg", dev: false) -%>
-<%# Signed-in users who haven't finished onboarding continue it; everyone else signs up through Hack Club Auth. -%>
+<%# locals: (dev: false) -%>
+<%# Signed-in users who haven't finished onboarding continue it; everyone else signs up through Hack Club Auth.
+    The hero passes dev: true so development gets the Dev login button from shared/signup_button. -%>
 <% if signed_in? %>
-  <%= link_to "Continue setup", onboarding_path, class: css %>
+  <%= link_to onboarding_path, class: "cta" do %><%= render "landing/cta_face", label: "Continue setup" %><% end %>
 <% elsif dev %>
-  <%= render "shared/signup_button", css: css %>
+  <%= render "shared/signup_button", label: render("landing/cta_face", label: join_cta_label), css: "cta" %>
 <% else %>
-  <%= button_to "Sign up with Hack Club", "/auth/hack_club", method: :post, class: css, form: { data: { turbo: false } } %>
+  <%= button_to "/auth/hack_club", method: :post, class: "cta", form: { data: { turbo: false } } do %><%= render "landing/cta_face", label: join_cta_label %><% end %>
 <% end %>

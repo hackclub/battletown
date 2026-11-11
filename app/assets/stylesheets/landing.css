@@ -1,77 +1,273 @@
 /*
- * Landing page. Colours, type and spacing come from tokens.css only.
- *
- * Art slots: the hero and boss backgrounds read --art-hero-background and --art-boss-background.
- * When the commissioned art lands, set them in tokens.css (same-origin images only, the CSP blocks
- * third-party hosts), e.g. --art-hero-background: url("/hero.webp");
+ * Landing page, built from the Figma hero frames (136:75 / 134:1151, button 71:1000).
+ * Colours, type, radii and spacing come from tokens.css. The only raw numbers are the Figma hero coordinates:
+ * on wide screens the hero is a 1440x1024 composition scaled with the viewport, written as multiples of --u
+ * (1/1440 of the hero's width, so --u * 48 is the Figma 48px type at 1440px). Below 48rem it restacks.
+ * Images: app/assets/images/landing/ (hero-art.webp, logo.svg, hero-swoosh.svg, hero-wash.svg).
  */
-.landing { display: flex; flex-direction: column; gap: var(--space-16); margin-block: calc(var(--space-8) * -1); }
 
-.landing-referral {
-  /* Cancels the flex gap below it so the banner sits flush against the hero. */
-  margin: 0 0 calc(var(--space-16) * -1);
-  padding: var(--space-3) var(--space-4);
-  text-align: center;
-  background: color-mix(in srgb, var(--color-secondary) 55%, var(--color-bg));
+/* ---- Page chrome: the Figma hero has no header bar, so on this page the header floats over the hero ---- */
+body:has(.landing) .site-header { border-bottom: 0; background: var(--color-sky); }
+body:has(.landing) .site-header__brand { display: none; } /* the logo in the hero is the brand */
+body:has(.landing) .site-header__inner { justify-content: flex-end; }
+body:has(.landing) .site-header .btn {
+  min-height: 2.75rem;
+  border-color: var(--color-surface-raised);
+  border-bottom-width: var(--border-chunky);
+  background: var(--color-bg);
   color: var(--color-text);
-  font-weight: 600;
 }
 
-/* Hero */
-.landing-hero, .landing-boss { position: relative; isolation: isolate; overflow: hidden; }
+.landing { margin-block: calc(var(--space-8) * -1); font-weight: 500; }
 
-.landing-hero__art, .landing-boss__art {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-size: cover;
-  background-position: center;
+.landing h2, .landing h3 { color: var(--color-text); }
+
+/* ---- Chunky call to action (Figma 71:1000). Everything is in em, so font-size alone scales it. ---- */
+.cta {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.4167em; /* Figma 20px at 48px type */
+  appearance: none;
+  border: 0;
+  border-bottom: 0.125em solid var(--color-cta-edge); /* Figma 6px */
+  border-radius: 1em; /* Figma 48px = --radius-xl */
+  background: var(--color-bg);
+  color: var(--color-bg);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: var(--cta-size, var(--text-display));
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cta__face {
+  display: flex;
+  align-items: center;
+  gap: 0.354em; /* Figma 17px */
+  min-height: 1.7083em; /* Figma 82px */
+  padding: 0.12em 0.708em; /* Figma 34px sides */
+  border-radius: 0.5833em; /* Figma 28px = --radius-lg */
+  background: var(--color-cta);
+  box-shadow: var(--shadow-cta-edge);
+}
+
+.cta__label { text-wrap: balance; padding-top: 0.04em; }
+
+.cta__arrow {
+  flex: none;
+  width: 0.8704em; /* Figma 34px box, 41.8px with the stroke */
+  height: 0.875em;
+  margin-inline: -0.0833em;
+  overflow: visible;
+}
+
+.cta:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px var(--color-bg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cta { transition: transform 120ms ease; }
+  .cta:hover { transform: translateY(-0.04em); }
+  .cta:active { transform: translateY(0.03em); }
+}
+
+.landing form { margin: 0; }
+
+/* ---- Hero ---- */
+.landing-hero {
+  --u: calc(100cqw / 1440);
+  position: relative;
+  max-width: 120rem;
+  margin-inline: auto;
+  container-type: inline-size;
+}
+
+/* Narrow screens: sky strip with the logo, tagline and button, then the painting, then the swoosh. */
+.landing-hero__stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-sky);
 }
 
 .landing-hero__art {
-  background-image: var(--art-hero-background,
-    radial-gradient(circle at 70% 20%, color-mix(in srgb, var(--color-secondary) 45%, transparent), transparent 60%),
-    linear-gradient(to bottom, var(--color-surface), var(--color-bg)));
+  order: 3;
+  display: block;
+  width: 100%;
+  height: clamp(18rem, 85vw, 30rem);
+  object-fit: cover;
+  object-position: 85% 100%;
+  margin-top: calc(var(--space-6) * -1);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%);
+  mask-image: linear-gradient(to bottom, transparent, #000 35%);
 }
 
-.landing-boss__art {
-  background-image: var(--art-boss-background,
-    radial-gradient(circle at 20% 50%, color-mix(in srgb, var(--color-primary) 30%, transparent), transparent 60%),
-    linear-gradient(to bottom, var(--color-bg), var(--color-surface)));
+.landing-hero__wash { display: none; }
+
+.landing-referral {
+  order: 1;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-weight: 700;
+  text-align: center;
 }
 
-.landing-hero__inner {
+.landing-hero__content {
+  order: 2;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-4);
-  padding-block: var(--space-16);
+  padding: var(--space-2) var(--space-4) 0;
 }
 
-.landing-eyebrow {
+.landing-hero__logo { width: min(80%, 22rem); margin: 0; line-height: 0; }
+.landing-hero__logo img { display: block; width: 100%; height: auto; }
+
+.landing-hero__tagline {
   margin: 0;
+  padding-left: var(--space-2);
+  color: var(--color-bg);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 8.4vw, 3rem);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-display);
+  -webkit-text-stroke: 0.16em var(--color-secondary); /* the blue outline in Figma, painted behind the fill */
+  paint-order: stroke fill;
+}
+.landing-hero__tagline-accent { color: var(--color-highlight); }
+
+.landing-hero__cta { --cta-size: clamp(1.5rem, 6.4vw, 2.5rem); max-width: 100%; }
+.landing-hero__cta .btn { margin-top: var(--space-3); }
+
+/* The pink-edged top of the cream panel. It overlaps the bottom of the stage (234 of its 350 Figma px). */
+.landing-hero__swoosh {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: calc(100cqw * -234 / 1440);
+  margin-bottom: -1px;
+}
+
+@media (min-width: 48rem) {
+  .landing-hero__stage { display: block; aspect-ratio: 1440 / 1024; background: var(--color-sky-soft); }
+
+  .landing-hero__art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    margin: 0;
+    object-fit: fill; /* Figma stretches the 1024x659 painting over the 1440x1024 frame */
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .landing-hero__wash { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  .landing-referral {
+    position: absolute;
+    top: calc(var(--u) * 28);
+    left: 50%;
+    padding-inline: var(--space-6);
+    border-radius: var(--radius-full);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .landing-hero__content { position: absolute; inset: 0; display: block; padding: 0; }
+
+  .landing-hero__logo {
+    position: absolute;
+    left: calc(var(--u) * 37.56);
+    top: calc(var(--u) * 48);
+    width: calc(var(--u) * 579);
+  }
+
+  .landing-hero__tagline {
+    position: absolute;
+    left: calc(var(--u) * 81.44);
+    top: calc(var(--u) * 420);
+    padding: 0;
+    font-size: calc(var(--u) * 48);
+    white-space: nowrap;
+  }
+
+  .landing-hero__cta {
+    --cta-size: calc(var(--u) * 48);
+    position: absolute;
+    left: calc(var(--u) * 51.56);
+    top: calc(var(--u) * 506);
+  }
+}
+
+/* The header floats over the hero on wide screens (it sits in flow as a sky strip on narrow ones). */
+@media (min-width: 48rem) {
+  body:has(.landing) { position: relative; }
+  body:has(.landing) .site-header { position: absolute; top: 0; right: 0; z-index: 5; background: transparent; }
+  body:has(.landing) .site-header__inner { padding: var(--space-4) var(--space-6); }
+}
+
+/* ---- Cream panel ---- */
+.landing-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  padding-block: var(--space-4) var(--space-12);
+}
+
+.landing-intro { text-align: center; }
+.landing-eyebrow {
+  margin: 0 0 var(--space-3);
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-
-.landing-hero__title { margin: 0; font-size: var(--text-3xl); }
-
-.landing-hero__subtitle {
+.landing-intro__lead {
+  max-width: 40rem;
+  margin: 0 auto var(--space-4);
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.4vw, 2.5rem);
+  line-height: var(--leading-tight);
+  letter-spacing: calc(var(--tracking-display) / 2);
+}
+.landing-intro__sticker {
+  display: inline-block;
   margin: 0;
-  max-width: 36rem;
-  font-size: var(--text-lg);
-  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-highlight);
+  color: var(--color-text);
+  font-weight: 700;
 }
 
-.landing-hero__cta { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
-.landing-hero__cta form { margin: 0; }
-.landing-hero__sticker { margin: 0; color: var(--color-success); font-weight: 600; }
-
-/* Sections */
-.landing-section h2, .landing-final h2, .landing-boss h2 { margin-bottom: var(--space-4); }
+.landing-section h2, .landing-final h2, .landing-boss h2 {
+  margin-bottom: var(--space-6);
+  font-size: clamp(1.75rem, 3.4vw, var(--text-display));
+  letter-spacing: calc(var(--tracking-display) / 2);
+}
 .landing-note { color: var(--color-text-muted); font-size: var(--text-sm); }
+
+/* Cards: white face on the cream panel with the same chunky cream edge as the button. */
+.landing-step, .landing-prize, .landing-faq details, .landing-proof {
+  border: 2px solid var(--color-border);
+  border-bottom-width: var(--border-chunky);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
 
 .landing-steps, .landing-prizes {
   display: grid;
@@ -81,76 +277,93 @@
   list-style: none;
 }
 
-.landing-steps { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); counter-reset: step; }
-
+.landing-steps { grid-template-columns: 1fr; counter-reset: step; }
+@media (min-width: 36rem) { .landing-steps { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 64rem) { .landing-steps { grid-template-columns: repeat(4, 1fr); } }
+.landing-step { padding: var(--space-6); }
+.landing-step h3 { display: flex; align-items: center; gap: var(--space-3); }
 .landing-step h3::before {
   counter-increment: step;
   content: counter(step);
   display: inline-grid;
+  flex: none;
   place-items: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  margin-right: var(--space-2);
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: var(--radius-full);
   background: var(--color-primary);
   color: var(--color-primary-contrast);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
 }
-
 .landing-step p { margin: 0; color: var(--color-text-muted); }
 
-.landing-boss__inner { padding-block: var(--space-12); }
-.landing-boss__inner > * { max-width: 44rem; }
-.landing-boss p { margin: 0; color: var(--color-text-muted); font-size: var(--text-lg); }
+/* Boss band: the hero painting again, faded into sky blue behind the text. */
+.landing-boss {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: flex-start;
+  min-height: 12rem;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--color-sky);
+}
+.landing-boss::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-sky);
+}
+.landing-boss__art {
+  display: none; /* the painting only shows beside the text on wider screens */
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 85% 100%;
+}
+.landing-boss__inner { padding: var(--space-8) var(--space-6); }
+.landing-boss h2 { margin-bottom: var(--space-3); }
+.landing-boss p { margin: 0; color: var(--color-text); font-size: var(--text-lg); }
+
+@media (min-width: 48rem) {
+  .landing-boss { align-items: center; min-height: 24rem; }
+  .landing-boss__art { display: block; }
+  .landing-boss::after { background: linear-gradient(to right, var(--color-sky) 45%, transparent 80%); }
+  .landing-boss__inner { max-width: 32rem; padding: var(--space-12); }
+}
 
 .landing-prizes { grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
-.landing-prize { display: flex; flex-direction: column; gap: var(--space-2); }
+.landing-prize { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-6); }
 .landing-prize__emoji { font-size: var(--text-2xl); line-height: 1; }
-.landing-prize__name { margin: 0; font-size: var(--text-base); }
+.landing-prize__name { margin: 0; font-size: var(--text-lg); }
 .landing-prize__description { flex: 1; margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
-.landing-prize__price { margin: 0; color: var(--color-primary); font-weight: 700; }
+.landing-prize__price { margin: 0; color: var(--color-primary); font-family: var(--font-display); font-size: var(--text-lg); }
 
-.landing-proof { text-align: center; border-style: dashed; color: var(--color-text-muted); }
+.landing-proof { padding: var(--space-6); border-style: dashed; text-align: center; color: var(--color-text-muted); }
 .landing-proof p { margin: 0; }
 
 /* FAQ */
-.landing-faq { display: flex; flex-direction: column; gap: var(--space-2); max-width: 44rem; }
-
-.landing-faq details {
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+.landing-faq { display: flex; flex-direction: column; gap: var(--space-3); max-width: 48rem; }
+.landing-faq details { padding: 0 var(--space-6); }
+.landing-faq summary {
+  display: flex;
+  align-items: center;
+  min-height: 3.25rem;
+  cursor: pointer;
+  font-weight: 700;
 }
+.landing-faq summary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 4px; border-radius: var(--radius-sm); }
+.landing-faq p { margin: 0 0 var(--space-4); color: var(--color-text-muted); }
 
-.landing-faq summary { cursor: pointer; font-weight: 600; }
-.landing-faq summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
-.landing-faq p { margin: var(--space-3) 0 0; color: var(--color-text-muted); }
-
-.landing-final { display: flex; padding-bottom: var(--space-12); flex-direction: column; align-items: center; gap: var(--space-4); text-align: center; }
-.landing-final form { margin: 0; }
-
-/* Sticky mobile CTA (hidden on wider screens). Sticky rather than fixed, so it releases at the end of the
-   landing content and never covers the footer links. The negative margin cancels the flex gap above it. */
-.landing-sticky {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  margin-top: calc(var(--space-16) * -1);
-  padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.landing-sticky form { margin: 0; }
-.landing-sticky .btn { width: 100%; }
-
-@media (min-width: 48rem) {
-  .landing-sticky { display: none; }
-  .landing-hero__inner { padding-block: calc(var(--space-16) * 1.5); }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .landing-prize { transition: transform 150ms ease; }
-  .landing-prize:hover { transform: translateY(-2px); }
+.landing-final {
+  --cta-size: clamp(1.5rem, 5vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
 }
