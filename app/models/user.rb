@@ -38,7 +38,8 @@ class User < ApplicationRecord
     end
   end
 
-  # Only the claims we request scopes for; never birthdate or address.
+  # Only store what we need. phone, birthdate and address claims are requested but intentionally
+  # ignored (not stored, not logged) pending a privacy decision.
   def apply_hca_claims(claims)
     self.email = claims["email"]
     self.display_name = (claims["name"].presence || claims["nickname"].presence || display_name)&.to_s&.first(100)
