@@ -32,7 +32,7 @@ Rules that apply to everything (from the notes and the owner): never hard-block 
 
 | # | Feature | Source | Status | Size | Owns (files) |
 | --- | --- | --- | --- | --- | --- |
-| 18 | Data deletion and export through the Hack Club "yeet" protocol (GDPR); no self-service page | Owner request (https://yeet.hackclub.com/docs/deletions); a GDPR request is open | **unblocked**, highest value | M | `app/controllers/api/privacy_controller.rb`, `app/services/privacy/**`, `config/routes.rb`, `docs/PRIVACY_API.md` |
+| 18 | Data deletion and export through the Hack Club "yeet" protocol (GDPR); no self-service page | Owner request (https://yeet.hackclub.com/docs/deletions); a GDPR request is open | **built** (`docs/PRIVACY_API.md`); the owner registers the program with Hack Club infrastructure | M | `app/controllers/api/privacy_controller.rb`, `app/services/privacy/**`, `config/routes.rb`, `docs/PRIVACY_API.md` |
 | 19 | Production readiness for the pending deploy: shared cache store for rack-attack, `trusted_proxies` via env, documented env vars, health check (`/up` already exists), production config and Dockerfile review | Owner request | **unblocked**. Deployment target (Orchard) is not accessible: nothing is deployed | S | `config/environments/production.rb`, `config/initializers/rack_attack.rb`, `config/cache.yml`, `Dockerfile`, `README.md`, `.env.example` |
 | 20 | Email and Slack ID encrypted at rest | README open question | **owner-decision** (needs a production `RAILS_MASTER_KEY` and a key-rotation plan; also affects lookups by Slack ID) | S | `app/models/user.rb`, credentials |
 

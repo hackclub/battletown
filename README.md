@@ -41,6 +41,8 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 | `APP_URL` | Public URL; redirect URI is `$APP_URL/auth/hack_club/callback` |
 | `ADMIN_HCA_UIDS` | Comma-separated Hack Club Auth ids (OIDC `sub`) allowed into `/admin`; empty or unset means nobody (everyone else gets a 404). Locally, `ADMIN_HCA_UIDS=dev-user bin/rails s` makes Dev login an admin |
 | `APP_HOST` | Production only: comma-separated allowed hostnames (unset: the host of `APP_URL`; other hosts get 403, except the `/up` health check) |
+| `PRIVACY_AUDIENCE` | Audience a data-deletion token must carry (default `battletown`); the value to give Hack Club infrastructure, see `docs/PRIVACY_API.md` |
+| `PRIVACY_JWKS_URL` | Where the Hack Club data-deletion signing keys are fetched (default `https://yeet.hackclub.com/.well-known/jwks.json`); leave unset in production, `https` only |
 | `SLACK_BOT_TOKEN` / `NOTIFICATIONS_ENABLED` | Slack DM reminders (`app/services/notifications`, tunables in `config/notifications.yml`). Needs a bot token with `chat:write`; nothing is ever sent unless `NOTIFICATIONS_ENABLED` is exactly `true` (default off). Cron `bin/rails notifications:dispatch` every minute, or run `DispatchNotificationsJob` |
 
 ### Slack app
@@ -62,7 +64,7 @@ Hack Club Auth (OIDC, discovery, PKCE, scopes `openid profile email name phone b
 
 ## Security notes
 
-Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (shared Solid Cache store in production, in-process store in development and test), secure/httponly/lax session cookies with a 30 day idle timeout, host allowlist, filtered sensitive params, allowlist validation on every user-supplied field. Run `bin/ci` (rubocop, bundler-audit, importmap audit, brakeman, tests) before merging.
+Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (shared Solid Cache store in production, in-process store in development and test), secure/httponly/lax session cookies with a 30 day idle timeout, host allowlist, filtered sensitive params, allowlist validation on every user-supplied field, and the Hack Club data-deletion API (`POST /api/privacy/delete` and `/export`, ES256 token verified against Hack Club's keys, one-time `jti`, no personal data logged; `docs/PRIVACY_API.md`). Run `bin/ci` (rubocop, bundler-audit, importmap audit, brakeman, tests) before merging.
 
 ## Open questions / TODO
 
