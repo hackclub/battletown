@@ -6,6 +6,8 @@ Product notes: Granola folder "Village" (meetings 11/2, 11/3, 11/6, 11/9) and th
 "Observed" means I saw it in a Figma frame, a repo file or a running page. "Unclear" means the source is silent, ambiguous or I did not open it.
 Reference exports (small PNGs) are in `docs/design/`.
 
+Status: updated after the landing rebuild (`cf9df80` fonts and art, `1dd7b96` landing page, `44eba32` landing tests). The landing hero, fonts and chunky CTA now follow Figma; what is still open is everything Figma does not draw yet (see (c)). Figma frame notes in (a) describe the file as read on 2026-11-11 and are unchanged.
+
 ## Important caveat: Figma has no real tokens yet
 
 `get_variable_defs` returned `{}` for every node I tried (`0:1` is not selectable, so `1:4`, `13:10`, `71:1000`). There are no Figma variables, no published styles and no style-guide frame. Every colour below was read from node fills in `get_design_context`, so it is "a value used in a frame", not a named token. Spacing and type scale are not defined anywhere beyond the single hero/button frames.
@@ -61,7 +63,7 @@ All token names are unchanged. The big decision: Figma is a light, sky-and-cream
 | `--shadow-sm` | `0 1px 2px rgb(0 0 0 / 0.4)` | `0 1px 2px rgb(66 54 36 / 0.18)` | derived for light theme |
 | `--shadow-md` | `0 8px 24px rgb(0 0 0 / 0.35)` | `0 8px 24px rgb(66 54 36 / 0.16)` | derived for light theme |
 
-New tokens (Figma defines something with no existing slot; nothing references them yet):
+New tokens (Figma defines something with no existing slot; the landing CSS now references all of them except `--shadow-button-edge`, which `--shadow-cta-edge` replaced):
 
 | Token | Value | Source |
 | --- | --- | --- |
@@ -75,11 +77,13 @@ New tokens (Figma defines something with no existing slot; nothing references th
 | `--radius-xl` | `3rem` | Figma outer button radius 48px (`71:1000`) |
 | `--shadow-button-edge` | `inset 0 -8px 0 rgb(0 0 0 / 0.41)` | Figma inset shadow on the pink button |
 | `--border-chunky` | `0.375rem` | Figma 6px cream button bottom border |
+| `--color-cta-edge` | `#ffeada` | Figma cream bottom edge of the chunky CTA (`136:65`); same value as `--color-surface-raised` (added in `cf9df80`) |
+| `--shadow-cta-edge` | `inset 0 -0.1667em 0 #ff2d84` | Figma pressed edge (8px at 48px type) in `em` so the CTA scales with its font size; `#ff2d84` is the colour Figma renders for the `rgba(0,0,0,0.41)` inset shadow in `--shadow-button-edge` (added in `cf9df80`) |
 
-Why `--color-primary` is not the exact Figma pink: `a`, `.landing-prize__price`, `.choice__meta` and the current onboarding step all use `--color-primary` as text colour, and `#ff4797` on cream is 3.14:1 (fails AA for normal text). `#cc0052` keeps the hue and gives 5.6:1. The exact Figma pink is kept in `--color-cta` for fills and large type. Cream-on-`#ff4797` is also 3.14:1, so the Figma button label only passes as large text (the Figma label is 48px).
+Why `--color-primary` is not the exact Figma pink: `a`, `.landing-prize__price`, `.choice__meta` and the current onboarding step all use `--color-primary` as text colour, and `#ff4797` on cream is 3.14:1 (fails AA for normal text). `#cc0052` keeps the hue and gives 5.6:1. The exact Figma pink is kept in `--color-cta` for fills and large type. Cream-on-`#ff4797` is also 3.14:1, so the Figma button label only passes as large text (the Figma label is 48px). The landing CTA keeps that pairing for fidelity (see "Deliberate deviations").
 
 Left as-is because Figma defines nothing: spacing scale (`--space-*`), type scale (`--text-xs` to `--text-3xl`), `--leading-*`, `--container-width` (`72rem`; Figma frames are 1440 and 1728 wide with no container), `--font-mono`.
-Not changed because I cannot self-host them from the files I own: `--font-body` and `--font-display` (see P0 below).
+`--font-body` and `--font-display` now point at the self-hosted Poetsen One and M PLUS Rounded 1c (`cf9df80`, files and licence in `app/assets/fonts/README.md`, `@font-face` in `app/assets/stylesheets/fonts.css`), each with a system fallback stack.
 
 ## (c) Gaps
 
@@ -87,20 +91,33 @@ Priorities follow the whiteboard canvas (P0 = EOD 11/11, P1 = high, P2 = by laun
 
 ### Figma vs the current build
 
+Pri is the priority of what is still open; DONE rows are resolved and kept for the record.
+
 | Pri | Gap | Figma ref | Build today (observed) |
 | --- | --- | --- | --- |
-| P0 | No style guide, variables or type/spacing scale in Figma. Tokens above are fills read from frames plus derived AA values. The pending style guide should replace the derived rows. | whole file | `tokens.css` updated as in (b) |
-| P0 | Fonts not available. Figma uses Poetsen One (display and CTA, `134:1153`, `71:1002`) and Rounded Mplus 1c Medium (dashboard text, `1:263`); one headline uses Inter (`13:2`). Both rounded faces are Google Fonts families; the CSP forbids third-party fonts, so they need self-hosted woff2 files in `app/assets/fonts` plus `@font-face` in a stylesheet I do not own. Licence not verified here. | `134:1153`, `71:1002`, `1:263` | System font stack for both `--font-body` and `--font-display` |
-| P0 | Landing hero does not match Figma: no logo wordmark, no boss/town art, no "Build projects, get gear" tagline, one text-only H1 "Battletown" plus eyebrow and subtitle. The logo (`battletownlogo1 8`, `134:1161`) and hero painting (`65:494` / `136:75`) are not in the repo (`app/assets/images` is empty). `--art-hero-background` is wired in `landing.css` but never set. | `134:1151`, `136:75` | `landing/show.html.erb` hero |
-| P0 | Hero CTA copy and style: Figma says "Join 150 other fighters" (with arrow) in a chunky cream pill with pink face. The 150 looks like a hard-coded count; the build comment says no made-up numbers, so a real count source is needed (unclear whether 150 is a goal, a real count or a placeholder). The build CTA is "Sign up with Hack Club" in a flat pill. | `71:1000`, `134:1156` | `landing/_cta.html.erb`, `.btn--primary` |
-| P1 | Chunky button style (cream outer pill 48px, 6px cream-edge bottom, pink inner pill 28px, inset bottom shadow, 48px display type) is captured as tokens but no CSS uses them yet. | `71:1000` | `.btn`, `.btn--lg` use `--radius-full`, no edge |
-| P1 | Cream content panel with pink swoosh and sparkle edge below the hero. Figma panel content is empty (unclear what goes in it). Build sections are flat on the page background. | `134:1151`, `136:75` | `.landing-section` blocks |
-| P1 | Dashboard concept: boss/play area, a "15 minutes to your daily goal" label with a striped green progress bar and a marker, and a missing CTA for shipping boss UI. Progress bar art (`villagebar`, `13:11`) is an image; its green is not in the node data. Build is a greeting, the chosen prize and "Boss battle coming soon". Figma note `1:263` confirms the boss UI CTA is undesigned. | `1:4`, `1:263`, `13:11` | `dashboard/show.html.erb` |
-| P1 | Scroll chevron under the hero CTA (Figma only). | `57:411` | none |
-| P2 | Onboarding: no Figma frames exist for any of the 5 steps, so the build (prize, project, schedule, account, celebrate) has nothing to be checked against. It currently inherits the new tokens; I checked prize, schedule and account at 375px and 1440px and saw no overflow. | none | `onboardings/*` |
-| P2 | Mobile: no mobile frames anywhere in Figma. | none | responsive CSS exists, unreviewed against a design |
+| DONE | Fonts: Poetsen One (display and CTA) and Rounded Mplus 1c (body) are self-hosted Latin woff2 files under SIL OFL 1.1, with `@font-face` and `font-display: swap` in `fonts.css`; the CSP stays `font-src 'self'`. Only the Latin range ships, other scripts fall back to the system font. The Inter headline (`13:2`) is unfinished Figma text and was not used. (`cf9df80`) | `134:1153`, `71:1002`, `1:263` | `--font-display` / `--font-body` use them |
+| DONE | Landing hero: logo wordmark (`logo.svg`), painted boss/town art (`hero-art.webp`), "Build projects, get gear" tagline with "get gear" in `--color-highlight`, and the sky wash are in `app/assets/images/landing/`. The logo is the H1 and carries the alt text. (`cf9df80` assets, `1dd7b96` page) | `134:1151`, `136:75`, `134:1161` | `landing/show.html.erb` hero |
+| DONE | Chunky CTA: cream outer pill, pink inner pill, inset pressed edge, 48px Poetsen One label and arrow, built in `em` so it scales (`.cta`, `landing/_cta_face.html.erb`). It is a real sign-up form, or "Continue setup" when signed in. (`1dd7b96`) | `71:1000`, `134:1156` | `landing/_cta.html.erb`, `.cta` |
+| DONE | CTA count text: "Join N other fighters" uses a real `User.count` (`LandingHelper#fighter_count`, cached 5 minutes) once it reaches 10 (`FIGHTER_COUNT_THRESHOLD`); below that it reads "Join the fight". This settles the open question about Figma's "150": it is treated as a placeholder, not a goal. (`1dd7b96`, tests in `44eba32`) | `71:1000`, `134:1156` | `LandingHelper#join_cta_label` |
+| DONE | Cream content panel with pink swoosh and sparkle edge below the hero (`hero-swoosh.svg` over `.landing-panel`). The sections inside it are a restyle, not a Figma design (see "Deliberate deviations"). (`cf9df80`, `1dd7b96`) | `134:1151`, `136:75` | `.landing-hero__swoosh`, `.landing-panel` |
+| DONE | Chunky button style captured in `.cta` using `--color-cta-edge`, `--shadow-cta-edge`, `--radius-xl`, `--radius-lg`, `--text-display`. The small header button on the landing page uses `--border-chunky`. (`cf9df80`, `1dd7b96`) | `71:1000` | `landing.css` |
+| P0 | Dashboard concept: boss/play area, a "15 minutes to your daily goal" label with a striped green progress bar and a marker, and a missing CTA for shipping boss UI. Not implemented; progress bar art (`villagebar`, `13:11`) is an image and its green is not in the node data. Note `1:263` confirms the boss UI CTA is undesigned, so it needs a design first. Build is a greeting, the chosen prize and "Boss battle coming soon". | `1:4`, `1:263`, `13:11` | `dashboard/show.html.erb` |
+| P1 | No style guide, variables or type/spacing scale in Figma. Tokens above are fills read from frames plus derived AA values. The pending style guide should replace the derived rows. | whole file | `tokens.css` updated as in (b) |
+| P1 | Onboarding: no Figma frames exist for any of the 5 steps, so the build (prize, project, schedule, account, celebrate) has nothing to be checked against. It inherits the new tokens and fonts. | none | `onboardings/*` |
+| P1 | No Figma frames for the shop, boss UI (HP bar, community icons), streak UI, team UI or Plinko; only the dashboard concept `1:4` exists (see the product notes table). | none | not built |
+| P1 | Sections below the hero (How it works, Fight together, prizes, Who's locked in, FAQ) have no Figma design because the cream panel is empty in `134:1151` and `136:75`. They are existing copy restyled to the tokens; they need a real design once the panel content exists. | `134:1151`, `136:75` | `.landing-panel` sections |
+| P1 | Art is the stated launch blocker: boss, hero and background due EOD 11/11, two more bosses TBD (canvas, 11/9 meeting). The hero painting is now in the repo; the notes still call for 2-3 boss assets and Figma has one boss/town painting. | `65:494`, `14:324`-`14:327` | `hero-art.webp` only |
+| P2 | Mobile: no mobile frames anywhere in Figma. The landing mobile layout was designed independently (see "Deliberate deviations"); onboarding and dashboard responsive CSS is unreviewed against a design. | none | responsive CSS |
+| P2 | Scroll chevron under the hero CTA appears only in the earlier `57:411` variant, not in the latest frames. Not built. | `57:411` | none |
 | P2 | `1:268` (blue tower, "Lost? Click here for guides") has no stated purpose; the signposts (`136:30`-`136:56`), image refs and small frames (`65:491`-`65:493`, `13:15`-`13:17`) were not mapped to any screen. | listed in (a) | none |
-| P2 | Art is the stated launch blocker: boss, hero and background due EOD 11/11, two more bosses TBD (canvas, 11/9 meeting). Figma has one boss/town painting and a hero; the notes call for 2-3 boss assets. | `65:494`, `14:324`-`14:327` | none |
+
+### Deliberate deviations on the landing
+
+- No mobile frame exists in Figma, so the layout below 48rem (the hero restacks instead of scaling the 1440x1024 composition) is designed independently.
+- The sticky mobile CTA bar was removed in `1dd7b96`. Figma has no such element; the hero CTA and the closing "Ready to lock in?" CTA remain.
+- Sections below the hero are a restyle of existing copy (How it works, Fight together, prizes, Who's locked in, FAQ) because the Figma cream panel is empty. No new copy or numbers were invented.
+- The cream label on the `#ff4797` CTA is 3.14:1, which only passes AA as large text. It is kept for fidelity because the label is large display type (Figma 48px; the narrow-screen CTA is clamped to 24px-40px). `--color-primary` stays the darkened `#cc0052` for normal-size text.
+- Token additions for the CTA: `--color-cta-edge` and `--shadow-cta-edge` (see (b)). `--shadow-cta-edge` uses the opaque colour Figma renders instead of the translucent black in `--shadow-button-edge`, which is now unused.
 
 ### Product notes vs Figma and the build
 
@@ -120,9 +137,9 @@ Build status below is observed from the repo views and the running app, not from
 | P2 | Notifications (Slack, email, SMS), NPS every 2 days, metrics, guides, admin (canvas) | Nothing. | Not built. Schedule step says "We'll nudge you on Slack", but sending is not built. |
 | P2 | 1 month run, possible 1 month extension (canvas, 11/9) | n/a | Stated in landing FAQ ("launches this week and runs for at least a month"). |
 
-Source discrepancies worth a decision: day 1 of the streak ramp is 5% on the canvas but "base" in the 11/9 notes; "Village" (notes) versus "Battletown" (Figma, build); and Group 5's grey hero background looks like a placeholder for the painted art in Group 8.
+Source discrepancies worth a decision: day 1 of the streak ramp is 5% on the canvas but "base" in the 11/9 notes; and "Village" (notes) versus "Battletown" (Figma, build). Group 5's grey hero background was a placeholder for the painted art in Group 8, which the build now uses.
 
-## Verification (observed on 2026-11-11)
+## Verification (observed on 2026-11-11, before the landing rebuild)
 
 - `bin/rails test`: one run showed 59 runs, 2 failures, both in `test/integration/rack_attack_test.rb` (that run overlapped with my server starting); three later runs, including one with my change stashed, showed 59 runs, 0 failures. I did not find the cause of the single failing run.
 - `bundle exec rubocop`: 48 files, no offenses.
