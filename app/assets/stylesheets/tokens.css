@@ -1,25 +1,36 @@
 /*
- * PLACEHOLDER design tokens. The Figma style guide is still pending:
- * this is the single file to replace once it lands. Only custom properties live here.
+ * Design tokens. Values marked "Figma" come from the Battletown Figma file (fileKey Qi9ARDNu8fxsTT1C43DDgL):
+ * the landing hero and button frames (nodes 134:1152, 71:1000), the colour-block frame (13:10) and the
+ * dashboard concept (1:4). The file has no Figma variables or published styles yet, so every value was read
+ * from node fills. Values marked "derived" are not in Figma: they were chosen to pass WCAG AA on the Figma
+ * cream background. See docs/FIGMA_GAPS.md for the full old -> new list and what is still missing
+ * (final style guide, fonts, art). Only custom properties live here.
  */
 :root {
-  /* Color */
-  --color-bg: #0f1117;
-  --color-surface: #181b25;
-  --color-surface-raised: #222636;
-  --color-border: #2f3447;
-  --color-text: #f2f3f7;
-  --color-text-muted: #9aa1b5;
-  --color-primary: #ff6b3d;
-  --color-primary-contrast: #1a0b05;
-  --color-secondary: #7c5cff;
-  --color-success: #3ddc97;
-  --color-danger: #ff5470;
-  --color-focus: #ffd166;
+  /* Color (light theme: Figma shows a sky/cream UI, not the old dark placeholder) */
+  --color-bg: #fffef5; /* Figma: cream panel and button face (134:1152, 71:1000) */
+  --color-surface: #ffffff; /* derived: card surface that lifts off the cream bg */
+  --color-surface-raised: #ffeada; /* Figma: cream button edge (71:1000) */
+  --color-border: #dcc7a1; /* derived: decorative card/header borders; form fields use --color-text-muted */
+  --color-text: #000000; /* Figma: body text on the dashboard concept (1:263) */
+  --color-text-muted: #6b6150; /* derived: 6.0:1 on --color-bg, 5.2:1 on --color-surface-raised */
+  --color-primary: #cc0052; /* derived from Figma pink #ff4797: darkened so pink links/labels pass AA (5.6:1 on --color-bg) */
+  --color-primary-contrast: #fffef5; /* Figma: cream label on the pink button; 5.6:1 on --color-primary */
+  --color-secondary: #0563de; /* Figma: blue block (13:10) */
+  --color-success: #067a46; /* derived: not in Figma */
+  --color-danger: #c4143c; /* derived: not in Figma */
+  --color-focus: #0563de; /* Figma blue; focus ring needs 3:1 on cream, Figma yellow is only 1.35:1 */
 
-  /* Type */
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-body);
+  /* Figma brand colours with no existing slot (new tokens; use for fills and large display text, not small text) */
+  --color-cta: #ff4797; /* Figma: pink CTA fill (71:1001); cream text on it is only 3.1:1, so large type only */
+  --color-highlight: #ffda37; /* Figma: yellow "get gear" highlight and yellow block (13:10, 134:1153) */
+  --color-sky: #b1dcfe; /* Figma: hero sky radial gradient stop (134:1152) */
+  --color-sky-soft: #aacaf9; /* Figma: checkerboard blue (13:10) */
+  --color-ink-brown: #423624; /* Figma: boss progress marker on the dashboard concept (1:264) */
+
+  /* Type (fonts below are not self-hosted yet, so the stack stays the system stack; see docs/FIGMA_GAPS.md) */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* Figma uses Rounded Mplus 1c Medium (1:263) */
+  --font-display: var(--font-body); /* Figma uses Poetsen One (134:1153, 71:1002) */
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -28,6 +39,8 @@
   --text-xl: 1.75rem;
   --text-2xl: 2.5rem;
   --text-3xl: 3.5rem;
+  --text-display: 3rem; /* Figma: 48px display and CTA type (134:1153, 71:1002) */
+  --tracking-display: -0.06em; /* Figma: -2.88px at 48px */
   --leading-tight: 1.2;
   --leading-body: 1.6;
 
@@ -44,10 +57,13 @@
   /* Shape */
   --radius-sm: 0.375rem;
   --radius-md: 0.75rem;
-  --radius-lg: 1.25rem;
+  --radius-lg: 1.75rem; /* Figma: inner pink button radius 28px (71:1001) */
+  --radius-xl: 3rem; /* Figma: outer cream button radius 48px (71:1000) */
   --radius-full: 999px;
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 8px 24px rgb(0 0 0 / 0.35);
+  --shadow-sm: 0 1px 2px rgb(66 54 36 / 0.18); /* derived: warm shadow for the light theme */
+  --shadow-md: 0 8px 24px rgb(66 54 36 / 0.16); /* derived */
+  --shadow-button-edge: inset 0 -8px 0 rgb(0 0 0 / 0.41); /* Figma: pressed edge on the pink button (71:1001) */
+  --border-chunky: 0.375rem; /* Figma: 6px cream button bottom edge (71:1000) */
 
   /* Layout */
   --container-width: 72rem;
