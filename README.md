@@ -37,6 +37,7 @@ Hack Club Auth (OIDC, discovery, PKCE, scopes `openid profile email name phone b
 - Design tokens: `app/assets/stylesheets/tokens.css` (placeholder until the Figma style guide lands)
 - Prizes: `config/prizes.yml` (placeholder, Amber owns the final shop)
 - Referral slugs (`/haven`, `/terra`, `/stardance`): `config/referrals.yml`
+- "How did you hear about us?" options on the onboarding account step: `config/referral_sources.yml` (generic answers) plus the programs from `config/referrals.yml`, via `ReferralSource`
 - Interfaces for page work: `docs/CONTRACT.md`
 
 ## Security notes

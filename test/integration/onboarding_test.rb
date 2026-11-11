@@ -197,7 +197,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     step("account", referral_source: "bing_ads")
     assert_response :unprocessable_content
-    assert_select "[role=alert], .flash, .errors", /How you found us/
+    assert_select "[role=alert]", /How you found us/
     assert_nil user.reload.referral_source
   end
 

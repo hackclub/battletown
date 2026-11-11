@@ -38,7 +38,7 @@ Validation allowlists (all enforced by the model; use strong params and let `sav
 - `time_zone` is an `ActiveSupport::TimeZone` name
 - `coding_day_names` values are from `User::DAYS`; unknown names are ignored
 
-`Prize.all` / `Prize.find(key)` exposes `key name description hours price_usd emoji image tier`. Landing shows hours, the shop shows currency. Prize data is placeholder. `Referral.all` has `slug name`.
+`Prize.all` / `Prize.find(key)` exposes `key name description hours price_usd emoji image tier`. Landing shows hours, the shop shows currency. Prize data is placeholder. `Referral.all` has `slug name`. `ReferralSource.all` (`key name`) is the onboarding "how did you hear about us" list: generic answers from `config/referral_sources.yml`, then the `Referral` programs, then "Something else"; `users.referral_source` must be one of `ReferralSource.keys` (enforced in `OnboardingsController`). Generic keys are not attribution slugs.
 
 ## CSS
 
