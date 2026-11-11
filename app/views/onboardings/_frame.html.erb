@@ -1,7 +1,7 @@
 <%# Shared chrome for every step: progress, saved prize, heading, encouragement and a back link. %>
 <% copy = onboarding_copy(step) %>
 <% index = OnboardingsController::STEPS.index(step) %>
-<% content_for :title, "#{copy[:title]} · Battletown" %>
+<% content_for :title, copy[:title] %>
 
 <section class="container onboarding" data-controller="onboarding-step">
   <nav class="onboarding-progress" aria-label="Onboarding progress" data-step="<%= index + 1 %>">
