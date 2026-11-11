@@ -1,7 +1,7 @@
 <section class="container">
   <h1>Welcome, <%= current_user.display_name.presence || "adventurer" %></h1>
   <% if (prize = current_user.prize) %>
-    <p class="card">You're working toward: <strong><%= prize.emoji %> <%= prize.name %></strong> (<%= prize.hours %> hours)</p>
+    <p class="card">You're working toward: <strong><%= prize.emoji %> <%= prize.name %></strong> (<%= pluralize(prize.hours, "hour") %>)</p>
   <% end %>
   <p class="card">Boss battle coming soon.</p>
 </section>
