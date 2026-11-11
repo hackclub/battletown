@@ -13,3 +13,6 @@ module ActiveSupport
     # Add more helper methods to be used by all tests here...
   end
 end
+
+# Throttle counters would leak across tests; the throttling test turns Rack::Attack back on explicitly.
+Rack::Attack.enabled = false

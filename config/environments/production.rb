@@ -78,7 +78,8 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # DNS rebinding protection: set APP_HOST (comma-separated hostnames) in production.
-  config.hosts = ENV["APP_HOST"].split(",").map(&:strip) if ENV["APP_HOST"].present?
+  # Host header allowlist (DNS rebinding / host-header poisoning). Fails closed: without APP_HOST
+  # (comma-separated hostnames) it falls back to the host of APP_URL instead of allowing any host.
+  config.hosts = (ENV["APP_HOST"].presence || URI(ENV.fetch("APP_URL", "http://localhost:3000")).host.to_s).split(",").map(&:strip)
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
