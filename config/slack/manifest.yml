@@ -1,0 +1,41 @@
+# Slack app manifest for Battletown (Hack Club). Create the app from it: https://api.slack.com/apps -> Create New App
+# -> From a manifest -> pick the Hack Club workspace -> paste this file. Full steps: docs/SLACK_APP.md.
+# Schema: https://docs.slack.dev/reference/app-manifest
+#
+# The Rails app only sends direct messages (Notifications::Slack::WebApiAdapter calls chat.postMessage with a Slack
+# user id as the channel). Slack does not call this app back, so there is nothing to host and nothing to subscribe to.
+#
+# Adding a scope, event subscription, slash command or interactivity later needs the project owner's approval. If you
+# change the scopes, also change EXPECTED_SCOPES in app/services/notifications/slack/check.rb (a test compares them).
+_metadata:
+  major_version: 2
+  minor_version: 1
+
+display_information:
+  # Shown in Slack (max 35 characters).
+  name: Battletown
+  # Shown on the app's profile (max 140 characters).
+  description: Reminders and updates from Battletown, a Hack Club program
+
+features:
+  bot_user:
+    # The bot's name in Slack.
+    display_name: Battletown
+    # Not shown as online all the time: it only posts when the Rails app sends a reminder.
+    always_online: false
+
+oauth_config:
+  scopes:
+    # Bot scopes only; there are no user scopes, so the app can never act as a person.
+    bot:
+      # Post messages as the bot, including into a person's DM with it. This is the only permission the app asks for.
+      # It cannot read messages, channels, users or email addresses.
+      - chat:write
+
+settings:
+  # Not an organisation-wide app: it is installed in one workspace.
+  org_deploy_enabled: false
+  # No Socket Mode: there are no events to receive. No event_subscriptions, interactivity or slash commands either.
+  socket_mode_enabled: false
+  # The bot token does not expire or rotate. Revoke it from the app's OAuth & Permissions page if it leaks.
+  token_rotation_enabled: false
