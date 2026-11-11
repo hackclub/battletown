@@ -1,0 +1,7 @@
+# Self-service account data export and deletion (AccountsController). Owner-tunable.
+shared:
+  # How recently the person must have signed in through Hack Club Auth before they can download their
+  # data or delete their account. Older sessions are sent through a real re-sign-in first.
+  recent_login_minutes: 10
+  # What they must type, exactly (case-sensitive), on the delete confirmation page.
+  delete_phrase: "DELETE"
