@@ -1,0 +1,47 @@
+/*
+ * Self-hosted fonts (the CSP only allows font-src 'self'). Latin subset woff2 files from Google Fonts,
+ * both licensed under the SIL Open Font License 1.1 (see app/assets/fonts/README.md).
+ * Propshaft rewrites the url() paths to digested /assets URLs. font-display: swap shows the fallback stack
+ * immediately and swaps once the font arrives. The family names are referenced by --font-display / --font-body.
+ */
+@font-face {
+  font-family: "Poetsen One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("poetsen-one-400.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "M PLUS Rounded 1c";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("mplus-rounded-1c-400.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "M PLUS Rounded 1c";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("mplus-rounded-1c-500.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "M PLUS Rounded 1c";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("mplus-rounded-1c-700.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Poetsen One only ships a regular weight; stop browsers faking a bold for headings and the brand link. */
+h1, h2, h3, h4, .site-header__brand {
+  font-weight: 400;
+  font-synthesis-weight: none;
+}

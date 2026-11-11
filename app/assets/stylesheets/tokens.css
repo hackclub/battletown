@@ -27,10 +27,11 @@
   --color-sky: #b1dcfe; /* Figma: hero sky radial gradient stop (134:1152) */
   --color-sky-soft: #aacaf9; /* Figma: checkerboard blue (13:10) */
   --color-ink-brown: #423624; /* Figma: boss progress marker on the dashboard concept (1:264) */
+  --color-cta-edge: #ffeada; /* Figma: cream bottom edge of the chunky CTA (136:65); same value as --color-surface-raised */
 
-  /* Type (fonts below are not self-hosted yet, so the stack stays the system stack; see docs/FIGMA_GAPS.md) */
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* Figma uses Rounded Mplus 1c Medium (1:263) */
-  --font-display: var(--font-body); /* Figma uses Poetsen One (134:1153, 71:1002) */
+  /* Type (both families are self-hosted in app/assets/fonts, see fonts.css; the rest is the fallback stack) */
+  --font-body: "M PLUS Rounded 1c", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* Figma: Rounded Mplus 1c Medium (1:263) */
+  --font-display: "Poetsen One", "Arial Rounded MT Bold", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* Figma: Poetsen One (134:1153, 71:1002) */
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -64,6 +65,7 @@
   --shadow-md: 0 8px 24px rgb(66 54 36 / 0.16); /* derived */
   --shadow-button-edge: inset 0 -8px 0 rgb(0 0 0 / 0.41); /* Figma: pressed edge on the pink button (71:1001) */
   --border-chunky: 0.375rem; /* Figma: 6px cream button bottom edge (71:1000) */
+  --shadow-cta-edge: inset 0 -0.1667em 0 #ff2d84; /* Figma pressed edge (8px at 48px type) in em so the CTA scales with its font-size; #ff2d84 is the colour Figma actually renders for the rgba(0,0,0,0.41) inset shadow in --shadow-button-edge */
 
   /* Layout */
   --container-width: 72rem;
