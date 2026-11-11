@@ -56,7 +56,10 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: battletown_test
+  # Parallel agents/worktrees must not share one test database: set a unique
+  # TEST_DB_SUFFIX (for example `_a`) and run `bin/rails db:test:prepare`.
+  # Empty by default, so CI and a normal checkout are unchanged.
+  database: battletown_test<%= ENV["TEST_DB_SUFFIX"] %>
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is

@@ -16,6 +16,18 @@ For real Hack Club Auth sign-in in development, the app's redirect URI in auth.h
 
 Sign in locally with the **Dev login** button (development only, no Hack Club Auth credentials needed).
 
+## Tests and parallel worktrees
+
+`bin/rails test` uses the `battletown_test` database (plus `battletown_test-N` for the parallel workers). Several checkouts, worktrees or agents running tests at the same time must not share one: give each a unique suffix, for example
+
+```sh
+export TEST_DB_SUFFIX=_a
+TEST_DB_SUFFIX=_a bin/rails db:test:prepare
+TEST_DB_SUFFIX=_a bin/rails test
+```
+
+The suffix is appended to the test database name in `config/database.yml` (empty by default, so CI is unchanged).
+
 ## Environment
 
 See `.env.example`. Credentials can alternatively live in Rails credentials under `hca: { client_id:, client_secret: }`.
