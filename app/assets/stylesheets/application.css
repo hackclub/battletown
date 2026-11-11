@@ -58,6 +58,30 @@ a { color: var(--color-primary); }
   border: 0;
 }
 
+/* Skip link: off-screen until it gets keyboard focus, then a solid, high-contrast chip in the top-left corner. */
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px var(--color-bg);
+}
+
+/* The main landmark is only focused by the skip link, so it needs no ring of its own. */
+main:focus { outline: none; }
+
 /* Header and footer */
 .site-header, .site-footer { border-color: var(--color-border); }
 .site-header { border-bottom: 1px solid var(--color-border); }

@@ -52,4 +52,12 @@ class PagesTest < ActionDispatch::IntegrationTest
     get "/"
     assert_select "script[type='importmap'][nonce]"
   end
+
+  test "skip link is the first focusable element and targets the main landmark" do
+    get "/"
+    assert_select "a.skip-link[href='#main']", text: "Skip to main content"
+    assert_select "main#main[tabindex='-1']"
+    first_focusable = css_select("body a, body button, body input").first
+    assert_equal "skip-link", first_focusable["class"]
+  end
 end
