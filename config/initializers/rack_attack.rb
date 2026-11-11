@@ -13,7 +13,13 @@ class Rack::Attack
     req.ip if req.post? && (req.path.start_with?("/auth/") || req.path == "/dev_login")
   end
 
+  # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept
+  # out of the general throttle below so a burst of requests there can never block it.
+  throttle("privacy/ip", limit: 120, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/api/privacy/")
+  end
+
   throttle("req/ip", limit: 300, period: 5.minutes) do |req|
-    req.ip unless req.path.start_with?("/assets/", "/up")
+    req.ip unless req.path.start_with?("/assets/", "/up", "/api/privacy/")
   end
 end

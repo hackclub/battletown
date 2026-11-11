@@ -23,6 +23,12 @@ Rails.application.routes.draw do
     root "dashboard#show"
   end
 
+  # Hack Club's data-deletion service (docs/PRIVACY_API.md): bearer-token authenticated, JSON only. The catch-all
+  # answers other verbs and paths under /api/privacy with JSON. Keep above the /:ref catch-all.
+  post "api/privacy/delete", to: "api/privacy#delete", format: false
+  post "api/privacy/export", to: "api/privacy#export", format: false
+  match "api/privacy/*path", to: "api/privacy#fallback", via: :all, format: false
+
   # Must stay last: /<slug> records a known referral source (e.g. /haven), anything else is a 404.
   get ":ref", to: "referrals#show", as: :referral, constraints: { ref: /[a-z0-9_-]{1,32}/ }
 end
