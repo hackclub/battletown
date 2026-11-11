@@ -28,6 +28,7 @@
           <% if signed_in? %>
             <%= link_to "Dashboard", dashboard_path if current_user.onboarded? %>
             <%= admin_tool(:div, label: false) { link_to "Admin", admin_root_path } %>
+            <%= link_to "Account", account_path %>
             <%= button_to "Sign out", logout_path, method: :delete, class: "btn btn--ghost" %>
           <% else %>
             <%= render "shared/signup_button", label: "Sign in", css: "btn btn--ghost" %>

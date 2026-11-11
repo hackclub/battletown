@@ -1,0 +1,39 @@
+<% content_for :title, "Your account" %>
+<section class="container account">
+  <h1>Your account</h1>
+
+  <div class="card">
+    <h2>What we store about you</h2>
+    <dl class="account__list">
+      <dt>Name</dt><dd><%= current_user.display_name.presence || "Not set" %></dd>
+      <dt>Email</dt><dd><%= current_user.email.presence || "Not set" %></dd>
+      <dt>Slack ID</dt><dd><%= current_user.slack_id.presence || "Not set" %></dd>
+      <dt>Verification status</dt><dd><%= current_user.verification_status.humanize %></dd>
+      <dt>Time zone</dt><dd><%= current_user.time_zone.presence || "Not set" %></dd>
+      <dt>Onboarding answers</dt>
+      <dd>
+        Prize: <%= current_user.prize&.name || "not chosen" %>.
+        Project: <%= current_user.project_kind.presence || "not chosen" %>.
+        Coding days: <%= current_user.coding_day_names.map(&:capitalize).to_sentence.presence || "none" %><%= " at #{current_user.coding_time}" if current_user.coding_time.present? %>.
+      </dd>
+      <dt>How you found us</dt><dd><%= current_user.referral_source.presence || "Not set" %></dd>
+    </dl>
+    <p>We ask Hack Club Auth for your phone number, birthdate and address but do not store them. Read the <%= link_to "privacy page", privacy_path %> for details.</p>
+  </div>
+
+  <div class="card">
+    <h2>Download my data</h2>
+    <p>Get a JSON file with everything Battletown stores about you. You may be asked to sign in with Hack Club again first.</p>
+    <div class="account__actions">
+      <%= link_to "Download my data", account_export_path, class: "btn btn--primary", data: { turbo: false } %>
+    </div>
+  </div>
+
+  <div class="card account__danger">
+    <h2>Delete my account</h2>
+    <p>This permanently deletes your Battletown account and everything we stored about you. It does not delete your Hack Club account. You may be asked to sign in with Hack Club again first.</p>
+    <div class="account__actions">
+      <%= link_to "Delete my account", delete_account_path, class: "btn btn--danger-outline" %>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,12 @@
+<% content_for :title, "Sign in again" %>
+<section class="container account">
+  <h1>Please sign in again to confirm</h1>
+  <div class="card">
+    <p>To protect your account, we ask you to sign in with Hack Club again before we show or delete your data. Use the same Hack Club account you are using now. Then we bring you straight back.</p>
+    <div class="account__actions">
+      <%= render "shared/signup_button", label: "Sign in again with Hack Club", css: "btn btn--primary" %>
+      <%= dev_tool(:div, label: false) { button_to "Dev login", dev_login_path, class: "btn btn--ghost", form: { data: { turbo: false } } } %>
+      <%= link_to "Cancel", account_path, class: "btn btn--ghost" %>
+    </div>
+  </div>
+</section>
