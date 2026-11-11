@@ -8,10 +8,11 @@
 .landing { display: flex; flex-direction: column; gap: var(--space-16); margin-block: calc(var(--space-8) * -1); }
 
 .landing-referral {
-  margin: 0;
+  /* Cancels the flex gap below it so the banner sits flush against the hero. */
+  margin: 0 0 calc(var(--space-16) * -1);
   padding: var(--space-3) var(--space-4);
   text-align: center;
-  background: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 55%, var(--color-bg));
   color: var(--color-text);
   font-weight: 600;
 }
@@ -126,7 +127,7 @@
 .landing-faq summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
 .landing-faq p { margin: var(--space-3) 0 0; color: var(--color-text-muted); }
 
-.landing-final { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); text-align: center; }
+.landing-final { display: flex; padding-bottom: var(--space-12); flex-direction: column; align-items: center; gap: var(--space-4); text-align: center; }
 .landing-final form { margin: 0; }
 
 /* Sticky mobile CTA (hidden on wider screens). */
