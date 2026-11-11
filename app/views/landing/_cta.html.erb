@@ -1,0 +1,9 @@
+<%# locals: (css: "btn btn--primary btn--lg", dev: false) -%>
+<%# Signed-in users who haven't finished onboarding continue it; everyone else signs up through Hack Club Auth. -%>
+<% if signed_in? %>
+  <%= link_to "Continue setup", onboarding_path, class: css %>
+<% elsif dev %>
+  <%= render "shared/signup_button", css: css %>
+<% else %>
+  <%= button_to "Sign up with Hack Club", "/auth/hack_club", method: :post, class: css, form: { data: { turbo: false } } %>
+<% end %>
