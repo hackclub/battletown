@@ -76,7 +76,7 @@ Counters are stored in Solid Cache (PostgreSQL), so limits hold across Puma work
    - Throttle store check: `bin/rails runner 'p [Rails.cache.class, Rack::Attack.cache.store.class]'` prints `SolidCache::Store` and `FailOpenCacheStore`. Counters appear in `solid_cache_entries` (`select count(*) from solid_cache_entries;` grows as pages are requested). Sending 11 `POST /auth/hack_club` from one machine within a minute (without a valid CSRF token is fine) returns 429 on the 11th; that machine is then blocked for up to a minute.
    - No `Rack::Attack cache store failed` lines in the log.
 8. First-login smoke test with a real account: landing page, "Sign up with Hack Club", consent at auth.hackclub.com, callback, onboarding steps through to the dashboard, log out, log in again (goes straight to the dashboard). Check the log shows no parameters from the onboarding form (they are filtered).
-9. Then remove any leftover test account you do not want (there is a self-service data deletion page if the account feature has been merged).
+9. Remove any leftover test account you do not want. Account data deletion and export are not built yet; they will be served by the Hack Club "yeet" deletion API (`POST /api/privacy/delete` and `POST /api/privacy/export`) once it exists.
 
 Dockerfile note: it has no `HEALTHCHECK` instruction, because a wrong one can mark a healthy container unhealthy on some platforms. If yours wants one, this matches the default layout: `HEALTHCHECK --interval=30s --timeout=5s --start-period=40s CMD curl -fsS http://localhost:${HTTP_PORT:-80}/up || exit 1`.
 
