@@ -6,6 +6,33 @@ OmniAuth.config.allowed_request_methods = [ :post ]
 # instead of raising the OmniAuth exception page in development.
 OmniAuth.config.failure_raise_out_environments = []
 
+# Hack Club Auth rate limits its public endpoints (HTTP 429 "slow your roll!"), and the OIDC gem
+# re-fetches the discovery document (and its signing keys, which ride along on the same object)
+# on every sign-in request and callback. Keep successful lookups in process for a short while.
+# Failures are never cached, so a 429 is simply retried on the next sign-in. The TTL is short so a
+# key rotation heals itself quickly.
+class HcaDiscoveryCache
+  TTL = 15.minutes
+
+  def initialize(ttl: TTL, clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
+    @ttl = ttl.to_f
+    @clock = clock
+    @entries = {}
+    @mutex = Mutex.new
+  end
+
+  # Same signature as SWD::Cache#fetch, which the OIDC discovery lookup calls.
+  def fetch(key, _options = {})
+    cached = @mutex.synchronize { @entries[key] }
+    return cached[:value] if cached && cached[:expires_at] > @clock.call
+
+    value = yield
+    @mutex.synchronize { @entries[key] = { value: value, expires_at: @clock.call + @ttl } }
+    value
+  end
+end
+SWD.cache = HcaDiscoveryCache.new
+
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider :openid_connect,
     name: :hack_club,
