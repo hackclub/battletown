@@ -63,6 +63,11 @@ module OnboardingsHelper
 
   def day_label(day) = day.capitalize
 
+  # The user's current zone as an ActiveSupport::TimeZone, or nil when unset or not a valid zone name.
+  def onboarding_time_zone
+    ActiveSupport::TimeZone[current_user.time_zone] if current_user.time_zone.present?
+  end
+
   def time_zone_options
     ActiveSupport::TimeZone.all.map { |zone| [ zone.to_s, zone.name, { data: { iana: zone.tzinfo.name } } ] }
   end

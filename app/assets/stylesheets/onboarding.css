@@ -148,8 +148,12 @@
 .day { position: relative; cursor: pointer; }
 .day__input { position: absolute; opacity: 0; inset: 0; }
 .day__label {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 3.5rem;
+  min-height: 2.75rem;
+  box-sizing: border-box;
   padding: var(--space-2) var(--space-3);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-full);
@@ -158,6 +162,39 @@
 }
 .day__input:checked + .day__label { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-primary-contrast); }
 .day__input:focus-visible + .day__label { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+/* "Every day" toggle: a dashed secondary pill that fills like a checked day when all seven are on. */
+.day-all {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border: 2px dashed var(--color-text-muted);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.day-all[hidden] { display: none; }
+.day-all:hover { border-color: var(--color-primary); }
+.day-all[aria-pressed="true"] { border-style: solid; border-color: var(--color-primary); background: var(--color-primary); color: var(--color-primary-contrast); }
+.day-all:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+/* Time zone: one line of context; the select is revealed by "Change time zone" (native <details>) */
+.timezone__summary {
+  display: block;
+  padding-block: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  list-style: none;
+}
+.timezone__summary::-webkit-details-marker { display: none; }
+.timezone__summary strong { color: var(--color-text); }
+.timezone__change { color: var(--color-primary); font-weight: 600; text-decoration: underline; }
+.timezone__summary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-sm); }
+.timezone__body { margin-top: var(--space-2); }
+.timezone__body label { display: block; margin-bottom: var(--space-2); font-weight: 600; }
+.timezone__body select { width: 100%; }
 
 /* Account checks */
 .checks { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
