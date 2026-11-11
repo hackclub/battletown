@@ -27,6 +27,11 @@ module AccountData
       # `id` is internal; `hca_uid` is kept because it is their Hack Club Auth identifier.
       except: %w[id],
       decorate: ->(row, record) { row.merge("coding_day_names" => record.coding_day_names) }
+    ),
+    # The outbox of Slack reminders (kind, status, times, attempts). It stores no message text and no Slack id.
+    Source.new(
+      key: "notifications", table: "notifications", model_name: "Notification", user_column: "user_id",
+      except: %w[id user_id]
     )
   ].freeze
 
