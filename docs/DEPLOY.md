@@ -32,8 +32,8 @@ Never commit real values. Shapes below are examples only.
 | `RAILS_LOG_LEVEL` | no | Default `info`. Do not use `debug` in production: it can log personal data. Request lines at `info` include the client IP and path. | `info` |
 | `HTTP_PORT` | no | Port Thruster listens on inside the container, default 80. Set it if the platform insists on another port (for example the value of its `PORT`). Do not set `PORT` for this: Thruster overrides it for Puma. | `8080` |
 | `SOLID_QUEUE_IN_PUMA` | no, leave unset | Would run the Solid Queue supervisor inside Puma. There are no jobs and no queue tables, so enabling it only crashes the supervisor. See "Background jobs". | |
-| `ADMIN_HCA_UIDS` | no (added by the admin work, may not be merged yet) | Comma-separated Hack Club Auth `sub` values of admins. Unset: nobody is an admin and `/admin` returns 404. | `ident!abc123,ident!def456` |
-| `SLACK_BOT_TOKEN` | no (added by the notifications work, may not be merged yet) | Bot token that enables real Slack DMs. Unset: the null adapter is used and nothing is sent. Treat as a secret. | `xoxb-...` |
+| `ADMIN_HCA_UIDS` | no | Comma-separated Hack Club Auth `sub` values of admins. Unset: nobody is an admin and `/admin` returns 404. | `ident!abc123,ident!def456` |
+| `SLACK_BOT_TOKEN` | no (reserved for the notifications work, not read by the app yet) | Bot token that enables real Slack DMs. Unset: the null adapter is used and nothing is sent. Treat as a secret. | `xoxb-...` |
 
 `bin/rails runner 'p Rails.application.config.hosts'` is a quick way to see the host allowlist the container ended up with.
 

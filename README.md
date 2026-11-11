@@ -32,13 +32,15 @@ The suffix is appended to the test database name in `config/database.yml` (empty
 
 See `.env.example`. Credentials can alternatively live in Rails credentials under `hca: { client_id:, client_secret: }`.
 
+**Production:** the complete variable list (`SECRET_KEY_BASE`, `DATABASE_URL`, `TRUSTED_PROXIES`, ...), the single-database layout, the port and health check (`/up`), the pre-deploy checklist and rollback notes are in [docs/DEPLOY.md](docs/DEPLOY.md). Only PostgreSQL is needed; `RAILS_MASTER_KEY` is optional when the secrets are set as environment variables.
+
 | Variable | Purpose |
 | --- | --- |
 | `HCA_CLIENT_ID` / `HCA_CLIENT_SECRET` | OAuth app from auth.hackclub.com (Developer Apps) |
 | `HCA_ISSUER` | Defaults to `https://auth.hackclub.com` |
 | `APP_URL` | Public URL; redirect URI is `$APP_URL/auth/hack_club/callback` |
 | `ADMIN_HCA_UIDS` | Comma-separated Hack Club Auth ids (OIDC `sub`) allowed into `/admin`; empty or unset means nobody (everyone else gets a 404). Locally, `ADMIN_HCA_UIDS=dev-user bin/rails s` makes Dev login an admin |
-| `APP_HOST` | Production only: comma-separated allowed hostnames (set it, otherwise any Host is accepted) |
+| `APP_HOST` | Production only: comma-separated allowed hostnames (unset: the host of `APP_URL`; other hosts get 403, except the `/up` health check) |
 
 ## How auth works
 
@@ -55,7 +57,7 @@ Hack Club Auth (OIDC, discovery, PKCE, scopes `openid profile email name phone b
 
 ## Security notes
 
-Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (need a real cache store in production), secure/httponly/lax session cookies with a 30 day idle timeout, host allowlist, filtered sensitive params, allowlist validation on every user-supplied field. Run `bin/ci` (rubocop, bundler-audit, importmap audit, brakeman, tests) before merging.
+Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (shared Solid Cache store in production, in-process store in development and test), secure/httponly/lax session cookies with a 30 day idle timeout, host allowlist, filtered sensitive params, allowlist validation on every user-supplied field. Run `bin/ci` (rubocop, bundler-audit, importmap audit, brakeman, tests) before merging.
 
 ## Open questions / TODO
 
@@ -63,4 +65,4 @@ Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (need a real
 - Final design tokens and copy (Figma style guide pending).
 - Privacy policy and terms are placeholders; a GDPR/data request is in progress. Email and Slack ID are stored unencrypted for now.
 - Final shop items and prices, boss/streak/Plinko mechanics, notifications (Slack/email/SMS) are not built.
-- Production cache store for rack-attack (Rails.cache is a null store in dev/test).
+- Production cache store: decided and built, but untested on a real deployment. Production uses Solid Cache in the app's PostgreSQL database for `Rails.cache` and the rack-attack counters (dev/test keep an in-process store); see docs/DEPLOY.md for the single-database layout and the post-deploy store check. Still to confirm with the platform: which container port it routes to (80 by default) and whether a proxy with a public address needs listing in `TRUSTED_PROXIES`.
