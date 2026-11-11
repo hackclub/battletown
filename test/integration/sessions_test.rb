@@ -103,4 +103,21 @@ class SessionsTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_path
     assert_equal User.find_by!(hca_uid: "dev-user").id, session[:user_id]
   end
+
+  test "dev login copies the referral source on first sign-in only (first touch wins)" do
+    original = Rails.env
+    begin
+      Rails.env = "development"
+      get "/haven"
+      post "/dev_login"
+      assert_equal "haven", User.find_by!(hca_uid: "dev-user").referral_source
+
+      delete "/logout"
+      get "/terra"
+      post "/dev_login"
+    ensure
+      Rails.env = original
+    end
+    assert_equal "haven", User.find_by!(hca_uid: "dev-user").referral_source
+  end
 end

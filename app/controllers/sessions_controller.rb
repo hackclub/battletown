@@ -26,9 +26,8 @@ class SessionsController < ApplicationController
   def dev_login
     return head :not_found unless Rails.env.development?
 
-    user = User.find_or_initialize_by(hca_uid: "dev-user")
-    user.apply_hca_claims("name" => "Dev User", "email" => "dev@example.com", "verification_status" => "verified")
-    user.save!
+    claims = { "sub" => "dev-user", "name" => "Dev User", "email" => "dev@example.com", "verification_status" => "verified" }
+    user = User.from_hca_claims!(claims, referral_source: session[:referral_source])
     sign_in(user)
     redirect_after_sign_in(user)
   end
