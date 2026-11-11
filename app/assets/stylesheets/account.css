@@ -4,6 +4,7 @@
 .account__list { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-6); margin: 0; }
 .account__list dt { color: var(--color-text-muted); font-weight: 600; }
 .account__list dd { margin: 0; overflow-wrap: anywhere; }
+.account__list + p { margin-top: var(--space-4); }
 
 .account__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .account__actions form { margin: 0; }
@@ -22,13 +23,14 @@
 
 .account__phrase { padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); background: var(--color-surface-raised); font-family: var(--font-mono, monospace); font-weight: 700; }
 
-.account__danger { border-color: var(--color-danger); }
+/* account.css loads before application.css, so these double up the class to beat .btn / .card. */
+.card.account__danger { border-color: var(--color-danger); }
 
-.btn--danger {
+.btn.btn--danger {
   border-color: var(--color-danger);
   background: var(--color-danger);
   color: var(--color-primary-contrast);
 }
-.btn--danger:hover { border-color: var(--color-danger); filter: brightness(1.1); }
-.btn--danger-outline { border-color: var(--color-danger); background: transparent; color: var(--color-danger); }
-.btn--danger-outline:hover { border-color: var(--color-danger); background: var(--color-surface-raised); }
+.btn.btn--danger:hover { border-color: var(--color-danger); filter: brightness(1.1); }
+.btn.btn--danger-outline { border-color: var(--color-danger); background: transparent; color: var(--color-danger); }
+.btn.btn--danger-outline:hover { border-color: var(--color-danger); background: var(--color-surface-raised); }
