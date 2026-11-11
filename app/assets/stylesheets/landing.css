@@ -98,7 +98,8 @@
 
 .landing-step p { margin: 0; color: var(--color-text-muted); }
 
-.landing-boss__inner { padding-block: var(--space-12); max-width: 44rem; }
+.landing-boss__inner { padding-block: var(--space-12); }
+.landing-boss__inner > * { max-width: 44rem; }
 .landing-boss p { margin: 0; color: var(--color-text-muted); font-size: var(--text-lg); }
 
 .landing-prizes { grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
