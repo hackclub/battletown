@@ -139,6 +139,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     get onboarding_step_path("account")
     assert_select "p", /You came from Haven/
+    assert_select "select#user_referral_source", 0
     step("account", referral_source: "terra")
     assert_equal "haven", user.reload.referral_source
   end
@@ -151,6 +152,63 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     step("account", referral_source: "evilcorp")
     assert_response :unprocessable_content
     assert_nil user.reload.referral_source
+  end
+
+  test "the account step offers a normal how-did-you-hear list, optional and in order" do
+    user = users(:new_user)
+    user.update!(onboarding_step: 3)
+    sign_in_as user
+
+    get onboarding_step_path("account")
+    assert_response :success
+    assert_select "select#user_referral_source option[value='']", "Skip"
+    labels = css_select("select#user_referral_source option").map(&:text)
+    assert_equal [ "Skip", "Hack Club Slack or community", "A friend or family member", "A teacher or club leader",
+                   "Google or another search engine", "YouTube", "TikTok", "Instagram", "Reddit", "Discord",
+                   "X / Twitter", "GitHub", "Haven", "Stardance", "Terra", "Something else" ], labels
+    assert_select "select#user_referral_source optgroup[label='Hack Club programs'] option", 3
+    assert_select "select#user_referral_source > option:last-child", "Something else"
+  end
+
+  test "every generic referral source key can be saved" do
+    ReferralSource.keys.each do |key|
+      user = User.create!(hca_uid: "ident!ref-#{key}", onboarding_step: 3)
+      sign_in_as user
+      step("account", referral_source: key)
+      assert_redirected_to onboarding_step_path("celebrate"), key
+      assert_equal key, user.reload.referral_source
+    end
+  end
+
+  test "skipping the referral question is fine" do
+    user = users(:new_user)
+    user.update!(onboarding_step: 3)
+    sign_in_as user
+
+    step("account", referral_source: "")
+    assert_redirected_to onboarding_step_path("celebrate")
+    assert_nil user.reload.referral_source
+  end
+
+  test "an unknown referral source gets the friendly error" do
+    user = users(:new_user)
+    user.update!(onboarding_step: 3)
+    sign_in_as user
+
+    step("account", referral_source: "bing_ads")
+    assert_response :unprocessable_content
+    assert_select "[role=alert], .flash, .errors", /How you found us/
+    assert_nil user.reload.referral_source
+  end
+
+  test "a generic referral source is summarised instead of the select" do
+    user = users(:new_user)
+    user.update!(referral_source: "search", onboarding_step: 3)
+    sign_in_as user
+
+    get onboarding_step_path("account")
+    assert_select "select#user_referral_source", 0
+    assert_select "p", /You told us: Google or another search engine/
   end
 
   test "completion is idempotent" do

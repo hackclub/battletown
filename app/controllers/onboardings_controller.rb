@@ -67,7 +67,7 @@ class OnboardingsController < ApplicationController
     user.valid?
     REQUIRED.fetch(@step, []).each { |attribute| user.errors.add(attribute, :blank) if user[attribute].blank? }
     user.errors.add(:coding_days, "must include at least one day") if @step == "schedule" && user.coding_days.zero?
-    user.errors.add(:referral_source, :inclusion) if user.referral_source && !Referral.find(user.referral_source)
+    user.errors.add(:referral_source, :inclusion) if user.referral_source && !ReferralSource.find(user.referral_source)
     return false if user.errors.any?
 
     user.onboarding_step = [ user.onboarding_step, @index + 1 ].max

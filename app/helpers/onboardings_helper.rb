@@ -40,7 +40,26 @@ module OnboardingsHelper
     current_user.prize_key || (session[:prize_key] if Prize.find(session[:prize_key]))
   end
 
-  def referral_name(slug) = Referral.find(slug)&.name
+  def referral_name(key) = ReferralSource.find(key)&.name
+
+  # Copy for a user whose source is already saved (program links are "came from", survey answers are "you told us").
+  def referral_summary(key)
+    source = ReferralSource.find(key)
+    return "Thanks for joining through a friend." unless source
+
+    Referral.find(key) ? "You came from #{source.name}." : "You told us: #{source.name}."
+  end
+
+  # Select options: generic sources, then the Hack Club programs in their own group, "Something else" last.
+  def referral_source_options
+    pairs = ->(sources) { sources.map { |source| [ source.name, source.key ] } }
+    selected = current_user.referral_source
+    safe_join([
+      options_for_select(pairs.call(ReferralSource.generic), selected),
+      content_tag(:optgroup, options_for_select(pairs.call(ReferralSource.programs), selected), label: "Hack Club programs"),
+      options_for_select(pairs.call([ ReferralSource.other ]), selected)
+    ])
+  end
 
   def day_label(day) = day.capitalize
 

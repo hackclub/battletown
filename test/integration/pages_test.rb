@@ -7,6 +7,23 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_equal "stardance", session[:referral_source]
   end
 
+  test "every program slug records the session referral" do
+    %w[haven stardance terra].each do |slug|
+      get "/#{slug}"
+      assert_redirected_to root_path
+      assert_equal slug, session[:referral_source]
+      reset!
+    end
+  end
+
+  test "survey answers are not attribution slugs" do
+    %w[google search friend hack_club other youtube].each do |key|
+      get "/#{key}"
+      assert_response :not_found, key
+      assert_nil session[:referral_source]
+    end
+  end
+
   test "first touch wins" do
     get "/haven"
     get "/terra"

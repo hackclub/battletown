@@ -1,0 +1,35 @@
+# Answers offered by the optional "How did you hear about us?" select on the onboarding account step.
+# Stored in users.referral_source. These are NOT attribution links: only config/referrals.yml slugs work as /<slug>.
+# Keys must not collide with a slug in config/referrals.yml (Hack Club programs are listed from there).
+default: &default
+  sources:
+    - key: hack_club
+      name: Hack Club Slack or community
+    - key: friend
+      name: A friend or family member
+    - key: teacher
+      name: A teacher or club leader
+    - key: search
+      name: Google or another search engine
+    - key: youtube
+      name: YouTube
+    - key: tiktok
+      name: TikTok
+    - key: instagram
+      name: Instagram
+    - key: reddit
+      name: Reddit
+    - key: discord
+      name: Discord
+    - key: twitter
+      name: X / Twitter
+    - key: github
+      name: GitHub
+  # Always listed last, after the Hack Club programs from config/referrals.yml.
+  other:
+    key: other
+    name: Something else
+
+development: *default
+test: *default
+production: *default

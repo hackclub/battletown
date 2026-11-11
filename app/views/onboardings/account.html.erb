@@ -17,11 +17,10 @@
       <li class="check">
         <h2 class="check__title">How you found us</h2>
         <% if current_user.referral_source_in_database.present? %>
-          <% name = referral_name(current_user.referral_source_in_database) %>
-          <p><%= name ? "You came from #{name}." : "Thanks for joining through a friend." %></p>
+          <p><%= referral_summary(current_user.referral_source_in_database) %></p>
         <% else %>
           <%= f.label :referral_source, "How did you hear about us? (optional)" %>
-          <%= f.select :referral_source, Referral.all.map { |referral| [ referral.name, referral.slug ] }, { include_blank: "Skip" } %>
+          <%= f.select :referral_source, referral_source_options, { include_blank: "Skip" } %>
         <% end %>
       </li>
     </ul>
