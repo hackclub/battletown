@@ -30,8 +30,10 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
-  # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+  # Skip http-to-https redirect for the health check endpoint, so a load balancer probing over plain HTTP
+  # gets a 200 and not a 301. (assume_ssl already makes proxied requests look secure; this covers probes
+  # that bypass it.)
+  config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
@@ -46,27 +48,18 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Replace the default in-process memory cache store with a durable alternative.
-  # config.cache_store = :mem_cache_store
+  # Shared, durable cache in PostgreSQL (Solid Cache; options in config/cache.yml, table from
+  # db/cache_migrate). Rack::Attack counters use it too (config/initializers/rack_attack.rb).
+  config.cache_store = :solid_cache_store
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  # config.active_job.queue_adapter = :resque
+  # Active Job keeps its default in-process :async adapter: the app defines no jobs yet, and Solid Queue
+  # has no database configured (see config/database.yml and the SOLID_QUEUE_IN_PUMA note in config/puma.rb).
+  # config.active_job.queue_adapter = :solid_queue
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
-
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
-
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # No mailer is used and no SMTP server is configured (Rails would otherwise try localhost:25 and, with
+  # raise_delivery_errors off, drop the mail silently). Remove this line and set delivery_method and
+  # smtp_settings when email is added.
+  config.action_mailer.perform_deliveries = false
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
@@ -81,5 +74,9 @@ Rails.application.configure do
   # Host header allowlist (DNS rebinding / host-header poisoning). Fails closed: without APP_HOST
   # (comma-separated hostnames) it falls back to the host of APP_URL instead of allowing any host.
   config.hosts = (ENV["APP_HOST"].presence || URI(ENV.fetch("APP_URL", "http://localhost:3000")).host.to_s).split(",").map(&:strip)
+  # The load balancer probe on /up carries an arbitrary Host header, so it is exempt.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # Host used by links generated in mailer templates (the first allowed host).
+  config.action_mailer.default_url_options = { host: config.hosts.first, protocol: "https" }
 end

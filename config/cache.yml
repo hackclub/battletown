@@ -1,0 +1,19 @@
+# Solid Cache options, used only when production selects :solid_cache_store (config/environments/production.rb).
+# `database: cache` is the `cache` entry in config/database.yml: by default the same PostgreSQL database
+# as the app (its own connection pool and migration path), or a separate one via CACHE_DATABASE_URL.
+default: &default
+  store_options:
+    # Throttle counters and the landing page count are small and short lived; cap age and size anyway.
+    max_age: <%= 2.weeks.to_i %>
+    max_size: <%= 256.megabytes %>
+    namespace: <%= Rails.env %>
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  database: cache
+  <<: *default

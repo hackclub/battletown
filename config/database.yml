@@ -87,6 +87,12 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# Production layout: ONE PostgreSQL database by default. Set DATABASE_URL (postgres://user:pass@host/db) and
+# nothing else: Rails applies it to `primary`, and the `cache` entry below reuses it (its own connection pool
+# and migration path, db/cache_migrate, so db:prepare creates solid_cache_entries in the same database).
+# To move the cache to its own database set CACHE_DATABASE_URL; Rails applies it to `cache`.
+# Solid Queue and Solid Cable are not configured: the app defines no jobs (Active Job uses the in-process
+# :async adapter) and no channels (config/cable.yml uses :async). Add their entries here when that changes.
 production:
   primary: &primary_production
     <<: *default
@@ -95,13 +101,7 @@ production:
     password: <%= ENV["BATTLETOWN_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
-    database: battletown_production_cache
     migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    database: battletown_production_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    database: battletown_production_cable
-    migrations_paths: db/cable_migrate
+<% if ENV["DATABASE_URL"].present? && ENV["CACHE_DATABASE_URL"].blank? %>
+    url: <%= ENV["DATABASE_URL"] %>
+<% end %>

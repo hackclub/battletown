@@ -4,7 +4,8 @@ development:
 test:
   adapter: test
 
+# No channels or broadcasts exist, so production uses the in-process adapter. The redis gem is not
+# installed, so the previous redis adapter would have raised on the first /cable connection. Broadcasting
+# across several processes or containers would need solid_cable (a cable database) or Redis.
 production:
-  adapter: redis
-  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  channel_prefix: battletown_production
+  adapter: async
