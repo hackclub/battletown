@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_093000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_12_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -36,6 +36,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_093000) do
     t.check_constraint "kind::text = 'daily_reminder'::text", name: "notifications_kind_check"
     t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "notifications_last_error_code_check"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying]::text[])", name: "notifications_status_check"
+  end
+
+  create_table "privacy_request_tokens", force: :cascade do |t|
+    t.string "jti", null: false
+    t.string "request_id"
+    t.string "action"
+    t.boolean "dry_run"
+    t.datetime "created_at", null: false
+    t.index ["created_at"], name: "index_privacy_request_tokens_on_created_at"
+    t.index ["jti"], name: "index_privacy_request_tokens_on_jti", unique: true
+    t.check_constraint "action IS NULL OR (action::text = ANY (ARRAY['delete'::character varying, 'export'::character varying]::text[]))", name: "privacy_request_tokens_action_check"
+    t.check_constraint "length(jti::text) >= 1 AND length(jti::text) <= 255", name: "privacy_request_tokens_jti_check"
+    t.check_constraint "request_id IS NULL OR length(request_id::text) <= 255", name: "privacy_request_tokens_request_id_check"
   end
 
   create_table "users", force: :cascade do |t|

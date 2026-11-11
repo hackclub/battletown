@@ -26,6 +26,9 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+# Verifies the ES256 tokens Hack Club's data-deletion service sends (see docs/PRIVACY_API.md)
+gem "jwt", "~> 3.2"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
