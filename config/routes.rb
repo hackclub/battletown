@@ -10,12 +10,6 @@ Rails.application.routes.draw do
     patch "", to: "onboardings#update"
   end
 
-  get "account", to: "accounts#show", as: :account
-  delete "account", to: "accounts#destroy"
-  get "account/export", to: "accounts#export", as: :account_export
-  get "account/delete", to: "accounts#confirm_delete", as: :delete_account
-  get "account/reauth", to: "accounts#reauth", as: :reauth_account
-
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 

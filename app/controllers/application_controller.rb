@@ -5,8 +5,6 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  include RecentLogin
-
   helper_method :current_user, :signed_in?
 
   private
@@ -25,7 +23,6 @@ class ApplicationController < ActionController::Base
   def sign_in(user)
     reset_session
     session[:user_id] = user.id
-    stamp_authenticated_at
   end
 
   def require_login
