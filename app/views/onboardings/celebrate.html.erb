@@ -4,10 +4,10 @@
     <p class="celebration__lead">Welcome to Battletown<%= ", #{current_user.display_name}" if current_user.display_name.present? %>. Here's your plan:</p>
     <dl class="celebration__summary">
       <% if (prize = current_user.prize) %>
-        <div><dt>Prize</dt><dd><%= prize.emoji %> <%= prize.name %> (<%= prize.hours %> hours)</dd></div>
+        <div><dt>Prize</dt><dd><%= prize.emoji %> <%= prize.name %> (<%= pluralize(prize.hours, "hour") %>)</dd></div>
       <% end %>
       <div><dt>Project</dt><dd><%= OnboardingsHelper::PROJECT_KINDS.dig(current_user.project_kind, :name) %></dd></div>
-      <div><dt>Days</dt><dd><%= current_user.coding_day_names.map { |day| day_label(day) }.to_sentence %> at <%= current_user.coding_time %> (<%= current_user.time_zone %>)</dd></div>
+      <div><dt>Days</dt><dd><%= current_user.coding_day_names.map { |day| day_label(day) }.to_sentence %> at <%= current_user.coding_time %>, <%= current_user.time_zone %></dd></div>
     </dl>
 
     <%= form_with url: onboarding_step_path("celebrate"), method: :patch do |f| %>

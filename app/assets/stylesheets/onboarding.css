@@ -47,8 +47,7 @@
 @media (max-width: 40rem) {
   .onboarding-progress__steps li { font-size: 0; }
   .onboarding-progress__num { font-size: var(--text-xs); }
-  .onboarding-progress__step--current { font-size: var(--text-sm); }
-  .onboarding-progress__step--current .onboarding-progress__num { font-size: var(--text-xs); }
+  .onboarding-progress__steps .onboarding-progress__step--current { font-size: var(--text-sm); }
 }
 
 /* Saved prize */
@@ -99,7 +98,10 @@
 .onboarding__errors ul { margin: 0; padding-left: var(--space-6); }
 
 /* Selectable cards */
-.choice-grid { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
+.choice-grid { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
+@media (min-width: 40rem) {
+  .choice-grid--prizes { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
+}
 .choice { position: relative; display: block; cursor: pointer; }
 .choice__input { position: absolute; opacity: 0; inset: 0; }
 .choice__body {
