@@ -1,7 +1,13 @@
 require "test_helper"
 
 class RackAttackTest < ActionDispatch::IntegrationTest
+  # Throttle keys are Time.now.to_i / period, so a test that sends limit + 1 requests can straddle a window
+  # boundary (a slow first request is enough) and see the count reset. Freezing time at the very start of a
+  # window keeps every request in the same one.
+  WINDOW_START = Time.utc(2030, 1, 1, 12, 0, 0)
+
   setup do
+    travel_to WINDOW_START
     Rack::Attack.enabled = true
     Rack::Attack.cache.store.clear
   end
@@ -9,6 +15,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   teardown do
     Rack::Attack.cache.store.clear
     Rack::Attack.enabled = false
+    travel_back
   end
 
   test "throttle counters use a real store, not the null Rails.cache" do
