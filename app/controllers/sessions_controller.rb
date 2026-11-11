@@ -14,7 +14,12 @@ class SessionsController < ApplicationController
 
   def failure
     Rails.logger.warn("Auth failure: #{params[:message].to_s.truncate(60).inspect}")
-    redirect_to root_path, alert: "We couldn't sign you in. Please try again."
+    if params[:message].to_s == "access_denied"
+      # They pressed Deny on the Hack Club Auth consent screen: that is a choice, not an error.
+      redirect_to root_path, notice: "No problem, you didn't sign in. You can join whenever you're ready."
+    else
+      redirect_to root_path, alert: "We couldn't sign you in. Please try again."
+    end
   end
 
   def destroy
