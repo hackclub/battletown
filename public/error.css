@@ -1,0 +1,84 @@
+/*
+ * Styles for the static error pages (404, 422, 500). Those files are served as-is, outside the Rails asset
+ * pipeline, so this file is plain CSS with no digest. The colours are copied from app/assets/stylesheets/tokens.css
+ * (a CSS file cannot import the digested stylesheet from here), so keep them in sync when the tokens change.
+ * No inline styles or scripts are used, which keeps the pages valid under the app's CSP (style-src 'self').
+ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: #fffef5; /* --color-bg */
+  color: #000000; /* --color-text */
+  font: 1rem / 1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.brand {
+  margin: 0 0 1rem;
+  color: #000000;
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.card {
+  width: 100%;
+  max-width: 32rem;
+  padding: 2rem;
+  border: 1px solid #dcc7a1; /* --color-border */
+  border-radius: 0.75rem; /* --radius-md */
+  background: #ffffff; /* --color-surface */
+  box-shadow: 0 8px 24px rgb(66 54 36 / 0.16); /* --shadow-md */
+  text-align: center;
+}
+
+.code {
+  margin: 0 0 0.5rem;
+  color: #6b6150; /* --color-text-muted */
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+p { margin: 0 0 1rem; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.5rem;
+  border: 2px solid #cc0052; /* --color-primary */
+  border-radius: 999px;
+  background: #cc0052; /* --color-primary */
+  color: #fffef5; /* --color-primary-contrast */
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+}
+.btn:hover { filter: brightness(1.1); }
+
+a:focus-visible {
+  outline: 3px solid #0563de; /* --color-focus */
+  outline-offset: 2px;
+}
+
+.footnote {
+  margin: 1.5rem 0 0;
+  color: #6b6150; /* --color-text-muted */
+  font-size: 0.875rem;
+}
