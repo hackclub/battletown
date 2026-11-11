@@ -195,4 +195,14 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_equal "tshirt", user.prize_key
     assert_equal "tshirt", users(:onboarded).reload.prize_key
   end
+
+  test "a scalar or malformed user param is rejected cleanly instead of raising" do
+    user = users(:new_user)
+    sign_in_as user
+    patch onboarding_step_path("prize"), params: { user: "abc" }
+    assert_response :unprocessable_content
+    patch onboarding_step_path("prize"), params: { user: [ "abc" ] }
+    assert_response :unprocessable_content
+    assert_nil user.reload.prize_key
+  end
 end

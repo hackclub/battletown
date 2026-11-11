@@ -22,18 +22,26 @@ class User < ApplicationRecord
   validates :coding_days, numericality: { in: 0..127, only_integer: true }
   validates :onboarding_step, numericality: { in: 0..ONBOARDING_STEPS, only_integer: true }
 
+  # Two simultaneous first logins both try to INSERT; the unique index rejects one, which then retries
+  # and finds the winner's row instead of surfacing a 500.
   def self.from_hca_claims!(claims, referral_source: nil)
-    user = find_or_initialize_by(hca_uid: claims.fetch("sub"))
-    user.referral_source = referral_source if user.new_record?
-    user.apply_hca_claims(claims)
-    user.save!
-    user
+    attempts = 0
+    begin
+      user = find_or_initialize_by(hca_uid: claims.fetch("sub"))
+      user.referral_source = referral_source if user.new_record?
+      user.apply_hca_claims(claims)
+      user.save!
+      user
+    rescue ActiveRecord::RecordNotUnique
+      retry if (attempts += 1) < 2
+      raise
+    end
   end
 
   # Only the claims we request scopes for; never birthdate or address.
   def apply_hca_claims(claims)
     self.email = claims["email"]
-    self.display_name = claims["name"].presence || claims["nickname"].presence || display_name
+    self.display_name = (claims["name"].presence || claims["nickname"].presence || display_name)&.to_s&.first(100)
     self.slack_id = claims["slack_id"]
     status = claims["verification_status"].to_s
     self.verification_status = status if self.class.verification_statuses.key?(status)

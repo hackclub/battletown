@@ -57,4 +57,29 @@ class UserTest < ActiveSupport::TestCase
     assert_nil user.referral_source
     assert user.verification_verified?
   end
+
+  test "from_hca_claims! survives losing the race to create the same user" do
+    attempts = 0
+    # Simulate a concurrent first login: another request inserts the row between our lookup and INSERT.
+    inserter = lambda do |_record|
+      attempts += 1
+      if attempts == 1
+        ActiveRecord::Base.connection.execute("INSERT INTO users (hca_uid, created_at, updated_at) VALUES ('ident!race', now(), now())")
+      end
+    end
+    User.set_callback(:create, :before, inserter)
+    begin
+      assert_difference "User.count", 1 do
+        user = User.from_hca_claims!({ "sub" => "ident!race", "name" => "Racer" })
+        assert_equal "Racer", user.reload.display_name
+      end
+    ensure
+      User.skip_callback(:create, :before, inserter)
+    end
+  end
+
+  test "overlong display names are truncated instead of blocking sign-in" do
+    user = User.from_hca_claims!({ "sub" => "ident!long", "name" => "x" * 300 })
+    assert_equal 100, user.display_name.length
+  end
 end

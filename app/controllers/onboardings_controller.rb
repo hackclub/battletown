@@ -53,7 +53,9 @@ class OnboardingsController < ApplicationController
   end
 
   def step_params
-    attrs = params.fetch(:user, {}).permit(*PERMITTED.fetch(@step))
+    # A scalar `user=...` param would otherwise raise NoMethodError (500) on permit.
+    raw = params[:user]
+    attrs = (raw.is_a?(ActionController::Parameters) ? raw : ActionController::Parameters.new).permit(*PERMITTED.fetch(@step))
     attrs[:referral_source] = attrs[:referral_source].presence if attrs.key?(:referral_source)
     attrs.delete(:referral_source) if current_user.referral_source_in_database.present?
     attrs
