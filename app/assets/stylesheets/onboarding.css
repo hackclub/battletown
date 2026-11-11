@@ -174,7 +174,9 @@
 .celebration__summary div { display: flex; gap: var(--space-3); }
 .celebration__summary dt { min-width: 5rem; color: var(--color-text-muted); }
 .celebration__summary dd { margin: 0; font-weight: 600; }
-[aria-pressed="true"][data-onboarding-celebration-target="mute"] { border-color: var(--color-danger); text-decoration: line-through; }
+.celebration__sound { min-height: 2.75rem; }
+.celebration__sound[aria-pressed="true"] { border-color: var(--color-success); }
+.celebration__sound[aria-pressed="false"] { color: var(--color-text-muted); }
 
 .confetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
 .confetti__piece {
@@ -192,5 +194,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .onboarding-progress__fill { transition: none; }
-  .confetti { display: none; }
+  .confetti, .celebration__sound { display: none; }
 }

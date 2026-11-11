@@ -263,4 +263,29 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_nil user.reload.prize_key
   end
+
+  test "the celebration offers a sound toggle that starts on" do
+    sign_in_as users(:new_user)
+    users(:new_user).update!(onboarding_step: 4)
+    get onboarding_step_path("celebrate")
+    assert_response :success
+
+    assert_select "[data-controller=onboarding-celebration]" do
+      assert_select "[data-onboarding-celebration-target=confetti]"
+      assert_select "button[type=button][aria-pressed=true][data-onboarding-celebration-target=sound][data-action='onboarding-celebration#toggleSound']", text: /Sound\s+on/
+    end
+  end
+
+  test "the celebration loads no external media and the importmap stays same-origin" do
+    sign_in_as users(:new_user)
+    users(:new_user).update!(onboarding_step: 4)
+    get onboarding_step_path("celebrate")
+
+    assert_select "audio, video, source, embed, object, iframe", 0
+    css_select("script[src]").each { |script| assert_no_match %r{\A(https?:)?//}, script["src"] }
+
+    importmap = JSON.parse(css_select("script[type=importmap]").first.text)
+    assert_includes importmap["imports"], "controllers/onboarding_celebration_controller"
+    importmap["imports"].each_value { |path| assert path.start_with?("/"), "#{path} is not same-origin" }
+  end
 end

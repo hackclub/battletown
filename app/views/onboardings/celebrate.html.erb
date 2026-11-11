@@ -1,5 +1,5 @@
 <%= render layout: "onboardings/frame", locals: { step: "celebrate" } do %>
-  <div data-controller="onboarding-celebration" class="celebration">
+  <div data-controller="onboarding-celebration" data-action="turbo:before-cache@document->onboarding-celebration#clearConfetti" class="celebration">
     <div class="confetti" aria-hidden="true" data-onboarding-celebration-target="confetti"></div>
     <p class="celebration__lead">Welcome to Battletown<%= ", #{current_user.display_name}" if current_user.display_name.present? %>. Here's your plan:</p>
     <dl class="celebration__summary">
@@ -12,8 +12,10 @@
 
     <%= form_with url: onboarding_step_path("celebrate"), method: :patch do |f| %>
       <div class="onboarding__actions">
-        <%= f.button "Enter Battletown", class: "btn btn--primary btn--lg", data: { action: "click->onboarding-celebration#fanfare" } %>
-        <button type="button" class="btn btn--ghost" aria-pressed="false" data-onboarding-celebration-target="mute" data-action="onboarding-celebration#toggleMute">Mute sounds</button>
+        <%= f.button "Enter Battletown", class: "btn btn--primary btn--lg" %>
+        <button type="button" class="btn btn--ghost celebration__sound" aria-pressed="true" data-onboarding-celebration-target="sound" data-action="onboarding-celebration#toggleSound">
+          <span aria-hidden="true">♪</span><span>Sound <span data-state>on</span></span>
+        </button>
       </div>
     <% end %>
   </div>
