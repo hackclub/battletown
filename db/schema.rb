@@ -10,9 +10,33 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_12_093000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "notifications", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "kind", null: false
+    t.string "channel", default: "slack_dm", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "scheduled_for", null: false
+    t.datetime "due_at", null: false
+    t.integer "attempts", default: 0, null: false
+    t.string "last_error_code", limit: 40
+    t.datetime "sent_at"
+    t.string "idempotency_key", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["idempotency_key"], name: "index_notifications_on_idempotency_key", unique: true
+    t.index ["status", "due_at"], name: "index_notifications_on_status_and_due_at"
+    t.index ["user_id", "kind"], name: "index_notifications_one_pending_per_user_kind", unique: true, where: "((status)::text = 'pending'::text)"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+    t.check_constraint "attempts >= 0 AND attempts <= 10", name: "notifications_attempts_check"
+    t.check_constraint "channel::text = 'slack_dm'::text", name: "notifications_channel_check"
+    t.check_constraint "kind::text = 'daily_reminder'::text", name: "notifications_kind_check"
+    t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "notifications_last_error_code_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying]::text[])", name: "notifications_status_check"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "hca_uid", null: false
@@ -41,4 +65,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_200000) do
     t.check_constraint "project_kind IS NULL OR (project_kind::text = ANY (ARRAY['game'::character varying, 'website'::character varying, 'app'::character varying, 'tool'::character varying, 'hardware'::character varying, 'undecided'::character varying]::text[]))", name: "users_project_kind_check"
     t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying, 'pending'::character varying, 'verified'::character varying, 'ineligible'::character varying]::text[])", name: "users_verification_status_check"
   end
+
+  add_foreign_key "notifications", "users", on_delete: :cascade
 end
