@@ -14,6 +14,9 @@ body {
   font: var(--text-base) / var(--leading-body) var(--font-body);
 }
 
+/* Names and other user-supplied text can be one very long unbroken word; wrap it instead of scrolling sideways. */
+h1, h2, h3, p, dd { overflow-wrap: anywhere; }
+
 h1, h2, h3 {
   margin: 0 0 var(--space-4);
   font-family: var(--font-display);
