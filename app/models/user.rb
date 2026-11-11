@@ -45,8 +45,9 @@ class User < ApplicationRecord
     end
   end
 
-  # Only store what we need. phone, birthdate and address claims are requested but intentionally
-  # ignored (not stored, not logged) pending a privacy decision.
+  # Only store what we need. phone and birthdate claims are requested but intentionally ignored (not stored,
+  # not logged) pending a privacy decision. The address is used in memory to default `time_zone` (only while it
+  # is blank, so a zone the user chose is never overwritten) and is otherwise dropped: only the zone is stored.
   def apply_hca_claims(claims)
     self.email = claims["email"]
     self.display_name = (claims["name"].presence || claims["nickname"].presence || display_name)&.to_s&.first(100)
@@ -54,6 +55,7 @@ class User < ApplicationRecord
     status = claims["verification_status"].to_s
     self.verification_status = status if self.class.verification_statuses.key?(status)
     self.ysws_eligible = claims["ysws_eligible"] == true
+    self.time_zone = AddressTimeZone.zone_name(claims) if time_zone.blank?
   end
 
   def onboarded? = onboarded_at.present?

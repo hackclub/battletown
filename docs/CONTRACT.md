@@ -35,7 +35,7 @@ Validation allowlists (all enforced by the model; use strong params and let `sav
 - `project_kind` in `User::PROJECT_KINDS` (game website app tool hardware undecided)
 - `project_idea` <= 500 chars
 - `coding_time` matches `HH:MM`
-- `time_zone` is an `ActiveSupport::TimeZone` name
+- `time_zone` is an `ActiveSupport::TimeZone` name (e.g. "Eastern Time (US & Canada)", not an IANA id; use `ActiveSupport::TimeZone[user.time_zone]`). It defaults at first sign-in from the Hack Club Auth address (`AddressTimeZone`; the address itself is never stored) and the user can change it on the schedule step
 - `coding_day_names` values are from `User::DAYS`; unknown names are ignored
 
 `Prize.all` / `Prize.find(key)` exposes `key name description hours price_usd emoji image tier`. Landing shows hours, the shop shows currency. Prize data is placeholder. `Referral.all` has `slug name`. `ReferralSource.all` (`key name`) is the onboarding "how did you hear about us" list: generic answers from `config/referral_sources.yml`, then the `Referral` programs, then "Something else"; `users.referral_source` must be one of `ReferralSource.keys` (enforced in `OnboardingsController`). Generic keys are not attribution slugs.

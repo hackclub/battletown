@@ -1,0 +1,52 @@
+# Region -> IANA time zone, used by AddressTimeZone for countries that span several zones.
+# Keys are ISO 3166-1 alpha-2 country codes; each IANA zone lists the region codes and names (matched
+# case-insensitively, ignoring accents and punctuation) that it covers. Quote every entry: unquoted
+# NO / ON / OFF are parsed as booleans by YAML.
+#
+# Split regions are assigned to the zone covering most of their population. Known inaccuracies:
+#   US  Florida panhandle, western Kentucky, eastern Tennessee, Indiana's north-west and south-west
+#       counties, El Paso (Texas), western Kansas / Nebraska / the Dakotas, Idaho panhandle, Malheur County
+#       (Oregon), the Upper Peninsula of Michigan, and the Navajo Nation (Arizona observes DST there) can be wrong.
+#   CA  Nunavut spans three zones, the Ontario / Quebec / BC / Saskatchewan edges differ. Yukon is left out
+#       on purpose (it has no matching zone name in the select), so it falls back to the browser zone.
+#   BR  Western Para and Tocantins edges; Brazil has had no DST since 2019.
+#   MX  Border municipalities use US-style DST; the table follows the state default.
+US:
+  America/New_York: ["CT", "Connecticut", "DE", "Delaware", "DC", "District of Columbia", "Washington DC", "Washington D.C.", "FL", "Florida", "GA", "Georgia", "IN", "Indiana", "KY", "Kentucky", "MA", "Massachusetts", "MD", "Maryland", "ME", "Maine", "MI", "Michigan", "NC", "North Carolina", "NH", "New Hampshire", "NJ", "New Jersey", "NY", "New York", "OH", "Ohio", "PA", "Pennsylvania", "RI", "Rhode Island", "SC", "South Carolina", "VA", "Virginia", "VT", "Vermont", "WV", "West Virginia"]
+  America/Chicago: ["AL", "Alabama", "AR", "Arkansas", "IA", "Iowa", "IL", "Illinois", "KS", "Kansas", "LA", "Louisiana", "MN", "Minnesota", "MO", "Missouri", "MS", "Mississippi", "ND", "North Dakota", "NE", "Nebraska", "OK", "Oklahoma", "SD", "South Dakota", "TN", "Tennessee", "TX", "Texas", "WI", "Wisconsin"]
+  America/Denver: ["CO", "Colorado", "ID", "Idaho", "MT", "Montana", "NM", "New Mexico", "UT", "Utah", "WY", "Wyoming"]
+  America/Phoenix: ["AZ", "Arizona"]
+  America/Los_Angeles: ["CA", "California", "NV", "Nevada", "OR", "Oregon", "WA", "Washington"]
+  America/Anchorage: ["AK", "Alaska"]
+  Pacific/Honolulu: ["HI", "Hawaii"]
+  America/Puerto_Rico: ["PR", "Puerto Rico", "VI", "Virgin Islands", "US Virgin Islands"]
+  Pacific/Guam: ["GU", "Guam"]
+  Pacific/Pago_Pago: ["AS", "American Samoa"]
+CA:
+  America/Toronto: ["ON", "Ontario", "QC", "Quebec", "NU", "Nunavut"]
+  America/Halifax: ["NB", "New Brunswick", "NS", "Nova Scotia", "PE", "Prince Edward Island"]
+  America/St_Johns: ["NL", "Newfoundland and Labrador", "Newfoundland", "Labrador"]
+  America/Winnipeg: ["MB", "Manitoba"]
+  America/Regina: ["SK", "Saskatchewan"]
+  America/Edmonton: ["AB", "Alberta", "NT", "Northwest Territories"]
+  America/Vancouver: ["BC", "British Columbia"]
+AU:
+  Australia/Sydney: ["NSW", "New South Wales", "ACT", "Australian Capital Territory"]
+  Australia/Melbourne: ["VIC", "Victoria"]
+  Australia/Brisbane: ["QLD", "Queensland"]
+  Australia/Adelaide: ["SA", "South Australia"]
+  Australia/Perth: ["WA", "Western Australia"]
+  Australia/Hobart: ["TAS", "Tasmania"]
+  Australia/Darwin: ["NT", "Northern Territory"]
+BR:
+  America/Sao_Paulo: ["AL", "Alagoas", "AP", "Amapa", "BA", "Bahia", "CE", "Ceara", "DF", "Distrito Federal", "ES", "Espirito Santo", "GO", "Goias", "MA", "Maranhao", "MG", "Minas Gerais", "PA", "Para", "PB", "Paraiba", "PE", "Pernambuco", "PI", "Piaui", "PR", "Parana", "RJ", "Rio de Janeiro", "RN", "Rio Grande do Norte", "RS", "Rio Grande do Sul", "SC", "Santa Catarina", "SE", "Sergipe", "SP", "Sao Paulo", "TO", "Tocantins"]
+  America/Cuiaba: ["MT", "Mato Grosso"]
+  America/Campo_Grande: ["MS", "Mato Grosso do Sul"]
+  America/Manaus: ["AM", "Amazonas", "RR", "Roraima", "RO", "Rondonia"]
+  America/Rio_Branco: ["AC", "Acre"]
+MX:
+  America/Mexico_City: ["AGU", "AGS", "Aguascalientes", "CAM", "Campeche", "CHP", "CHIS", "Chiapas", "COA", "Coahuila", "COL", "Colima", "CMX", "CDMX", "Ciudad de Mexico", "Mexico City", "DF", "Distrito Federal", "DUR", "Durango", "GUA", "GTO", "Guanajuato", "GRO", "Guerrero", "HID", "Hidalgo", "JAL", "Jalisco", "MEX", "Estado de Mexico", "State of Mexico", "MIC", "Michoacan", "MOR", "Morelos", "NLE", "NL", "Nuevo Leon", "OAX", "Oaxaca", "PUE", "Puebla", "QUE", "QRO", "Queretaro", "SLP", "San Luis Potosi", "TAB", "Tabasco", "TAM", "Tamaulipas", "TLA", "Tlaxcala", "VER", "Veracruz", "YUC", "Yucatan", "ZAC", "Zacatecas"]
+  America/Chihuahua: ["CHH", "CHIH", "Chihuahua"]
+  America/Tijuana: ["BCN", "BC", "Baja California"]
+  America/Mazatlan: ["BCS", "Baja California Sur", "SIN", "Sinaloa", "SON", "Sonora", "NAY", "Nayarit"]
+  America/Cancun: ["ROO", "QROO", "Quintana Roo"]
