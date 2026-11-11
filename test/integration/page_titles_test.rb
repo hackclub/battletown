@@ -56,4 +56,15 @@ class PageTitlesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "title", text: "Pick your prize - BattleTown", count: 1
   end
+
+  test "the admin dashboard is titled Admin - BattleTown" do
+    original = ENV["ADMIN_HCA_UIDS"]
+    ENV["ADMIN_HCA_UIDS"] = users(:onboarded).hca_uid
+    sign_in_as users(:onboarded)
+    get admin_root_path
+    assert_response :success
+    assert_select "title", text: "Admin - BattleTown", count: 1
+  ensure
+    original.nil? ? ENV.delete("ADMIN_HCA_UIDS") : ENV["ADMIN_HCA_UIDS"] = original
+  end
 end

@@ -1,0 +1,53 @@
+/* Admin dashboard (Admin::DashboardController). Wrapped in `admin_tool`, so it already has the orange tint, dashed
+   outline and tag from staff.css; this file only lays out the stat tiles and plain tables. Tokens only. */
+.admin-dashboard { margin-block: var(--space-4); }
+
+.admin-dashboard__note { color: var(--color-admin-ink); }
+
+.admin-stat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-6);
+}
+.admin-stat__item {
+  flex: 1 1 10rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.admin-stat dt { font-size: var(--text-sm); font-weight: 700; color: var(--color-admin-ink); }
+.admin-stat dd { margin: 0; font-family: var(--font-display); font-size: var(--text-2xl); line-height: var(--leading-tight); }
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+.admin-table caption {
+  padding-bottom: var(--space-2);
+  color: var(--color-admin-ink);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  text-align: start;
+}
+.admin-table th, .admin-table td {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-admin-border);
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.admin-table thead th { background: var(--color-admin-bg); color: var(--color-admin-ink); }
+.admin-table tbody th { font-weight: 500; }
+.admin-table .admin-table__num { text-align: end; font-variant-numeric: tabular-nums; }

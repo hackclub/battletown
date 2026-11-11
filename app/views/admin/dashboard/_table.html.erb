@@ -1,0 +1,17 @@
+<table class="admin-table">
+  <caption><%= caption %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= heading %></th>
+      <th scope="col" class="admin-table__num">Users</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% rows.each do |row| %>
+      <tr>
+        <th scope="row"><%= row.label %></th>
+        <td class="admin-table__num"><%= number_with_delimiter(row.count) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -18,6 +18,11 @@ Rails.application.routes.draw do
   delete "logout", to: "sessions#destroy"
   post "dev_login", to: "sessions#dev_login"
 
+  # Staff-only, read-only; a non-admin gets a 404. Keep above the /:ref catch-all (a referral slug can never be "admin").
+  namespace :admin do
+    root "dashboard#show"
+  end
+
   # Must stay last: /<slug> records a known referral source (e.g. /haven), anything else is a 404.
   get ":ref", to: "referrals#show", as: :referral, constraints: { ref: /[a-z0-9_-]{1,32}/ }
 end

@@ -1,0 +1,25 @@
+<% content_for :title, "Admin" %>
+<%= admin_tool(:div, class: "admin-dashboard container") do %>
+  <h1>Admin dashboard</h1>
+  <p class="admin-dashboard__note">Read-only, aggregate counts only. No names, emails or ids are shown here. Signup days are UTC.</p>
+
+  <dl class="admin-stat">
+    <div class="admin-stat__item">
+      <dt>Total users</dt>
+      <dd><%= number_with_delimiter(@stats.total_users) %></dd>
+    </div>
+    <div class="admin-stat__item">
+      <dt>Onboarded</dt>
+      <dd><%= number_with_delimiter(@stats.onboarded) %></dd>
+    </div>
+  </dl>
+
+  <div class="admin-grid">
+    <%= render "admin/dashboard/table", caption: "Signups per day (last #{AdminStats::SIGNUP_DAYS} days)", heading: "Day (UTC)", rows: @stats.signups_per_day %>
+    <%= render "admin/dashboard/table", caption: "Onboarding funnel (reached at least this step)", heading: "Step", rows: @stats.onboarding_funnel %>
+    <%= render "admin/dashboard/table", caption: "Verification status", heading: "Status", rows: @stats.verification %>
+    <%= render "admin/dashboard/table", caption: "How people heard about us", heading: "Source", rows: @stats.referral_sources %>
+    <%= render "admin/dashboard/table", caption: "Prize picks", heading: "Prize", rows: @stats.prizes %>
+    <%= render "admin/dashboard/table", caption: "Project kinds", heading: "Kind", rows: @stats.project_kinds %>
+  </div>
+<% end %>
