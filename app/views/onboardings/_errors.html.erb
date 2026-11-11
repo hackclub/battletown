@@ -1,0 +1,10 @@
+<% if current_user.errors.any? %>
+  <div class="onboarding__errors" role="alert">
+    <p>Let's fix a couple of things:</p>
+    <ul>
+      <% current_user.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

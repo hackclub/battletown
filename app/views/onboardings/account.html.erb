@@ -1,0 +1,30 @@
+<%= render layout: "onboardings/frame", locals: { step: "account" } do %>
+  <%= form_with model: current_user, scope: :user, url: onboarding_step_path("account"), method: :patch do |f| %>
+    <%= render "onboardings/errors" %>
+    <ul class="checks">
+      <li class="check check--<%= current_user.verification_status %>">
+        <h2 class="check__title">Identity verification</h2>
+        <p><%= OnboardingsHelper::VERIFICATION_COPY.fetch(current_user.verification_status) %></p>
+        <% unless current_user.verification_verified? || current_user.verification_ineligible? %>
+          <p><%= link_to "Verify with Hack Club", "https://auth.hackclub.com", target: "_blank", rel: "noopener noreferrer" %> (opens in a new tab)</p>
+        <% end %>
+      </li>
+      <li class="check">
+        <h2 class="check__title">Hackatime</h2>
+        <%# TODO: auto-link Hackatime once the integration exists. %>
+        <p>Automatic Hackatime linking is coming soon. Nothing to do here yet.</p>
+      </li>
+      <li class="check">
+        <h2 class="check__title">How you found us</h2>
+        <% if current_user.referral_source_in_database.present? %>
+          <% name = referral_name(current_user.referral_source_in_database) %>
+          <p><%= name ? "You came from #{name}." : "Thanks for joining through a friend." %></p>
+        <% else %>
+          <%= f.label :referral_source, "How did you hear about us? (optional)" %>
+          <%= f.select :referral_source, Referral.all.map { |referral| [ referral.name, referral.slug ] }, { include_blank: "Skip" } %>
+        <% end %>
+      </li>
+    </ul>
+    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+  <% end %>
+<% end %>

@@ -1,0 +1,23 @@
+<%= render layout: "onboardings/frame", locals: { step: "prize" } do %>
+  <%= form_with model: current_user, scope: :user, url: onboarding_step_path("prize"), method: :patch do |f| %>
+    <%= render "onboardings/errors" %>
+    <fieldset class="onboarding__fieldset">
+      <legend class="visually-hidden">Prize</legend>
+      <div class="choice-grid choice-grid--prizes">
+        <% selected = onboarding_prize_selection %>
+        <% Prize.all.each do |prize| %>
+          <label class="choice">
+            <%= f.radio_button :prize_key, prize.key, checked: prize.key == selected, class: "choice__input" %>
+            <span class="choice__body">
+              <span class="choice__emoji" aria-hidden="true"><%= prize.emoji %></span>
+              <span class="choice__name"><%= prize.name %></span>
+              <span class="choice__meta"><%= prize.hours %> hours</span>
+              <span class="choice__desc"><%= prize.description %></span>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+  <% end %>
+<% end %>

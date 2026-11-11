@@ -1,0 +1,30 @@
+<%= render layout: "onboardings/frame", locals: { step: "schedule" } do %>
+  <%= form_with model: current_user, scope: :user, url: onboarding_step_path("schedule"), method: :patch, data: { controller: "onboarding-timezone" } do |f| %>
+    <%= render "onboardings/errors" %>
+    <fieldset class="onboarding__fieldset">
+      <legend class="onboarding__legend">Which days do you want to code?</legend>
+      <div class="days">
+        <% User::DAYS.each do |day| %>
+          <label class="day">
+            <%= check_box_tag "user[coding_day_names][]", day, current_user.coding_day_names.include?(day), id: "user_day_#{day}", class: "day__input" %>
+            <span class="day__label"><%= day_label(day).first(3) %></span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+
+    <div class="onboarding__field">
+      <%= f.label :coding_time, "What time works best?" %>
+      <%= f.time_field :coding_time, value: current_user.coding_time || "18:00" %>
+    </div>
+
+    <div class="onboarding__field">
+      <%= f.label :time_zone, "Your time zone" %>
+      <%= f.select :time_zone, time_zone_options, { include_blank: "Choose your time zone" }, data: { onboarding_timezone_target: "select" } %>
+    </div>
+
+    <p class="onboarding__hint">We'll remind you with a Slack DM on your coding days. No email or phone number needed.</p>
+    <%# TODO: SMS reminders, pending a privacy decision. %>
+    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+  <% end %>
+<% end %>

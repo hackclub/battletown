@@ -1,0 +1,40 @@
+<%= render layout: "onboardings/frame", locals: { step: "project" } do %>
+  <%= form_with model: current_user, scope: :user, url: onboarding_step_path("project"), method: :patch, data: { controller: "onboarding-idea" } do |f| %>
+    <%= render "onboardings/errors" %>
+    <fieldset class="onboarding__fieldset">
+      <legend class="onboarding__legend">What kind of project?</legend>
+      <div class="choice-grid choice-grid--kinds">
+        <% OnboardingsHelper::PROJECT_KINDS.each do |kind, info| %>
+          <label class="choice">
+            <%= f.radio_button :project_kind, kind, class: "choice__input" %>
+            <span class="choice__body">
+              <span class="choice__emoji" aria-hidden="true"><%= info[:emoji] %></span>
+              <span class="choice__name"><%= info[:name] %></span>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+
+    <div class="onboarding__field">
+      <%= f.label :project_idea, "Got an idea? (optional)" %>
+      <%= f.text_area :project_idea, rows: 3, maxlength: User.validators_on(:project_idea).first.options[:maximum],
+            placeholder: "A sentence is plenty.", data: { onboarding_idea_target: "field", action: "input->onboarding-idea#count" } %>
+      <p class="onboarding__hint"><span data-onboarding-idea-target="count">0</span>/500</p>
+    </div>
+
+    <div class="onboarding__field">
+      <p class="onboarding__hint">Need a spark? Tap one to start from it:</p>
+      <ul class="chips">
+        <% OnboardingsHelper::IDEA_PRESETS.each do |preset| %>
+          <li><button type="button" class="chip" data-action="onboarding-idea#fill" data-onboarding-idea-text-param="<%= preset %>"><%= preset %></button></li>
+        <% end %>
+      </ul>
+      <p class="onboarding__hint">
+        <span class="placeholder-link" aria-disabled="true">Guides (coming soon)</span> ·
+        <span class="placeholder-link" aria-disabled="true">Jumpstart playground (coming soon)</span>
+      </p>
+    </div>
+    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+  <% end %>
+<% end %>

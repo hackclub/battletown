@@ -21,6 +21,8 @@ class AccessTest < ActionDispatch::IntegrationTest
     get "/dashboard"
     assert_redirected_to onboarding_path
     get "/onboarding"
+    assert_redirected_to onboarding_step_path("prize")
+    follow_redirect!
     assert_response :success
   end
 
