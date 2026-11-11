@@ -45,6 +45,7 @@
   font-size: var(--text-xs);
 }
 @media (max-width: 40rem) {
+  .onboarding__card { padding: var(--space-4); }
   .onboarding-progress__steps li { font-size: 0; }
   .onboarding-progress__num { font-size: var(--text-xs); }
   .onboarding-progress__steps .onboarding-progress__step--current { font-size: var(--text-sm); }
@@ -69,6 +70,7 @@
 .onboarding__encouragement { color: var(--color-text-muted); font-size: var(--text-lg); }
 .onboarding__card { margin-bottom: var(--space-4); }
 .onboarding__back { margin: 0; }
+.onboarding__back a { display: inline-block; padding-block: var(--space-2); }
 
 /* Forms */
 .onboarding__fieldset { margin: 0 0 var(--space-6); padding: 0; border: 0; }
