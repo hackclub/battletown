@@ -1,0 +1,66 @@
+/*
+ * Staff-only UI, like Hack Club Bank: a soft tint, a dashed outline and a small label so staff can see at a glance
+ * that something is not shown to normal users. Green = development only (`.dev-only`), orange = admin only
+ * (`.admin-only`). Do not write the classes by hand in views: use the `dev_tool` / `admin_tool` helpers
+ * (app/helpers/staff_helper.rb), which gate server-side and add the screen reader text.
+ * Works on any element, including `.btn`. Colours come from tokens.css (all pairs pass WCAG AA).
+ */
+.dev-only {
+  --staff-bg: var(--color-dev-bg);
+  --staff-border: var(--color-dev-border);
+  --staff-ink: var(--color-dev-ink);
+  --staff-label: var(--color-dev);
+  --staff-tag: "Dev";
+}
+
+.admin-only {
+  --staff-bg: var(--color-admin-bg);
+  --staff-border: var(--color-admin-border);
+  --staff-ink: var(--color-admin-ink);
+  --staff-label: var(--color-admin);
+  --staff-tag: "Admin";
+}
+
+.dev-only, .admin-only {
+  padding: var(--space-2) var(--space-3);
+  border: 2px dashed var(--staff-border);
+  border-radius: var(--radius-md);
+  background: var(--staff-bg);
+  color: var(--staff-ink);
+}
+
+/* The visible tag. The helpers add the same words as visually-hidden text, so the empty alt text after the slash
+   stops screen readers reading it twice (the first declaration is the fallback for browsers without alt text). */
+.dev-only::before, .admin-only::before {
+  content: var(--staff-tag);
+  content: var(--staff-tag) / "";
+  display: inline-block;
+  margin-inline-end: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--staff-label);
+  color: var(--color-bg);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* A buttonish control whose own text already says it is staff-only (the "Dev login" chip): no tag, pill shape. */
+.dev-only--unlabelled, .admin-only--unlabelled { display: inline-flex; padding: var(--space-1); border-radius: var(--radius-full); }
+.dev-only--unlabelled::before, .admin-only--unlabelled::before { content: none; }
+
+/* A .btn inside a staff block takes the tint instead of its own colours (doubled classes beat page-specific .btn rules). */
+.dev-only.dev-only .btn.btn, .admin-only.admin-only .btn.btn {
+  border-color: transparent;
+  background: transparent;
+  color: var(--staff-ink);
+}
+.dev-only.dev-only .btn.btn:hover, .admin-only.admin-only .btn.btn:hover { border-color: var(--staff-border); }
+.dev-only form, .admin-only form { margin: 0; }
+
+/* A .btn that is itself the staff element (class on the button): keep it a pill. */
+.btn.dev-only, .btn.admin-only { border-radius: var(--radius-full); }

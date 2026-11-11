@@ -146,7 +146,6 @@ body:has(.landing) .site-header .btn {
 .landing-hero__tagline-accent { color: var(--color-highlight); }
 
 .landing-hero__cta { --cta-size: clamp(1.5rem, 6.4vw, 2.5rem); max-width: 100%; }
-.landing-hero__cta .btn { margin-top: var(--space-3); }
 
 /* The pink-edged top of the cream panel. It overlaps the bottom of the stage (234 of its 350 Figma px). */
 .landing-hero__swoosh {

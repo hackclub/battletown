@@ -29,6 +29,18 @@
   --color-ink-brown: #423624; /* Figma: boss progress marker on the dashboard concept (1:264) */
   --color-cta-edge: #ffeada; /* Figma: cream bottom edge of the chunky CTA (136:65); same value as --color-surface-raised */
 
+  /* Staff-only UI (see docs/CONTRACT.md "Staff-only UI"). Green = development-only, orange = admin-only, like Hack Club Bank.
+     Ratios: dev ink 7.4:1 and border 4.5:1 on its bg, cream label text 5.0:1 on the border colour;
+             admin ink 7.0:1 and border 4.6:1 on its bg, cream label text 5.1:1 on the border colour. */
+  --color-dev: #1a7f3c; /* derived: accent, label fill */
+  --color-dev-bg: #e3f6e9; /* derived: soft tint */
+  --color-dev-border: #1a7f3c; /* derived: outline, 4.5:1 on --color-dev-bg, 5.0:1 on --color-bg */
+  --color-dev-ink: #0a5a2a; /* derived: text, 7.4:1 on --color-dev-bg */
+  --color-admin: #b45000; /* derived: accent, label fill */
+  --color-admin-bg: #fff0dc; /* derived: soft tint */
+  --color-admin-border: #b45000; /* derived: outline, 4.6:1 on --color-admin-bg, 5.1:1 on --color-bg */
+  --color-admin-ink: #8a3a00; /* derived: text, 7.0:1 on --color-admin-bg */
+
   /* Type (both families are self-hosted in app/assets/fonts, see fonts.css; the rest is the fallback stack) */
   --font-body: "M PLUS Rounded 1c", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* Figma: Rounded Mplus 1c Medium (1:263) */
   --font-display: "Poetsen One", "Arial Rounded MT Bold", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* Figma: Poetsen One (134:1153, 71:1002) */

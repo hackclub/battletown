@@ -1,10 +1,7 @@
-<%# locals: (dev: false) -%>
 <%# Signed-in users who haven't finished onboarding continue it; everyone else signs up through Hack Club Auth.
-    The hero passes dev: true so development gets the Dev login button from shared/signup_button. -%>
+    (The development-only Dev login lives in the header nav, once.) -%>
 <% if signed_in? %>
   <%= link_to onboarding_path, class: "cta" do %><%= render "landing/cta_face", label: "Continue setup" %><% end %>
-<% elsif dev %>
-  <%= render "shared/signup_button", label: render("landing/cta_face", label: join_cta_label), css: "cta" %>
 <% else %>
   <%= button_to "/auth/hack_club", method: :post, class: "cta", form: { data: { turbo: false } } do %><%= render "landing/cta_face", label: join_cta_label %><% end %>
 <% end %>

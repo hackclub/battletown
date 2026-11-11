@@ -22,6 +22,13 @@ class User < ApplicationRecord
   validates :coding_days, numericality: { in: 0..127, only_integer: true }
   validates :onboarding_step, numericality: { in: 0..ONBOARDING_STEPS, only_integer: true }
 
+  # STUB: there is no admin role yet, so nobody is an admin and `admin_tool` UI is never shown.
+  # The project owner must decide how admins are identified (e.g. an allowlist of Hack Club Auth ids or a column)
+  # and implement it here, server-side. Do not trust any client-supplied value.
+  def admin?
+    false
+  end
+
   # Two simultaneous first logins both try to INSERT; the unique index rejects one, which then retries
   # and finds the winner's row instead of surfacing a 500.
   def self.from_hca_claims!(claims, referral_source: nil)

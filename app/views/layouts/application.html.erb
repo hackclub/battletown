@@ -30,6 +30,7 @@
             <%= button_to "Sign out", logout_path, method: :delete, class: "btn btn--ghost" %>
           <% else %>
             <%= render "shared/signup_button", label: "Sign in", css: "btn btn--ghost" %>
+            <%= dev_tool(:div, label: false) { button_to "Dev login", dev_login_path, class: "btn btn--ghost", form: { data: { turbo: false } } } %>
           <% end %>
         </nav>
       </div>
