@@ -1,6 +1,26 @@
 <% content_for :title, "Privacy" %>
 <article class="container prose">
   <h1>Privacy</h1>
-  <p><strong>TODO:</strong> placeholder. The privacy policy and GDPR/data request process are still being finalised by Hack Club.</p>
-  <p>Battletown stores your Hack Club account identifier, name, email, Slack ID, verification status and the preferences you set during onboarding.</p>
+  <p><strong>TODO:</strong> placeholder. This page describes what Battletown does today, but the privacy policy and GDPR/data request process are still being finalised by Hack Club and are pending legal review.</p>
+
+  <h2>What we store</h2>
+  <p>When you sign up with Hack Club Auth, Battletown stores:</p>
+  <ul>
+    <li>your Hack Club Auth account identifier, your name and your email address;</li>
+    <li>your Slack ID, and your identity verification status (and whether you are eligible for the program);</li>
+    <li>a time zone, which we pick for you from your address when you first sign in (you can change it);</li>
+    <li>the answers you give during onboarding: the prize you pick, your project type and idea, and the days and time you plan to code;</li>
+    <li>where you heard about us (the referral source), if you choose to say or if you arrived through a program link;</li>
+    <li>a session cookie, so you stay signed in. It lasts up to 30 days if you do not visit.</li>
+  </ul>
+  <p>Our servers also keep ordinary request logs (for example the pages requested and the IP address) for security and debugging. We do not write your name, email, Slack ID or onboarding answers to those logs.</p>
+
+  <h2>What we ask for but do not store</h2>
+  <p>Hack Club Auth is asked to share your phone number, birthdate and address when you sign in. Battletown does not store or log them. Your address is only read in memory, once, at your first sign-in, to guess a time zone: only the time zone name is kept, never the address.</p>
+
+  <h2>Download or delete your data</h2>
+  <p>You can do both yourself, any time you are signed in, from <%= link_to "your account page", account_path %>: download everything we store about you as a JSON file, or permanently delete your Battletown account. For your safety we may ask you to sign in with Hack Club again first. Deleting your account removes everything listed above from Battletown. It does not delete your Hack Club account, and you can sign up again later as a new member.</p>
+
+  <h2>How long we keep it</h2>
+  <p><strong>TODO for Hack Club:</strong> no retention periods have been set yet. For now, we keep your data until you delete your account, and the same goes for request logs until the owners decide how long to keep them.</p>
 </article>
