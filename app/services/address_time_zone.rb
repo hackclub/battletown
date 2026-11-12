@@ -66,6 +66,13 @@ class AddressTimeZone
       rails_zones_by_signature[signature(iana)].to_a.first
     end
 
+    # The ISO 3166-1 alpha-2 code for a country given as a code, a name or an alpha-3 code (nil when it is none of those).
+    def country_code_for(value)
+      country_code(value)
+    rescue StandardError
+      nil
+    end
+
     private
 
     def pick_address(source)

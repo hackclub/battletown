@@ -3,7 +3,8 @@ module Orders
   Carrier = Data.define(:key, :name, :url)
 
   Config = Data.define(:overdue_days, :max_open_requested, :orders_per_hour, :staff_actions_per_minute, :exports_per_10_minutes,
-                       :export_max_rows, :note_max, :reason_codes, :carriers) do
+                       :export_max_rows, :note_max, :reason_codes, :carriers, :address_retention_days, :address_offer_minutes,
+                       :address_reveals_per_hour, :address_lookups_per_10_minutes, :address_notice) do
     def self.current
       @current ||= from_hash(Rails.application.config_for(:orders))
     end
@@ -30,9 +31,17 @@ module Orders
         export_max_rows: hash.fetch(:export_max_rows).to_i.clamp(1, 100_000),
         note_max: hash.fetch(:note_max).to_i.clamp(1, OrderEvent::NOTE_MAX),
         reason_codes: reasons.freeze,
-        carriers: carriers.freeze
+        carriers: carriers.freeze,
+        address_retention_days: hash.fetch(:address_retention_days).to_i.clamp(1, 365),
+        address_offer_minutes: hash.fetch(:address_offer_minutes).to_i.clamp(1, 120),
+        address_reveals_per_hour: hash.fetch(:address_reveals_per_hour).to_i.clamp(1, 1000),
+        address_lookups_per_10_minutes: hash.fetch(:address_lookups_per_10_minutes).to_i.clamp(1, 100),
+        address_notice: hash.fetch(:address_notice).to_s.squish
       )
     end
+
+    # The privacy notice with the retention period filled in.
+    def address_notice_text = address_notice.gsub("{days}", address_retention_days.to_s)
 
     def reason_label(code) = reason_codes[code.to_s]
 

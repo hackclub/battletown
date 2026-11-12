@@ -71,6 +71,11 @@
       </div>
 
       <div class="field">
+        <label class="option"><%= form.check_box :requires_shipping, "aria-describedby": "item-shipping-hint" %> Posted to the buyer (asks for a delivery address)</label>
+        <span id="item-shipping-hint" class="field__hint admin-form__hint">Ticked for anything that is mailed. At checkout the buyer picks one of the addresses saved in Hack Club Auth; untick it for an item with nothing to post and no address is asked for.</span>
+      </div>
+
+      <div class="field">
         <%= form.label :position, "Position (lower comes first)" %>
         <%= form.number_field :position, class: "input", min: 0, step: 1, "aria-describedby": "item-position-hint" %>
         <span id="item-position-hint" class="field__hint admin-form__hint">Or use the Up and Down buttons on the list. Items with the same position are shown in the order they were added.</span>

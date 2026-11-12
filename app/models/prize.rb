@@ -15,8 +15,9 @@
 # The catalogue is read once per request (ShopItems::Catalogue) so a page adds one query however many times it asks, and
 # it is dropped whenever an item changes. While the table is missing (boot, assets:precompile, before the migration) or
 # empty (a fresh database nobody seeded), it falls back to config/prizes.yml, the default seed.
-Prize = Data.define(:key, :name, :description, :coins, :emoji, :image, :tier, :free_signup, :active, :position) do
-  def initialize(active: true, position: 0, **attributes) = super(active: active, position: position, **attributes)
+Prize = Data.define(:key, :name, :description, :coins, :emoji, :image, :tier, :free_signup, :active, :position, :requires_shipping) do
+  def initialize(active: true, position: 0, requires_shipping: true, **attributes) =
+    super(active: active, position: position, requires_shipping: requires_shipping, **attributes)
 
   def self.all = ShopItems::Catalogue.items
 
@@ -37,6 +38,9 @@ Prize = Data.define(:key, :name, :description, :coins, :emoji, :image, :tier, :f
 
   # Still on offer (not archived).
   def active? = active == true
+
+  # Posted to the buyer, so ordering it asks for a delivery address (staff clear this for an item with nothing to post).
+  def requires_shipping? = requires_shipping != false
 
   # Hours of approved coding `coins` cost before any bonus: a whole number, or one decimal place (rounded half up).
   def self.hours_for(coins)

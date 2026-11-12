@@ -53,6 +53,8 @@ module AdminAudit
     order_tracking_updated
     order_note_added
     order_exported
+    order_address_revealed
+    order_address_purged
   ].freeze
 
   ACTIONS = (USER_ACTIONS + NPS_ACTIONS + SHOP_ACTIONS + REVIEW_ACTIONS + ORDER_ACTIONS).freeze

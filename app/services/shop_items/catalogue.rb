@@ -48,13 +48,14 @@ module ShopItems
 
     def from_item(item)
       Prize.new(key: item.key, name: item.name, description: item.description, coins: item.coins, emoji: item.emoji,
-                image: item.image_path, tier: item.tier, free_signup: item.free_signup?, active: item.active, position: item.position)
+                image: item.image_path, tier: item.tier, free_signup: item.free_signup?, active: item.active, position: item.position,
+                requires_shipping: item.requires_shipping)
     end
 
     def from_attributes(attributes)
       Prize.new(key: attributes[:key], name: attributes[:name], description: attributes[:description], coins: attributes[:coins],
                 emoji: attributes[:emoji], image: nil, tier: attributes[:tier], free_signup: attributes[:kind] == "free_signup",
-                active: true, position: attributes[:position])
+                active: true, position: attributes[:position], requires_shipping: attributes.fetch(:requires_shipping, true))
     end
   end
 end

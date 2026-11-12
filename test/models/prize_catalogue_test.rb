@@ -10,7 +10,7 @@ class PrizeCatalogueTest < ActiveSupport::TestCase
 
   test "the same public API as before: all, paid, free_signup, keys, find, hours" do
     %i[all paid free_signup keys find active reload!].each { |name| assert_respond_to Prize, name }
-    assert_equal %i[key name description coins emoji image tier free_signup active position], Prize.members
+    assert_equal %i[key name description coins emoji image tier free_signup active position requires_shipping], Prize.members
     prize = Prize.find("tshirt")
     assert_equal [ "Battletown T-shirt", 50, "shop", false, true ], [ prize.name, prize.coins, prize.tier, prize.free_signup?, prize.active? ]
     assert_equal 5, prize.hours

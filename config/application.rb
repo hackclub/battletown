@@ -34,6 +34,15 @@ module Battletown
     # Hack Club Auth (see config/initializers/omniauth.rb).
     config.x.hca.issuer = ENV.fetch("HCA_ISSUER", "https://auth.hackclub.com")
     config.x.hca.redirect_uri = "#{ENV.fetch("APP_URL", "http://localhost:3000")}/auth/hack_club/callback"
+    # The Hack Club Auth app's credentials (also used by the address lookup, which revokes its one-time token).
+    config.x.hca.client_id = ENV["HCA_CLIENT_ID"].presence
+    config.x.hca.client_secret = ENV["HCA_CLIENT_SECRET"].presence
+    # Shipping-address lookup at checkout (docs/CONTRACT.md, "Shipping addresses"): a second sign-in provider with only the
+    # `openid address` scopes, its own callback (register this exact URI on the Hack Club Auth app), and the page where a
+    # person adds or edits the addresses saved in Hack Club Auth.
+    config.x.hca.address_redirect_uri = "#{ENV.fetch("APP_URL", "http://localhost:3000")}/auth/hack_club_address/callback"
+    config.x.hca.address_scopes = %i[openid address]
+    config.x.hca.address_portal_url = ENV.fetch("HCA_ADDRESS_PORTAL_URL", "#{ENV.fetch("HCA_ISSUER", "https://auth.hackclub.com")}/portal/address")
 
     # Hackatime account linking (config/initializers/omniauth.rb, docs/HACKATIME.md). The redirect URI must match
     # the one registered on the Hackatime OAuth app exactly. HACKATIME_URL exists so a local fake provider can stand in.

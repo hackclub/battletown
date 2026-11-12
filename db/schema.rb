@@ -10,9 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_150003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "address_offers", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "draft_key", limit: 100, null: false
+    t.text "payload", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_address_offers_on_expires_at"
+    t.index ["user_id", "draft_key"], name: "index_address_offers_on_user_id_and_draft_key", unique: true
+    t.check_constraint "char_length(draft_key::text) >= 1 AND char_length(draft_key::text) <= 100", name: "address_offers_draft_key_check"
+  end
 
   create_table "admin_audit_events", force: :cascade do |t|
     t.bigint "actor_id"
@@ -263,6 +276,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
     t.check_constraint "score >= 0 AND score <= 10", name: "nps_responses_score_check"
   end
 
+  create_table "order_addresses", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "user_id", null: false
+    t.text "recipient_name", null: false
+    t.text "line_1", null: false
+    t.text "line_2"
+    t.text "city", null: false
+    t.text "state"
+    t.text "postal_code"
+    t.text "phone_number"
+    t.string "country", limit: 2, null: false
+    t.string "hca_address_id", limit: 80
+    t.datetime "purge_after"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_order_addresses_on_order_id", unique: true
+    t.index ["purge_after"], name: "index_order_addresses_on_purge_after", where: "(purge_after IS NOT NULL)"
+    t.index ["user_id"], name: "index_order_addresses_on_user_id"
+    t.check_constraint "country::text ~ '^[A-Z]{2}$'::text", name: "order_addresses_country_check"
+    t.check_constraint "hca_address_id IS NULL OR char_length(hca_address_id::text) >= 1 AND char_length(hca_address_id::text) <= 80", name: "order_addresses_hca_address_id_check"
+  end
+
   create_table "order_events", force: :cascade do |t|
     t.bigint "order_id", null: false
     t.bigint "actor_id"
@@ -275,7 +310,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
     t.datetime "created_at", null: false
     t.index ["actor_id"], name: "index_order_events_on_actor_id", where: "(actor_id IS NOT NULL)"
     t.index ["order_id", "created_at"], name: "index_order_events_on_order_id_and_created_at"
-    t.check_constraint "action::text = ANY (ARRAY['held'::character varying, 'released'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying, 'tracking_updated'::character varying, 'note_added'::character varying]::text[])", name: "order_events_action_check"
+    t.check_constraint "action::text = ANY (ARRAY['held'::character varying, 'released'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying, 'tracking_updated'::character varying, 'note_added'::character varying, 'address_changed'::character varying, 'address_revealed'::character varying, 'address_purged'::character varying]::text[])", name: "order_events_action_check"
     t.check_constraint "actor_kind::text = 'staff'::text OR actor_id IS NULL", name: "order_events_actor_check"
     t.check_constraint "actor_kind::text = ANY (ARRAY['buyer'::character varying, 'staff'::character varying, 'system'::character varying]::text[])", name: "order_events_actor_kind_check"
     t.check_constraint "from_status IS NULL OR (from_status::text = ANY (ARRAY['requested'::character varying, 'on_hold'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[]))", name: "order_events_from_status_check"
@@ -516,6 +551,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
     t.integer "lock_version", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "requires_shipping", default: true, null: false
     t.index ["active", "position"], name: "index_shop_items_on_active_and_position"
     t.index ["key"], name: "index_shop_items_on_key", unique: true
     t.index ["kind"], name: "index_shop_items_one_free_signup", unique: true, where: "((kind)::text = 'free_signup'::text)"
@@ -529,17 +565,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
     t.check_constraint "kind::text = 'free_signup'::text AND coins = 0 OR kind::text = 'regular'::text AND coins > 0", name: "shop_items_kind_coins_check"
     t.check_constraint "kind::text = ANY (ARRAY['regular'::character varying, 'free_signup'::character varying]::text[])", name: "shop_items_kind_check"
     t.check_constraint "tier::text = ANY (ARRAY['daily'::character varying, 'weekly'::character varying, 'shop'::character varying]::text[])", name: "shop_items_tier_check"
-  end
-
-  create_table "staff_access_logs", force: :cascade do |t|
-    t.bigint "actor_id"
-    t.string "action", limit: 60, null: false
-    t.string "subject_type", limit: 60, null: false
-    t.bigint "subject_id", null: false
-    t.datetime "created_at", null: false
-    t.index ["actor_id"], name: "index_staff_access_logs_on_actor_id"
-    t.index ["created_at"], name: "index_staff_access_logs_on_created_at"
-    t.index ["subject_type", "subject_id"], name: "index_staff_access_logs_on_subject_type_and_subject_id"
   end
 
   create_table "team_cooldowns", force: :cascade do |t|
@@ -637,6 +662,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
     t.check_constraint "idle_days >= 1", name: "welcome_back_windows_idle_days_check"
   end
 
+  add_foreign_key "address_offers", "users", on_delete: :cascade
   add_foreign_key "admin_audit_events", "users", column: "actor_id", on_delete: :nullify
   add_foreign_key "coin_transactions", "users", on_delete: :cascade
   add_foreign_key "daily_results", "users", on_delete: :cascade
@@ -651,6 +677,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
   add_foreign_key "notification_preferences", "users", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "nps_responses", "users", on_delete: :cascade
+  add_foreign_key "order_addresses", "orders", on_delete: :cascade
+  add_foreign_key "order_addresses", "users", on_delete: :cascade
   add_foreign_key "order_events", "orders", on_delete: :cascade
   add_foreign_key "order_events", "users", column: "actor_id", on_delete: :nullify
   add_foreign_key "orders", "users", on_delete: :cascade

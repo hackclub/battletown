@@ -4,7 +4,7 @@
 # from and to which status, the reason code, and a short note a staff member typed. The note is staff-only and never shown to
 # the buyer, copied to the audit trail, or put in a message; the form tells staff to leave out personal details.
 class OrderEvent < ApplicationRecord
-  ACTIONS = %w[held released shipped fulfilled cancelled refunded tracking_updated note_added].freeze
+  ACTIONS = %w[held released shipped fulfilled cancelled refunded tracking_updated note_added address_changed address_revealed address_purged].freeze
   ACTOR_KINDS = %w[buyer staff system].freeze
   # The events a buyer sees on their own order page: plain status changes, nothing staff-only.
   BUYER_ACTIONS = %w[shipped fulfilled cancelled refunded].freeze

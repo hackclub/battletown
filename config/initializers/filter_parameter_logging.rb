@@ -15,5 +15,8 @@ Rails.application.config.filter_parameters += [
   # Staff-written text stored with an audit event (`metadata`, a JSON object with the reason) and in a private staff note (`body`): keep both out of the SQL log's bind values.
   :metadata, /\Abody\z/,
   # Screenshot uploads: an uploaded file's log line would carry its original file name (often a real name); the alt text is free text.
-  :images
+  :images,
+  # Shipping addresses (docs/CONTRACT.md): the fields of an address, the encrypted offer's payload, the checkout's draft key and the
+  # Hack Club Auth address id travel in params, SQL binds and sessions only, never in a log line.
+  /\Aline_[12]\z/, :city, :recipient, :payload, :draft, :address_id, :hca_address, :purge_after
 ]

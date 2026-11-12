@@ -203,7 +203,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     admin!
     get "/admin/shop/new"
     form = css_select("form.admin-form").first.to_s
-    assert_no_match(/dollar|usd|\$|cost to us|shipping|budget/i, form)
+    assert_no_match(/dollar|usd|\$|cost to us|shipping (cost|fee|price)|postage|budget/i, form)
     assert_match(/Price \(coins\)/, form)
   end
 

@@ -13,6 +13,19 @@ shared:
   staff_actions_per_minute: 60
   exports_per_10_minutes: 6
 
+  # Shipping addresses (docs/CONTRACT.md, "Shipping addresses"). The address a buyer picks from Hack Club Auth at checkout is kept
+  # until `address_retention_days` after the order is shipped or fulfilled (whichever came first), deleted at once when the order
+  # is cancelled or refunded, and always when the person is deleted. The list of addresses Hack Club Auth returns is kept for
+  # `address_offer_minutes` only. `address_reveals_per_hour` limits how many full addresses one staff member can open in an hour.
+  # `address_lookups_per_10_minutes` limits how often one person can start the Hack Club Auth round trip.
+  address_retention_days: 30
+  address_offer_minutes: 15
+  address_reveals_per_hour: 60
+  address_lookups_per_10_minutes: 10
+
+  # The plain notice shown at the address step and under the buyer's address ({days} becomes address_retention_days). Placeholder copy: the project owner edits this.
+  address_notice: "We only use your address to post your prize. We keep it for {days} days after it ships, then delete it. You can see and change it until it ships."
+
   # The CSV export stops at this many rows (the audit event records the real count and whether it was cut).
   export_max_rows: 5000
 

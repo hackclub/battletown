@@ -1,7 +1,8 @@
 # A shop order: a request for one item, paid for in coins. Created only through Shop::Purchase / Shop::ClaimSticker and
 # changed only through the Orders services (Hold, Release, Ship, Fulfil, Cancel, Refund, AddNote, UpdateTracking; they hold
-# the user lock, write the order_events history and keep the coin ledger in step). It holds no address: the team arranges
-# delivery with the person on Slack. `coins` is the price at order time.
+# the user lock, write the order_events history and keep the coin ledger in step). A physical order has at most one shipping
+# address (OrderAddress, chosen from Hack Club Auth at checkout, encrypted, deleted on a schedule: docs/CONTRACT.md, "Shipping
+# addresses"); it is never read here except to say whether there is one. `coins` is the price at order time.
 #
 # Statuses: requested (waiting for the team), on_hold (parked by staff; the buyer still sees "Requested"), shipped, fulfilled,
 # cancelled (before it was sent) and refunded (after it was sent). The allowed moves live in Orders::StateMachine.
@@ -15,6 +16,8 @@ class Order < ApplicationRecord
   TRACKING_LABEL_MAX = 40
 
   has_many :events, class_name: "OrderEvent", dependent: nil
+  # Deleted by the database (ON DELETE CASCADE) when the order or the person goes, and by Orders::PurgeAddresses on schedule.
+  has_one :address, class_name: "OrderAddress", dependent: nil, inverse_of: :order
   belongs_to :user
 
   validates :prize_key, inclusion: { in: ->(_) { Prize.keys } }
@@ -50,6 +53,16 @@ class Order < ApplicationRecord
   def buyer_status = on_hold? ? "requested" : status
 
   def unfinished? = OPEN_STATUSES.include?(status)
+
+  # Is the item posted to the buyer? An unknown (retired) item counts as physical: the safe side for a parcel.
+  def requires_shipping? = prize.nil? || prize.requires_shipping?
+
+  # Physical, still on its way to being sent, and no address on file: the staff queue chips it and Orders::Ship refuses it.
+  # Orders placed before addresses existed show it too, and are shipped with an explicit staff override.
+  def address_needed? = (requested? || on_hold?) && requires_shipping? && !address
+
+  # The buyer may swap the address while the team has not sent the order.
+  def address_changeable? = (requested? || on_hold?) && requires_shipping?
 
   def tracking? = tracking_number.present?
 

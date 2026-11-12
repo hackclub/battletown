@@ -12,8 +12,12 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
   # Names that suggest a column holds a person's identity.
   PERSONAL_COLUMN = /user_id|slack|email|hca_uid|identity|ident_id|display_name|\bip\b|ip_address|phone|birth|address/
 
-  # "table.column" => why it is not personal data. Nothing yet.
-  NOT_PERSONAL = {}.freeze
+  # "table.column" => why the guard's name match is not a gap. These ARE personal (a shipping address is), but encrypted at rest, and
+  # the whole row goes with the person: order_addresses.user_id and address_offers.user_id cascade (the first test above).
+  NOT_PERSONAL = {
+    "order_addresses.phone_number" => "encrypted; the row cascades from users (order_addresses.user_id) and from the order",
+    "order_addresses.hca_address_id" => "an opaque Hack Club Auth address id, not an address; the row cascades from users"
+  }.freeze
 
   # Foreign keys to users that deliberately do NOT cascade, with the reason: the row is about someone else (the subject
   # of the row is reached through a cascading key), and the key is nulled so the staff member is forgotten.
@@ -81,7 +85,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     # (A table whose only key to users is a nulling one, the staff access log, loses no rows when a person is deleted.)
     referencing = app_tables.select { |table| user_foreign_keys(table).any? { |fk| fk.on_delete == :cascade } }
     through_projects = %w[link_suggestions project_reviews] # a crew with no members left is swept by Privacy::Deleter
-    through_orders = %w[order_events] # the history of an order goes with the order (ON DELETE CASCADE)
+    through_orders = %w[order_events] # the history of an order goes with the order (ON DELETE CASCADE); order_addresses also has its own user_id key
     swept = %w[teams]
     assert_equal (referencing + through_projects + through_orders + swept + [ "users" ]).sort, deleted.keys.sort,
                  "add a row for the new table to this test so its count is proven (every table that references users must show up)"

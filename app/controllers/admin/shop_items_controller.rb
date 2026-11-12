@@ -81,21 +81,23 @@ module Admin
 
     def next_position = ShopItem.maximum(:position).to_i + 1
 
-    def item_params = params.expect(shop_item: %i[name description emoji coins tier position lock_version])
+    def item_params = params.expect(shop_item: %i[name description emoji coins tier position lock_version requires_shipping])
 
     # The key and the kind are chosen once, here, and never again. A free signup item is only offered while none exists.
     def create_params
-      permitted = params.expect(shop_item: %i[key kind name description emoji coins tier position active])
+      permitted = params.expect(shop_item: %i[key kind name description emoji coins tier position active requires_shipping])
       attributes = permitted.to_h.symbolize_keys
       attributes[:key] = attributes[:key].to_s.strip
       attributes[:kind] = "regular" unless ShopItem::KINDS.include?(attributes[:kind])
       attributes[:active] = ActiveModel::Type::Boolean.new.cast(attributes[:active])
+      attributes[:requires_shipping] = ActiveModel::Type::Boolean.new.cast(attributes.fetch(:requires_shipping, true))
       attributes.except(:coins).merge(coins: attributes[:kind] == "free_signup" ? 0 : attributes[:coins])
     end
 
     def update_params
       attributes = item_params.to_h.symbolize_keys
       attributes[:coins] = 0 if @item.free_signup?
+      attributes[:requires_shipping] = ActiveModel::Type::Boolean.new.cast(attributes[:requires_shipping]) if attributes.key?(:requires_shipping)
       attributes
     end
 

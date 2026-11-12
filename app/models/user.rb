@@ -18,6 +18,7 @@ class User < ApplicationRecord
   has_many :ships, dependent: :destroy
   has_many :link_suggestions, through: :projects
   has_many :orders
+  has_many :address_offers, dependent: nil
   # Deleted by the database (ON DELETE CASCADE).
   has_many :merch_claims, dependent: nil
   # Private staff notes about this person; deleted by the database (ON DELETE CASCADE).

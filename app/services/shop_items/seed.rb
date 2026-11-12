@@ -18,7 +18,7 @@ module ShopItems
       (paid.sort_by { |entry| [ entry[:coins], entry[:name] ] } + free).each_with_index.map do |entry, index|
         { key: entry.fetch(:key), name: entry.fetch(:name), description: entry[:description].to_s, emoji: entry[:emoji],
           coins: entry.fetch(:coins), tier: entry.fetch(:tier, "shop"), kind: entry[:free_signup] ? "free_signup" : "regular",
-          position: index + 1, active: true }
+          position: index + 1, active: true, requires_shipping: entry.fetch(:requires_shipping, true) }
       end
     end
 

@@ -8,6 +8,10 @@ Rails.application.configure do
   config.x.hackatime.client_id = "test-client-id"
   config.x.hackatime.client_secret = "test-client-secret"
 
+  # Fixed Hack Club Auth app credentials too (the address lookup revokes its token with them).
+  config.x.hca.client_id = "test-hca-client-id"
+  config.x.hca.client_secret = "test-hca-client-secret"
+
   # Throwaway Active Record encryption keys for the test suite. They protect nothing real (no secret lives in the test
   # database) and are public on purpose, so tests never depend on a developer's .env.
   config.active_record.encryption.primary_key = "test-primary-key-0000000000000000"
