@@ -2,8 +2,9 @@
 # the text is built from `kind` at send time and the recipient is the user's Slack id at send time.
 class Notification < ApplicationRecord
   # daily_reminder is scheduled from the user's coding days (Notifications::Scheduler); the others are about one thing
-  # (`subject_id`): link_question a LinkSuggestion, ship_reminder / ship_mvp a Project, ship_approved / ship_rejected a Ship.
-  KINDS = %w[daily_reminder link_question ship_reminder ship_mvp ship_approved ship_rejected].freeze
+  # (`subject_id`): link_question a LinkSuggestion, ship_reminder / ship_mvp a Project, ship_approved / ship_rejected a Ship,
+  # returning_nudge the day count (since 1970-01-01) of the user's last active day (feature flag `returning`).
+  KINDS = %w[daily_reminder link_question ship_reminder ship_mvp ship_approved ship_rejected returning_nudge].freeze
   EVENT_KINDS = (KINDS - %w[daily_reminder]).freeze
   CHANNELS = %w[slack_dm email].freeze
   # skipped: handled by an adapter that does not really deliver (the log adapter in development, the null adapter in

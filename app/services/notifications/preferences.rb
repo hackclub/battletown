@@ -8,6 +8,9 @@ module Notifications
     SLACK = "slack_dm".freeze
     EMAIL = "email".freeze
 
+    # Kinds that belong to a feature flag: while the flag is off the switch is not shown on /settings/notifications.
+    FEATURE_KINDS = { "returning_nudge" => :returning }.freeze
+
     module_function
 
     # The kinds a channel carries: every kind on Slack, only the few worth an email on email.
@@ -25,6 +28,11 @@ module Notifications
     def settings(user, channel: SLACK)
       off = NotificationPreference.where(user_id: user.id, channel: channel, enabled: false).pluck(:kind)
       kinds(channel: channel).index_with { |kind| off.exclude?(kind) }
+    end
+
+    # `settings` without the kinds whose feature is switched off (what /settings/notifications lists).
+    def visible_settings(user)
+      settings(user).reject { |kind, _| FEATURE_KINDS.key?(kind) && !Features.enabled?(FEATURE_KINDS.fetch(kind)) }
     end
 
     # `choices` is { kind => true/false/"1"/"0" }. Unknown kinds and values that are not a clear yes or no are ignored.

@@ -47,6 +47,17 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
 
   # --- the screen ---
 
+  test "the welcome-back switch is listed only while the returning feature is on" do
+    sign_in_as(@user)
+    get settings_notifications_path
+    assert_select "input[name='preferences[returning_nudge]']", 0
+    with_feature(:returning) do
+      get settings_notifications_path
+      assert_select "input[type=checkbox][name='preferences[returning_nudge]'][checked]"
+      assert_select "label[for=preferences_returning_nudge] .notification-settings__title", text: "Welcome-back nudge"
+    end
+  end
+
   test "shows every kind with a plain label, all on by default, and a Save changes button" do
     sign_in_as(@user)
     get settings_notifications_path
@@ -55,7 +66,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Notifications"
     assert_select "form[action=?][method=post]", settings_notifications_path
     assert_select "input[name='_method'][value=patch]"
-    Notification::KINDS.each do |kind|
+    (Notification::KINDS - %w[returning_nudge]).each do |kind|
       assert_select "input[type=checkbox][name='preferences[#{kind}]'][checked]"
       assert_select "input[type=hidden][name='preferences[#{kind}]'][value='0']"
       assert_select "label[for=preferences_#{kind}] .notification-settings__title", text: Notifications::Config.current.label(kind)["title"]

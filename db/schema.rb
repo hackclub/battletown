@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_123018) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -205,7 +205,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
     t.string "channel", default: "slack_dm", null: false
     t.index ["user_id", "kind", "channel"], name: "index_notification_preferences_on_user_kind_channel", unique: true
     t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notification_preferences_channel_check"
-    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying]::text[])", name: "notification_preferences_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying]::text[])", name: "notification_preferences_kind_check"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -229,7 +229,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
     t.check_constraint "attempts >= 0 AND attempts <= 10", name: "notifications_attempts_check"
     t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notifications_channel_check"
-    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying]::text[])", name: "notifications_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying]::text[])", name: "notifications_kind_check"
     t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "notifications_last_error_code_check"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying, 'skipped'::character varying]::text[])", name: "notifications_status_check"
   end
@@ -449,6 +449,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
     t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying, 'pending'::character varying, 'verified'::character varying, 'ineligible'::character varying]::text[])", name: "users_verification_status_check"
   end
 
+  create_table "welcome_back_windows", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.integer "idle_days", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["starts_on"], name: "index_welcome_back_windows_on_starts_on"
+    t.index ["user_id", "starts_on"], name: "index_welcome_back_windows_on_user_id_and_starts_on", unique: true
+    t.check_constraint "ends_on >= starts_on", name: "welcome_back_windows_dates_check"
+    t.check_constraint "idle_days >= 1", name: "welcome_back_windows_idle_days_check"
+  end
+
   add_foreign_key "coin_transactions", "users", on_delete: :cascade
   add_foreign_key "daily_results", "users", on_delete: :cascade
   add_foreign_key "hackatime_connections", "users", on_delete: :cascade
@@ -473,4 +486,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
   add_foreign_key "ships", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
   add_foreign_key "ships", "users", column: "reviewer_id", on_delete: :nullify
   add_foreign_key "ships", "users", on_delete: :cascade
+  add_foreign_key "welcome_back_windows", "users", on_delete: :cascade
 end

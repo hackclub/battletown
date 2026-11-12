@@ -7,7 +7,7 @@ module Settings
     before_action :no_store
 
     def show
-      @settings = Notifications::Preferences.settings(current_user)
+      @settings = Notifications::Preferences.visible_settings(current_user)
       @config = Notifications::Config.current
     end
 

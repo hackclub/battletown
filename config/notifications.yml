@@ -39,6 +39,9 @@ shared:
     ship_reminder: "Nice work! You've coded {hours} hours on {project} that you haven't shipped yet. Ready to ship it? Whenever you like: {link} - the Hack Club Battletown team"
     ship_mvp: "You're at {hours} hours on {project}. That's a great point to ship a first version and turn those hours into coins. Ship it here when you're ready: {link} - the Hack Club Battletown team"
     ship_approved: "Good news: your ship of {project} was approved for {hours} hours and you earned {coins} coins!{unlock_note} See it here: {link} - the Hack Club Battletown team"
+    # Returning-user nudge (feature flag `returning`): one DM per idle period, no guilt and no day counts. {boost_days} is the
+    # length of the welcome-back boost (game.yml returning.boost_days); {link} is the dashboard.
+    returning_nudge: "Hey, Battletown misses you! The boss is still standing. Code for 15 minutes today and your streak bonus gets a welcome-back boost for {boost_days} days: {link} - the Hack Club Battletown team"
     ship_rejected: "Thanks for shipping {project}. It needs one more touch before we can approve it: {reason} Fix it up and ship again whenever you're ready: {link} - the Hack Club Battletown team"
 
   # What each switch is called on /settings/notifications (plain words, the owner can edit these).
@@ -61,3 +64,6 @@ shared:
     ship_rejected:
       title: "Ship needs changes"
       hint: "What to fix when a ship needs a little more work."
+    returning_nudge:
+      title: "Welcome-back nudge"
+      hint: "One friendly note if you have been away a while, about the welcome-back boost."
