@@ -50,6 +50,8 @@ module Hca
       end
     rescue Net::OpenTimeout, Net::ReadTimeout, Net::WriteTimeout, Timeout::Error, SocketError, SystemCallError, OpenSSL::SSL::SSLError, EOFError, IOError
       raise LookupError, :unavailable
+    rescue Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Zlib::Error # not valid HTTP (a bad header line, a broken compressed body)
+      raise LookupError, :bad_response
     end
 
     def build_uri(path)

@@ -23,6 +23,24 @@ class Hca::MeTest < ActiveSupport::TestCase
     error.code
   end
 
+  # Hack Club Auth (or something pretending to be it) answering with something that is not HTTP: a clean lookup error, not a 500.
+  test "a response that is not valid HTTP is a bad_response, not an exception" do
+    server = TCPServer.new("127.0.0.1", 0)
+    thread = Thread.new do
+      client = server.accept
+      client.readpartial(4096)
+      client.write("HTTP/1.1 200 OK\r\nContent-Length: 5\r\nBad Header Without Colon\r\n\r\nhello")
+      client.close
+    rescue StandardError
+      nil
+    end
+    http = Hca::Http.new(base_url: "http://127.0.0.1:#{server.addr[1]}")
+    assert_equal :bad_response, failure_code { Hca::Me.addresses(FakeHca::ACCESS_TOKEN, http: http) }
+  ensure
+    thread&.kill
+    server&.close
+  end
+
   test "reads only identity.addresses, with the primary first, and sends the bearer token" do
     @fake.me = [ 200, { "identity" => { "id" => "ident!x", "primary_email" => "kid@example.test", "birthday" => "2010-01-01",
                                         "addresses" => [ FakeHca.address("addr_b"), FakeHca.address("addr_a", primary: true) ] },
