@@ -1,12 +1,10 @@
 require "test_helper"
-require_relative "../support/admin_audit_spy"
 require_relative "../support/ship_images_helper"
 require_relative "../support/shop_helper"
 
 class AdminShopItemsTest < ActionDispatch::IntegrationTest
   include ShipImagesHelper
   include ShopTestHelper
-  include AdminAuditSpy
 
   setup do
     OmniAuth.config.test_mode = true
@@ -14,11 +12,9 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     @detailed = Rails.application.env_config["action_dispatch.show_detailed_exceptions"]
     Rails.application.env_config["action_dispatch.show_detailed_exceptions"] = false
     @admin = users(:onboarded)
-    install_audit_spy
   end
 
   teardown do
-    remove_audit_spy
     OmniAuth.config.test_mode = false
     OmniAuth.config.mock_auth[:hack_club] = nil
     Rails.application.env_config["action_dispatch.show_detailed_exceptions"] = @detailed
@@ -275,13 +271,11 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     assert_equal [ "Battletown tee", 60, "Soft." ], [ item.name, item.coins, item.description ]
     assert_equal "regular", item.kind
     assert_nil ShopItem.find_by(key: "hacked")
-    assert_equal 1, audit_calls.size
-    call = audit_calls.first
-    assert_equal "shop_item_updated", call.action
-    assert_equal @admin, call.actor
-    assert_equal item, call.subject
-    assert_equal [ 50, 60 ], call.metadata[:coins]
-    assert_includes call.metadata[:changed], "name"
+    assert_equal 1, AdminAuditEvent.count
+    event = AdminAuditEvent.last
+    assert_equal [ "shop_item_updated", @admin, "ShopItem", item.id ], [ event.action, event.actor, event.subject_type, event.subject_id ]
+    assert_equal [ 50, 60 ], event.metadata.values_at("coins_before", "coins_after")
+    assert_includes event.metadata["changed"], "name"
     assert_equal "Battletown tee", Prize.find("tshirt").name
     assert_equal 60, Prize.find("tshirt").coins
   end
@@ -560,41 +554,48 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
 
   # --- audit ---
 
-  test "every mutation is audited with a known action" do
+  test "every mutation is audited with a known action, on the item, by the admin, with no personal data" do
     admin!
     post "/admin/shop", params: item_params
     patch "/admin/shop/pixel_pin", params: { shop_item: { coins: "26", lock_version: 0 } }
     patch "/admin/shop/pixel_pin/move", params: { direction: "up" }
     patch "/admin/shop/pixel_pin/archive"
     patch "/admin/shop/pixel_pin/restore"
-    assert_equal [ %w[shop_item_created pixel_pin], %w[shop_item_updated pixel_pin], %w[shop_item_reordered pixel_pin],
-                   %w[shop_item_archived pixel_pin], %w[shop_item_restored pixel_pin] ], audit_calls.map { |call| [ call.action, call.subject.key ] }
-    assert_empty audit_calls.map(&:action) - ShopAudit::ACTIONS
-    assert(audit_calls.all? { |call| call.actor == @admin })
-    assert_equal({ coins: [ 25, 26 ], changed: %w[coins] }, audit_calls[1].metadata)
-    assert_equal({ direction: "up" }, audit_calls[2].metadata)
+    item = ShopItem.find_by!(key: "pixel_pin")
+    events = AdminAuditEvent.order(:id).to_a
+    assert_equal %w[shop_item_created shop_item_updated shop_item_reordered shop_item_archived shop_item_restored], events.map(&:action)
+    assert_empty events.map(&:action) - AdminAudit::SHOP_ACTIONS
+    assert(events.all? { |event| event.actor == @admin && event.subject_type == "ShopItem" && event.subject_id == item.id })
+    assert_equal({ "coins" => 25, "kind" => "regular", "active" => true, "picture" => false }, events[0].metadata)
+    assert_equal({ "changed" => "coins", "coins_before" => 25, "coins_after" => 26 }, events[1].metadata)
+    assert_equal({ "direction" => "up" }, events[2].metadata)
+    assert_equal({}, events[3].metadata)
   end
 
-  test "failed saves and no-op moves are not audited" do
+  test "a picture edit is audited as a field name, never the picture" do
+    admin!
+    patch "/admin/shop/tshirt", params: { shop_item: { image: upload_file(png_bytes(40, 40)), lock_version: shop_items(:tshirt).lock_version } }
+    assert_equal({ "changed" => "picture" }, AdminAuditEvent.last.metadata)
+  end
+
+  test "failed saves, no-op moves and unchanged saves are not audited" do
     admin!
     post "/admin/shop", params: item_params(name: "")
     patch "/admin/shop/#{Prize.paid.first.key}/move", params: { direction: "up" }
     patch "/admin/shop/tshirt", params: { shop_item: { name: "Battletown T-shirt", lock_version: shop_items(:tshirt).lock_version } }
-    assert_empty audit_calls
+    patch "/admin/shop/keychain/restore"
+    assert_equal 0, AdminAuditEvent.count
   end
 
-  test "with no audit log in the app the shop admin still works and records nothing" do
-    remove_audit_spy
-    skip "the staff audit log exists in this app" if Object.const_defined?(:AdminAudit)
+  test "an audit failure rolls the change back" do
     admin!
-    assert_difference -> { ShopItem.count }, 1 do
-      post "/admin/shop", params: item_params
+    AdminAudit.singleton_class.prepend(Module.new { def record!(**) = raise("audit down") })
+    begin
+      assert_raises(RuntimeError) { patch "/admin/shop/tshirt/archive" }
+    ensure
+      AdminAudit.singleton_class.ancestors.first.send(:remove_method, :record!)
     end
-    assert_redirected_to "/admin/shop"
-  end
-
-  test "an unknown audit action is a programming error" do
-    assert_raises(ArgumentError) { ShopAudit.record(actor: @admin, action: "shop_item_exploded", subject: shop_items(:tshirt)) }
+    assert ShopItem.find_by!(key: "tshirt").active
   end
 
   # --- the catalogue is not set up yet ---

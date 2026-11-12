@@ -28,6 +28,11 @@ module AdminAudit
   ].freeze
   # Shop-item management adds its actions here.
   SHOP_ACTIONS = %w[
+    shop_item_created
+    shop_item_updated
+    shop_item_archived
+    shop_item_restored
+    shop_item_reordered
   ].freeze
   # Project and ship review adds its actions here.
   REVIEW_ACTIONS = %w[

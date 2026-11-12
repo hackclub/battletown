@@ -79,7 +79,7 @@ class ShopItems::SeedTest < ActiveSupport::TestCase
   test "the rake task, db:seed and the migration use the same service" do
     assert_includes Rails.root.join("lib/tasks/shop_items.rake").read, "ShopItems::Seed.call"
     assert_includes Rails.root.join("db/seeds.rb").read, "ShopItems::Seed.call"
-    assert_includes Rails.root.join("db/migrate/20261113130804_create_shop_items.rb").read, "ShopItems::Seed.call"
+    assert_includes Rails.root.join("db/migrate/20261113150001_create_shop_items.rb").read, "ShopItems::Seed.call"
   end
 
   test "the facade shows the seeded items in the order the shop always had" do
