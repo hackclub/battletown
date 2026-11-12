@@ -68,6 +68,7 @@ Rails.application.routes.draw do
   # Staff-only, read-only; a non-admin gets a 404. Keep above the /:ref catch-all (a referral slug can never be "admin").
   namespace :admin do
     root "dashboard#show"
+    resource :metrics, only: :show
     resources :bosses, only: %i[index edit update]
     resources :orders, only: :index do
       member do

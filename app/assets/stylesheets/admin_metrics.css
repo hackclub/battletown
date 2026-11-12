@@ -1,0 +1,19 @@
+/* /admin/metrics (Admin::MetricsController). Kept minimal on top of the shared admin styles; tokens only.
+   Each number has a decorative <progress> bar beside it (aria-hidden; the number is the real value). */
+.admin-metrics__section { margin-top: var(--space-8); }
+.admin-metrics__definition { max-width: 44rem; font-size: var(--text-sm); }
+.admin-metrics__table { max-width: 44rem; }
+.admin-metrics__table tbody th { white-space: nowrap; }
+.admin-metrics__bar-cell { width: 30%; }
+.admin-metrics__bar {
+  display: block;
+  width: 100%;
+  min-width: var(--space-16);
+  height: var(--space-3);
+  accent-color: var(--color-admin);
+}
+
+/* On a phone the bars give way so the numbers fit without scrolling sideways. */
+@media (max-width: 40rem) {
+  .admin-metrics__bar-cell { display: none; }
+}

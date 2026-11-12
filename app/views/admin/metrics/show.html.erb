@@ -1,0 +1,124 @@
+<% content_for :title, "Admin" %>
+<% hours = ->(seconds) { number_with_precision(seconds / 3600.0, precision: 1, delimiter: ",") } %>
+<% day_label = ->(date) { tag.time(date.strftime("%a %-d %b"), datetime: date.iso8601) } %>
+<%= admin_tool(:div, class: "admin-dashboard admin-metrics container") do %>
+  <p><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+  <h1>Metrics</h1>
+  <p class="admin-dashboard__note">
+    Read-only, aggregate counts only: no names, emails or ids. A person is <strong>active</strong> on a day when they
+    coded at least <%= pluralize(@metrics.minimum_seconds / 60, "minute") %> that day in their own time zone (the
+    streak threshold in config/game.yml). Days are the local dates on the hours ledger; today is
+    <%= @metrics.today.iso8601 %> (UTC) and is still filling in.
+  </p>
+
+  <section class="admin-metrics__section" aria-labelledby="metrics-daily">
+    <h2 id="metrics-daily">Daily</h2>
+    <p class="admin-metrics__definition">Active people per day, and the hours everyone coded that day (each person's net time for the day, never below zero). Last <%= AdminMetrics::DAYS %> days, newest first.</p>
+    <% top_active = [ @metrics.daily.map(&:active_users).max.to_i, 1 ].max %>
+    <% top_seconds = [ @metrics.daily.map(&:seconds).max.to_i, 1 ].max %>
+    <table class="admin-table admin-metrics__table">
+      <caption>Daily active people and hours coded (last <%= AdminMetrics::DAYS %> days)</caption>
+      <thead>
+        <tr>
+          <th scope="col">Day</th>
+          <th scope="col" class="admin-table__num">Active people</th>
+          <th scope="col" class="admin-metrics__bar-cell"><span class="visually-hidden">Active people, as a bar</span></th>
+          <th scope="col" class="admin-table__num">Hours coded</th>
+          <th scope="col" class="admin-metrics__bar-cell"><span class="visually-hidden">Hours coded, as a bar</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @metrics.daily.reverse_each do |day| %>
+          <tr>
+            <th scope="row"><%= day_label.call(day.date) %></th>
+            <td class="admin-table__num"><%= number_with_delimiter(day.active_users) %></td>
+            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_active %>" value="<%= day.active_users %>" aria-hidden="true"></progress></td>
+            <td class="admin-table__num"><%= hours.call(day.seconds) %></td>
+            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_seconds %>" value="<%= day.seconds %>" aria-hidden="true"></progress></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="admin-metrics__section" aria-labelledby="metrics-weekly">
+    <h2 id="metrics-weekly">Weekly</h2>
+    <p class="admin-metrics__definition">Different people active on at least one day of the week. Weeks run Friday to Thursday, like the weekly boss. Last <%= AdminMetrics::WEEKS %> weeks, newest first; the current week is not over yet.</p>
+    <% top_weekly = [ @metrics.weekly.map(&:active_users).max.to_i, 1 ].max %>
+    <table class="admin-table admin-metrics__table">
+      <caption>Weekly active people (last <%= AdminMetrics::WEEKS %> weeks)</caption>
+      <thead>
+        <tr>
+          <th scope="col">Week</th>
+          <th scope="col" class="admin-table__num">Active people</th>
+          <th scope="col" class="admin-metrics__bar-cell"><span class="visually-hidden">Active people, as a bar</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @metrics.weekly.reverse_each do |week| %>
+          <tr>
+            <th scope="row"><%= day_label.call(week.starts_on) %> to <%= day_label.call(week.ends_on) %><%= " (so far)" if week.partial %></th>
+            <td class="admin-table__num"><%= number_with_delimiter(week.active_users) %></td>
+            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_weekly %>" value="<%= week.active_users %>" aria-hidden="true"></progress></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="admin-metrics__section" aria-labelledby="metrics-funnel">
+    <h2 id="metrics-funnel">Funnel</h2>
+    <p class="admin-metrics__definition">
+      Everyone who ever reached each step, all-time, as a share of everyone who signed up. Each step is counted on its
+      own. Connected Hackatime: has a Hackatime connection now or has had time credited from Hackatime. First coded
+      day: at least one active day. First ship submitted: any ship ever sent for review (even if later withdrawn or
+      rejected). First purchase: a shop order paid in coins that was not cancelled (the free sticker does not count).
+    </p>
+    <table class="admin-table admin-metrics__table">
+      <caption>Funnel (all-time)</caption>
+      <thead>
+        <tr>
+          <th scope="col">Step</th>
+          <th scope="col" class="admin-table__num">People</th>
+          <th scope="col" class="admin-table__num">Of signed up</th>
+          <th scope="col" class="admin-metrics__bar-cell"><span class="visually-hidden">Share, as a bar</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @metrics.funnel.each do |step| %>
+          <tr>
+            <th scope="row"><%= step.label %></th>
+            <td class="admin-table__num"><%= number_with_delimiter(step.count) %></td>
+            <td class="admin-table__num"><%= number_to_percentage(step.percent, precision: 1, strip_insignificant_zeros: true) %></td>
+            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="100" value="<%= step.percent %>" aria-hidden="true"></progress></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="admin-metrics__section" aria-labelledby="metrics-dropout">
+    <h2 id="metrics-dropout">Last active day</h2>
+    <p class="admin-metrics__definition">Everyone who has ever had an active day, by how many days before today (UTC) their most recent active day was. People more than <%= AdminMetrics::DROPOUT_DAYS %> days out have likely stopped.</p>
+    <% top_bucket = [ @metrics.dropout.map(&:count).max.to_i, 1 ].max %>
+    <table class="admin-table admin-metrics__table">
+      <caption>People by last active day</caption>
+      <thead>
+        <tr>
+          <th scope="col">Last active</th>
+          <th scope="col" class="admin-table__num">People</th>
+          <th scope="col" class="admin-metrics__bar-cell"><span class="visually-hidden">People, as a bar</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @metrics.dropout.each do |bucket| %>
+          <tr>
+            <th scope="row"><%= bucket.label %></th>
+            <td class="admin-table__num"><%= number_with_delimiter(bucket.count) %></td>
+            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_bucket %>" value="<%= bucket.count %>" aria-hidden="true"></progress></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
