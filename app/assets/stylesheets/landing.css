@@ -1,480 +1,379 @@
 /*
- * Landing page, built from the latest Figma frames: 151:266 (hero and signposts, 1440x2333), 152:469 (the "Fight
- * together" map, 1440x2333) and the CTA (138:172, 138:177). Colours, type, radii and spacing come from tokens.css and the
- * shared components (components.css). This file only holds what differs.
+ * Landing page: one map you scroll down. A hero painting, then a signpost, then a series of places (the boss arena,
+ * the prize market, the FAQ river, the last call), each with its own ground colour and curved edge, joined by a dotted
+ * path. The page below the hero follows Armand's map design of 2026-11-11, not Figma (see docs/FIGMA_GAPS.md).
  *
- * From 45rem up the page is the Figma composition: every size and position is written as a multiple of --u, one Figma
- * pixel at 1440 wide (--u = 100cqw / 1440 of the section), so calc(48 * var(--u)) is the Figma 48px type at full size
- * and everything scales together. The raw numbers are Figma coordinates (hero 151:266 from y 0, signs from y 747.5,
- * which is where the pole starts, map 152:469 from y 0, which is where the river starts under the pole). The sections
- * are capped at 160rem wide (2560px). Below 45rem everything stacks (a derived layout, no Figma frames for it).
- * Images: app/assets/images/landing/ (painting crop and the sky overlay) and app/assets/images/design/ (the rest).
+ * This file is bundled into every page (stylesheet_link_tag :app), so every rule is under .landing, or under
+ * body:has(.landing) when it must reach the site header, footer or <main> around it. Fonts come from fonts.css and
+ * tokens.css. The path is drawn by the landing_map Stimulus controller from where elements sit. The scenery props
+ * (.prop--<section>-<n>) hold their positions here because the CSP forbids style attributes.
+ * Images: app/assets/images/landing/.
  */
 
-.page:has(> .landing) { padding-block: 0; }
+/* ---- Page chrome: the header floats over the hero, and the page ends on the last section's sky ---- */
+body:has(.landing) {
+  --sky: #9dc4fd;
+  --blue: #1472d5;
+  --blue-shade: #1662c7;
+  --royal: #1456bd;
+  --royal-shade: #0e3f91;
+  --navy: #10285a;
+  --navy-shade: #0a1a40;
+  --navy-lift: #1b3a7a;
+  --yellow: #ffd000;
+  --yellow-shade: #dc9700;
+  --pink: #ff4797;
+  --pink-shade: #ff2d84;
+  --pink-deep: #e62978;
+  --cream: #fffef5;
+  --cream-shade: #e9dcc0;
+  --display: var(--font-display);
+  --body: var(--font-body);
+  --gutter: clamp(1.25rem, 5vw, 4rem);
+  --side: max(var(--gutter), calc((100vw - 72rem) / 2)); /* content sits in a centred column, 72rem at most */
+  --v: min(1vw, 0.9rem);
+  background: var(--sky);
+}
+body:has(.landing) .page { padding: 0; } /* the sections run edge to edge */
 
-.landing { --u: calc(100cqw / 1440); font-weight: 500; }
+body:has(.landing) .site-header { border-bottom: 0; background: var(--sky); }
+body:has(.landing) .site-header__brand { display: none; } /* the logo in the hero is the brand */
+body:has(.landing) .site-header__inner { justify-content: flex-end; }
+body:has(.landing) .site-header .btn {
+  min-height: 2.75rem;
+  border-color: var(--color-surface-raised);
+  border-bottom-width: var(--border-chunky);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* The footer lies over the bottom of the last section, so Orpheus can reach the very bottom of the page. On phones his
+   cape fills that corner, so the footer sits on it in cream at the right; on wider screens it sits on the sky at the left. */
+body:has(.landing) { position: relative; }
+body:has(.landing) .site-footer { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; border-top: 0; background: none; color: var(--cream); pointer-events: none; }
+body:has(.landing) .site-footer__inner { flex-direction: column; align-items: flex-end; gap: var(--space-1); max-width: none; margin: 0; padding-inline: var(--side, 1.25rem); }
+body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
+@media (min-width: 64rem) {
+  body:has(.landing) .site-footer { color: var(--navy); }
+  body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /* the cream ring would be 1.8:1 on the sky */
+  body:has(.landing) .site-footer__inner { flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-6); }
+}
+
+/* The header floats over the hero on wide screens (it sits in flow as a sky strip on narrow ones). */
+@media (min-width: 48rem) {
+  body:has(.landing) { --hero-gutter: clamp(var(--space-6), 4vw, var(--space-16)); position: relative; }
+  body:has(.landing) .site-header { position: absolute; top: 0; left: 0; right: 0; z-index: 5; background: transparent; }
+  body:has(.landing) .site-header__inner { max-width: none; padding-inline: var(--hero-gutter); }
+}
+
+/* ---- Base for the page (the app's own base styles are different, so reset what the design relies on) ---- */
+.landing { color: var(--cream); font: 500 1.0625rem/1.6 var(--body); }
+.landing :is(h1, h2, h3, p, ol, ul) { margin: 0; padding: 0; overflow-wrap: normal; }
+.landing :is(ol, ul) { list-style: none; }
+.landing img { max-width: 100%; }
+.landing svg { max-width: none; }
 .landing form { margin: 0; }
+.landing .cta-form { display: flex; }
 
-/* On the landing the header is only the account control, floating over the hero (the logo is part of the hero art). */
-.page--landing .site-header {
-  position: absolute;
-  inset: 0 0 auto;
-  z-index: 5;
-  border-bottom: 0;
-  background: none;
-}
-.page--landing .site-header__brand { display: none; }
-.page--landing .site-header__inner { justify-content: flex-end; max-width: none; padding-block: var(--space-3); }
-.page--landing .site-header__account { margin-inline-start: auto; }
-
-/* ---- Chunky call to action (Figma 138:172). Everything is in em, so font-size alone scales it. ---- */
-.cta {
-  display: inline-flex;
-  max-width: 100%;
-  padding: 0.4167em; /* Figma 20px at 48px type */
-  appearance: none;
-  border: 0;
-  border-bottom: 0.125em solid var(--color-cta-edge); /* Figma 6px */
-  border-radius: 1em; /* Figma 48px = --radius-xl */
-  background: var(--color-surface); /* Figma: white outer pill */
-  color: var(--color-bg);
-  font: inherit;
-  font-family: var(--font-display);
-  font-size: var(--cta-size, var(--text-display));
-  line-height: 1;
-  letter-spacing: var(--tracking-display);
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.cta__face {
-  display: flex;
-  align-items: center;
-  gap: 0.354em; /* Figma 17px */
-  min-height: 1.7083em; /* Figma 82px */
-  padding: 0.12em 0.708em; /* Figma 34px sides */
-  border-radius: 0.5833em; /* Figma 28px = --radius-lg */
-  background: var(--color-cta);
-  box-shadow: var(--shadow-cta-edge);
-}
-
-.cta__label { text-wrap: balance; padding-top: 0.04em; }
-
-.cta__arrow {
-  flex: none;
-  width: 0.8704em; /* Figma 34px box, 41.8px with the stroke */
-  height: 0.875em;
-  margin-inline: -0.0833em;
-  overflow: visible;
-}
-
-.cta:hover { color: var(--color-bg); text-decoration: none; }
-
-.cta:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 4px;
-  box-shadow: 0 0 0 4px var(--color-surface);
-}
-
-/* The pink face alone, for the blue map (Figma 138:177). */
-.cta--bare { padding: 0; border: 0; border-radius: 0.5833em; background: transparent; }
-.cta--bare:focus-visible { box-shadow: none; outline-offset: 3px; }
-
-@media (prefers-reduced-motion: no-preference) {
-  .cta { transition: transform 120ms ease; }
-  .cta:hover { transform: translateY(-0.04em); }
-  .cta:active { transform: translateY(0.03em); }
-}
-
-/* ---- Hero (Figma 151:266) ---- */
-.landing-hero, .landing-signs, .landing-map {
-  position: relative;
-  max-width: 160rem;
-  margin-inline: auto;
-  container-type: inline-size;
-}
-
-/* Narrow screens: the logo, tagline and button on the sky, then the painting (zoomed to the boss) fading into it. */
-.landing-hero { overflow-x: clip; }
-.landing-hero__stage { position: relative; display: flex; flex-direction: column; }
-
-.landing-hero__scene {
-  order: 2;
-  position: relative;
-  width: 161%;
-  margin-left: -61%;
-  aspect-ratio: 1440 / 1000;
-  margin-top: calc(var(--space-4) * -1);
-  /* The painting fades in under the call to action (a mask only reads alpha: black here is not a colour). */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%);
-  mask-image: linear-gradient(to bottom, transparent, #000 22%);
-}
-
-.landing-hero__art { position: absolute; left: 0; top: 0; width: 100%; height: 98.77%; max-width: none; }
-.landing-hero__overlay { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; }
-
-/* Narrow screens: a cream pill under the floating account buttons. */
-.landing-referral {
-  order: 0;
-  margin: var(--space-16) var(--space-4) 0;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-weight: 700;
-  text-align: center;
-}
-.landing-referral ~ .landing-hero__content { padding-top: var(--space-6); }
-
-.landing-hero__content {
-  position: relative;
-  z-index: 1;
+/* ---- Referral banner (only for a known referral slug), at the top of the hero ---- */
+.landing .landing-referral {
   order: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-4);
-  padding: var(--space-16) var(--space-4) 0;
-}
-
-.landing-hero__logo { width: min(70%, 16rem); margin: 0; line-height: 0; }
-.landing-hero__logo img { display: block; width: 100%; height: auto; }
-
-.landing-hero__tagline {
   margin: 0;
-  color: var(--color-surface);
-  font-family: var(--font-display);
-  font-size: clamp(1.75rem, 7.6vw, 3rem);
-  line-height: normal;
-  letter-spacing: var(--tracking-display);
-  -webkit-text-stroke: 0.16em var(--color-secondary); /* the blue outline in Figma, painted behind the fill */
-  paint-order: stroke fill;
-  stroke-linejoin: round;
-}
-.landing-hero__tagline-accent { color: var(--color-highlight); }
-
-.landing-hero__cta { --cta-size: clamp(1.5rem, 6.4vw, 2.5rem); max-width: 100%; }
-
-.landing-hero__sticker {
-  margin: 0;
-  padding: var(--space-1) var(--space-4);
-  border-radius: var(--radius-full);
-  background: var(--color-highlight);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg);
   color: var(--color-text);
   font-weight: 700;
-}
-
-/* ---- How it works: three signs on one pole (Figma 151:266 and 151:279) ---- */
-/* Narrow screens: three coloured cards (the sign art stretched behind the text) on the pole. */
-.landing-signs__stage { position: relative; padding: var(--space-6) var(--space-4) var(--space-12); }
-
-.landing-signs__pole {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  z-index: 0;
-  width: min(24%, 6rem);
-  height: 100%;
-  max-width: none;
-  transform: translateX(-50%);
-}
-
-.signs { position: relative; z-index: 1; display: grid; gap: var(--space-4); max-width: 34rem; margin: 0 auto; padding: 0; list-style: none; }
-
-.sign {
-  --sign-ink: var(--color-bg);
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: var(--space-4);
-  align-items: center;
-  padding: var(--space-4) var(--space-8) var(--space-6) var(--space-6);
-  color: var(--sign-ink);
-  font-family: var(--font-display);
-  line-height: 1.1;
-}
-.sign--build { --sign-ink: var(--color-ink-blue); }
-
-.sign__art { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; max-width: none; }
-/* White body text under 24px needs 4.5:1: below 60rem the blue and pink faces are a shade darker (4.6:1 and 4.7:1). */
-.sign--ship .sign__art { filter: brightness(0.96); }
-.sign--prize .sign__art { filter: brightness(0.8); }
-
-.sign__num, .sign__title, .sign__body { position: relative; z-index: 1; margin: 0; }
-.sign__num { grid-row: span 2; font-size: var(--text-3xl); line-height: 1; letter-spacing: var(--tracking-display); }
-.sign__title { font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
-.sign__body { font-size: var(--text-lg); letter-spacing: var(--tracking-heading); }
-.sign__body br { display: none; }
-
-/* ---- Fight together: the blue map (Figma 152:469) ---- */
-.landing-map { overflow: clip; }
-
-/* Narrow screens: the copy, the boss with its bars, then the closing call to action; the map art stretched behind. */
-.landing-map__stage {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  padding: clamp(5rem, 22vw, 8rem) var(--space-4) 0;
-  /* Flat map blue under the wavy top, so the page stays blue where the art is narrower than the screen. */
-  background: linear-gradient(var(--color-map), var(--color-map)) bottom / 100% calc(100% - 4rem) no-repeat;
-  color: var(--color-bg);
-}
-
-.landing-map__bg { position: absolute; left: -10.06%; top: 1.44%; width: 111.59%; height: 100.46%; max-width: none; }
-.landing-map__river { position: absolute; left: 12.6%; top: 0; width: 63%; height: 79%; max-width: none; mix-blend-mode: soft-light; }
-
-.landing-map__copy, .landing-boss, .landing-map__join { position: relative; z-index: 1; }
-
-.landing-map__title {
-  margin: 0 0 var(--space-3);
-  color: var(--color-surface);
-  font-size: clamp(var(--text-2xl), 12vw, var(--text-hero-title));
-  line-height: normal;
-  letter-spacing: var(--tracking-display);
-}
-.landing-map__lead { max-width: 36rem; margin: 0; color: var(--color-surface); font-family: var(--font-display); font-size: var(--text-xl); line-height: normal; letter-spacing: var(--tracking-heading); }
-.landing-map__lead br { display: none; }
-
-/* The boss: the health bar on top, a plate with the hours under it, the boss over the plate (Figma 156:667, 152:545). */
-.landing-boss { --bar-h: 2.75rem; display: grid; justify-items: center; gap: var(--space-3); }
-
-.landing-boss__bar, .landing-boss__plate {
-  position: relative;
-  width: 100%;
-  height: var(--bar-h);
-  background: var(--color-hp-outline);
-  clip-path: polygon(0 100%, 2.958% 0, 100% 0, 97.945% 100%); /* the Figma parallelogram, 10px white outline inside it */
-}
-
-.landing-boss__plate { display: flex; align-items: center; padding-left: 5%; }
-.landing-boss__plate::before, .landing-boss__bar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--color-hp-fill);
-  clip-path: polygon(3.919% 18.95%, 98.14% 18.95%, 96.87% 81.05%, 2.081% 81.05%);
-}
-.landing-boss__label {
-  position: relative;
-  margin: 0;
-  color: var(--color-surface);
-  font-family: var(--font-display);
-  font-size: var(--text-md);
-  line-height: 1;
-  letter-spacing: var(--tracking-display);
-  white-space: nowrap;
-}
-
-/* The native <progress> is the bar: pink = health left, dark = health lost, a slanted edge between them as in Figma. */
-.landing-boss__bar { background: var(--color-hp-outline); }
-.landing-boss__bar::before { background: var(--color-hp-empty); }
-.landing-boss__bar progress {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  appearance: none;
-  border: 0;
-  background: none;
-  clip-path: polygon(3.919% 18.95%, 98.14% 18.95%, 96.87% 81.05%, 2.081% 81.05%);
-  color: var(--color-hp-fill);
-}
-.landing-boss__bar progress::-webkit-progress-bar { background: none; }
-.landing-boss__bar progress::-webkit-progress-value { background: var(--color-hp-fill); clip-path: polygon(0 0, 100% 0, calc(100% - var(--bar-h) * 0.2065) 100%, 0 100%); }
-.landing-boss__bar progress::-moz-progress-bar { background: var(--color-hp-fill); }
-
-.landing-boss__shadow { display: none; }
-.landing-boss__art { width: min(100%, 21rem); height: auto; }
-.landing-boss__bar { order: -1; }
-
-/* Trees (73x119) and houses (150x72) painted on the map (Figma 156:562, 156:617). Mobile keeps a few at the edges. */
-.landing-map__decor { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.landing-tree, .landing-house { position: absolute; left: calc(var(--x) * 100% / 1440); top: calc(var(--y) * 100% / 2333); display: none; background: no-repeat center / 100% 100%; }
-.landing-tree:nth-child(2), .landing-tree:nth-child(8), .landing-tree:nth-child(11), .landing-house:nth-child(15), .landing-house:nth-child(18) { display: block; }
-.landing-tree:nth-child(1) { --x: 1040.95; --y: 1488.94; }
-.landing-tree:nth-child(2) { --x: 158.34; --y: 985.49; }
-.landing-tree:nth-child(3) { --x: 1119.17; --y: 301.91; }
-.landing-tree:nth-child(4) { --x: 194.01; --y: 301.91; }
-.landing-tree:nth-child(5) { --x: 599.64; --y: 1451.52; }
-.landing-tree:nth-child(6) { --x: 594.2; --y: 1239.29; }
-.landing-tree:nth-child(7) { --x: 913.5; --y: 1261.37; }
-.landing-tree:nth-child(8) { --x: 1113.95; --y: 1255.56; }
-.landing-tree:nth-child(9) { --x: 791.28; --y: 1481.75; }
-.landing-tree:nth-child(10) { --x: 860.11; --y: 1447.91; }
-.landing-tree:nth-child(11) { --x: 936.13; --y: 1554.05; }
-.landing-tree:nth-child(12) { --x: 958.58; --y: 1402.48; }
-.landing-house:nth-child(13) { --x: 716.28; --y: 1358.29; }
-.landing-house:nth-child(14) { --x: 578.15; --y: 1125.73; }
-.landing-house:nth-child(15) { --x: 1244.36; --y: 1104.48; }
-.landing-house:nth-child(16) { --x: 373.47; --y: 346.07; }
-.landing-house:nth-child(17) { --x: 997.49; --y: 179.75; }
-.landing-house:nth-child(18) { --x: 124.23; --y: 1535.94; }
-.landing-house:nth-child(19) { --x: 364.39; --y: 1197.73; }
-.landing-tree { width: 2.75rem; height: 4.5rem; background-image: url("design/map-tree.svg"); }
-.landing-house { width: 5.5rem; height: 2.64rem; background-image: url("design/map-house.svg"); }
-
-.landing-map__hero { position: relative; z-index: 2; align-self: flex-end; width: min(55%, 16rem); height: auto; margin: calc(var(--space-12) * -1) calc(var(--space-4) * -1) 0 0; }
-
-.landing-map__join { display: grid; justify-items: center; gap: var(--space-3); --cta-size: clamp(1.5rem, 6.4vw, 2.5rem); }
-/* The Figma note is blue on blue (1.8:1) and says it needs a container: a cream pill with the same chunky edge. */
-.landing-map__ready {
-  margin: 0;
-  padding: var(--space-2) var(--space-6);
-  border-bottom: var(--border-chunky) solid var(--color-cta-edge);
-  border-radius: var(--radius-full);
-  background: var(--color-bg);
-  color: var(--color-ink-blue);
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  line-height: 1.2;
-  letter-spacing: var(--tracking-heading);
   text-align: center;
 }
-.landing-map__stage { padding-bottom: var(--space-8); }
-
-/* ---- From 45rem: the Figma composition ---- */
-@media (min-width: 45rem) {
-  /* Hero: 747.5 Figma px tall; the painting runs on under the signs section, which paints over it. */
-  .landing-hero { overflow: visible; }
-  .landing-hero__stage { display: block; height: calc(747.5 * var(--u)); }
-
-  .landing-hero__scene { position: absolute; left: 0; top: 0; z-index: 0; order: 0; width: 100%; margin: 0; -webkit-mask-image: none; mask-image: none; }
-
-  .landing-referral {
+@media (min-width: 48rem) {
+  .landing .landing-referral {
     position: absolute;
-    margin: 0;
-    top: calc(12 * var(--u));
+    z-index: 2;
+    top: var(--space-4);
     left: 50%;
-    z-index: 3;
     padding-inline: var(--space-6);
     border-radius: var(--radius-full);
     transform: translateX(-50%);
     white-space: nowrap;
   }
-
-  .landing-hero__content { position: absolute; inset: 0; display: block; padding: 0; }
-
-  .landing-hero__logo { position: absolute; left: calc(37.56 * var(--u)); top: calc(48 * var(--u)); width: calc(579 * var(--u)); }
-
-  .landing-hero__tagline {
-    position: absolute;
-    left: calc(81.44 * var(--u));
-    top: calc(420 * var(--u));
-    font-size: calc(48 * var(--u));
-    white-space: nowrap;
-  }
-
-  .landing-hero__cta { --cta-size: calc(48 * var(--u)); position: absolute; left: calc(51.56 * var(--u)); top: calc(506 * var(--u)); }
-
-  .landing-hero__sticker {
-    position: absolute;
-    left: calc(72 * var(--u));
-    top: calc(660 * var(--u));
-    padding: 0 calc(24 * var(--u));
-    font-size: max(var(--text-sm), calc(22 * var(--u)));
-    line-height: 1.8;
-    white-space: nowrap;
-  }
-
-  /* Signs: the pole is 88 x 854 at x 643.7; the signs are placed from the pole top (y 747.5 in the frame). */
-  .landing-signs { z-index: 1; }
-  .landing-signs__stage { height: calc(854 * var(--u)); padding: 0; }
-  .landing-signs__pole { left: calc(643.7 * var(--u)); width: calc(88 * var(--u)); height: calc(854 * var(--u)); transform: none; }
-  .signs { display: block; max-width: none; margin: 0; }
-
-  .sign { position: absolute; display: block; padding: 0; line-height: normal; }
-  .sign--build { left: calc(280.8 * var(--u)); top: calc(28.7 * var(--u)); width: calc(911.2 * var(--u)); height: calc(279.5 * var(--u)); }
-  .sign--ship { left: calc(227.8 * var(--u)); top: calc(278.1 * var(--u)); width: calc(963.84 * var(--u)); height: calc(247.08 * var(--u)); }
-  .sign--prize { left: calc(227.8 * var(--u)); top: calc(510.2 * var(--u)); width: calc(1022.41 * var(--u)); height: calc(249.49 * var(--u)); }
-
-  /* Each text is a box from Figma (the bounding box of the rotated text) with the text centred inside and turned. */
-  .sign__num, .sign__title, .sign__body { position: absolute; display: flex; align-items: center; justify-content: center; }
-  .sign__num > span, .sign__title > span, .sign__body > span { display: block; white-space: nowrap; }
-  .sign__num { grid-row: auto; font-size: calc(128 * var(--u)); letter-spacing: -0.06em; line-height: normal; }
-  .sign__title { font-size: calc(64 * var(--u)); letter-spacing: -0.06em; line-height: normal; }
-  .sign__body { font-size: calc(36 * var(--u)); letter-spacing: -0.06em; line-height: normal; }
-  .sign__body br { display: inline; }
-
-  .sign--build .sign__num { left: calc(29.48 * var(--u)); top: calc(69.46 * var(--u)); width: calc(55.7 * var(--u)); height: calc(155.755 * var(--u)); }
-  .sign--build .sign__num > span { transform: rotate(-2.13deg); }
-  .sign--build .sign__title { left: calc(105.57 * var(--u)); top: calc(82.35 * var(--u)); width: calc(143.345 * var(--u)); height: calc(87.051 * var(--u)); }
-  .sign--build .sign__title > span { transform: rotate(-4.27deg); }
-  .sign--build .sign__body { left: calc(103.12 * var(--u)); top: calc(134.86 * var(--u)); width: calc(607.466 * var(--u)); height: calc(77.467 * var(--u)); }
-  .sign--build .sign__body > span { transform: rotate(-3.27deg); }
-
-  .sign--ship .sign__title { left: calc(194.96 * var(--u)); top: calc(35.75 * var(--u)); width: calc(125.395 * var(--u)); height: calc(85.712 * var(--u)); }
-  .sign--ship .sign__title > span { transform: rotate(-4.27deg); }
-  .sign--ship .sign__body { left: calc(194.96 * var(--u)); top: calc(76.81 * var(--u)); width: calc(667.73 * var(--u)); height: calc(122.453 * var(--u)); }
-  .sign--ship .sign__body > span { transform: rotate(-3.16deg); }
-  .sign--ship .sign__num { left: calc(111.04 * var(--u)); top: calc(38.15 * var(--u)); width: calc(80.683 * var(--u)); height: calc(156.686 * var(--u)); }
-  .sign--ship .sign__num > span { transform: rotate(-2.13deg); }
-
-  .sign--prize .sign__body { left: calc(134.55 * var(--u)); top: calc(108.61 * var(--u)); width: calc(622.256 * var(--u)); height: calc(87.871 * var(--u)); }
-  .sign--prize .sign__body > span { transform: rotate(0.17deg); }
-  .sign--prize .sign__num { left: calc(41.04 * var(--u)); top: calc(32.38 * var(--u)); width: calc(84.85 * var(--u)); height: calc(159.25 * var(--u)); }
-  .sign--prize .sign__num > span { transform: rotate(4.5deg); }
-  .sign--prize .sign__title { left: calc(131.94 * var(--u)); top: calc(28.55 * var(--u)); width: calc(378.761 * var(--u)); height: calc(80.825 * var(--u)); }
-  .sign--prize .sign__title > span { transform: rotate(0.58deg); }
-
-  /* Map: 2333 Figma px tall, everything placed as in the frame. */
-  .landing-map__stage { display: block; height: calc(2333 * var(--u)); padding: 0; background-size: 100% calc(100% - 160 * var(--u)); }
-  .landing-map__river { left: calc(180.9 * var(--u)); top: 0; width: calc(910.6 * var(--u)); height: calc(1842.34 * var(--u)); }
-
-  .landing-map__copy { position: absolute; left: calc(88 * var(--u)); top: calc(508.4 * var(--u)); width: calc(640 * var(--u)); }
-  .landing-map__title { margin: 0; font-size: calc(96 * var(--u)); white-space: nowrap; }
-  .landing-map__lead { position: absolute; left: 0; top: calc(124.1 * var(--u)); width: calc(621.3 * var(--u)); max-width: none; margin: 0; font-size: calc(40 * var(--u)); letter-spacing: -0.06em; }
-  .landing-map__lead br { display: inline; }
-
-  /* No z-index here: the shadow's soft-light blend has to see the map behind it, not an isolated group. */
-  .landing-boss { --bar-h: calc(52.767 * var(--u)); z-index: auto; position: absolute; left: calc(613.48 * var(--u)); top: calc(464.23 * var(--u)); display: block; width: calc(756.3 * var(--u)); height: calc(741.2 * var(--u)); }
-  .landing-boss__bar, .landing-boss__plate { position: absolute; width: calc(707.354 * var(--u)); }
-  .landing-boss__bar { left: 0; top: 0; z-index: 3; }
-  /* The label never goes below 24px (white on pink needs it for AA), so the plate keeps room for it on narrower screens. */
-  .landing-boss__plate { left: calc(33.73 * var(--u)); top: calc(141.96 * var(--u)); z-index: 0; height: max(var(--bar-h), 2.75rem); padding-left: calc(34.6 * var(--u)); }
-  .landing-boss__label { font-size: max(var(--text-md), calc(24 * var(--u))); }
-  .landing-boss__shadow { position: absolute; left: calc(160.4 * var(--u)); top: calc(539.4 * var(--u)); z-index: 1; display: block; width: calc(470.46 * var(--u)); height: calc(201.82 * var(--u)); max-width: none; mix-blend-mode: soft-light; }
-  .landing-boss__art { position: absolute; left: calc(155.3 * var(--u)); top: calc(117.7 * var(--u)); z-index: 2; width: calc(601 * var(--u)); height: calc(580 * var(--u)); max-width: none; }
-
-  .landing-tree, .landing-house { display: block; }
-  .landing-tree { width: calc(73 * var(--u)); height: calc(119 * var(--u)); }
-  .landing-house { width: calc(150 * var(--u)); height: calc(72 * var(--u)); }
-
-  .landing-map__hero { position: absolute; left: calc(983.78 * var(--u)); top: calc(1949.47 * var(--u)); width: calc(456.22 * var(--u)); height: calc(383.53 * var(--u)); margin: 0; }
-
-  .landing-map__join { position: absolute; left: 0; top: calc(1868 * var(--u)); width: 100%; gap: calc(24 * var(--u)); --cta-size: calc(48 * var(--u)); }
-  .landing-map__ready { padding: calc(8 * var(--u)) calc(36 * var(--u)); font-size: calc(44 * var(--u)); letter-spacing: -0.06em; }
 }
 
-/* From 60rem the sign faces are the Figma colours (the text is 24px and up there). */
-@media (min-width: 60rem) {
-  .sign--ship .sign__art, .sign--prize .sign__art { filter: none; }
+/* ---- The map, ported from the standalone page ---- */
+/* the bowl's "Boss health" label (an SVG text element; the CSP forbids a style attribute on it) */
+.landing { position: relative; overflow: clip; }
+.landing .wrap { padding-inline: var(--side); }
+.landing h2 { font: 400 clamp(2.25rem, 4.6vw, 3.75rem)/0.95 var(--display); letter-spacing: -0.04em; }
+/* ---- Button: pink face, edge in a darker pink, no outline ---- */
+.landing .cta {
+  display: inline-flex; max-width: 100%; padding: 0; border: 0; appearance: none; background: none;
+  border-radius: 0.58em;
+  color: var(--cream);
+  font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display); /* never under 24px: cream on this pink is 3.1:1, which only passes as large text */
+  letter-spacing: -0.05em;
+  text-decoration: none; white-space: nowrap; cursor: pointer;
+}
+.landing .cta__face {
+  display: inline-flex; align-items: center; gap: 0.36em;
+  padding: 0.5em 0.75em 0.56em;
+  border-radius: 0.58em;
+  background: var(--pink);
+  box-shadow: inset 0 -0.1667em 0 var(--pink-shade);
+}
+.landing .cta svg { width: 0.87em; height: 0.875em; overflow: visible; flex: none; }
+.landing .cta:focus-visible { outline: 3px solid var(--navy); outline-offset: 4px; }
+@media (prefers-reduced-motion: no-preference) {
+  .landing .cta { transition: translate 120ms ease; }
+  .landing .cta:hover { translate: 0 -0.05em; }
+  .landing .cta:active { translate: 0 0.04em; }
+}
+/* ---- Hero: same as the build ---- */
+.landing .hero { position: relative; }
+.landing .hero__stage { position: relative; display: flex; flex-direction: column; overflow: hidden; background: var(--sky); }
+.landing .hero__art {
+  order: 3; display: block; width: 100%; height: clamp(15rem, calc(100svh - 21rem), 34rem);
+  object-fit: cover; object-position: 85% 100%; margin-top: -1.5rem;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%); mask-image: linear-gradient(to bottom, transparent, #000 35%);
+}
+.landing .hero__wash { display: none; }
+.landing .hero__content { order: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.25rem var(--side) 0; }
+.landing .hero__logo { width: min(72%, 19rem); line-height: 0; }
+.landing .hero__logo img { display: block; width: 100%; height: auto; }
+.landing .hero__tagline {
+  padding-left: 0.5rem; color: var(--cream);
+  font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--display); letter-spacing: -0.05em;
+  -webkit-text-stroke: 0.16em #0563de; paint-order: stroke fill;
+}
+.landing .hero__tagline span { color: #ffda37; }
+.landing .hero__swoosh { position: relative; z-index: 1; display: block; width: 100%; height: auto; margin-top: calc(100% * -234 / 1440); margin-bottom: -1px; }
+@media (min-width: 48rem) {
+  .landing .hero { --swoosh-height: 14rem; --swoosh-overlap: 9.5rem; }
+  .landing .hero__stage { flex-direction: row; align-items: center; min-height: clamp(30rem, calc(100svh - 4.5rem), 52rem); padding-block: 4rem var(--swoosh-overlap); }
+  .landing .hero__art { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; object-position: 75% 48%; -webkit-mask-image: none; mask-image: none; }
+  .landing .hero__wash { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+  .landing .hero__content { position: relative; gap: 1.25rem; padding: 0 var(--side); }
+  .landing .hero__logo { width: 21rem; }
+  .landing .hero__tagline { padding: 0; font-size: 2rem; white-space: nowrap; }
+  .landing .hero__swoosh { height: var(--swoosh-height); margin-top: calc(var(--swoosh-overlap) * -1); object-fit: fill; }
+}
+.landing .hero__sticker {
+  margin: 0; padding: 0.25rem 0.875rem; border-radius: var(--radius-full); background: var(--yellow); color: #000;
+  font-size: 0.875rem; font-weight: 700; line-height: 1.5;
+}
+/* ---- How it works: just the signpost, on flat sky. Its top board pokes up over the hero's bottom edge. ---- */
+.landing .how { position: relative; background: var(--sky); color: var(--navy); }
+.landing .how__inner { display: flex; flex-direction: column; align-items: center; padding: 0 0.5rem calc(var(--edge-a) * 0.72 + 1.5vw); }
+.landing .how__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* for screen readers; the boards say it */
+.landing .signpost {
+  position: relative; z-index: 2; container-type: inline-size; width: min(100%, 36rem); aspect-ratio: 1476 / 1445; margin-top: -2.25rem;
+  background: url("landing/signpost.svg") no-repeat 0 0 / 100% 100%; /* the pole, its shadow on the ground and the three boards, drawn as one object */
+}
+@media (min-width: 48rem) {
+  .landing .signpost { margin-top: -10.5rem; }
+}
+/* Each board's words start on the middle line of its face and run along the board's own slope. --u is one unit of the drawing. */
+.landing .signpost__board { --u: calc(100cqi / 1476); }
+.landing .signpost__board--1 { --tx: 168; --ty: 286; --tw: 990; --tilt: -4.7deg; color: #10285a; }
+.landing .signpost__board--2 { --tx: 318; --ty: 648; --tw: 985; --tilt: -3deg; color: var(--cream); }
+.landing .signpost__board--3 { --tx: 120; --ty: 1020; --tw: 1130; --tilt: 0.1deg; color: var(--navy-shade); } /* cream on this pink is 3.1:1; the deep navy is 5.4:1 */
+.landing .signpost__text {
+  position: absolute; left: calc(var(--u) * var(--tx)); top: calc(var(--u) * var(--ty)); width: calc(var(--u) * var(--tw));
+  display: grid; grid-template-columns: auto 1fr; column-gap: calc(var(--u) * 30); align-items: center;
+  font-family: var(--display); letter-spacing: -0.06em; line-height: 1.05;
+  transform: translateY(-50%) rotate(var(--tilt)); transform-origin: left center;
+}
+.landing .signpost__num { grid-row: 1 / span 2; font-size: calc(var(--u) * 176); line-height: 0.9; }
+.landing .signpost h3 { align-self: end; font: inherit; font-size: calc(var(--u) * 88); line-height: 1; }
+.landing .signpost__text p { align-self: start; margin-top: calc(var(--u) * 8); font-size: calc(var(--u) * 52); line-height: 1.1; }
+/* ---- Below the hero the page is one map you scroll down. Each section is a place on it, with its own ground colour and a curved edge. ---- */
+.landing { --edge-a: clamp(7rem, 16.7vw, 15rem); --edge-hp: clamp(10rem, 22.2vw, 20rem); --edge-c: clamp(6rem, 13.9vw, 12.5rem); --edge-d: clamp(5.5rem, 12.5vw, 11.25rem); }
+.landing .blk { position: relative; }
+.landing .slab > .in { position: relative; padding: clamp(2.5rem, 5vw, 4.5rem) 0 calc(var(--next, 0px) + clamp(3rem, 6vw, 5rem)); background: var(--bg); }
+.landing .edge { position: absolute; left: 0; bottom: calc(100% - 1px); display: block; width: 100%; height: var(--h); pointer-events: none; overflow: visible; }
+.landing .edge__fill { fill: var(--bg); }
+.landing .edge--a { --h: var(--edge-a); }
+.landing .edge--hp { --h: var(--edge-hp); }
+.landing .edge--c { --h: var(--edge-c); }
+.landing .edge--d { --h: var(--edge-d); }
+.landing .slab .wrap,
+.landing .fight__text,
+.landing .shelf { position: relative; z-index: 1; }
+/* The path between the places. One drawing over the whole map, above the ground and under everything standing on it. */
+/* One flat band. The overlay blend makes it a lighter tint on the sky and a deeper shade on the blue, navy and yellow grounds. */
+.landing .trail { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: overlay; }
+.landing .trail path { fill: none; stroke: #45454b; stroke-linecap: round; stroke-linejoin: round; stroke-width: clamp(1.75rem, 3.2vw, 3rem); }
+/* Scenery: trees, houses and rocks seen from above and in front, each sitting on its own patch of shade. */
+.landing .sprite { position: absolute; top: 0; left: 0; }
+.landing .prop {
+  position: absolute; z-index: 1; display: block; width: calc(var(--w) * var(--u)); height: auto; pointer-events: none; overflow: visible;
+  --u: clamp(0.5rem, 0.9vw, 0.8rem);
+}
+/* Armand's tree and house stand in for the earlier round trees, pines, bushes, houses and towers; these keep each one about the size its spot was laid out for. */
+.landing .prop.k-round { width: calc(var(--w) * var(--u) * 0.8); }
+.landing .prop.k-bush { width: calc(var(--w) * var(--u) * 0.5); }
+.landing .prop.k-house { width: calc(var(--w) * var(--u) * 1.25); }
+.landing .prop.k-tower { width: calc(var(--w) * var(--u) * 1.5); }
+.landing .prop.d { display: none; }
+@media (min-width: 64rem) {
+  .landing .prop.d { display: block; }
+  .landing .prop.m { display: none; }
+}
+/* ---- Fight together: the boss stands on the ground with a patch of shade under him and his health bar over his shoulder. ---- */
+.landing .fight { --bg: var(--blue); --aw: 112vw; }
+.landing .fight .in { padding-bottom: 132vw; }
+.landing .fight__text { padding-inline: var(--side); }
+.landing .fight h2 { color: var(--yellow); } /* every heading on a blue ground is yellow */
+.landing .fight__text p { max-width: min(26rem, 76%); margin-top: 1.25rem; }
+.landing .arena { position: absolute; z-index: 1; right: -6vw; bottom: calc(var(--edge-hp) * 0.38); width: var(--aw); --boss-w: 74%; }
+.landing .fight__shadow { display: block; width: 100%; height: auto; fill: #0f5fc0; }
+/* The bar is the real boss's health (a native progress element: pink is health left). Its label sits on top, un-skewed. */
+.landing .fight__health {
+  position: absolute; left: 18%; right: 14%; bottom: calc(var(--aw) * 0.92); margin: 0;
+  border: 0.25rem solid #fff; background: #7a1d42; color: var(--cream); transform: skewX(-24deg);
+  font: 400 clamp(0.8rem, 1.5vw, 1.05rem)/1.2 var(--display); letter-spacing: -0.03em;
+}
+.landing .fight__bar { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; appearance: none; background: #7a1d42; color: #d0306f; }
+.landing .fight__bar::-webkit-progress-bar { background: #7a1d42; }
+.landing .fight__bar::-webkit-progress-value { background: #d0306f; } /* a little deeper than Armand's #ec5898: the cream label on it is 4.8:1, not 3.2:1 */
+.landing .fight__bar::-moz-progress-bar { background: #d0306f; }
+.landing .fight__label { position: relative; margin: 0; padding: 0.3em 1.4em; }
+.landing .fight__label span { display: inline-block; transform: skewX(24deg); }
+.landing .fight__boss { position: absolute; left: calc(56% - var(--boss-w) / 2); bottom: 41%; width: var(--boss-w); max-width: none; height: auto; pointer-events: none; }
+@media (min-width: 64rem) {
+  .landing .fight { --aw: min(52vw, 40rem); }
+  .landing .fight .in { padding-bottom: calc(var(--edge-hp) * 0.5 + var(--aw) * 1.02 - 13rem); }
+  .landing .fight__text { padding-right: 0; width: min(var(--side) + 28rem, 100vw - var(--aw) - var(--side) - 1.5rem); }
+  .landing .fight__text p { max-width: 26rem; }
+  .landing .arena { right: calc(var(--side) - 2.5rem); bottom: calc(var(--edge-hp) * 0.5); --boss-w: 80%; }
+  .landing .fight__health { left: 22%; right: 8%; }
+}
+/* ---- Prizes: each one stands on a rounded blue block with its name on the darker front band (Armand's mockup, 2026-11-11). ---- */
+.landing .prizes { --bg: var(--royal); --next: var(--edge-c); }
+.landing .prizes h2 { color: var(--yellow); }
+.landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
+.landing .prize {
+  position: relative; isolation: isolate; container-type: inline-size; flex: none; display: flex; flex-direction: column; width: calc((100% - var(--gap)) / 2); max-width: 13rem;
+  border-radius: 1.4rem; text-align: center;
+}
+/* The block: a dark body with the name on its front, and a lighter top face with all four corners rounded lying on it,
+   so the body shows under the face's bottom corners and the block reads as a solid slab. */
+.landing .prize::before { content: ""; position: absolute; z-index: -2; inset: 0; margin-top: 60%; border-radius: inherit; background: #03045e; }
+.landing .prize__label { position: relative; margin-top: auto; padding: 0.5rem 0.5rem 0.7rem; }
+.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 36cqw; border-radius: 1.4rem; background: #1f3f93; }
+/* The prize stands in the middle of the block's top face, not on its front edge. */
+.landing .prize img { display: block; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
+.landing .prize__emoji { display: flex; align-items: center; justify-content: center; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }
+.landing .prize h3 { color: #a9dcff; font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; }
+.landing .prize__hours { display: block; margin-top: 0.15rem; color: #d7e6ff; font-size: 0.8125rem; line-height: 1.2; }
+@media (min-width: 40rem) {
+  .landing .shelf { --gap: 1.25rem; }
+  .landing .prize { width: calc((100% - 2 * var(--gap)) / 3); }
+}
+@media (min-width: 64rem) {
+  .landing .shelf { --gap: 1.5rem; gap: 2rem var(--gap); }
+  .landing .prize { width: calc((100% - 4 * var(--gap)) / 5); }
+}
+/* ---- FAQ: the river. The questions are stepping stones across it, and the path picks up again on the far bank. ---- */
+.landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: #2449a0; --stone-shade: #162f70; --ripple: #1b3a80; }
+.landing .bank__face { fill: var(--royal-shade); }
+.landing .bank__foam { fill: none; stroke: #4f7fd9; stroke-width: clamp(3px, 0.4vw, 6px); stroke-linecap: round; stroke-dasharray: 70px 22px 26px 22px; vector-effect: non-scaling-stroke; }
+.landing .faq h2 { color: var(--yellow); font-size: clamp(2.5rem, 5.4vw, 4.25rem); }
+.landing .faq__grid { display: grid; }
+/* The heading straddles the shore: half on the land above, half over the water. */
+.landing .faq__head { position: absolute; left: var(--side); top: calc(-1 * clamp(2.5rem, 5vw, 4.5rem) - var(--edge-c) * 0.27); translate: 0 -50%; }
+.landing .faq__list { position: relative; z-index: 1; display: grid; gap: 0.9rem; width: 100%; max-width: 44rem; margin-inline: auto; }
+.landing .faq details,
+.landing .hop { position: relative; border-radius: 0.7rem; background: var(--stone); box-shadow: inset 0 -0.42rem 0 var(--stone-shade); }
+.landing .faq details { padding: 0 1.15rem 0.42rem; }
+/* The question stones are not all alike: each is a little narrower or wider and sits a little to one side, like stones
+   someone laid by hand. The amounts are small on phones, where there is no room to wander. */
+.landing .faq details { justify-self: start; width: var(--sw, 100%); margin-left: var(--sx, 0); }
+.landing .faq details:nth-of-type(1) { --sw: 96%; --sx: 1%; }
+.landing .faq details:nth-of-type(2) { --sw: 91%; --sx: 8%; }
+.landing .faq details:nth-of-type(3) { --sw: 97%; --sx: 0%; }
+.landing .faq details:nth-of-type(4) { --sw: 86%; --sx: 11%; }
+.landing .faq details:nth-of-type(5) { --sw: 93%; --sx: 4%; }
+.landing .faq details:nth-of-type(2n) { border-radius: 0.9rem 0.6rem 0.8rem 0.65rem; }
+.landing .faq details:nth-of-type(3n) { border-radius: 0.6rem 0.95rem 0.65rem 0.85rem; }
+.landing .faq details::before,
+.landing .hop::before { content: ""; position: absolute; z-index: -1; inset: -0.4rem -0.45rem; border-radius: 1.05rem; background: var(--ripple); }
+.landing .hop { position: absolute; left: var(--hx); width: 4.4rem; height: 2.2rem; }
+.landing .hop--1 { bottom: calc(100% + 1rem); --hx: 74%; }
+.landing .hop--2 { bottom: calc(100% + 4.2rem); --hx: 80%; width: 3.6rem; }
+.landing .hop--3 { bottom: calc(100% + 7.4rem); --hx: 73%; }
+.landing .hop--4 { top: calc(100% + 1rem); --hx: 72%; }
+.landing .hop--5 { display: none; top: calc(100% + 4.2rem); --hx: 80%; width: 3.6rem; }
+.landing .faq summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.85rem 0 0.9rem; cursor: pointer; list-style: none;
+  font: 400 clamp(1.125rem, 1.6vw, 1.3125rem)/1.15 var(--display); letter-spacing: -0.03em;
+}
+.landing .faq summary::-webkit-details-marker { display: none; }
+.landing .faq summary::after { content: "+"; flex: none; font-size: 1.1em; line-height: 0.8; }
+.landing .faq details[open] summary::after { content: "\2212"; }
+.landing .faq summary:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; border-radius: 0.4rem; }
+.landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: #d7e6ff; font-size: 1rem; }
+@media (min-width: 64rem) {
+  /* The stones step in from the right, where the path comes down beside the prizes, and out again toward Orpheus. */
+  .landing .hop--1 { --hx: calc(100% - 7.5rem); }
+  .landing .hop--2 { --hx: calc(100% - 2.75rem); }
+  .landing .hop--3 { --hx: calc(100% + 1.25rem); }
+  .landing .hop--4 { --hx: 72%; }
+  .landing .hop--5 { display: block; }
+}
+/* ---- Last call: Orpheus in the bottom right corner, cape running off the page ---- */
+.landing .final { --bg: var(--sky); color: var(--navy); --ow: 92vw; }
+.landing .final .in { padding-bottom: 66vw; }
+.landing .final .wrap { position: relative; z-index: 1; }
+.landing .final h2 { font-size: clamp(2.75rem, 6vw, 4.75rem); }
+.landing .cta--big { margin-top: clamp(1.5rem, 3vw, 2.25rem); font-size: clamp(1.5rem, 2.4vw, 1.75rem); }
+.landing .final__proof { margin-top: 1rem; font-weight: 700; }
+.landing .final__orpheus { position: absolute; z-index: 1; right: 0; bottom: 0; width: var(--ow); max-width: none; height: auto; pointer-events: none; }
+@media (min-width: 64rem) {
+  .landing .final { --ow: min(44vw, 35rem); }
+  .landing .final .in { min-height: calc(var(--ow) * 0.84 + 4rem); padding-bottom: clamp(5rem, 9vw, 8rem); }
 }
 
-/* Wider than the cap the painting would end in a hard edge: fade the sides into the sky. */
-@media (min-width: 160rem) {
-  .landing-hero__scene { -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent); }
-}
+/* ---- Fills for the scenery sprite (the CSP forbids style attributes; colours come from each prop's own custom properties) ---- */
 
-/* ---- Below the map: who is locked in, prizes and FAQ on cream ---- */
-.landing-more { padding-block: var(--space-16); }
-.landing-more h2 { font-size: clamp(var(--text-xl), 5vw, var(--text-display)); letter-spacing: var(--tracking-heading); }
-.landing-more .landing-proof h2 { font-size: var(--text-xl); }
-.landing-proof { max-width: 40rem; }
-.landing-proof p { margin: 0; }
-.landing-note { color: var(--color-text-muted); }
-
-.landing-prizes { --grid-min: 14rem; margin: 0; padding: 0; list-style: none; }
-.landing-prize { display: flex; flex-direction: column; gap: var(--space-2); }
-.landing-prize > * { margin: 0; }
-.landing-prize__emoji { font-size: var(--text-2xl); line-height: 1; }
-.landing-prize__description { flex: 1; }
-.landing-prize__price { color: var(--color-bg); font-family: var(--font-display); font-size: var(--text-xl); }
-
-.landing-faq { display: grid; gap: var(--space-3); max-width: 48rem; }
-.landing-faq details { padding-block: 0; }
-.landing-faq summary { display: flex; align-items: center; min-height: var(--tap-size); cursor: pointer; font-weight: 700; }
-.landing-faq summary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 4px; border-radius: var(--radius-sm); }
-.landing-faq p { margin: 0 0 var(--space-4); color: var(--color-text-muted); }
+/* ---- Scenery positions (generated from the standalone page's inline styles) ---- */
+.landing .prop--how-1 { left:1%; bottom:calc(var(--edge-a) * 1.28); --w:4.2; }
+.landing .prop--how-2 { left:4.5%; bottom:calc(var(--edge-a) * 1.0); --w:8.5; }
+.landing .prop--how-3 { left:13.5%; bottom:calc(var(--edge-a) * 1.02); --w:5.4; }
+.landing .prop--how-4 { left:80%; bottom:calc(var(--edge-a) * 0.66); --w:5.2; }
+.landing .prop--how-5 { left:85.5%; bottom:calc(var(--edge-a) * 0.56); --w:6.4; }
+.landing .prop--how-6 { left:93%; bottom:calc(var(--edge-a) * 0.5); --w:4.4; }
+.landing .prop--how-7 { left:84%; bottom:calc(var(--edge-a) * 0.45); --w:5; }
+.landing .prop--how-8 { left:4%; bottom:calc(var(--edge-a) * 0.9); --w:5.5; }
+.landing .prop--fight-1 { left:3%; top:calc(var(--edge-a) * -0.52); --w:5; }
+.landing .prop--fight-2 { left:22%; top:calc(var(--edge-a) * -0.5); --w:8; }
+.landing .prop--fight-3 { left:44%; top:calc(var(--edge-a) * -0.42); --w:4.4; }
+.landing .prop--fight-4 { left:1.5%; top:calc(var(--edge-a) * -0.56); --w:4.6; }
+.landing .prop--fight-5 { left:30%; top:calc(var(--edge-a) * -0.5); --w:7.6; }
+.landing .prop--fight-6 { left:58%; top:calc(var(--edge-a) * -0.4); --w:4.8; }
+.landing .prop--fight-7 { left:65%; top:calc(var(--edge-a) * -0.2); --w:5; }
+.landing .prop--fight-8 { left:90%; top:calc(var(--edge-a) * 0.1); --w:4; }
+.landing .prop--fight-9 { left:94%; top:calc(var(--edge-a) * 0.32); --w:5.2; }
+.landing .prop--fight-10 { left:3%; bottom:calc(var(--edge-hp) * 0.95 + calc(11 * var(--v))); --w:4.4; }
+.landing .prop--fight-11 { left:8%; bottom:calc(var(--edge-hp) * 0.95 + calc(6 * var(--v))); --w:5.6; }
+.landing .prop--fight-12 { left:14.5%; bottom:calc(var(--edge-hp) * 0.95 + calc(9 * var(--v))); --w:4; }
+.landing .prop--fight-13 { left:1%; bottom:calc(var(--edge-hp) * 0.95 + calc(1 * var(--v))); --w:5; }
+.landing .prop--fight-14 { left:20%; bottom:calc(var(--edge-hp) * 0.9 + calc(3 * var(--v))); --w:4.8; }
+.landing .prop--arena-1 { left:-26%; top:28%; --w:4.6; }
+.landing .prop--arena-2 { left:-36%; top:44%; --w:6; }
+.landing .prop--arena-3 { left:-22%; top:60%; --w:4.2; }
+.landing .prop--arena-4 { left:-24%; top:88%; --w:6; }
+.landing .prop--prizes-1 { left:61%; top:calc(4 * var(--v)); --w:5.6; }
+.landing .prop--prizes-2 { left:67.5%; top:calc(7.5 * var(--v)); --w:7.4; }
+.landing .prop--prizes-3 { left:57%; top:calc(9 * var(--v)); --w:4.8; }
+.landing .prop--prizes-4 { left:75.5%; top:calc(8 * var(--v)); --w:3.8; }
+.landing .prop--prizes-5 { left:1%; bottom:calc(var(--edge-c) * 0.36); --w:5; }
+.landing .prop--prizes-6 { left:calc(var(--side) + 11rem); bottom:calc(var(--edge-c) * 0.52); --w:8; }
+.landing .prop--prizes-7 { left:44%; bottom:calc(var(--edge-c) * 0.82); --w:5.5; }
+.landing .prop--prizes-8 { left:50.5%; bottom:calc(var(--edge-c) * 0.84); --w:4.6; }
+.landing .prop--final-1 { left:56%; top:calc(var(--edge-d) * -0.02); --w:4.6; }
+.landing .prop--final-2 { left:44%; top:calc(var(--edge-d) * -0.1); --w:4.6; }
+.landing .prop--final-3 { left:49.5%; top:calc(var(--edge-d) * 0.12); --w:5; }
+.landing .prop--final-4 { left:75%; top:calc(var(--edge-d) * -0.56); --w:8; }
+.landing .prop--final-5 { left:84.5%; top:calc(var(--edge-d) * -0.62); --w:4.2; }
+.landing .prop--final-6 { left:91%; top:calc(var(--edge-d) * -0.52); --w:5.6; }

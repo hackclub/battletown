@@ -28,4 +28,16 @@ class LandingHelperTest < ActionView::TestCase
   test "landing boss is a full decorative bar when there is no boss" do
     assert_equal({ live: false, percent: 100, text: "Full health. The next boss is on its way", label: "Next boss on its way" }, landing_boss)
   end
+
+  test "the hero painting comes in four widths" do
+    assert_equal %w[1280w 1920w 2880w 3840w], hero_art_srcset.values
+    assert(hero_art_srcset.keys.all? { |path| Rails.root.join("app/assets/images", path).exist? })
+  end
+
+  test "a prize's podium art is its own image, then a matching photo, else nothing" do
+    prize = Prize.find("mechanical_keyboard")
+    assert_equal "landing/prizes/keychron-k2.webp", prize_art(prize)
+    assert_equal "x.webp", prize_art(prize.with(image: "x.webp"))
+    assert_nil prize_art(Prize.find("sticker_pack"))
+  end
 end

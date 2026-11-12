@@ -23,7 +23,7 @@ class StaffUiTest < ActionDispatch::IntegrationTest
       end
       assert_select "button", "Dev login"
     end
-    assert_select ".landing-hero form[action='/dev_login']", 0
+    assert_select ".hero form[action='/dev_login']", 0
     assert_select ".admin-only", 0
   ensure
     ActionController::Base.allow_forgery_protection = original
