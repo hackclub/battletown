@@ -9,10 +9,7 @@
       <p class="admin-dashboard__note">Requested orders come first, then on hold, then shipped. Open an order to hold it, ship it with tracking, mark it fulfilled, cancel it or refund it. Names and Slack ids are personal data: use them only to deliver the order.</p>
     </header>
 
-    <p class="admin-count">
-      <strong id="requested-count"><%= @waiting_count %></strong> <%= @waiting_count == 1 ? "order is" : "orders are" %> waiting
-      <% if @on_hold_count.positive? %>and <strong id="on-hold-count"><%= @on_hold_count %></strong> on hold<% end %>.
-    </p>
+    <p class="admin-count"><strong id="requested-count"><%= @waiting_count %></strong> <%= @waiting_count == 1 ? "order is" : "orders are" %> waiting<% if @on_hold_count.positive? %> and <strong id="on-hold-count"><%= @on_hold_count %></strong> on hold<% end %>.</p>
 
     <nav class="admin-filters" aria-label="Filter by status">
       <%= link_to "All (#{@counts.values.sum})", admin_orders_path(kind: filters[:kind], q: filters[:q]),
@@ -89,7 +86,7 @@
     <section class="card card--tight admin-panel" aria-labelledby="export-title">
       <h2 id="export-title" class="card__title">Export to CSV</h2>
       <p class="small">Exports the orders in the current filter (at most <%= config.export_max_rows %> rows): order id, date, status, item, coins, kind, tracking carrier and age. Every export is written to the audit trail with how many rows left.</p>
-      <%= form_with url: export_admin_orders_path, method: :post, class: "admin-form" do %>
+      <%= form_with url: export_admin_orders_path, method: :post, class: "admin-form", data: { turbo: false } do %>
         <%= hidden_field_tag :status, filters[:status], id: nil if filters[:status] %>
         <%= hidden_field_tag :kind, filters[:kind], id: nil if filters[:kind] %>
         <%= hidden_field_tag :q, filters[:q], id: nil if filters[:q] %>
