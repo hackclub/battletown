@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035009) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_035010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -174,6 +174,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035009) do
     t.index ["project_id", "hackatime_project"], name: "index_link_suggestions_on_project_and_name", unique: true
     t.check_constraint "char_length(hackatime_project::text) >= 1 AND char_length(hackatime_project::text) <= 120 AND hackatime_project::text !~ '[[:cntrl:]]'::text AND hackatime_project::text = btrim(hackatime_project::text)", name: "link_suggestions_name_check"
     t.check_constraint "state::text = ANY (ARRAY['pending'::character varying, 'accepted'::character varying, 'declined'::character varying]::text[])", name: "link_suggestions_state_check"
+  end
+
+  create_table "merch_claims", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "boss_id", null: false
+    t.string "item_key", limit: 60, null: false
+    t.string "item_name", limit: 100, null: false
+    t.string "status", default: "requested", null: false
+    t.datetime "claimed_at", null: false
+    t.datetime "fulfilled_at"
+    t.datetime "cancelled_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["boss_id"], name: "index_merch_claims_on_boss_id"
+    t.index ["status", "claimed_at"], name: "index_merch_claims_on_status_and_claimed_at"
+    t.index ["user_id", "boss_id"], name: "index_merch_claims_on_user_id_and_boss_id", unique: true
+    t.check_constraint "(status::text = 'cancelled'::text) = (cancelled_at IS NOT NULL)", name: "merch_claims_cancelled_at_check"
+    t.check_constraint "(status::text = 'fulfilled'::text) = (fulfilled_at IS NOT NULL)", name: "merch_claims_fulfilled_at_check"
+    t.check_constraint "char_length(item_key::text) >= 1 AND char_length(item_name::text) >= 1", name: "merch_claims_item_check"
+    t.check_constraint "status::text = ANY (ARRAY['requested'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying]::text[])", name: "merch_claims_status_check"
   end
 
   create_table "notification_preferences", force: :cascade do |t|
@@ -356,6 +376,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035009) do
   add_foreign_key "hackatime_links", "users", on_delete: :cascade
   add_foreign_key "hour_entries", "users", on_delete: :cascade
   add_foreign_key "link_suggestions", "projects", on_delete: :cascade
+  add_foreign_key "merch_claims", "bosses", on_delete: :cascade
+  add_foreign_key "merch_claims", "users", on_delete: :cascade
   add_foreign_key "notification_preferences", "users", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "orders", "users", on_delete: :cascade
