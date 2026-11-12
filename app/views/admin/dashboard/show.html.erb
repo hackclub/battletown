@@ -31,6 +31,12 @@
           <h2 class="card__title"><%= link_to "Metrics", admin_metrics_path %></h2>
           <p class="small">Daily and weekly actives, funnel, last active day.</p>
         </li>
+        <% if feature?(:email) %>
+          <li class="card card--tight admin-link">
+            <h2 class="card__title"><%= link_to "Email", admin_email_path %></h2>
+            <p class="small">Email rows per week, by status.</p>
+          </li>
+        <% end %>
         <li class="card card--tight admin-link">
           <h2 class="card__title"><%= link_to "Feature flags", flipper_ui_path, data: { turbo: false } %></h2>
           <p class="small">Switch new features on or off.</p>

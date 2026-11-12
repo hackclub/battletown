@@ -97,8 +97,8 @@ Rails.application.routes.draw do
   # Keep above the /:ref catch-all.
   constraints Features::Constraint.new(:email) do
     scope "email/unsubscribe/:token", constraints: { token: /[A-Za-z0-9_-]{1,300}/ } do
-      get "", to: "email_unsubscribes#show", as: :email_unsubscribe
-      post "", to: "email_unsubscribes#create"
+      get "", to: "email_unsubscribes#show", as: :email_unsubscribe, format: false
+      post "", to: "email_unsubscribes#create", format: false
     end
   end
 
@@ -131,6 +131,10 @@ Rails.application.routes.draw do
     root "dashboard#show"
     resource :metrics, only: :show
     constraints(Features::Constraint.new(:plinko)) { resource :plinko, only: :show, controller: "plinko" }
+    # Email row counts per week (flag `email`: the route does not exist while it is off).
+    constraints Features::Constraint.new(:email) do
+      resource :email, only: :show, controller: "email_notifications"
+    end
     resources :bosses, only: %i[index edit update]
     constraints Features::Constraint.new(:nps) do
       get "nps", to: "nps#index", as: :nps

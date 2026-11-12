@@ -36,8 +36,8 @@ module Notifications
     end
 
     # `settings` without the kinds whose feature is switched off (what /settings/notifications lists).
-    def visible_settings(user)
-      settings(user).reject { |kind, _| FEATURE_KINDS.key?(kind) && !Features.enabled?(FEATURE_KINDS.fetch(kind)) }
+    def visible_settings(user, channel: SLACK)
+      settings(user, channel: channel).reject { |kind, _| FEATURE_KINDS.key?(kind) && !Features.enabled?(FEATURE_KINDS.fetch(kind)) }
     end
 
     # `choices` is { kind => true/false/"1"/"0" }. Unknown kinds and values that are not a clear yes or no are ignored.

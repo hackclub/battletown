@@ -42,8 +42,15 @@ Never commit real values. Shapes below are examples only.
 | `ADMIN_HCA_UIDS` | no | Comma-separated Hack Club Auth `sub` values of admins. Unset: nobody is an admin and `/admin` returns 404. | `ident!abc123,ident!def456` |
 | `SLACK_BOT_TOKEN` | no | Bot token (scope `chat:write`) that enables real Slack DMs. Unset: the null adapter is used and nothing is sent. Environment only, never the repository; see [SLACK_APP.md](SLACK_APP.md). Treat as a secret. | `xoxb-...` |
 | `NOTIFICATIONS_ENABLED` | no | Master switch for sending queued Slack messages: nothing is sent unless it is exactly `true` (default off). In production the dispatcher also refuses to run without a real adapter, so setting it without `SLACK_BOT_TOKEN` sends nothing. | `true` |
+| `SMTP_ADDRESS` | only for real email | SMTP server host. Email (flag `email`) goes out over SMTP only when this and `MAIL_FROM` are set; otherwise nothing is sent and the email dispatcher refuses to run in production. | `smtp.example.com` |
+| `SMTP_PORT` | no | Default 587 (STARTTLS); 465 means implicit TLS. | `587` |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | only if the server needs a login | Set both or neither (one alone counts as no transport). Environment only, never the repository. Treat the password as a secret. | |
+| `SMTP_DOMAIN` | no | HELO domain. | `example.com` |
+| `MAIL_FROM` | only for real email | The From header, on a domain with SPF, DKIM and DMARC set up (one-click unsubscribe needs DKIM). Unset: a placeholder on `example.com` is used and, in production, no real transport exists. | `Battletown <noreply@example.com>` |
 | `PRIVACY_AUDIENCE` | no | Audience a Hack Club data-deletion token must carry. Default `battletown`. | `battletown` |
 | `PRIVACY_JWKS_URL` | no, leave unset | Where the data-deletion signing keys are fetched. Default `https://yeet.hackclub.com/.well-known/jwks.json`; `https` only in production. | |
+
+To turn email on: set the SMTP variables and `MAIL_FROM`, make sure `NOTIFICATIONS_ENABLED=true`, then switch the Flipper flag `email` on at `/admin/flipper` (try it on admins first with the `admins` group). Nothing is sent until all of those are true; `/admin/email` shows whether a real transport is configured.
 
 `bin/rails runner 'p Rails.application.config.hosts'` is a quick way to see the host allowlist the container ended up with.
 
@@ -79,7 +86,7 @@ Nothing runs by itself. Schedule these on the host with the same environment as 
 
 | Every | Command | Why |
 | --- | --- | --- |
-| minute | `bin/rails notifications:dispatch` | sends the queued Slack DMs |
+| minute | `bin/rails notifications:dispatch` | sends the queued Slack DMs and, with the Flipper flag `email` on and SMTP configured, the queued emails |
 | 15 minutes | `bin/rails notifications:ship_reminders` | queues the ship reminders for projects that crossed an hours threshold |
 | hour | `bin/rails game:settle` | settles finished local days (streaks and bonuses; the dashboard also settles lazily) |
 | hour, only with `HOURS_SOURCE=http` | `bin/rails "hackatime:sync[all]"` | pulls recent Hackatime hours for linked accounts |

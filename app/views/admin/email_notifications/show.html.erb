@@ -1,0 +1,56 @@
+<% content_for :title, "Admin email" %>
+<div class="container container--wide">
+<%= admin_tool(:div, class: "admin-dashboard admin-page admin-metrics") do %>
+  <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+  <header class="page-header">
+    <h1>Email</h1>
+    <p class="admin-dashboard__note">
+      Read-only, aggregate counts only: no addresses, names or ids. Each row is one email queued for one person; it is
+      <strong>sent</strong> only when a real SMTP transport delivered it, <strong>skipped</strong> when the transport does
+      not really deliver (development, or no SMTP settings), and <strong>cancelled</strong> when the person had switched
+      email off, had no usable address, or was over the weekly cap. Weeks run Friday to Thursday (UTC).
+    </p>
+  </header>
+
+  <dl class="admin-stat grid">
+    <div class="card card--tight admin-stat__item">
+      <dt>Transport</dt>
+      <dd><%= @transport %></dd>
+    </div>
+    <div class="card card--tight admin-stat__item">
+      <dt>Sending (NOTIFICATIONS_ENABLED)</dt>
+      <dd><%= @dispatching ? "On" : "Off" %></dd>
+    </div>
+  </dl>
+
+  <section class="admin-metrics__section" aria-labelledby="email-weekly">
+    <h2 id="email-weekly">Email by week</h2>
+    <p class="admin-metrics__definition">Rows created in each of the last <%= Notifications::Email::Stats::WEEKS %> weeks, newest first, by where they ended up. Finished rows are deleted after the retention period.</p>
+    <%= table_region("Email rows by week and status") do %>
+    <table class="table table--zebra admin-table admin-metrics__table">
+      <caption>Email rows by week and status</caption>
+      <thead>
+        <tr>
+          <th scope="col">Week</th>
+          <% @statuses.each do |status| %>
+            <th scope="col" class="num admin-table__num"><%= status.capitalize %></th>
+          <% end %>
+          <th scope="col" class="num admin-table__num">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @weeks.each do |week| %>
+          <tr>
+            <th scope="row"><%= tag.time(week.starts_on.strftime("%a %-d %b"), datetime: week.starts_on.iso8601) %> to <%= tag.time(week.ends_on.strftime("%a %-d %b"), datetime: week.ends_on.iso8601) %><%= " (so far)" if week.partial %></th>
+            <% @statuses.each do |status| %>
+              <td class="num admin-table__num"><%= number_with_delimiter(week.count(status)) %></td>
+            <% end %>
+            <td class="num admin-table__num"><%= number_with_delimiter(week.total) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <% end %>
+  </section>
+<% end %>
+</div>

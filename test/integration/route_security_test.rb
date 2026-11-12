@@ -72,6 +72,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     Flipper.enable(:nps)
     Flipper.enable(:quests)
     Flipper.enable(:team) # routes behind a flag only exist while it is on: test them as they will be in use
+    Flipper.enable(:email)
     boss = Bosses::Seed.call && Boss.chronological.last
     teen = users(:new_user)
     teen.update_columns(onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4, created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
@@ -197,6 +198,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   test "admin write routes are a 404, not a CSRF error, for signed-out visitors and non-admins" do
     Flipper.enable(:nps)
     Flipper.enable(:team)
+    Flipper.enable(:email)
     ENV["ADMIN_HCA_UIDS"] = "someone-else"
     routes = app_routes.select { |verb, path, *| STATE_CHANGING.include?(verb) && path.start_with?("/admin/") }
     assert_operator routes.size, :>=, 5, "expected the admin write routes to be found in the router"
@@ -215,10 +217,15 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "every POST PATCH PUT and DELETE route rejects a request without a CSRF token, except /api/privacy" do
+  # The only exemptions: both are authenticated by what they carry (a signed bearer token, a signed unsubscribe token),
+  # never by a cookie, so there is nothing for a forged cross-site request to ride on.
+  CSRF_EXEMPT_PREFIXES = %w[/api/privacy /email/unsubscribe/].freeze
+
+  test "every POST PATCH PUT and DELETE route rejects a request without a CSRF token, except /api/privacy and the unsubscribe POST" do
     Flipper.enable(:nps)
     Flipper.enable(:quests)
     Flipper.enable(:team)
+    Flipper.enable(:email)
     # An admin, so the /admin writes get past the admin check and reach the CSRF check too.
     ENV["ADMIN_HCA_UIDS"] = users(:onboarded).hca_uid
     # Routes of a flagged feature exist only while its flag is on, so switch them on to check them too.
@@ -227,9 +234,10 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     assert_equal users(:onboarded).id, session[:user_id]
     with_forgery_protection do
       routes = app_routes.select { |verb, _path, _controller, _route| STATE_CHANGING.include?(verb) }
-      exempt, protected_routes = routes.partition { |_verb, path, _controller, _route| path.start_with?("/api/privacy") }
+      exempt, protected_routes = routes.partition { |_verb, path, _controller, _route| path.start_with?(*CSRF_EXEMPT_PREFIXES) }
       assert_operator protected_routes.size, :>=, 30, "expected the state-changing routes to be found in the router"
-      assert_operator exempt.size, :>=, 2
+      assert_equal [ "/api/privacy/delete", "/api/privacy/export", "/email/unsubscribe/:token" ], exempt.map { |_verb, path, *| path }.uniq.sort,
+                   "a new CSRF exemption needs its own explicit security test"
 
       protected_routes.each do |verb, path, _controller, _route|
         url = fill(path, step: "prize", provider: "hack_club", key: "keychain", token: "a" * 24)
@@ -256,5 +264,33 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     get "/feedback/#{'a' * 40}"
     assert_response :not_found, "flag on, but a made-up token is refused"
     assert_includes response.body, "This link isn't working"
+  end
+
+  test "the unsubscribe POST is the exemption: token-authenticated, nothing else rides on it" do
+    user = users(:new_user)
+    user.update_columns(email: "teen@example.test")
+    token = Notifications::Email::UnsubscribeToken.generate(user)
+    Flipper.enable(:email)
+    with_forgery_protection do
+      post "/email/unsubscribe/not-a-real-token"
+      assert_response :success
+      assert_not user.reload.email_opted_out?, "a bad token changes nothing"
+
+      post "/email/unsubscribe/#{token}"
+      assert_response :success
+      assert user.reload.email_opted_out?
+
+      # Not an open door: the same verbs on the settings page still need a token.
+      sign_in_as users(:onboarded)
+      patch settings_notifications_path, params: { email_enabled: "0" }
+      assert_response :unprocessable_content
+    end
+  end
+
+  test "the email routes do not exist while the flag is off, for every verb" do
+    %w[get post put patch delete].each do |verb|
+      process(verb.to_sym, "/email/unsubscribe/sometoken")
+      assert_response :not_found, verb
+    end
   end
 end

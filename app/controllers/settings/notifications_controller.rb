@@ -34,7 +34,7 @@ module Settings
     def load_email_settings
       return unless feature?(:email)
 
-      @email_settings = Notifications::Preferences.settings(current_user, channel: Notifications::Preferences::EMAIL)
+      @email_settings = Notifications::Preferences.visible_settings(current_user, channel: Notifications::Preferences::EMAIL)
       @email_config = Notifications::Email::Config.current
       @email_on = !current_user.email_opted_out?
       @email_address_ok = Notifications::Email.valid_address?(current_user.email)
