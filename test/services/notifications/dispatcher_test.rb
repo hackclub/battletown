@@ -236,9 +236,65 @@ class Notifications::DispatcherTest < ActiveSupport::TestCase
     assert summary.halted
     assert_empty adapter.calls
     assert @row.reload.pending?
-    # Outside production a non-delivering adapter (null/log) is fine: it exercises the pipeline.
+    # Outside production a non-delivering adapter (null/log) is fine: it exercises the pipeline, but nothing is sent.
     run_dispatcher(adapter)
-    assert @row.reload.sent?
+    assert @row.reload.skipped?
+  end
+
+  test "development with no bot token uses the log adapter and skips the row, never marking it sent" do
+    with_rails_env("development") do
+      with_env("SLACK_BOT_TOKEN" => nil, "NOTIFICATIONS_ENABLED" => "true") do
+        assert_instance_of Notifications::Slack::LogAdapter, Notifications::Slack.adapter
+        logs = capture_logs { @summary = Notifications::Dispatcher.run(now: RUN_AT) }
+        assert_includes logs, "adapter=log"
+      end
+    end
+    assert_equal [ 0, 1 ], [ @summary.sent, @summary.skipped ]
+    @row.reload
+    assert @row.skipped?
+    assert_nil @row.sent_at
+    assert_equal "not_delivered", @row.last_error_code
+    assert_equal 1, Notification.where(user: @user).pending.count, "the next reminder is still queued"
+  end
+
+  test "the test environment's null adapter skips the row the same way" do
+    summary = with_env("SLACK_BOT_TOKEN" => nil, "NOTIFICATIONS_ENABLED" => "true") { Notifications::Dispatcher.run(now: RUN_AT) }
+    assert_equal [ 0, 1 ], [ summary.sent, summary.skipped ]
+    assert @row.reload.skipped?
+    assert_nil @row.sent_at
+    assert_equal "not_delivered", @row.last_error_code
+  end
+
+  test "with a bot token the real adapter is chosen and an ok from Slack marks the row sent (network stubbed)" do
+    with_rails_env("development") do
+      with_env("SLACK_BOT_TOKEN" => NotificationsHelper::TOKEN, "NOTIFICATIONS_ENABLED" => "true") do
+        assert_instance_of Notifications::Slack::WebApiAdapter, Notifications::Slack.adapter
+        stub_http(response: json_response({ ok: true })) do |seen|
+          @summary = Notifications::Dispatcher.run(now: RUN_AT)
+          assert_equal 1, seen[:http].requests.size
+        end
+      end
+    end
+    assert_equal [ 1, 0 ], [ @summary.sent, @summary.skipped ]
+    @row.reload
+    assert @row.sent?
+    assert_equal RUN_AT, @row.sent_at
+  end
+
+  test "with the kill switch off nothing is touched, token or not" do
+    [ nil, NotificationsHelper::TOKEN ].each do |token|
+      with_rails_env("development") do
+        with_env("SLACK_BOT_TOKEN" => token, "NOTIFICATIONS_ENABLED" => nil) do
+          stub_http(response: json_response({ ok: true })) do |seen|
+            assert_not Notifications::Dispatcher.run(now: RUN_AT).enabled
+            assert_empty seen[:http].requests
+          end
+        end
+      end
+      @row.reload
+      assert @row.pending?
+      assert_equal [ 0, nil, nil ], [ @row.attempts, @row.sent_at, @row.last_error_code ]
+    end
   end
 
   test "logs carry counters and codes only: never the Slack id, token or message text" do

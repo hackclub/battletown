@@ -18,14 +18,15 @@ class Notifications::RakeAndRetentionTest < ActiveSupport::TestCase
     out
   end
 
-  test "notifications:dispatch reports the kill switch state and sends when enabled" do
+  test "notifications:dispatch reports the kill switch state and handles due rows when enabled" do
     user = create_user
     row = Notifications::Scheduler.schedule_next(user, now: DUE - 6.hours)
     travel_to DUE + 1.minute do
       assert_includes with_env("NOTIFICATIONS_ENABLED" => nil) { run_task("notifications:dispatch") }, "enabled=false"
       assert row.reload.pending?
-      assert_includes with_env("NOTIFICATIONS_ENABLED" => "true") { run_task("notifications:dispatch") }, "sent=1"
-      assert row.reload.sent?
+      # The test environment has the null adapter, which does not deliver: the row is skipped, never sent.
+      assert_includes with_env("NOTIFICATIONS_ENABLED" => "true") { run_task("notifications:dispatch") }, "sent=0 skipped=1"
+      assert row.reload.skipped?
     end
   end
 

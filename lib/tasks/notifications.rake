@@ -2,7 +2,7 @@ namespace :notifications do
   desc "Send due notifications (needs NOTIFICATIONS_ENABLED=true). Run every minute or so from cron."
   task dispatch: :environment do
     summary = Notifications::Dispatcher.run
-    puts "notifications:dispatch enabled=#{summary.enabled} sent=#{summary.sent} failed=#{summary.failed} " \
+    puts "notifications:dispatch enabled=#{summary.enabled} sent=#{summary.sent} skipped=#{summary.skipped} failed=#{summary.failed} " \
          "retried=#{summary.retried} cancelled=#{summary.cancelled} deferred=#{summary.deferred} halted=#{summary.halted}"
   end
 

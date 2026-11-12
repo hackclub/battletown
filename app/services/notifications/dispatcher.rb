@@ -3,7 +3,9 @@ module Notifications
   #
   # Kill switch: does nothing unless ENV["NOTIFICATIONS_ENABLED"] is exactly "true", so a deploy can never start
   # messaging people by accident. In production it also refuses to run with an adapter that does not really deliver
-  # (no SLACK_BOT_TOKEN), so reminders are never marked sent when nothing was sent.
+  # (no SLACK_BOT_TOKEN). Elsewhere such an adapter (the log adapter in development, the null adapter in tests) runs
+  # the whole pipeline, but its rows are recorded as "skipped" with the code `not_delivered`, never "sent": a row is
+  # only ever marked sent when a real Slack call said ok.
   #
   # How a row moves:
   # 1. Claim (short transaction): due pending rows are locked with FOR UPDATE SKIP LOCKED, so two dispatchers never
@@ -11,7 +13,7 @@ module Notifications
   #    hours: moved to the end of quiet hours) and a row that will be sent is leased: `attempts` goes up and `due_at`
   #    moves `lease` seconds ahead, so no one else picks it up while the HTTP call is in flight.
   # 2. Send (no lock held): the text comes from the template for the row's kind.
-  # 3. Record: sent -> next reminder is scheduled; retryable failure -> backoff (capped, with Retry-After honoured)
+  # 3. Record: sent (or skipped, for an adapter that does not deliver) -> next reminder is scheduled; retryable failure -> backoff (capped, with Retry-After honoured)
   #    until max_attempts, then failed and the next reminder is scheduled; permanent failure -> failed, and no new
   #    reminder is queued (a bad Slack id would only fail again; it is re-queued when the user next calls
   #    Scheduler.schedule_next); systemic failure (bad token and so on) -> the row is released untouched and the
@@ -23,7 +25,7 @@ module Notifications
   # reminder included.
   # At most one message per user is handled per run.
   class Dispatcher
-    Summary = Struct.new(:enabled, :sent, :failed, :retried, :cancelled, :deferred, :halted, keyword_init: true)
+    Summary = Struct.new(:enabled, :sent, :skipped, :failed, :retried, :cancelled, :deferred, :halted, keyword_init: true)
 
     def self.enabled? = ENV["NOTIFICATIONS_ENABLED"] == "true"
 
@@ -36,7 +38,7 @@ module Notifications
       @limit = limit
       @adapter = adapter
       @config = config
-      @summary = Summary.new(enabled: false, sent: 0, failed: 0, retried: 0, cancelled: 0, deferred: 0, halted: false)
+      @summary = Summary.new(enabled: false, sent: 0, skipped: 0, failed: 0, retried: 0, cancelled: 0, deferred: 0, halted: false)
       @seen_user_ids = Set.new
       @reschedule = []
     end
@@ -128,7 +130,11 @@ module Notifications
 
     def handle(row, user, text)
       result = deliver(user, text)
-      if result.ok?
+      if result.ok? && !@adapter.delivers?
+        row.update!(status: "skipped", last_error_code: "not_delivered")
+        @summary.skipped += 1
+        @reschedule << user if daily?(row)
+      elsif result.ok?
         row.update!(status: "sent", sent_at: @now, last_error_code: nil)
         @summary.sent += 1
         @reschedule << user if daily?(row)

@@ -19,7 +19,8 @@ class DispatchNotificationsJobTest < ActiveJob::TestCase
     travel_to DUE + 1.minute do
       with_env("NOTIFICATIONS_ENABLED" => "true") { DispatchNotificationsJob.perform_now }
     end
-    assert @row.reload.sent?
+    assert @row.reload.skipped?, "the null adapter does not deliver, so the row is never marked sent"
+    assert_equal "not_delivered", @row.last_error_code
   end
 
   test "does nothing while the kill switch is off" do

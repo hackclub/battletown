@@ -30,7 +30,9 @@ commit one. Do it by hand:
    because it is a single message you asked for.
 9. Only when ready, set `NOTIFICATIONS_ENABLED=true` to let the app send the daily reminders to users (see
    `config/notifications.yml`; run `bin/rails notifications:dispatch` from cron or the `DispatchNotificationsJob`).
-   Unset it or set anything else to stop all sending at once.
+   Unset it or set anything else to stop all sending at once. Without `SLACK_BOT_TOKEN` (development) the dispatcher
+   uses the log adapter and records each due row as `skipped` (code `not_delivered`), never `sent`; in production it
+   refuses to run at all without the token.
 
 ## Who owns and runs it
 

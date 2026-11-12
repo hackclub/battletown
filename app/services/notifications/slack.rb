@@ -5,6 +5,7 @@ module Notifications
   # - WebApiAdapter only when SLACK_BOT_TOKEN is present and Rails.env is not test (a real send);
   # - LogAdapter in development (logs only the event name, never the recipient or text);
   # - NullAdapter otherwise (does nothing and reports ok).
+  # Only WebApiAdapter `delivers?`; the dispatcher marks rows handled by the other two as skipped, never sent.
   module Slack
     def self.adapter
       if ENV["SLACK_BOT_TOKEN"].present? && !Rails.env.test?

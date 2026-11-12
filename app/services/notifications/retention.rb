@@ -1,5 +1,5 @@
 module Notifications
-  # Finished rows (sent, failed, cancelled) carry no content but are still personal data, so they do not live forever.
+  # Finished rows (sent, skipped, failed, cancelled) carry no content but are still personal data, so they do not live forever.
   module Retention
     module_function
 

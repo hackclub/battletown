@@ -6,7 +6,9 @@ class Notification < ApplicationRecord
   KINDS = %w[daily_reminder link_question ship_reminder ship_mvp ship_approved ship_rejected].freeze
   EVENT_KINDS = (KINDS - %w[daily_reminder]).freeze
   CHANNELS = %w[slack_dm].freeze
-  STATUSES = %w[pending sent failed cancelled].freeze
+  # skipped: handled by an adapter that does not really deliver (the log adapter in development, the null adapter in
+  # tests), so nothing reached Slack; last_error_code says why. Never recorded as sent.
+  STATUSES = %w[pending sent failed cancelled skipped].freeze
   MAX_ATTEMPTS = 10 # mirrors the notifications_attempts_check constraint
   ERROR_CODE_FORMAT = /\A[a-z0-9_]{1,40}\z/
 

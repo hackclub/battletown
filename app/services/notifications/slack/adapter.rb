@@ -7,7 +7,7 @@ module Notifications
       end
 
       # Whether this adapter really reaches people. The dispatcher refuses to run in production with an adapter that
-      # does not, so a missing token cannot quietly mark reminders as sent.
+      # does not, and anywhere else records what it handled as skipped, so a missing token never marks a row sent.
       def delivers? = false
     end
   end
