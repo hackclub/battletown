@@ -91,6 +91,35 @@ class Dashboard::PresenterTest < ActiveSupport::TestCase
     assert d.today.goal_met
   end
 
+  test "the today panel at 0, 14, 15, 59, 60 and 420 minutes: capped numbers, right checkmarks, a cheer past the goal" do
+    { 0 => [ "0 of 60 minutes", "0 of 60 minutes (your daily goal)", false, false, false ],
+      14 => [ "14 of 60 minutes", "14 of 60 minutes (your daily goal)", false, false, false ],
+      15 => [ "15 of 60 minutes", "15 of 60 minutes (your daily goal)", true, false, false ],
+      59 => [ "59 of 60 minutes", "59 of 60 minutes (your daily goal)", true, false, false ],
+      60 => [ "60 of 60 minutes", "60 of 60 minutes (your daily goal)", true, true, false ],
+      420 => [ "60 of 60 minutes", "Goal smashed! 420 minutes today.", true, true, true ] }.each do |minutes, (progress, meter, quick, goal, smashed)|
+      user = build_user(created_on: TODAY - 30)
+      add_hours(user, TODAY, minutes * 60) if minutes.positive?
+      today = present(user).today
+
+      assert_equal minutes, today.minutes, "#{minutes} minutes"
+      assert_equal [ minutes * 60, 3600 ].min, today.progress_value, "#{minutes} minutes: the bar stops at the goal"
+      assert_equal progress, today.progress_text, "#{minutes} minutes"
+      assert_equal meter, today.meter_text, "#{minutes} minutes"
+      assert_equal quick, today.quick_met, "#{minutes} minutes: 15-minute mark"
+      assert_equal goal, today.goal_met, "#{minutes} minutes: daily goal"
+      assert_equal smashed, today.goal_smashed, "#{minutes} minutes: smashed"
+    end
+  end
+
+  test "a few seconds past the goal is not yet smashed" do
+    add_hours(@user, TODAY, 3600 + 59)
+    today = present.today
+    assert today.goal_met
+    refute today.goal_smashed
+    assert_equal "60 of 60 minutes (your daily goal)", today.meter_text
+  end
+
   test "899 seconds is not the 15 minute mark and 900 is" do
     add_hours(@user, TODAY, 899)
     refute present.today.quick_met

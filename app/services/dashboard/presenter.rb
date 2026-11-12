@@ -14,7 +14,7 @@ module Dashboard
   # the user's own numbers appear here, plus the boss card's community headcount (an aggregate, no names).
   class Presenter
     Today = Data.define(:date, :seconds, :minutes, :goal_minutes, :quick_minutes, :quick_met, :goal_met, :progress_max,
-                        :progress_value, :progress_text, :quick_text, :bonus_message, :first_run)
+                        :progress_value, :progress_text, :meter_text, :goal_smashed, :quick_text, :bonus_message, :first_run)
 
     # One streak card. `state` is :empty, :active, :broken or :frozen. Nil entries mean "show nothing".
     StreakCard = Data.define(:state, :days, :title, :headline, :message, :today_bonus_text, :next_bonus_text, :best_text,
@@ -135,10 +135,14 @@ module Dashboard
       quick_minutes = config.quick_seconds / 60
       goal_minutes = config.goal_seconds / 60
       minutes = seconds / 60
+      # The bar and its numbers stop at the goal ("420 of 60" reads like a bug); a day past it gets its own words.
+      progress_text = "#{[ minutes, goal_minutes ].min} of #{self.class.minutes_text(goal_minutes)}"
+      goal_smashed = minutes > goal_minutes
       Today.new(date: today_date, seconds: seconds, minutes: minutes, goal_minutes: goal_minutes, quick_minutes: quick_minutes,
                 quick_met: snap.quick_today_met, goal_met: snap.goal_today_met, progress_max: config.goal_seconds,
-                progress_value: [ seconds, config.goal_seconds ].min,
-                progress_text: "#{minutes} of #{self.class.minutes_text(goal_minutes)}",
+                progress_value: [ seconds, config.goal_seconds ].min, progress_text: progress_text,
+                meter_text: goal_smashed ? "Goal smashed! #{self.class.minutes_text(minutes)} today." : "#{progress_text} (your daily goal)",
+                goal_smashed: goal_smashed,
                 quick_text: quick_text(snap, seconds, quick_minutes), bonus_message: bonus_message(snap, quick_minutes),
                 first_run: !HourEntry.exists?(user_id: user.id))
     end

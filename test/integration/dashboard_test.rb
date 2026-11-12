@@ -101,6 +101,17 @@ class DashboardTest < ActionDispatch::IntegrationTest
     assert_select "progress#dash-today-progress[max='3600']"
   end
 
+  test "the today panel never reads more than the goal and cheers a day past it" do
+    add_hours(@user, @today, 420 * 60)
+    dashboard
+
+    assert_select ".dash-meter.dash-meter--done.dash-meter--smashed", 1
+    assert_select "progress#dash-today-progress[max='3600'][value='3600']", "60 of 60 minutes"
+    assert_select "#dash-today-text", "Goal smashed! 420 minutes today."
+    assert_select ".dash-check--done", 2
+    assert_no_match(/420 of 60/, response.body)
+  end
+
   test "no inline styles, no inline scripts and every heading id is unique" do
     fill_in_everything(@user)
     dashboard

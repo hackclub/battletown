@@ -14,10 +14,10 @@
     </div>
   <% end %>
 
-  <div class="dash-meter">
+  <div class="<%= class_names("dash-meter", "dash-meter--done": today.goal_met, "dash-meter--smashed": today.goal_smashed) %>">
     <label for="dash-today-progress" class="dash-meter__label">Minutes coded today</label>
     <progress id="dash-today-progress" class="dash-meter__bar" max="<%= today.progress_max %>" value="<%= today.progress_value %>" aria-describedby="dash-today-text"><%= today.progress_text %></progress>
-    <p id="dash-today-text" class="dash-meter__text"><%= today.progress_text %> (your daily goal)</p>
+    <p id="dash-today-text" class="dash-meter__text"><%= today.meter_text %></p>
   </div>
 
   <ul class="dash-checks">
