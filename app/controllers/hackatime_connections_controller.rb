@@ -2,6 +2,10 @@
 # signed in and onboarded, and nothing here ever creates a user or starts a session. Linking never blocks coding.
 class HackatimeConnectionsController < ApplicationController
   ALREADY_LINKED = "That Hackatime account is already connected to another Battletown account.".freeze
+  # Revoking old tokens runs inside the request, so a slow Hackatime gets a short leash: all revoke calls together take
+  # at most REVOKE_BUDGET seconds (each one's connect and read timeouts are cut to fit what is left of it).
+  REVOKE_BUDGET = 2.0
+  REVOKE_TIMEOUT = 1.0
 
   before_action :require_login
   before_action :require_onboarded
@@ -35,7 +39,7 @@ class HackatimeConnectionsController < ApplicationController
     connection.assign_attributes(attributes.merge(hackatime_uid: uid, connected_at: Time.current, needs_reconnect: false, last_error_code: nil))
     connection.save!
     # After the save, as when disconnecting: they are no longer kept here, so Hackatime should drop them too. Never raises.
-    replaced.each { |old_token| Hackatime::Client.revoke(old_token) }
+    revoke(replaced)
     redirect_to hackatime_path, notice: "Hackatime connected."
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
     # Two accounts racing for the same Hackatime uid: the unique index decides, and nobody is told who the other is.
@@ -48,12 +52,24 @@ class HackatimeConnectionsController < ApplicationController
       tokens = [ connection.access_token, connection.refresh_token ].compact_blank
       connection.destroy!
       # After the delete, so a slow or failing Hackatime can never keep the tokens here. Never raises.
-      tokens.each { |token| Hackatime::Client.revoke(token) }
+      revoke(tokens)
     end
     redirect_to hackatime_path, notice: "Hackatime disconnected.", status: :see_other
   end
 
   private
+
+  # Best effort and never raises (Hackatime::Client.revoke). A call's connect and read timeouts are each at most half of
+  # the budget left, so the calls together stay within REVOKE_BUDGET; once it is spent, the rest are skipped.
+  def revoke(tokens)
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + REVOKE_BUDGET
+    tokens.each do |token|
+      left = deadline - Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      break if left < 0.1
+
+      Hackatime::Client.revoke(token, timeout: [ REVOKE_TIMEOUT, left / 2 ].min)
+    end
+  end
 
   def taken_by_someone_else?(uid)
     HackatimeConnection.where(hackatime_uid: uid).where.not(user_id: current_user.id).exists?

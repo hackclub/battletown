@@ -188,6 +188,42 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
     assert_empty @fake.requests_for("POST", "/oauth/revoke")
   end
 
+  test "a slow Hackatime cannot hold up the reconnect callback while the old tokens are revoked" do
+    user = users(:onboarded)
+    connect_hackatime(user, uid: "4242", access_token: "old-account-token", refresh_token: "old-account-refresh")
+    sign_in_as user
+    mock_hackatime(uid: "99", token: SECRET_TOKEN)
+    @fake.on("POST", "/oauth/revoke") do |_req|
+      sleep 5
+      [ 200, {} ]
+    end
+
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    get "/auth/hackatime/callback"
+    elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
+
+    assert_redirected_to hackatime_path
+    assert_equal "99", user.reload.hackatime_connection.hackatime_uid
+    assert_operator elapsed, :<, HackatimeConnectionsController::REVOKE_BUDGET + 0.5
+  end
+
+  test "a slow Hackatime cannot hold up disconnecting" do
+    user = users(:onboarded)
+    connect_hackatime(user, refresh_token: SECRET_REFRESH)
+    sign_in_as user
+    @fake.on("POST", "/oauth/revoke") do |_req|
+      sleep 5
+      [ 200, {} ]
+    end
+
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    delete "/hackatime"
+    elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
+
+    assert_nil user.reload.hackatime_connection
+    assert_operator elapsed, :<, HackatimeConnectionsController::REVOKE_BUDGET + 0.5
+  end
+
   test "reconnecting to a different Hackatime account still works when Hackatime is unreachable for the revoke" do
     user = users(:onboarded)
     connect_hackatime(user, uid: "4242", access_token: "old-account-token")

@@ -58,7 +58,7 @@ Table `hackatime_connections` (one row per user, `ON DELETE CASCADE`, so deletin
 
 Table `hackatime_day_windows` (one row per user and fetched local date, `ON DELETE CASCADE`): `local_date`, `starts_at`, `ends_at` and the `hackatime_uid` it was fetched from. It outlives a disconnect on purpose (it is what stops the same time being credited twice, above) and goes with the account.
 
-Tokens are revoked at Hackatime (best effort, never blocking) whenever this app stops keeping them: on disconnect, on a reconnect that replaces them (for example with another Hackatime account; a token Hackatime hands back again is kept), and on a data-deletion request (`Privacy::Deleter`, before the delete, never on a dry run or an export, each call capped at 2 seconds and none started after 5, so the yeeter's 15 second limit is never at risk). A refused link (the Hackatime account is already linked to someone else) revokes nothing, because Hackatime reuses one token per person and app.
+Tokens are revoked at Hackatime (best effort, never blocking) whenever this app stops keeping them: on disconnect, on a reconnect that replaces them (for example with another Hackatime account; a token Hackatime hands back again is kept; both run inside the web request, so all their revoke calls together are capped at 2 seconds), and on a data-deletion request (`Privacy::Deleter`, before the delete, never on a dry run or an export, each call capped at 2 seconds and none started after 5, so the yeeter's 15 second limit is never at risk). A refused link (the Hackatime account is already linked to someone else) revokes nothing, because Hackatime reuses one token per person and app.
 
 ## Hours source seam
 
