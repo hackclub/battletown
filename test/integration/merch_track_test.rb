@@ -186,6 +186,33 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "with the eligibility gate on, a verified person who is not eligible, or whose sign-in copy is old, sees why the claim is locked" do
+    with_feature(:merch_track) do
+      with_feature(:eligibility_gate) do
+        earn_week
+        approved_ship!(@user)
+        verified!(@user)
+        travel_to(AFTER_WEEK) do
+          sign_in_as @user
+
+          @user.update_columns(ysws_eligible: false, verification_checked_at: Time.current)
+          get dashboard_path
+          assert_select ".merch-card .merch-message", /only available to people who qualify for Hack Club YSWS programs/
+          assert_select ".merch-card form", 0
+          post "/merch/weeks/#{@boss.id}/claim"
+          assert_equal 0, MerchClaim.count
+          assert_match(/qualify for Hack Club YSWS programs/, flash[:alert])
+
+          @user.update_columns(ysws_eligible: true, verification_checked_at: 90.days.ago)
+          get dashboard_path
+          assert_select ".merch-card .merch-message", /Sign in again to refresh your verification/
+          assert_select ".merch-card form[action='/auth/hack_club']", 1
+          assert_select ".merch-card form[action*='/claim']", 0
+        end
+      end
+    end
+  end
+
   test "a short week says next week is a fresh start" do
     with_feature(:merch_track) do
       earn_week(count: 2)

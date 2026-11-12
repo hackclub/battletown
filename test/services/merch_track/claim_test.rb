@@ -53,6 +53,26 @@ class MerchTrack::ClaimTest < ActiveSupport::TestCase
     end
   end
 
+  # The eligibility gate guards every prize, not only coin purchases: a merch claim is a prize (docs/CONTRACT.md, "Eligibility gate").
+  test "with the eligibility gate on, someone who cannot spend is refused too, and nothing is created" do
+    with_feature(:eligibility_gate) do
+      @user.update_columns(ysws_eligible: false, verification_checked_at: Time.current)
+      assert_raises(MerchTrack::NotEligible) { claim }
+
+      @user.update_columns(ysws_eligible: true, verification_checked_at: 90.days.ago)
+      assert_raises(MerchTrack::NeedsRecheck) { claim }
+      assert_equal 0, MerchClaim.count
+
+      @user.update_columns(verification_checked_at: Time.current)
+      assert claim.created
+    end
+  end
+
+  test "with the gate off a verified person who is not YSWS eligible still claims, as before" do
+    @user.update_columns(ysws_eligible: false, verification_checked_at: 90.days.ago)
+    assert claim.created
+  end
+
   test "the ship requirement: refused without an approved ship, allowed with one, skipped when switched off" do
     user = verified!(build_user)
     goal_days(user, 5)

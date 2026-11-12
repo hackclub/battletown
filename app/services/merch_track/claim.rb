@@ -40,6 +40,8 @@ module MerchTrack
       case Eligibility.blocker(@user, Progress.for(@user, @boss, now: @now, config: @config), config: @config)
       when :not_earned then raise NotEarned
       when :not_verified then raise NotVerified
+      when :not_eligible then raise NotEligible
+      when :needs_recheck then raise NeedsRecheck
       when :needs_ship then raise NeedsShip
       end
     end

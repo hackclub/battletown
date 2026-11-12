@@ -3,7 +3,9 @@ module MerchTrack
   # sentences (the views have no rules of their own). `state` is one of:
   #   :claimed :fulfilled :cancelled        a claim exists (its own status)
   #   :claimable                            earned, and nothing blocks the claim
-  #   :needs_verification :needs_ship       earned, but the claim is locked (never blocks coding)
+  #   :needs_verification :needs_recheck :not_eligible :needs_ship
+  #                                         earned, but the claim is locked (never blocks coding; the three identity states are
+  #                                         User#spend_state: the last two exist only with the `eligibility_gate` flag on)
   #   :in_progress                          not earned yet, and the week can still get there
   #   :fresh_start                          not earned, and the week can no longer get there ("never 'you missed it'")
   # Copy never shames a short week.
@@ -50,6 +52,8 @@ module MerchTrack
       when :cancelled then "This claim was cancelled. Message the team on Slack if that looks wrong."
       when :claimable then "You earned it! Claim it and the team will message you on Slack to arrange delivery."
       when :needs_verification then "You earned it! Verify your identity with Hack Club to claim it. Coding is never blocked."
+      when :needs_recheck then "You earned it! #{Shop::NeedsRecheck::TEXT} Coding is never blocked."
+      when :not_eligible then "You earned it! #{Shop::NotEligible::TEXT} #{::Eligibility::Config.current.help_line}"
       when :needs_ship then "You earned it! Ship a project and get it approved, then you can claim it."
       when :in_progress then in_progress_text
       else "Next week is a fresh start."
@@ -65,6 +69,8 @@ module MerchTrack
     def earned_state
       case Eligibility.blocker(user, progress, config: @config)
       when :not_verified then :needs_verification
+      when :needs_recheck then :needs_recheck
+      when :not_eligible then :not_eligible
       when :needs_ship then :needs_ship
       else :claimable
       end

@@ -22,6 +22,16 @@ module MerchTrack
     def initialize(msg = "Rewards unlock when you verify your identity with Hack Club.") = super
   end
 
+  # Verified, but not eligible for Hack Club YSWS programs (flag `eligibility_gate`): kind, and never says why.
+  class NotEligible < Error
+    def initialize(msg = "#{Shop::NotEligible::TEXT} #{::Eligibility::Config.current.help_line}") = super
+  end
+
+  # Verified, but the sign-in copy of the verification is too old (flag `eligibility_gate`).
+  class NeedsRecheck < Error
+    def initialize(msg = Shop::NeedsRecheck::TEXT) = super
+  end
+
   class NeedsShip < Error
     def initialize(msg = "Get a project shipped and approved to claim your reward.") = super
   end

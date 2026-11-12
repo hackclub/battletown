@@ -26,6 +26,8 @@
 
   <% if status.needs_verification? %>
     <%= render "merch/locked" %>
+  <% elsif status.state == :needs_recheck %>
+    <div class="merch-note"><%= render "shared/signup_button", label: "Sign in again", css: "btn btn--sm" %></div>
   <% elsif status.state == :needs_ship %>
     <p class="merch-note"><%= link_to "Go to your projects", projects_path %> to ship something.</p>
   <% end %>
