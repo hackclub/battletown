@@ -78,6 +78,38 @@ class Bosses::PresenterTest < ActiveSupport::TestCase
     assert_equal 100, present.health_percent, "1 hour of 500 is still 0%"
   end
 
+  test "health text: full health before any hit, never 100% left once a hit lands, 1% left just short of the health" do
+    assert_equal "Full health", present.health_text
+    assert_equal "Boss at full health, no hits yet this week, about 500 hours to go. Ends Thursday.", present.summary
+
+    add_hours(@other, FRIDAY, 1)
+    assert_equal "Under 1% damage", present.health_text
+    assert_equal "Boss has taken under 1% damage, about 499 hours to go. Ends Thursday.", present.summary
+
+    add_hours(@other, FRIDAY, (5 * HOUR) - 2)
+    assert_equal "Under 1% damage", present.health_text, "one second short of 1%"
+    add_hours(@other, FRIDAY, 1)
+    assert_equal "99% left", present.health_text
+
+    add_hours(@other, FRIDAY, (245 * HOUR))
+    assert_equal "50% left", present.health_text
+    assert_equal "Boss at 50% health, about 250 hours to go. Ends Thursday.", present.summary
+
+    add_hours(@other, FRIDAY, (250 * HOUR) - 1)
+    assert_equal "1% left", present.health_text, "one second short of the health is 99% damage, never 0% left"
+    assert_equal :in_progress, present.state
+
+    add_hours(@other, FRIDAY, 1)
+    assert_equal "0% left", present.health_text
+    assert_equal :defeated, present.state
+  end
+
+  test "escaped summary words for no hits and for a scratch" do
+    assert_equal "Boss escaped at full health, about 500 hours to go.", present(today: THURSDAY + 1).summary
+    add_hours(@other, FRIDAY, 60)
+    assert_equal "Boss escaped after under 1% damage, about 499 hours to go.", present(today: THURSDAY + 1).summary
+  end
+
   test "the last day says it ends today" do
     presenter = present(today: THURSDAY)
     assert_equal 1, presenter.days_left

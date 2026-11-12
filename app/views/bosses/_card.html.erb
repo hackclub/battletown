@@ -28,8 +28,8 @@
 
       <div class="boss-card__health">
         <label for="boss-card-health" class="boss-card__label">Boss health</label>
-        <progress id="boss-card-health" class="boss-card__bar" max="100" value="<%= presenter.health_percent %>" aria-describedby="boss-card-summary"><%= presenter.health_percent %>%</progress>
-        <span class="boss-card__percent"><%= presenter.health_percent %>% left</span>
+        <progress id="boss-card-health" class="boss-card__bar" max="100" value="<%= presenter.health_percent %>" aria-describedby="boss-card-summary"><%= presenter.health_text %></progress>
+        <span class="boss-card__percent"><%= presenter.health_text %></span>
       </div>
       <p id="boss-card-summary" class="boss-card__summary"><%= presenter.summary %></p>
 

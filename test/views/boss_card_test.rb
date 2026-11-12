@@ -35,6 +35,25 @@ class BossCardTest < ActionView::TestCase
     assert_match(/Everyone's coding chips away/, rendered)
   end
 
+  test "the label beside the bar never reads 100% left once any damage has landed" do
+    { 0 => [ "Full health", "100", /\ABoss at full health, no hits yet this week/ ],
+      36 => [ "Under 1% damage", "100", /\ABoss has taken under 1% damage/ ],
+      250 * HOUR => [ "50% left", "50", /\ABoss at 50% health/ ],
+      (500 * HOUR) - 60 => [ "1% left", "1", /\ABoss at 1% health, less than an hour to go/ ],
+      (500 * HOUR) + 60 => [ "0% left", "0", /\ABoss defeated\./ ] }.each do |seconds, (label, value, summary)|
+      HourEntry.delete_all
+      Boss.update_all(defeated_at: nil)
+      @rendered = self.class.content_class.new(+"")
+      add_hours(@other, FRIDAY, seconds) if seconds.positive?
+      card
+
+      assert_select ".boss-card__percent", { count: 1, text: label }, "#{seconds} seconds"
+      assert_select "progress#boss-card-health[value='#{value}']", label, "#{seconds} seconds"
+      assert_select "#boss-card-summary", summary
+      assert_no_match(/100% left/, rendered)
+    end
+  end
+
   test "defeated: a role=status banner, overkill, an empty bar, and the slayer badge for a contributor" do
     add_hours(@user, FRIDAY, 20 * 60)
     add_hours(@other, FRIDAY, (500 * HOUR) + HOUR)

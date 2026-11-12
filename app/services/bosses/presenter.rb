@@ -83,6 +83,16 @@ module Bosses
 
     def health_ratio = defeated? ? 0.0 : 1.0 - damage_ratio
 
+    # The words beside the bar. The percentages are floors, so a boss with a few minutes of damage is still "100%":
+    # these say what actually happened instead of "100% left" ("Full health" only before the first second lands).
+    def health_text
+      if defeated? then "0% left"
+      elsif !damage.positive? then "Full health"
+      elsif damage_percent.zero? then "Under 1% damage"
+      else "#{health_percent}% left"
+      end
+    end
+
     def remaining_seconds = defeated? || boss.nil? ? 0 : BossMath.remaining(damage, boss.hp_seconds)
 
     # "about 190 hours to go": whole hours, truncated (never rounded up), so a boss is never "closer" than it is.
@@ -116,9 +126,9 @@ module Bosses
     def summary
       case state
       when :in_progress
-        [ "Boss at #{health_percent}% health, #{hours_to_go_text}.", ("Ends #{days_left == 1 ? 'today' : end_day_name}." if days_left.positive?) ].compact.join(" ")
+        [ "#{health_sentence}, #{hours_to_go_text}.", ("Ends #{days_left == 1 ? 'today' : end_day_name}." if days_left.positive?) ].compact.join(" ")
       when :defeated then [ "Boss defeated.", ("Overkill: #{overkill_text}." if overkill_text) ].compact.join(" ")
-      when :escaped then "Boss escaped with #{health_percent}% health left, #{hours_to_go_text}."
+      when :escaped then "Boss escaped #{escaped_health_phrase}, #{hours_to_go_text}."
       else "No boss right now."
       end
     end
@@ -174,6 +184,20 @@ module Bosses
     def in_week? = boss.present? && boss.starts_on <= today && today <= boss.ends_on
 
     def week_over? = boss.present? && today > boss.ends_on
+
+    def health_sentence
+      if !damage.positive? then "Boss at full health, no hits yet this week"
+      elsif damage_percent.zero? then "Boss has taken under 1% damage"
+      else "Boss at #{health_percent}% health"
+      end
+    end
+
+    def escaped_health_phrase
+      if !damage.positive? then "at full health"
+      elsif damage_percent.zero? then "after under 1% damage"
+      else "with #{health_percent}% health left"
+      end
+    end
 
     def gather(user, today)
       boss = Boss.covering(today).first
