@@ -1,16 +1,16 @@
 <% content_for :head do %>
   <meta name="description" content="Battletown is a Hack Club You Ship We Ship program. Build projects, take down a weekly boss with the community and earn prizes.">
 <% end %>
+<% boss = landing_boss %>
 
 <div class="landing">
-  <%# Hero (Figma 136:75 / 134:1151). The stage is a 1440x1024 composition that scales with the viewport on wide
-      screens and restacks on narrow ones; the swoosh image is the pink-edged top of the cream panel below. -%>
+  <%# Hero (Figma 151:230 / 151:266): painted town on a sky page, the logo, the tagline and the chunky call to action.
+      On wide screens it is a 1440-wide composition that scales with the viewport; on narrow ones it stacks. -%>
   <section class="landing-hero" aria-labelledby="landing-title">
     <div class="landing-hero__stage">
       <%= image_tag "landing/hero-art.webp",
             alt: "Painted scene of a colourful town. A large armoured warrior in a cat-ear helmet holds a scythe, and a small caped fighter in front of them holds a sword.",
             class: "landing-hero__art", width: 1024, height: 659, fetchpriority: "high", decoding: "async" %>
-      <%= image_tag "landing/hero-wash.svg", alt: "", class: "landing-hero__wash", width: 1440, height: 1024 %>
 
       <% if @referral %>
         <p class="landing-referral" role="status">Welcome from <%= @referral.name %>! Join the fight.</p>
@@ -18,108 +18,126 @@
 
       <div class="landing-hero__content">
         <h1 id="landing-title" class="landing-hero__logo">
-          <%= image_tag "landing/logo.svg", alt: "Battletown", width: 579, height: 329 %>
+          <%= image_tag "design/logo.svg", alt: "Battletown", width: 579, height: 329 %>
         </h1>
         <p class="landing-hero__tagline">Build projects, <span class="landing-hero__tagline-accent">get gear</span></p>
         <div class="landing-hero__cta">
           <%= render "landing/cta" %>
         </div>
+        <p class="landing-hero__sticker"><span aria-hidden="true">🎁</span> Free sticker when you sign up</p>
       </div>
     </div>
-    <%= image_tag "landing/hero-swoosh.svg", alt: "", class: "landing-hero__swoosh", width: 1440, height: 350 %>
   </section>
 
-  <div class="landing-panel">
-    <section class="container landing-intro" aria-label="About Battletown">
-      <p class="landing-eyebrow">A Hack Club You Ship We Ship program</p>
-      <p class="landing-intro__lead">Code with the community, take down a weekly boss, and earn prizes for the time you put in.</p>
-      <p class="landing-intro__sticker"><span aria-hidden="true">🎁</span> Free sticker when you sign up</p>
-    </section>
-
-    <section class="container landing-section" aria-labelledby="how-title">
-      <h2 id="how-title">How it works</h2>
-      <ol class="landing-steps">
-        <li class="landing-step">
-          <h3>Pick your prize</h3>
-          <p>Choose something to work toward. You can see it the whole way through.</p>
+  <%# How it works (Figma 151:279): three signs on one pole. A real ordered list; the artwork is decoration. -%>
+  <section class="landing-signs" aria-labelledby="how-title">
+    <h2 id="how-title" class="visually-hidden">How it works</h2>
+    <div class="landing-signs__stage">
+      <%= image_tag "design/signpost-pole.svg", alt: "", class: "landing-signs__pole", width: 88, height: 854 %>
+      <ol class="signs">
+        <li class="sign sign--build">
+          <%= image_tag "design/signpost-1-yellow.svg", alt: "", class: "sign__art", width: 911, height: 280, loading: "lazy" %>
+          <span class="sign__num" aria-hidden="true">1</span>
+          <h3 class="sign__title">Build</h3>
+          <p class="sign__body">Build your project, and count your hours</p>
         </li>
-        <li class="landing-step">
-          <h3>Code with Hackatime</h3>
-          <p>Build the project you want to make. Your coding time is tracked automatically.</p>
+        <li class="sign sign--ship">
+          <%= image_tag "design/signpost-2-blue.svg", alt: "", class: "sign__art", width: 964, height: 247, loading: "lazy" %>
+          <span class="sign__num" aria-hidden="true">2</span>
+          <h3 class="sign__title">Ship</h3>
+          <p class="sign__body">Ship your project to deal damage to the boss, and get coins</p>
         </li>
-        <li class="landing-step">
-          <h3>Take down the boss</h3>
-          <p>Every hour you code chips away at the weekly boss alongside everyone else. Keep a daily streak for bonuses.</p>
-        </li>
-        <li class="landing-step">
-          <h3>Ship it</h3>
-          <p>Submit your project and claim your prize.</p>
+        <li class="sign sign--prize">
+          <%= image_tag "design/signpost-3-pink.svg", alt: "", class: "sign__art", width: 1022, height: 250, loading: "lazy" %>
+          <span class="sign__num" aria-hidden="true">3</span>
+          <h3 class="sign__title">Get your prize</h3>
+          <p class="sign__body">When the boss is defeated, collect your winnings, and claim a prize from the shop</p>
         </li>
       </ol>
-    </section>
+    </div>
+  </section>
 
-    <section class="container" aria-labelledby="boss-title">
-      <div class="landing-boss">
-        <%= image_tag "landing/hero-art.webp", alt: "", class: "landing-boss__art", width: 1024, height: 659, loading: "lazy", decoding: "async" %>
-        <div class="landing-boss__inner">
-          <h2 id="boss-title">Fight together</h2>
-          <p>Each boss has a health bar measured in hours of real coding. Everyone who is locked in chips away at it, and every hour you put in counts toward your own prize too.</p>
+  <%# Fight together (Figma 152:469): the blue map with the boss, its health bar and the closing call to action.
+      The trees, houses, river and the hero peeking in are decoration (aria-hidden or empty alt). -%>
+  <section class="band band--map band--wave landing-map" aria-labelledby="boss-title">
+    <div class="landing-map__art" aria-hidden="true">
+      <%= image_tag "design/map-river.svg", alt: "", class: "landing-map__river", width: 911, height: 1842, loading: "lazy" %>
+      <%= image_tag "design/hero-character.webp", alt: "", class: "landing-map__hero", width: 900, height: 757, loading: "lazy", decoding: "async" %>
+    </div>
+
+    <div class="container container--wide landing-map__grid">
+      <div class="landing-map__copy">
+        <h2 id="boss-title" class="landing-map__title">Fight together</h2>
+        <p class="landing-map__lead">Each boss has a health bar measured in hours of coding. Everyone who participates contributes hours to defeat the boss. Every hour you put in counts toward your own prize too.</p>
+        <div class="card card--cream card--tight landing-map__proof">
+          <h3 class="card__title" id="proof-title">Who's locked in</h3>
+          <%# TODO: replace the waiting message with real social proof (shout-outs) once the program has launched. No made-up numbers. -%>
+          <p><%= locked_in_text || "Teens from across Hack Club will show up here once Battletown launches." %></p>
         </div>
       </div>
-    </section>
 
-    <section id="prizes" class="container landing-section" aria-labelledby="prizes-title">
-      <h2 id="prizes-title">Pick a prize to work toward</h2>
-      <p class="landing-note">The prize lineup is still being finalised. Prices are in hours of coding.</p>
-      <ul class="landing-prizes">
-        <% @prizes.each do |prize| %>
-          <li class="landing-prize">
-            <span class="landing-prize__emoji" aria-hidden="true"><%= prize.emoji %></span>
-            <h3 class="landing-prize__name"><%= prize.name %></h3>
-            <p class="landing-prize__description"><%= prize.description %></p>
-            <p class="landing-prize__price"><%= prize.hours_text %></p>
-          </li>
-        <% end %>
-      </ul>
-    </section>
-
-    <%# TODO: replace with real social proof (who's locked in, shout-outs) once the program has launched. No made-up numbers. %>
-    <section class="container landing-section" aria-labelledby="proof-title">
-      <h2 id="proof-title">Who's locked in</h2>
-      <div class="landing-proof">
-        <p>Teens from across Hack Club will show up here once Battletown launches.</p>
+      <div class="landing-map__boss">
+        <div class="progress progress--boss landing-map__hp">
+          <div class="progress__head">
+            <span class="progress__label" id="landing-boss-health">Boss health</span>
+            <span class="progress__text"><%= boss[:text] %></span>
+          </div>
+          <progress class="progress__bar" max="100" value="<%= boss[:percent] %>" aria-labelledby="landing-boss-health"><%= boss[:text] %></progress>
+        </div>
+        <%= image_tag "design/boss-shadow.svg", alt: "", class: "landing-map__shadow", width: 470, height: 202, loading: "lazy" %>
+        <%= image_tag "design/boss-weekly.webp", alt: Boss::ARTS.fetch("placeholder"), class: "landing-map__bossart", width: 1000, height: 965, loading: "lazy", decoding: "async" %>
       </div>
-    </section>
 
-    <section class="container landing-section" aria-labelledby="faq-title">
-      <h2 id="faq-title">FAQ</h2>
-      <div class="landing-faq">
-        <details>
-          <summary>Who can join?</summary>
-          <p>Any teen. You sign in with your Hack Club account, and you'll need to verify your identity before you ship a project.</p>
-        </details>
-        <details>
-          <summary>What counts as coding time?</summary>
-          <p>Time tracked with Hackatime while you build your project. Please don't inflate your hours. Reading docs or watching videos doesn't count until you build something with what you learned, and art is usually capped at about a third of your project time. Time can't be counted in more than one You Ship We Ship program, and time logged before the program started doesn't count.</p>
-        </details>
-        <details>
-          <summary>How do I earn prizes?</summary>
-          <p>Your hours go toward the prize you picked and toward the weekly boss. Keeping a daily streak earns you bonuses.</p>
-        </details>
-        <details>
-          <summary>Is it free?</summary>
-          <p>Yes. Battletown is free for teens, run by Hack Club.</p>
-        </details>
-        <details>
-          <summary>How long does it run?</summary>
-          <p>It launches this week and runs for at least a month, with the option to extend it if it goes well.</p>
-        </details>
+      <div class="landing-map__join">
+        <p class="card card--cream card--tight landing-map__ready">Ready to join the fight?</p>
+        <%= render "landing/cta", variant: "bare" %>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="container landing-final" aria-labelledby="final-title">
-      <h2 id="final-title">Ready to lock in?</h2>
-      <%= render "landing/cta" %>
-    </section>
+  <%# Below the map: the prizes and the questions, on cream. -%>
+  <div class="band band--cream landing-more">
+    <div class="container stack stack--lg">
+      <section id="prizes" aria-labelledby="prizes-title">
+        <h2 id="prizes-title">Pick a prize to work toward</h2>
+        <p class="landing-note">Battletown is a Hack Club You Ship We Ship program. The prize lineup is still being finalised, and prices are in hours of coding.</p>
+        <ul class="grid landing-prizes">
+          <% @prizes.each do |prize| %>
+            <li class="card card--chunky landing-prize">
+              <span class="landing-prize__emoji" aria-hidden="true"><%= prize.emoji %></span>
+              <h3 class="card__title landing-prize__name"><%= prize.name %></h3>
+              <p class="landing-prize__description"><%= prize.description %></p>
+              <p class="landing-prize__price"><%= prize.hours_text %></p>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+
+      <section aria-labelledby="faq-title">
+        <h2 id="faq-title">FAQ</h2>
+        <div class="landing-faq">
+          <details class="card card--tight">
+            <summary>Who can join?</summary>
+            <p>Any teen. You sign in with your Hack Club account, and you'll need to verify your identity before you ship a project.</p>
+          </details>
+          <details class="card card--tight">
+            <summary>What counts as coding time?</summary>
+            <p>Time tracked with Hackatime while you build your project. Please don't inflate your hours. Reading docs or watching videos doesn't count until you build something with what you learned, and art is usually capped at about a third of your project time. Time can't be counted in more than one You Ship We Ship program, and time logged before the program started doesn't count.</p>
+          </details>
+          <details class="card card--tight">
+            <summary>How do I earn prizes?</summary>
+            <p>Your hours go toward the prize you picked and toward the weekly boss. Keeping a daily streak earns you bonuses.</p>
+          </details>
+          <details class="card card--tight">
+            <summary>Is it free?</summary>
+            <p>Yes. Battletown is free for teens, run by Hack Club.</p>
+          </details>
+          <details class="card card--tight">
+            <summary>How long does it run?</summary>
+            <p>It launches this week and runs for at least a month, with the option to extend it if it goes well.</p>
+          </details>
+        </div>
+      </section>
+    </div>
   </div>
 </div>

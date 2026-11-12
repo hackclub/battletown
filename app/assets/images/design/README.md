@@ -24,4 +24,4 @@ Not copied on purpose: the 2.2 MB glow layer (`151:310`), the raw PNG exports, t
 | `hero-painting.webp` | `151:266` background | Painted town behind the hero (alpha, painting is the top 279px) | 1024x659, 45 KB; ask the designer for a 2x export (it is upscaled at 1440) |
 | `hero-character.webp` | `151:311` | The hero in the cloak peeking from the bottom-right corner of the map section (hide on mobile) | 900x757, 41 KB |
 
-Colours in the SVGs match the tokens in `tokens.css` (`--color-sign-*`, `--color-pole`, `--color-map`). The existing landing images in `../landing/` (`hero-art.webp`, `logo.svg`, `hero-swoosh.svg`, `hero-wash.svg`) are still used by the current landing page and are left untouched.
+Colours in the SVGs match the tokens in `tokens.css` (`--color-sign-*`, `--color-pole`, `--color-map`). The landing page also uses `../landing/hero-art.webp`, the full 1024x659 painting (the Figma export `hero-painting.webp` here has the lower part transparent, so the landing uses the opaque painting and fades it into the sky with CSS).

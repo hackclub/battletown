@@ -1,26 +1,18 @@
 /*
- * Landing page, built from the Figma hero frames (136:75 / 134:1151, button 71:1000).
- * Colours, type, radii and spacing come from tokens.css. The only raw numbers are the Figma hero coordinates:
- * on wide screens the hero is a 1440x1024 composition scaled with the viewport, written as multiples of --u
- * (1/1440 of the hero's width, so --u * 48 is the Figma 48px type at 1440px). Below 48rem it restacks.
- * Images: app/assets/images/landing/ (hero-art.webp, logo.svg, hero-swoosh.svg, hero-wash.svg).
+ * Landing page, built from the latest Figma frames: 151:230 (hero and signposts), 152:469 (the "Fight together" map),
+ * the CTA (71:1000, 138:177) and the signs (151:279). Colours, type, radii and spacing come from tokens.css and the
+ * shared components (components.css: .band, .card, .progress, .grid). This file only holds what differs.
+ * The only raw numbers are Figma coordinates: on wide screens the hero is a 1440-wide composition and the signposts a
+ * 1121-wide one, scaled with their container and written as multiples of --u (one Figma pixel), so --u * 48 is the
+ * Figma 48px type at full size. Below 48rem (hero) and 64rem (signs, map) everything stacks.
+ * Images: app/assets/images/landing/hero-art.webp (the painting) and app/assets/images/design/ (the rest).
  */
 
-/* ---- Page chrome: the Figma hero has no header bar, so on this page the header floats over the hero ---- */
-body:has(.landing) .site-header { border-bottom: 0; background: var(--color-sky); }
-body:has(.landing) .site-header__brand { display: none; } /* the logo in the hero is the brand */
-body:has(.landing) .site-header__inner { justify-content: flex-end; }
-body:has(.landing) .site-header .btn {
-  min-height: 2.75rem;
-  border-color: var(--color-surface-raised);
-  border-bottom-width: var(--border-chunky);
-  background: var(--color-bg);
-  color: var(--color-text);
-}
+/* The header is the shared one; on this page the hero and the map run flush against it and the footer. */
+.page:has(> .landing) { padding-block: 0; }
 
-.landing { margin-block: calc(var(--space-8) * -1); font-weight: 500; }
-
-.landing h2, .landing h3 { color: var(--color-text); }
+.landing { font-weight: 500; }
+.landing form { margin: 0; }
 
 /* ---- Chunky call to action (Figma 71:1000). Everything is in em, so font-size alone scales it. ---- */
 .cta {
@@ -64,19 +56,23 @@ body:has(.landing) .site-header .btn {
   overflow: visible;
 }
 
+.cta:hover { color: var(--color-bg); text-decoration: none; }
+
 .cta:focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 4px;
   box-shadow: 0 0 0 4px var(--color-bg);
 }
 
+/* The pink face alone, for the blue map (Figma 138:177). */
+.cta--bare { padding: 0; border: 0; border-radius: 0.5833em; background: transparent; }
+.cta--bare:focus-visible { box-shadow: none; outline-offset: 3px; }
+
 @media (prefers-reduced-motion: no-preference) {
   .cta { transition: transform 120ms ease; }
   .cta:hover { transform: translateY(-0.04em); }
   .cta:active { transform: translateY(0.03em); }
 }
-
-.landing form { margin: 0; }
 
 /* ---- Hero ---- */
 .landing-hero {
@@ -87,28 +83,25 @@ body:has(.landing) .site-header .btn {
   container-type: inline-size;
 }
 
-/* Narrow screens: sky strip with the logo, tagline and button, then the painting, then the swoosh. */
+/* Narrow screens: the logo, tagline and button on sky, then the painting fading in underneath. */
 .landing-hero__stage {
   position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--color-sky);
 }
 
 .landing-hero__art {
   order: 3;
   display: block;
   width: 100%;
-  height: clamp(18rem, 85vw, 30rem);
+  height: clamp(16rem, 80vw, 28rem);
   object-fit: cover;
   object-position: 85% 100%;
   margin-top: calc(var(--space-6) * -1);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%);
-  mask-image: linear-gradient(to bottom, transparent, #000 35%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 70%, transparent);
 }
-
-.landing-hero__wash { display: none; }
 
 .landing-referral {
   order: 1;
@@ -126,18 +119,17 @@ body:has(.landing) .site-header .btn {
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-4);
-  padding: var(--space-2) var(--space-4) 0;
+  padding: var(--space-4) var(--space-4) 0;
 }
 
-.landing-hero__logo { width: min(80%, 22rem); margin: 0; line-height: 0; }
+.landing-hero__logo { width: min(70%, 16rem); margin: 0; line-height: 0; }
 .landing-hero__logo img { display: block; width: 100%; height: auto; }
 
 .landing-hero__tagline {
   margin: 0;
-  padding-left: var(--space-2);
   color: var(--color-bg);
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 8.4vw, 3rem);
+  font-size: clamp(1.75rem, 7.6vw, 3rem);
   line-height: 1.2;
   letter-spacing: var(--tracking-display);
   -webkit-text-stroke: 0.16em var(--color-secondary); /* the blue outline in Figma, painted behind the fill */
@@ -147,45 +139,54 @@ body:has(.landing) .site-header .btn {
 
 .landing-hero__cta { --cta-size: clamp(1.5rem, 6.4vw, 2.5rem); max-width: 100%; }
 
-/* The pink-edged top of the cream panel. It overlaps the bottom of the stage (234 of its 350 Figma px). */
-.landing-hero__swoosh {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  height: auto;
-  margin-top: calc(100cqw * -234 / 1440);
-  margin-bottom: -1px;
+.landing-hero__sticker {
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-highlight);
+  color: var(--color-text);
+  font-weight: 700;
 }
 
 @media (min-width: 48rem) {
-  .landing-hero__stage { display: block; aspect-ratio: 1440 / 1024; background: var(--color-sky-soft); }
+  .landing-hero__stage { display: block; aspect-ratio: 1440 / 800; }
 
   .landing-hero__art {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    aspect-ratio: auto;
     margin: 0;
-    object-fit: fill; /* Figma stretches the 1024x659 painting over the 1440x1024 frame */
+    object-position: 50% 0;
     -webkit-mask-image: none;
     mask-image: none;
   }
 
-  .landing-hero__wash { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* The sky eats the bottom of the painting along a wave, like the sky swoosh in Figma. */
+  .landing-hero__stage::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    z-index: 1;
+    height: calc(var(--u) * 120);
+    background: var(--color-page);
+    -webkit-mask: url("design/wave-top.svg") center bottom / 100% 100% no-repeat;
+    mask: url("design/wave-top.svg") center bottom / 100% 100% no-repeat;
+  }
 
   .landing-referral {
     position: absolute;
-    top: calc(var(--u) * 28);
+    top: calc(var(--u) * 20);
     left: 50%;
+    z-index: 3;
     padding-inline: var(--space-6);
     border-radius: var(--radius-full);
     transform: translateX(-50%);
     white-space: nowrap;
   }
 
-  .landing-hero__content { position: absolute; inset: 0; display: block; padding: 0; }
+  .landing-hero__content { position: absolute; inset: 0; z-index: 2; display: block; padding: 0; }
 
   .landing-hero__logo {
     position: absolute;
@@ -198,7 +199,6 @@ body:has(.landing) .site-header .btn {
     position: absolute;
     left: calc(var(--u) * 81.44);
     top: calc(var(--u) * 420);
-    padding: 0;
     font-size: calc(var(--u) * 48);
     white-space: nowrap;
   }
@@ -209,160 +209,195 @@ body:has(.landing) .site-header .btn {
     left: calc(var(--u) * 51.56);
     top: calc(var(--u) * 506);
   }
+
+  .landing-hero__sticker {
+    position: absolute;
+    left: calc(var(--u) * 72);
+    top: calc(var(--u) * 654);
+    padding: 0 calc(var(--u) * 24);
+    font-size: max(var(--text-sm), calc(var(--u) * 22));
+    line-height: 1.8;
+    white-space: nowrap;
+  }
 }
 
-/* The header floats over the hero on wide screens (it sits in flow as a sky strip on narrow ones). */
-@media (min-width: 48rem) {
-  body:has(.landing) { position: relative; }
-  body:has(.landing) .site-header { position: absolute; top: 0; right: 0; z-index: 5; background: transparent; }
-  body:has(.landing) .site-header__inner { padding: var(--space-4) var(--space-6); }
-}
-
-/* ---- Cream panel ---- */
-.landing-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
-  padding-block: var(--space-4) var(--space-12);
-}
-
-.landing-intro { text-align: center; }
-.landing-eyebrow {
-  margin: 0 0 var(--space-3);
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.landing-intro__lead {
+/* ---- How it works: three signs on one pole (Figma 151:279) ---- */
+/* Stacked: three coloured cards with the same edge as the signs. */
+.landing-signs {
+  --u: calc(100cqw / 1121);
   max-width: 40rem;
-  margin: 0 auto var(--space-4);
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3.4vw, 2.5rem);
-  line-height: var(--leading-tight);
-  letter-spacing: calc(var(--tracking-display) / 2);
-}
-.landing-intro__sticker {
-  display: inline-block;
-  margin: 0;
-  padding: var(--space-2) var(--space-6);
-  border-radius: var(--radius-full);
-  background: var(--color-highlight);
-  color: var(--color-text);
-  font-weight: 700;
+  margin-inline: auto;
+  padding: var(--space-6) var(--space-4) var(--space-12);
+  container-type: inline-size;
 }
 
-.landing-section h2, .landing-final h2, .landing-boss h2 {
-  margin-bottom: var(--space-6);
-  font-size: clamp(1.75rem, 3.4vw, var(--text-display));
-  letter-spacing: calc(var(--tracking-display) / 2);
-}
-.landing-note { color: var(--color-text-muted); font-size: var(--text-sm); }
+.landing-signs__pole { display: none; }
 
-/* Cards: white face on the cream panel with the same chunky cream edge as the button. */
-.landing-step, .landing-prize, .landing-faq details, .landing-proof {
-  border: 2px solid var(--color-border);
-  border-bottom-width: var(--border-chunky);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
+.signs { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 
-.landing-steps, .landing-prizes {
+.sign {
+  --sign-face: var(--color-sign-yellow);
+  --sign-edge: var(--color-sign-yellow-edge);
+  --sign-ink: var(--color-bg);
   display: grid;
-  gap: var(--space-4);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: var(--border-chunky) solid var(--sign-edge);
+  border-radius: var(--radius-lg);
+  background: var(--sign-face);
+  color: var(--sign-ink);
+  font-family: var(--font-display);
+}
+.sign--build { --sign-ink: var(--color-ink-blue); }
+.sign--ship { --sign-face: var(--color-sign-blue); --sign-edge: var(--color-sign-blue-edge); }
+.sign--prize { --sign-face: var(--color-sign-pink); --sign-edge: var(--color-sign-pink-edge); }
+
+.sign__art { display: none; }
+.sign__num { grid-row: span 2; font-size: var(--text-3xl); line-height: 1; }
+.sign__title { margin: 0; color: inherit; font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
+.sign__body { margin: 0; font-size: var(--text-md); line-height: var(--leading-tight); letter-spacing: var(--tracking-heading); }
+
+@media (min-width: 64rem) {
+  .landing-signs { max-width: 70rem; padding: 0 0 var(--space-8); }
+  .landing-signs__stage { position: relative; height: calc(var(--u) * 854); }
+  .landing-signs__pole { position: absolute; left: calc(var(--u) * 417); top: 0; display: block; width: calc(var(--u) * 88); height: calc(var(--u) * 854); }
+  .signs { display: block; }
+
+  .sign { position: absolute; display: block; padding: 0; border: 0; border-radius: 0; background: none; letter-spacing: 0; }
+  .sign--build { left: calc(var(--u) * 72.7); top: calc(var(--u) * 25); width: calc(var(--u) * 910.8); height: calc(var(--u) * 279.8); }
+  .sign--ship { left: 0; top: calc(var(--u) * 277.6); width: calc(var(--u) * 963.8); height: calc(var(--u) * 247.5); }
+  .sign--prize { left: 0; top: calc(var(--u) * 499); width: calc(var(--u) * 1021.7); height: calc(var(--u) * 249.9); }
+
+  .sign__art { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .sign__num, .sign__title, .sign__body { position: absolute; margin: 0; transform-origin: 0 0; }
+  .sign__num { font-size: calc(var(--u) * 128); letter-spacing: var(--tracking-display); }
+  .sign__title { font-size: calc(var(--u) * 64); letter-spacing: var(--tracking-display); }
+  .sign__body { font-size: calc(var(--u) * 36); line-height: 1.15; letter-spacing: var(--tracking-display); }
+
+  .sign--build .sign__num { left: calc(var(--u) * 21); top: calc(var(--u) * 71); transform: rotate(-2.13deg); }
+  .sign--build .sign__title { left: calc(var(--u) * 97); top: calc(var(--u) * 92); transform: rotate(-4.27deg); }
+  .sign--build .sign__body { left: calc(var(--u) * 95); top: calc(var(--u) * 169); width: calc(var(--u) * 640); transform: rotate(-3.27deg); }
+
+  .sign--ship .sign__num { left: calc(var(--u) * 111); top: calc(var(--u) * 41); transform: rotate(-2deg); }
+  .sign--ship .sign__title { left: calc(var(--u) * 195); top: calc(var(--u) * 45); transform: rotate(-2deg); }
+  .sign--ship .sign__body { left: calc(var(--u) * 195); top: calc(var(--u) * 113); width: calc(var(--u) * 668); transform: rotate(-3deg); }
+
+  .sign--prize .sign__num { left: calc(var(--u) * 66); top: calc(var(--u) * 38); transform: rotate(4.5deg); }
+  .sign--prize .sign__title { left: calc(var(--u) * 145); top: calc(var(--u) * 35); transform: rotate(0.58deg); }
+  .sign--prize .sign__body { left: calc(var(--u) * 147); top: calc(var(--u) * 115); width: calc(var(--u) * 640); transform: rotate(0.17deg); }
 }
 
-.landing-steps { grid-template-columns: 1fr; counter-reset: step; }
-@media (min-width: 36rem) { .landing-steps { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 64rem) { .landing-steps { grid-template-columns: repeat(4, 1fr); } }
-.landing-step { padding: var(--space-6); }
-.landing-step h3 { display: flex; align-items: center; gap: var(--space-3); }
-.landing-step h3::before {
-  counter-increment: step;
-  content: counter(step);
-  display: inline-grid;
-  flex: none;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius-full);
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
-  font-size: var(--text-base);
-}
-.landing-step p { margin: 0; color: var(--color-text-muted); }
+/* ---- Fight together: the blue map (Figma 152:469) ---- */
+.landing-map { padding-block: var(--space-12) var(--space-24); }
 
-/* Boss band: the hero painting again, faded into sky blue behind the text. */
-.landing-boss {
+/* Everything painted on the map: river, trees, houses and the hero peeking in. Decoration only (aria-hidden). */
+.landing-map__art { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+
+.landing-map__river {
+  position: absolute;
+  left: 5%;
+  top: 6%;
+  width: auto;
+  height: 88%;
+  max-width: none;
+  mix-blend-mode: soft-light;
+}
+
+.landing-map__art::before, .landing-map__art::after { content: ""; position: absolute; inset: 0; z-index: 1; background-repeat: no-repeat; }
+
+/* Trees (73x119) and houses (150x72), scattered as in the Figma map. Mobile keeps a few, larger. */
+.landing-map__art::before {
+  background-image: url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg");
+  background-position: 3% 60%, 93% 76%, 5% 94%;
+  background-size: 14% auto;
+}
+.landing-map__art::after {
+  background-image: url("design/map-house.svg"), url("design/map-house.svg");
+  background-position: 3% 78%, 90% 93%;
+  background-size: 24% auto;
+}
+
+.landing-map__hero { position: absolute; z-index: 2; right: -4%; bottom: 0; display: none; width: clamp(10rem, 24vw, 26rem); height: auto; }
+
+.landing-map__grid { position: relative; z-index: 3; display: grid; gap: var(--space-8); padding-inline: clamp(var(--space-4), 6vw, var(--space-24)); }
+
+.landing-map__title {
+  margin-bottom: var(--space-4);
+  font-size: clamp(var(--text-2xl), 11vw, var(--text-hero-title));
+  letter-spacing: var(--tracking-display);
+}
+.landing-map__lead { max-width: 36rem; font-size: var(--text-lg); font-weight: 700; }
+
+/* "Who's locked in": a cream card, so the text never sits straight on the map. */
+.landing-map__proof { max-width: 36rem; margin-top: var(--space-6); }
+.landing-map__proof p { margin: 0; }
+
+/* The boss: health bar above, soft shadow under the feet. Pink is the health left, dark the health lost. */
+.landing-map__boss { position: relative; display: grid; justify-items: center; gap: var(--space-4); min-width: 0; }
+.landing-map__hp { width: 100%; }
+.landing-map__hp .progress__bar { height: var(--space-12); }
+.landing-map__hp .progress__label { font-size: var(--text-md); }
+.landing-map__hp .progress__text { color: var(--color-bg); font-size: var(--text-md); font-family: var(--font-display); font-weight: 400; }
+.landing-map__shadow { position: absolute; bottom: 4%; left: 50%; width: 80%; max-width: 30rem; transform: translateX(-50%); opacity: 0.3; }
+.landing-map__bossart { position: relative; display: block; width: min(100%, 36rem); height: auto; }
+
+/* The closing call to action. The note sits on a cream container: the Figma blue-on-blue version fails contrast. */
+.landing-map__join {
+  --cta-size: clamp(1.5rem, 6.4vw, 2.5rem);
   position: relative;
-  isolation: isolate;
-  display: flex;
-  align-items: flex-start;
-  min-height: 12rem;
-  overflow: hidden;
-  border-radius: var(--radius-xl);
-  background: var(--color-sky);
-}
-.landing-boss::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--color-sky);
-}
-.landing-boss__art {
-  display: none; /* the painting only shows beside the text on wider screens */
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 85% 100%;
-}
-.landing-boss__inner { padding: var(--space-8) var(--space-6); }
-.landing-boss h2 { margin-bottom: var(--space-3); }
-.landing-boss p { margin: 0; color: var(--color-text); font-size: var(--text-lg); }
-
-@media (min-width: 48rem) {
-  .landing-boss { align-items: center; min-height: 24rem; }
-  .landing-boss__art { display: block; }
-  .landing-boss::after { background: linear-gradient(to right, var(--color-sky) 45%, transparent 80%); }
-  .landing-boss__inner { max-width: 32rem; padding: var(--space-12); }
-}
-
-.landing-prizes { grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
-.landing-prize { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-6); }
-.landing-prize__emoji { font-size: var(--text-2xl); line-height: 1; }
-.landing-prize__name { margin: 0; font-size: var(--text-lg); }
-.landing-prize__description { flex: 1; margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
-.landing-prize__price { margin: 0; color: var(--color-primary); font-family: var(--font-display); font-size: var(--text-lg); }
-
-.landing-proof { padding: var(--space-6); border-style: dashed; text-align: center; color: var(--color-text-muted); }
-.landing-proof p { margin: 0; }
-
-/* FAQ */
-.landing-faq { display: flex; flex-direction: column; gap: var(--space-3); max-width: 48rem; }
-.landing-faq details { padding: 0 var(--space-6); }
-.landing-faq summary {
-  display: flex;
-  align-items: center;
-  min-height: 3.25rem;
-  cursor: pointer;
-  font-weight: 700;
-}
-.landing-faq summary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 4px; border-radius: var(--radius-sm); }
-.landing-faq p { margin: 0 0 var(--space-4); color: var(--color-text-muted); }
-
-.landing-final {
-  --cta-size: clamp(1.5rem, 5vw, 2.5rem);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
   text-align: center;
 }
+.landing-map__ready {
+  margin: 0;
+  padding-inline: var(--space-6);
+  border-radius: var(--radius-full);
+  color: var(--color-ink-blue);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-heading);
+}
+
+@media (min-width: 64rem) {
+  .landing-map { padding-block: var(--space-24) var(--space-32); }
+  .landing-map__art::before {
+    background-image: url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"),
+      url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"),
+      url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg");
+    background-position: 13% 9%, 97% 30%, 11% 58%, 38% 56%, 38% 66%, 56% 58%, 70% 57%, 60% 63%, 54% 66%, 49% 69%, 66% 69%, 58% 73%;
+    background-size: 5% auto;
+  }
+  .landing-map__art::after {
+    background-image: url("design/map-house.svg"), url("design/map-house.svg"), url("design/map-house.svg"), url("design/map-house.svg"),
+      url("design/map-house.svg"), url("design/map-house.svg"), url("design/map-house.svg");
+    background-position: 42% 3%, 26% 13%, 38% 54%, 26% 60%, 48% 63%, 88% 55%, 12% 72%;
+    background-size: 10% auto;
+  }
+  .landing-map__hero { display: block; }
+  .landing-map__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "copy boss" "join join"; gap: var(--space-16) var(--space-8); }
+  .landing-map__copy { grid-area: copy; padding-top: var(--space-12); }
+  .landing-map__boss { grid-area: boss; }
+  .landing-map__join { grid-area: join; margin-top: var(--space-16); --cta-size: var(--text-display); }
+}
+
+/* ---- Below the map: prizes and FAQ on cream ---- */
+.landing-more { padding-block: var(--space-16); }
+.landing-more h2 { font-size: clamp(var(--text-xl), 5vw, var(--text-display)); letter-spacing: var(--tracking-heading); }
+.landing-note { color: var(--color-text-muted); }
+
+.landing-prizes { --grid-min: 14rem; margin: 0; padding: 0; list-style: none; }
+.landing-prize { display: flex; flex-direction: column; gap: var(--space-2); }
+.landing-prize > * { margin: 0; }
+.landing-prize__emoji { font-size: var(--text-2xl); line-height: 1; }
+.landing-prize__description { flex: 1; }
+.landing-prize__price { color: var(--color-bg); font-family: var(--font-display); font-size: var(--text-xl); }
+
+.landing-faq { display: grid; gap: var(--space-3); max-width: 48rem; }
+.landing-faq details { padding-block: 0; }
+.landing-faq summary { display: flex; align-items: center; min-height: var(--tap-size); cursor: pointer; font-weight: 700; }
+.landing-faq summary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 4px; border-radius: var(--radius-sm); }
+.landing-faq p { margin: 0 0 var(--space-4); color: var(--color-text-muted); }
