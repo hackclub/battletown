@@ -9,6 +9,8 @@ Rails.application.config.filter_parameters += [
   # The staff search boxes (users: a display name, Slack id, Hack Club Auth id or email; projects: a name or repo fragment) go in
   # `q`; the Hack Club Auth id column appears as a bound SQL value too; `details` is the flag details free text.
   /\Aq\z/, :hca_uid, :details,
+  # A parcel's tracking number (tracking[number], tracking_number ...) is semi-sensitive: never in the log.
+  :tracking,
   :note, :idempotency_key, :description, :reason, :comment,
   # Staff-written text stored with an audit event (`metadata`, a JSON object with the reason) and in a private staff note (`body`): keep both out of the SQL log's bind values.
   :metadata, /\Abody\z/,

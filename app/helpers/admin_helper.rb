@@ -1,5 +1,6 @@
 # Small markup helpers for the admin pages (app/views/admin), so every table and status looks the same.
 module AdminHelper
+  # The merch-claim queue's three statuses (orders have six: OrderStatusHelper::ORDER_STATUS_BADGES).
   ORDER_BADGES = { "requested" => "badge--warning", "fulfilled" => "badge--success", "cancelled" => "badge--muted" }.freeze
 
   # A table that scrolls sideways inside its own box on a phone instead of the page. The wrapper is focusable and named so
@@ -19,8 +20,9 @@ module AdminHelper
     admin_badge(ship.status.humanize, ShipsHelper::STATUS_BADGES.fetch(ship.status))
   end
 
-  def admin_order_badge(order, text)
-    admin_badge(text, ORDER_BADGES.fetch(order.status))
+  # Staff see the real status, a hold included (the buyer's page and list never do).
+  def admin_order_badge(order)
+    tag.span(staff_order_status_text(order), class: class_names("badge shop-status", "shop-status--#{order.status}", OrderStatusHelper::ORDER_STATUS_BADGES.fetch(order.status)))
   end
 
   REVIEW_BADGES = { "unreviewed" => [ "Unreviewed", "badge--muted" ], "ok" => [ "Reviewed OK", "badge--success" ],

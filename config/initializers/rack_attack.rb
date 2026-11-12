@@ -127,6 +127,22 @@ class Rack::Attack
     req.ip if req.path.start_with?("/api/privacy/")
   end
 
+  ORDER_EXPORT_PATH = %r{\A/{1,3}admin/orders/export(?:\.\w+)?/?\z}
+
+  # Orders. Placing one is a person clicking a button: a per-person limit per hour (config/orders.yml, default 10) keeps a
+  # script from hammering the shop lock (the person is read from the session; no session, no throttle here, and the order
+  # service needs a signed-in person anyway). Staff changes (hold, ship, cancel, note ... and the CSV export) have their own
+  # limits per address, so a runaway script or a stuck double click loop cannot flood the history.
+  throttle("orders/user", limit: ->(_req) { Orders::Config.current.orders_per_hour }, period: 1.hour) do |req|
+    req.session["user_id"].to_s.presence if req.post? && req.path.match?(%r{\A/{1,3}shop/orders(?:\.\w+)?/?\z})
+  end
+  throttle("admin_orders/ip", limit: ->(_req) { Orders::Config.current.staff_actions_per_minute }, period: 1.minute) do |req|
+    req.ip if !req.get? && !req.head? && req.path.match?(%r{\A/{1,3}admin/orders(?:/|\.|\z)}) && !req.path.match?(ORDER_EXPORT_PATH)
+  end
+  throttle("admin_orders_export/ip", limit: ->(_req) { Orders::Config.current.exports_per_10_minutes }, period: 10.minutes) do |req|
+    req.ip if req.post? && req.path.match?(ORDER_EXPORT_PATH)
+  end
+
   throttle("req/ip", limit: 300, period: 5.minutes) do |req|
     req.ip unless req.path.start_with?("/assets/", "/up", "/api/privacy/")
   end

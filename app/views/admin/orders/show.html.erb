@@ -1,0 +1,207 @@
+<% content_for :title, "Order #{@order.id}" %>
+<% order = @order %>
+<% config = Orders::Config.current %>
+<% reasons = config.reason_codes.map { |key, label| [ label, key ] } %>
+<% carriers = config.carriers.values.map { |carrier| [ carrier.name, carrier.key ] } %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the orders", admin_orders_path %></p>
+    <header class="page-header">
+      <h1>Order #<%= order.id %>: <%= order.display_name %></h1>
+      <p class="admin-dashboard__note">
+        <%= admin_order_badge(order) %>
+        <% if order.overdue? %><span class="badge badge--danger shop-status shop-status--overdue">Overdue</span><% end %>
+        Ordered <%= order.created_at.utc.strftime("%-d %b %Y %H:%M UTC") %> (<%= order_age_text(order) %> ago)
+      </p>
+    </header>
+
+    <div class="admin-grid grid grid--2">
+      <section class="card admin-panel" aria-labelledby="order-facts">
+        <h2 id="order-facts" class="card__title">Order and person</h2>
+        <dl class="admin-dl">
+          <dt>Item</dt><dd><%= order.display_name %> (<%= order.kind.tr("_", " ") %>)</dd>
+          <dt>Coins paid</dt><dd><%= order.coins %></dd>
+          <dt>Person</dt><dd><%= order.user.display_name.presence || "No name" %></dd>
+          <dt>Slack</dt><dd><%= order.user.slack_id.presence || "not set" %></dd>
+          <dt>Identity</dt><dd><%= staff_identity_text(order.user) %></dd>
+          <% if order.tracking? %>
+            <dt>Tracking</dt><dd><%= tracking_summary(order) %></dd>
+          <% end %>
+        </dl>
+        <p class="small">Contact the person on Slack to arrange delivery. No address is stored in this app.</p>
+      </section>
+
+      <section class="card admin-panel" aria-labelledby="order-history">
+        <h2 id="order-history" class="card__title">History</h2>
+        <ol class="admin-history" role="list">
+          <% @events.each do |event| %>
+            <li>
+              <strong><%= event.action.tr("_", " ").capitalize %></strong>
+              <% if event.status_change? %>(<%= OrderStatusHelper::STAFF_STATUS_TEXT.fetch(event.from_status).downcase %> to <%= OrderStatusHelper::STAFF_STATUS_TEXT.fetch(event.to_status).downcase %>)<% end %>
+              <small>
+                <%= event.created_at.utc.strftime("%-d %b %Y %H:%M UTC") %>
+                &middot; <%= { "buyer" => "the buyer", "system" => "the system" }.fetch(event.actor_kind) { event.actor&.display_name.presence || "a former staff member" } %>
+              </small>
+              <% if event.reason_code %><br><small>Reason: <%= config.reason_label(event.reason_code) || event.reason_code.tr("_", " ") %></small><% end %>
+              <% if event.note %><p class="admin-text"><%= event.note %></p><% end %>
+            </li>
+          <% end %>
+          <li><strong>Ordered</strong> <small><%= order.created_at.utc.strftime("%-d %b %Y %H:%M UTC") %> &middot; the buyer</small></li>
+        </ol>
+      </section>
+    </div>
+
+    <% if @actions.empty? %>
+      <p class="alert">This order is <%= staff_order_status_text(order).downcase %>, so no status change is possible. You can still add a note.</p>
+    <% end %>
+
+    <div class="admin-grid grid grid--2">
+      <% if @actions.include?("hold") %>
+        <section class="card admin-panel" aria-labelledby="order-hold">
+          <h2 id="order-hold" class="card__title">Put on hold</h2>
+          <p class="small">Parks the order (a stock problem, a question for the buyer). They still see "Requested" and get no message. Coins stay spent.</p>
+          <%= form_with url: hold_admin_order_path(order), method: :patch, class: "admin-form stack" do %>
+            <div class="field">
+              <%= label_tag :hold_note, "Note (optional, staff only)" %>
+              <%= text_field_tag :note, nil, id: "hold_note", class: "input", maxlength: config.note_max %>
+            </div>
+            <div><%= button_tag "Put on hold", type: "submit", name: nil, class: "btn" %></div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% if @actions.include?("release") %>
+        <section class="card admin-panel" aria-labelledby="order-release">
+          <h2 id="order-release" class="card__title">Take off hold</h2>
+          <p class="small">The order is requested again. No message is sent.</p>
+          <%= form_with url: release_admin_order_path(order), method: :patch, class: "admin-form stack" do %>
+            <div class="field">
+              <%= label_tag :release_note, "Note (optional, staff only)" %>
+              <%= text_field_tag :note, nil, id: "release_note", class: "input", maxlength: config.note_max %>
+            </div>
+            <div><%= button_tag "Release", type: "submit", name: nil, class: "btn btn--primary" %></div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% if @actions.include?("ship") %>
+        <section class="card admin-panel" aria-labelledby="order-ship">
+          <h2 id="order-ship" class="card__title">Mark shipped</h2>
+          <p class="small">The buyer is told it is on its way (the message never includes the tracking number). Tracking is optional.</p>
+          <%= form_with url: ship_admin_order_path(order), method: :patch, class: "admin-form stack" do %>
+            <div class="field">
+              <%= label_tag :ship_carrier, "Carrier" %>
+              <%= select_tag "tracking[carrier]", options_for_select(carriers), id: "ship_carrier", include_blank: "No tracking", class: "select" %>
+            </div>
+            <div class="field">
+              <%= label_tag :ship_number, "Tracking number" %>
+              <%= text_field_tag "tracking[number]", nil, id: "ship_number", class: "input", maxlength: 60, autocomplete: "off" %>
+              <span class="field__hint admin-form__hint">Letters, numbers, spaces and hyphens.</span>
+            </div>
+            <div class="field">
+              <%= label_tag :ship_label, "Carrier name (only for Other, up to #{Order::TRACKING_LABEL_MAX} characters)" %>
+              <%= text_field_tag "tracking[label]", nil, id: "ship_label", class: "input", maxlength: Order::TRACKING_LABEL_MAX %>
+            </div>
+            <div class="field">
+              <%= label_tag :ship_note, "Note (optional, staff only)" %>
+              <%= text_field_tag :note, nil, id: "ship_note", class: "input", maxlength: config.note_max %>
+            </div>
+            <div><%= button_tag "Mark shipped", type: "submit", name: nil, class: "btn btn--primary" %></div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% if @actions.include?("fulfil") %>
+        <section class="card admin-panel" aria-labelledby="order-fulfil">
+          <h2 id="order-fulfil" class="card__title">Mark fulfilled</h2>
+          <p class="small">The order was handed over. The buyer is told once.</p>
+          <%= form_with url: fulfil_admin_order_path(order), method: :patch, class: "admin-form stack" do %>
+            <div class="field">
+              <%= label_tag :fulfil_note, "Note (optional, staff only)" %>
+              <%= text_field_tag :note, nil, id: "fulfil_note", class: "input", maxlength: config.note_max %>
+            </div>
+            <div><%= button_tag "Mark fulfilled", type: "submit", name: nil, class: "btn btn--primary" %></div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% if order.shipped? || order.fulfilled? %>
+        <section class="card admin-panel" aria-labelledby="order-tracking">
+          <h2 id="order-tracking" class="card__title">Tracking</h2>
+          <p class="small">Add or fix the tracking. Leave the carrier empty to remove it. The buyer is not told.</p>
+          <%= form_with url: tracking_admin_order_path(order), method: :patch, class: "admin-form stack" do %>
+            <div class="field">
+              <%= label_tag :tracking_carrier, "Carrier" %>
+              <%= select_tag "tracking[carrier]", options_for_select(carriers, order.tracking_carrier), id: "tracking_carrier", include_blank: "No tracking", class: "select" %>
+            </div>
+            <div class="field">
+              <%= label_tag :tracking_number, "Tracking number" %>
+              <%= text_field_tag "tracking[number]", order.tracking_number, id: "tracking_number", class: "input", maxlength: 60, autocomplete: "off" %>
+            </div>
+            <div class="field">
+              <%= label_tag :tracking_label, "Carrier name (only for Other)" %>
+              <%= text_field_tag "tracking[label]", order.tracking_label, id: "tracking_label", class: "input", maxlength: Order::TRACKING_LABEL_MAX %>
+            </div>
+            <div><%= button_tag "Save tracking", type: "submit", name: nil, class: "btn" %></div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% if @actions.include?("cancel") %>
+        <section class="card admin-panel" aria-labelledby="order-cancel">
+          <h2 id="order-cancel" class="card__title">Cancel and refund</h2>
+          <p class="small">Cancels the order and gives back <%= order.coins.positive? ? "#{order.coins} coins, once" : "nothing (it was free)" %>. Pick a reason and type CANCEL to confirm.</p>
+          <%= form_with url: cancel_admin_order_path(order), method: :patch, class: "admin-form stack" do %>
+            <div class="field">
+              <%= label_tag :cancel_reason, "Reason" %>
+              <%= select_tag :reason_code, options_for_select(reasons), id: "cancel_reason", include_blank: "Pick a reason", required: true, class: "select" %>
+            </div>
+            <div class="field">
+              <%= label_tag :cancel_note, "Note (optional, staff only, no personal details)" %>
+              <%= text_field_tag :note, nil, id: "cancel_note", class: "input", maxlength: config.note_max %>
+            </div>
+            <div class="field">
+              <%= label_tag :cancel_confirm, "Type CANCEL to confirm" %>
+              <%= text_field_tag :confirm, nil, id: "cancel_confirm", class: "input", autocomplete: "off", required: true %>
+            </div>
+            <div><%= button_tag "Cancel and refund", type: "submit", name: nil, class: "btn" %></div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% if @actions.include?("refund") %>
+        <section class="card admin-panel" aria-labelledby="order-refund">
+          <h2 id="order-refund" class="card__title">Refund</h2>
+          <p class="small">For an order that was sent but lost or wrong. Gives back <%= order.coins.positive? ? "#{order.coins} coins, once" : "nothing (it was free)" %>. Pick a reason and type REFUND to confirm.</p>
+          <%= form_with url: refund_admin_order_path(order), method: :patch, class: "admin-form stack" do %>
+            <div class="field">
+              <%= label_tag :refund_reason, "Reason" %>
+              <%= select_tag :reason_code, options_for_select(reasons), id: "refund_reason", include_blank: "Pick a reason", required: true, class: "select" %>
+            </div>
+            <div class="field">
+              <%= label_tag :refund_note, "Note (optional, staff only, no personal details)" %>
+              <%= text_field_tag :note, nil, id: "refund_note", class: "input", maxlength: config.note_max %>
+            </div>
+            <div class="field">
+              <%= label_tag :refund_confirm, "Type REFUND to confirm" %>
+              <%= text_field_tag :confirm, nil, id: "refund_confirm", class: "input", autocomplete: "off", required: true %>
+            </div>
+            <div><%= button_tag "Refund", type: "submit", name: nil, class: "btn" %></div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <section class="card admin-panel" aria-labelledby="order-note">
+        <h2 id="order-note" class="card__title">Add a note</h2>
+        <p class="small">Staff only: the buyer never sees it. No personal details (no addresses, phone numbers or emails). Up to <%= config.note_max %> characters.</p>
+        <%= form_with url: note_admin_order_path(order), method: :post, class: "admin-form stack" do %>
+          <div class="field">
+            <%= label_tag :note_text, "Note" %>
+            <%= text_field_tag :note, nil, id: "note_text", class: "input", maxlength: config.note_max, required: true %>
+          </div>
+          <div><%= button_tag "Add note", type: "submit", name: nil, class: "btn" %></div>
+        <% end %>
+      </section>
+    </div>
+  <% end %>
+</div>

@@ -1,30 +1,46 @@
 <% content_for :title, "Admin orders" %>
+<% config = Orders::Config.current %>
+<% filters = @filters %>
 <div class="container container--wide">
   <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
     <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
     <header class="page-header">
       <h1>Shop orders</h1>
-      <p class="admin-dashboard__note">Requested orders come first. Contact the person on Slack to arrange delivery, then mark the order fulfilled. Cancelling refunds the coins. Names and Slack ids are personal data: use them only to deliver the order.</p>
+      <p class="admin-dashboard__note">Requested orders come first, then on hold, then shipped. Open an order to hold it, ship it with tracking, mark it fulfilled, cancel it or refund it. Names and Slack ids are personal data: use them only to deliver the order.</p>
     </header>
 
-    <p class="admin-count"><strong id="requested-count"><%= @requested_count %></strong> <%= @requested_count == 1 ? "order is" : "orders are" %> waiting.</p>
+    <p class="admin-count">
+      <strong id="requested-count"><%= @waiting_count %></strong> <%= @waiting_count == 1 ? "order is" : "orders are" %> waiting
+      <% if @on_hold_count.positive? %>and <strong id="on-hold-count"><%= @on_hold_count %></strong> on hold<% end %>.
+    </p>
+
+    <nav class="admin-filters" aria-label="Filter by status">
+      <%= link_to "All (#{@counts.values.sum})", admin_orders_path(kind: filters[:kind], q: filters[:q]),
+                  class: class_names("btn btn--sm admin-filter", "btn--primary admin-filter--current": filters[:status].nil?), "aria-current": (filters[:status].nil? ? "page" : nil) %>
+      <% Admin::OrdersController::TABS.each do |status| %>
+        <% label = OrderStatusHelper::STAFF_STATUS_TEXT.fetch(status) %>
+        <%= link_to "#{label} (#{@counts.fetch(status, 0)})", admin_orders_path(status: status, kind: filters[:kind], q: filters[:q]),
+                    class: class_names("btn btn--sm admin-filter", "btn--primary admin-filter--current": filters[:status] == status), "aria-current": (filters[:status] == status ? "page" : nil) %>
+      <% end %>
+    </nav>
 
     <%= form_with url: admin_orders_path, method: :get, class: "card card--tight admin-form admin-form--inline" do %>
+      <%= hidden_field_tag :status, filters[:status], id: nil if filters[:status] %>
       <div class="field">
-        <%= label_tag :status, "Status" %>
-        <%= select_tag :status, options_for_select([ [ "Any status", "" ] ] + Order::STATUSES.map { |s| [ s.capitalize, s ] }, @status), class: "select" %>
+        <%= label_tag :q, "Search item name or order number" %>
+        <%= search_field_tag :q, filters[:q], class: "input", maxlength: Admin::OrdersController::SEARCH_MAX, autocomplete: "off" %>
       </div>
       <div class="field">
         <%= label_tag :kind, "Kind" %>
-        <%= select_tag :kind, options_for_select([ [ "Any kind", "" ], [ "Purchase", "purchase" ], [ "Signup sticker", "signup_sticker" ] ], @kind), class: "select" %>
+        <%= select_tag :kind, options_for_select([ [ "Any kind", "" ], [ "Purchase", "purchase" ], [ "Signup sticker", "signup_sticker" ] ], filters[:kind]), class: "select" %>
       </div>
-      <%= button_tag "Filter", type: "submit", name: nil, class: "btn btn--primary" %>
+      <%= button_tag "Search", type: "submit", name: nil, class: "btn btn--primary" %>
     <% end %>
 
     <% if @orders.empty? %>
       <p class="alert">No orders match.</p>
     <% else %>
-      <% caption = "Orders (requested first, then newest, up to #{Admin::OrdersController::LIMIT})" %>
+      <% caption = "Orders (requested first, then on hold, shipped and the rest, newest first, up to #{Admin::OrdersController::LIMIT})" %>
       <%= table_region("Orders") do %>
         <table class="table admin-table">
           <caption><%= caption %></caption>
@@ -34,15 +50,16 @@
               <th scope="col">Person</th>
               <th scope="col" class="num admin-table__num">Coins</th>
               <th scope="col">Status</th>
+              <th scope="col">Age</th>
               <th scope="col">Ordered (UTC)</th>
-              <th scope="col"><span class="visually-hidden">Actions</span></th>
+              <th scope="col"><span class="visually-hidden">Open</span></th>
             </tr>
           </thead>
           <tbody>
             <% @orders.each do |order| %>
               <% person = order.user.display_name.presence || "this person" %>
               <tr id="order-<%= order.id %>">
-                <th scope="row"><%= order.display_name %><br><small><%= order.kind.tr("_", " ") %></small></th>
+                <th scope="row"><%= order.display_name %><br><small>#<%= order.id %> &middot; <%= order.kind.tr("_", " ") %></small></th>
                 <td>
                   <%= order.user.display_name.presence || "No name" %><br>
                   <small>Slack: <%= order.user.slack_id.presence || "not set" %></small><br>
@@ -50,27 +67,38 @@
                 </td>
                 <td class="num admin-table__num"><%= order.coins %></td>
                 <td>
-                  <%= admin_order_badge(order, order_status_text(order)) %>
+                  <%= admin_order_badge(order) %>
+                  <% if order.shipped? && order.shipped_at %><br><small><%= order.shipped_at.utc.strftime("%-d %b %H:%M") %></small><% end %>
                   <% if order.fulfilled? %><br><small><%= order.fulfilled_at.utc.strftime("%-d %b %H:%M") %></small><% end %>
                   <% if order.cancelled? %><br><small><%= order.cancelled_at.utc.strftime("%-d %b %H:%M") %></small><% end %>
+                  <% if order.refunded? %><br><small><%= order.refunded_at.utc.strftime("%-d %b %H:%M") %></small><% end %>
+                </td>
+                <td>
+                  <%= order_age_text(order) %>
+                  <% if order.overdue? %><br><span class="badge badge--danger shop-status shop-status--overdue" title="Waiting <%= config.overdue_days %> days or more">Overdue</span><% end %>
                 </td>
                 <td><%= order.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
-                <td>
-                  <% if order.requested? %>
-                    <div class="admin-actions">
-                      <%= button_to "Mark fulfilled", fulfill_admin_order_path(order, status: @status, kind: @kind), method: :patch, class: "btn btn--primary btn--sm",
-                                    "aria-label": "Mark fulfilled: #{order.display_name} for #{person}" %>
-                      <%= button_to "Cancel and refund", cancel_admin_order_path(order, status: @status, kind: @kind), method: :patch, class: "btn btn--sm",
-                                    "aria-label": "Cancel and refund: #{order.display_name} for #{person}",
-                                    form: { data: { turbo_confirm: "Cancel this order and refund #{order.coins} coins?" } } %>
-                    </div>
-                  <% end %>
-                </td>
+                <td><%= link_to "Open", admin_order_path(order), class: "btn btn--sm", "aria-label": "Open order #{order.id}: #{order.display_name} for #{person}" %></td>
               </tr>
             <% end %>
           </tbody>
         </table>
       <% end %>
     <% end %>
+
+    <section class="card card--tight admin-panel" aria-labelledby="export-title">
+      <h2 id="export-title" class="card__title">Export to CSV</h2>
+      <p class="small">Exports the orders in the current filter (at most <%= config.export_max_rows %> rows): order id, date, status, item, coins, kind, tracking carrier and age. Every export is written to the audit trail with how many rows left.</p>
+      <%= form_with url: export_admin_orders_path, method: :post, class: "admin-form" do %>
+        <%= hidden_field_tag :status, filters[:status], id: nil if filters[:status] %>
+        <%= hidden_field_tag :kind, filters[:kind], id: nil if filters[:kind] %>
+        <%= hidden_field_tag :q, filters[:q], id: nil if filters[:q] %>
+        <div class="field">
+          <label class="option"><%= check_box_tag :include_contact, "1", false, "aria-describedby": "include-contact-hint" %> Include contact columns (display name and Slack id)</label>
+          <span id="include-contact-hint" class="field__hint admin-form__hint">Personal data. Only tick this if you need it to deliver orders; the export is logged either way.</span>
+        </div>
+        <%= button_tag "Download CSV", type: "submit", name: nil, class: "btn" %>
+      <% end %>
+    </section>
   <% end %>
 </div>

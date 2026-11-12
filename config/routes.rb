@@ -34,7 +34,7 @@ Rails.application.routes.draw do
   # An item's picture. Public (the landing page shows it too), same-origin, cached privately and revalidated by ETag.
   get "shop/items/:key/image", to: "shop_item_images#show", as: :shop_item_image, format: false, constraints: { key: /[a-z0-9_]{1,60}/ }
   scope "shop" do
-    resources :orders, only: %i[index create] do
+    resources :orders, only: %i[index show create] do
       member { patch :cancel }
     end
   end
@@ -159,10 +159,18 @@ Rails.application.routes.draw do
     constraints Features::Constraint.new(:quests) do
       resources :quests, only: %i[index new create edit update]
     end
-    resources :orders, only: :index do
+    # Orders: the queue, one order's page and its writes (each an Orders::* service). The CSV export is a POST (CSRF, audited).
+    resources :orders, only: %i[index show] do
+      collection { post :export }
       member do
-        patch :fulfill
+        patch :hold
+        patch :release
+        patch :ship
+        patch :fulfil
         patch :cancel
+        patch :refund
+        patch :tracking
+        post :note
       end
     end
     resources :ships, only: %i[index show] do

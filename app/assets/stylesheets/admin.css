@@ -77,6 +77,13 @@
   .admin-dl dd { margin-bottom: var(--space-3); }
 }
 
+/* One order's history (newest first). */
+.admin-history { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.admin-history li { padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
+.admin-history li:last-child { border-bottom-width: 0; padding-bottom: 0; }
+.admin-history small { color: var(--color-text-muted); }
+.admin-history .admin-text { margin: var(--space-1) 0 0; }
+
 /* Forms: boss edit, approve, reject, order filter, dev hours. */
 .admin-form-card, .dev-form { max-width: 32rem; }
 .admin-form__hint { display: block; }

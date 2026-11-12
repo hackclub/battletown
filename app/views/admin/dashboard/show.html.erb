@@ -1,5 +1,7 @@
 <% content_for :title, "Admin" %>
-<% requested_orders = Order.where(status: "requested").count %>
+<% order_counts = Order.where(status: %w[requested on_hold]).group(:status).count %>
+<% requested_orders = order_counts.fetch("requested", 0) %>
+<% held_orders = order_counts.fetch("on_hold", 0) %>
 <div class="container container--wide">
   <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
     <header class="page-header">
@@ -18,8 +20,8 @@
         </li>
         <li class="card card--tight admin-link">
           <h3 class="card__title"><%= link_to "Shop orders", admin_orders_path %></h3>
-          <p class="admin-link__count"><%= admin_badge("#{requested_orders} requested", requested_orders.positive? ? "badge--warning" : "badge--muted") %></p>
-          <p class="small">Fulfil or cancel what people ordered.</p>
+          <p class="admin-link__count"><%= admin_badge("#{requested_orders} requested", requested_orders.positive? ? "badge--warning" : "badge--muted") %> <%= admin_badge("#{held_orders} on hold", "badge--muted") if held_orders.positive? %></p>
+          <p class="small">Ship, fulfil, hold or cancel what people ordered.</p>
         </li>
         <% if feature?(:merch_track) %>
           <% requested_merch = MerchClaim.where(status: "requested").count %>
