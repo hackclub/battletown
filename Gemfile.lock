@@ -509,6 +509,7 @@ DEPENDENCIES
   rack-attack
   rails (~> 8.1.4)
   rubocop-rails-omakase
+  ruby-vips (~> 2.3)
   selenium-webdriver
   solid_cable
   solid_cache

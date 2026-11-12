@@ -41,6 +41,11 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# The ship screenshot processor (app/services/ship_images/processor.rb) calls libvips directly. image_processing 1.x
+# pulled this in; 2.x does not, so it is a direct dependency here and bumping image_processing cannot drop it. require: false
+# keeps libvips (and the system libxml2 it can pull in) from loading before Nokogiri, whose XPath then breaks.
+gem "ruby-vips", "~> 2.3", require: false
+
 group :development, :test do
   # Load .env into ENV (never loaded in production; set real env vars there)
   gem "dotenv-rails"
