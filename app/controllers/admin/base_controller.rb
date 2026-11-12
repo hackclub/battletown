@@ -2,9 +2,11 @@
 # nothing hints that /admin exists. Admin status is re-checked from the database user on every request.
 module Admin
   class BaseController < ApplicationController
-    before_action :set_no_store
-    before_action :require_login
-    before_action :require_admin!
+    # Prepended so they run before the CSRF check: otherwise a write without a token answers 422 and reveals the
+    # route to someone who is not an admin. Admins still get the CSRF check right after.
+    prepend_before_action :require_admin!
+    prepend_before_action :require_login
+    prepend_before_action :set_no_store
 
     private
 

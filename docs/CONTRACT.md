@@ -80,7 +80,7 @@ Signed-in, onboarded users get `<nav aria-label="Main">`: Dashboard, Projects, S
 
 ## Security conventions (enforced by `test/integration/route_security_test.rb`, which reads the router)
 
-- Every `/admin` route answers 404, never a redirect, for signed-out visitors and non-admins.
+- Every `/admin` route answers 404, never a redirect, for signed-out visitors and non-admins; writes too, without a CSRF token (`Admin::BaseController` prepends its checks so they run before the CSRF check).
 - Every user-scoped record (projects, links, link suggestions, ships, orders) is looked up through `current_user`; someone else's id is a 404.
 - Every POST, PATCH, PUT and DELETE route has CSRF protection, except `/api/privacy/*` (bearer-token JSON API).
 - Only the Rails frameworks the app uses are loaded (`config/application.rb`): no Active Storage, Action Mailbox or Action Text, so no `/rails/...` upload or inbound-email endpoints.

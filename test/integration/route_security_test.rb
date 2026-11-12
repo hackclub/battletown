@@ -145,11 +145,42 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
 
   # --- (d) every state-changing route is CSRF protected, except the bearer-token privacy API ---
 
-  test "every POST PATCH PUT and DELETE route rejects a request without a CSRF token, except /api/privacy" do
+  # Forgery protection is off in tests; these turn it on like production. Sign in first (the OmniAuth POST has no token).
+  def with_forgery_protection
     original = ActionController::Base.allow_forgery_protection
     ActionController::Base.allow_forgery_protection = true
-    begin
-      sign_in_as users(:onboarded)
+    yield
+  ensure
+    ActionController::Base.allow_forgery_protection = original
+  end
+
+  # The login and admin checks run before the CSRF check, so an admin write without a token is the same 404 as an
+  # unknown path for everyone but a real admin (a 422 would reveal that the route exists).
+  test "admin write routes are a 404, not a CSRF error, for signed-out visitors and non-admins" do
+    ENV["ADMIN_HCA_UIDS"] = "someone-else"
+    routes = app_routes.select { |verb, path, *| STATE_CHANGING.include?(verb) && path.start_with?("/admin/") }
+    assert_operator routes.size, :>=, 5, "expected the admin write routes to be found in the router"
+
+    [ nil, users(:onboarded) ].each do |visitor|
+      if visitor
+        sign_in_as(visitor)
+        assert_equal visitor.id, session[:user_id]
+      end
+      with_forgery_protection do
+        routes.each do |verb, path, *|
+          process(verb.downcase.to_sym, fill(path, {}))
+          assert_response :not_found, "#{verb} #{path} must be a 404 for #{visitor ? 'a signed-in non-admin' : 'a signed-out visitor'}"
+        end
+      end
+    end
+  end
+
+  test "every POST PATCH PUT and DELETE route rejects a request without a CSRF token, except /api/privacy" do
+    # An admin, so the /admin writes get past the admin check and reach the CSRF check too.
+    ENV["ADMIN_HCA_UIDS"] = users(:onboarded).hca_uid
+    sign_in_as users(:onboarded)
+    assert_equal users(:onboarded).id, session[:user_id]
+    with_forgery_protection do
       routes = app_routes.select { |verb, _path, _controller, _route| STATE_CHANGING.include?(verb) }
       exempt, protected_routes = routes.partition { |_verb, path, _controller, _route| path.start_with?("/api/privacy") }
       assert_operator protected_routes.size, :>=, 30, "expected the state-changing routes to be found in the router"
@@ -160,8 +191,6 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
         process(verb.downcase.to_sym, url)
         assert_response :unprocessable_content, "#{verb} #{url} must reject a missing CSRF token"
       end
-    ensure
-      ActionController::Base.allow_forgery_protection = original
     end
   end
 end
