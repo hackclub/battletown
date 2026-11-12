@@ -46,6 +46,8 @@ class Boss < ApplicationRecord
 
   # Admins enter hours; anything that is not a number leaves the health blank so validation reports it.
   def hp_hours=(value)
+    raise ArgumentError unless value.to_s.strip.match?(/\A\d{1,6}(?:\.\d{1,6})?\z/) # a plain decimal only (no exponents to expand)
+
     self.hp_seconds = (BigDecimal(value.to_s.strip) * 3600).round
   rescue ArgumentError, FloatDomainError
     self.hp_seconds = nil

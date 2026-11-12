@@ -63,6 +63,10 @@ class BossTest < ActiveSupport::TestCase
     boss.hp_hours = "lots"
     assert_nil boss.hp_seconds
     assert_not boss.valid?
+    [ "1e100000000", "1E9", "9" * 400, "0x10" ].each do |text|
+      boss.hp_hours = text
+      assert_nil boss.hp_seconds, text
+    end
   end
 
   test "starts_on must be unique and overlapping weeks are refused" do

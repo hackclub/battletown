@@ -50,7 +50,7 @@ module Admin
         load_stats
         render :edit, status: :unprocessable_content
       end
-    rescue ActiveRecord::StaleObjectError
+    rescue ActiveRecord::StaleObjectError, ActiveModel::RangeError # an absurd lock_version cannot match the row either
       redirect_to admin_edit_shop_item_path(@item.key), alert: "Someone else changed #{@item.name_was} while you were editing. The form now shows their version: make your change again.", status: :see_other
     end
 

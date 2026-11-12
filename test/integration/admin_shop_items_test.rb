@@ -41,6 +41,20 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     ShopItem.find_by(key: overrides.fetch(:key, "pixel_pin"))
   end
 
+  test "numbers too big for the database are a form error or a stale-form message, never a 500" do
+    admin!
+    post "/admin/shop", params: item_params(position: "99999999999")
+    assert_response :unprocessable_content
+    post "/admin/shop", params: item_params(coins: "99999999999999999999")
+    assert_response :unprocessable_content
+    patch "/admin/shop/tshirt", params: { shop_item: { coins: "60", lock_version: "99999999999999999999" } }
+    assert_response :see_other
+    assert_match(/Someone else changed/, flash[:alert].to_s)
+    patch "/admin/shop/tshirt", params: { shop_item: { position: "99999999999" } }
+    assert_response :unprocessable_content
+    assert_not_equal 60, ShopItem.find_by!(key: "tshirt").coins
+  end
+
   # --- who can reach it ---
 
   test "signed-out visitors and non-admins get a 404 on every shop admin route and nothing changes" do

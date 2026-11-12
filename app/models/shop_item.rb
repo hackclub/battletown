@@ -32,7 +32,7 @@ class ShopItem < ApplicationRecord
   validates :coins, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: COINS_MAX }
   validates :tier, inclusion: { in: TIERS }
   validates :kind, inclusion: { in: KINDS }
-  validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100_000 }
   validate :price_matches_kind
   validate :only_one_free_signup, on: :create
 

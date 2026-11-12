@@ -84,6 +84,16 @@ class Ships::ApproveTest < ActiveSupport::TestCase
     assert_equal 2700, Ships::Approve.seconds_from_hours(ship, "0.75")
   end
 
+  test "hours text with an exponent or an absurd length is refused at once, not computed" do
+    ship = three_hour_ship
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    [ "1e100000000", "1E9", "1" * 400, "9." + "9" * 300, "0x10", "1_0", " 1e5 " ].each do |text|
+      assert_raises(Ships::Approve::Invalid, text) { Ships::Approve.seconds_from_hours(ship, text) }
+    end
+    assert_operator Process.clock_gettime(Process::CLOCK_MONOTONIC) - started, :<, 1
+    assert_equal 5400, Ships::Approve.seconds_from_hours(ship, " 1.5 ")
+  end
+
   test "the whole coded time may be approved even when it is not a step multiple" do
     code(@user, D[1], 3777)
     ship = submit_ship(@project)

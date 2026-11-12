@@ -68,6 +68,9 @@ module Ships
     def seconds_from_hours(ship, text)
       return ship.coded_seconds if text.to_s.strip.empty?
 
+      # A plain decimal only: BigDecimal would happily expand "1e100000000" (tens of seconds of CPU) before any bound is checked.
+      raise ArgumentError unless text.to_s.strip.match?(/\A\d{1,6}(?:\.\d{1,6})?\z/)
+
       hours = BigDecimal(text.to_s.strip)
       seconds = (hours * 3600)
       raise Invalid, "Approved hours must be a number such as 1.5." unless seconds.frac.zero?
