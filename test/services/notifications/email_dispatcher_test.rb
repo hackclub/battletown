@@ -18,7 +18,7 @@ class Notifications::EmailDispatcherTest < ActiveSupport::TestCase
 
   def run_dispatcher(adapter, now: NOON, enabled: "true", flag: true)
     with_env("NOTIFICATIONS_ENABLED" => enabled, "APP_URL" => "https://battletown.example.test") do
-      flag ? with_feature(:email) { Notifications::Email::Dispatcher.run(now: now, adapter: adapter) } : Notifications::Email::Dispatcher.run(now: now, adapter: adapter)
+      flag ? with_feature(:email) { with_feature(:returning) { Notifications::Email::Dispatcher.run(now: now, adapter: adapter) } } : Notifications::Email::Dispatcher.run(now: now, adapter: adapter)
     end
   end
 
@@ -188,7 +188,7 @@ class Notifications::EmailDispatcherTest < ActiveSupport::TestCase
   test "a welcome-back nudge is cancelled when the person already got the weekly maximum, ship decisions never count or are capped" do
     cap = Notifications::Email::Config.current.max_per_week
     cap.times { |i| email_row(@user, kind: "returning_nudge", status: "sent", due_at: NOON - (i + 1).hours).update_columns(sent_at: NOON - (i + 1).hours) }
-    nudge = email_row(@user, kind: "returning_nudge", subject_id: 20_000, due_at: NOON - 1.minute)
+    nudge = nudge_row(@user, due_at: NOON - 1.minute)
     adapter = FakeAdapter.new
     run_dispatcher(adapter)
 
@@ -199,10 +199,31 @@ class Notifications::EmailDispatcherTest < ActiveSupport::TestCase
 
   test "a nudge goes out when the earlier ones are older than a week" do
     email_row(@user, kind: "returning_nudge", status: "sent").update_columns(sent_at: NOON - 8.days, due_at: NOON - 8.days)
-    nudge = email_row(@user, kind: "returning_nudge", subject_id: 20_000, due_at: NOON - 1.minute)
+    nudge = nudge_row(@user, due_at: NOON - 1.minute)
     @row.update_columns(status: "cancelled")
     adapter = FakeAdapter.new
     run_dispatcher(adapter)
     assert nudge.reload.sent?
+  end
+
+  test "a welcome-back email carries the Slack nudge's facts, and is cancelled once the idle period is over or the returning flag is off" do
+    nudge = nudge_row(@user, due_at: NOON - 1.minute)
+    @row.update_columns(status: "cancelled")
+    adapter = FakeAdapter.new
+    run_dispatcher(adapter)
+    call = adapter.calls.sole
+    assert_equal "returning_nudge", call[:kind]
+    assert_equal Game::ReturningBoost.config.boost_days, call[:values][:boost_days]
+    assert_includes call[:values][:link], "/dashboard"
+    assert nudge.reload.sent?
+
+    stale = nudge_row(create_email_user("disp9"), last_active: Date.new(2026, 10, 20), due_at: NOON - 1.minute)
+    DailyResult.create!(user: stale.user, local_date: Date.new(2026, 11, 2), raw_seconds: 1800, quick_met: true, goal_met: false, streak_15: 1, goal_streak: 0, freeze_available: true)
+    run_dispatcher(FakeAdapter.new)
+    assert_equal "subject_gone", stale.reload.last_error_code, "they came back after the period the nudge was queued for"
+
+    flagged_off = nudge_row(create_email_user("disp10"), due_at: NOON - 1.minute)
+    with_env("NOTIFICATIONS_ENABLED" => "true") { with_feature(:email) { Notifications::Email::Dispatcher.run(now: NOON, adapter: FakeAdapter.new) } }
+    assert_equal "subject_gone", flagged_off.reload.last_error_code, "the returning flag is off"
   end
 end

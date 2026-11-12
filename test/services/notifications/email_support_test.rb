@@ -79,7 +79,7 @@ class Notifications::EmailSupportTest < ActiveSupport::TestCase
 
   test "Action Mailer's own logger goes nowhere (config/initializers/mailer_privacy.rb), so no address or message reaches any log" do
     assert_nil ActionMailer::Base.logger.instance_variable_get(:@logdev)
-    logs = capture_logs { with_feature(:email) { NotificationMailer.with(user: @user, values: { link: "https://example.test/d" }).returning_nudge.deliver_now } }
+    logs = capture_logs { with_feature(:email) { NotificationMailer.with(user: @user, values: { boost_days: 3, link: "https://example.test/d" }).returning_nudge.deliver_now } }
     assert_not_includes logs, @user.email
     assert_not_includes logs, "Delivered mail"
   end

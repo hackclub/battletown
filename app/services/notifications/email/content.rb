@@ -10,8 +10,15 @@ module Notifications
         case row.kind
         when "ship_approved" then ship_approved(row, user)
         when "ship_rejected" then ship_rejected(row, user)
-        when "returning_nudge" then { link: Links.dashboard }
+        when "returning_nudge" then returning_nudge(row, user)
         end
+      end
+
+      # The same test as the Slack nudge (Message): only while the returning flag is on, the idle period it was queued for is
+      # still the current one and the person has not already coded today. Its facts (the boost length, the dashboard link)
+      # are the Slack message's own.
+      def returning_nudge(row, user)
+        Message.values_for(row, user)&.slice(:boost_days, :link)
       end
 
       def ship_approved(row, user)

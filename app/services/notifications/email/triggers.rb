@@ -35,7 +35,7 @@ module Notifications
 
         guard(notification.kind) do
           Outbox.enqueue(user: notification.user, kind: notification.kind, subject_id: notification.subject_id,
-                         key: "email:#{notification.idempotency_key}", channel: Preferences::EMAIL)
+                         key: "email:#{notification.idempotency_key}", now: notification.scheduled_for, channel: Preferences::EMAIL)
         end
       end
 

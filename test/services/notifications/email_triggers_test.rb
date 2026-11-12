@@ -135,4 +135,33 @@ class Notifications::EmailTriggersTest < ActiveSupport::TestCase
     assert_not_includes logs, @user.email
     assert_equal 1, Notification.where(user_id: @user.id, kind: "returning_nudge", channel: "slack_dm").count
   end
+
+  test "the real returning scan queues the Slack nudge and, with the email flag on, exactly one welcome-back email, which then sends" do
+    user = create_email_user("scan1", created_at: Time.utc(2026, 11, 1, 9))
+    user.update_columns(signed_up_on: Date.new(2026, 11, 1))
+    code(user, Date.new(2026, 11, 1), 900)
+    now = Time.utc(2026, 11, 9, 12)
+
+    with_feature(:returning) { with_feature(:email) { 2.times { Notifications::ReturningNudges.scan(now: now) } } }
+    slack = Notification.find_by!(user_id: user.id, kind: "returning_nudge", channel: "slack_dm")
+    email = Notification.find_by!(user_id: user.id, kind: "returning_nudge", channel: "email")
+    assert_equal slack.subject_id, email.subject_id
+    assert_equal 1, Notification.where(user_id: user.id, kind: "returning_nudge", channel: "email").count
+
+    adapter = EmailHelper::FakeAdapter.new
+    with_env("NOTIFICATIONS_ENABLED" => "true") do
+      with_feature(:returning) { with_feature(:email) { Notifications::Email::Dispatcher.run(now: now + 1.minute, adapter: adapter) } }
+    end
+    assert_equal [ "returning_nudge" ], adapter.calls.map { |call| call[:kind] }, email.reload.attributes.slice("status", "last_error_code").inspect
+    assert email.reload.sent?
+  end
+
+  test "with the email flag off the real returning scan queues only the Slack nudge" do
+    user = create_email_user("scan2", created_at: Time.utc(2026, 11, 1, 9))
+    user.update_columns(signed_up_on: Date.new(2026, 11, 1))
+    code(user, Date.new(2026, 11, 1), 900)
+    with_feature(:returning) { Notifications::ReturningNudges.scan(now: Time.utc(2026, 11, 9, 12)) }
+    assert_equal 1, Notification.where(user_id: user.id, kind: "returning_nudge", channel: "slack_dm").count
+    assert_equal 0, Notification.where(user_id: user.id, channel: "email").count
+  end
 end

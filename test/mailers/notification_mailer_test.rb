@@ -11,7 +11,7 @@ class NotificationMailerTest < ActionMailer::TestCase
     @values = {
       "ship_approved" => { project: "Space Farm", hours: "3", coins: 42, locked: true, verify_url: "https://example.test/verify", link: "#{APP}/ships/1" },
       "ship_rejected" => { project: "Space Farm", reason: "The demo link does not open.", link: "#{APP}/projects/1/ships/new?from=1" },
-      "returning_nudge" => { link: "#{APP}/dashboard" }
+      "returning_nudge" => { boost_days: 3, link: "#{APP}/dashboard" }
     }
   end
 

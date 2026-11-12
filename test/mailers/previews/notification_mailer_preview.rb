@@ -13,7 +13,7 @@ class NotificationMailerPreview < ActionMailer::Preview
   end
 
   def returning_nudge
-    mailer(link: Notifications::Links.dashboard).returning_nudge
+    mailer(boost_days: 3, link: Notifications::Links.dashboard).returning_nudge
   end
 
   private

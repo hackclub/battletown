@@ -53,6 +53,16 @@ module EmailHelper
                          idempotency_key: key || "email:test:#{SecureRandom.hex(6)}")
   end
 
+  # A welcome-back email row for someone who went quiet after `last_active` (the idle period the Slack nudge was queued for),
+  # so Message.returning_nudge (flag `returning`) still finds it true.
+  def nudge_row(user, last_active: Date.new(2026, 11, 1), **options)
+    unless DailyResult.where(user_id: user.id, quick_met: true).exists?
+      DailyResult.create!(user: user, local_date: last_active, raw_seconds: 1800, quick_met: true, goal_met: false, streak_15: 1, goal_streak: 0, freeze_available: true)
+    end
+    last = Notifications::ReturningNudges.last_active_on(user)
+    email_row(user, kind: "returning_nudge", subject_id: Notifications::ReturningNudges.subject_for(last), **options)
+  end
+
   # The mail Action Mailer collected (test delivery method), emptied first.
   def clear_deliveries = ActionMailer::Base.deliveries.clear
 
