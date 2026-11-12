@@ -160,7 +160,7 @@ Every job uses `concurrencyPolicy: forbid` (a fire is skipped while the previous
 
 Notes:
 
-- **`game-settle`** runs at minute 5 so the settle instant of whole-hour zones has just passed. It exits 0 even when some users fail: check `errors=` in its output line, not only the run status.
+- **`game-settle`** runs at minute 5 so the settle instant of whole-hour zones has just passed. It tries every user, prints its counts line, then exits 1 when any user failed (`errors=` above 0), so the run shows as failed; the one retry and the next hour try those users again (settling is idempotent).
 - **`hackatime-sync`** calls Hackatime whenever it runs; the task does not check `HOURS_SOURCE` itself, which is why the job must not exist before that is set. Per-user failures are counted (`retry_later=`, `needs_reconnect=`), not raised, so retries stay at 0 and the next hour tries again. Order against `game-settle` does not matter: the grace period gives late hours several hours to land before a day settles.
 - **`privacy-purge-tokens`** is only a backstop (expired ids are also deleted as requests arrive). The time is arbitrary off-peak.
 - **`notifications-prune`** is the exception among the notification tasks: it sends nothing and only enforces retention, and finished rows exist even while notifications are off (changing a reminder schedule cancels the pending row), so create it now.
