@@ -7,7 +7,7 @@
         <h1>Stop Battletown emails?</h1>
       </header>
       <p>We'll stop sending you email from Battletown, a Hack Club program. You can still get messages on Slack, and you can turn email back on any time in your settings.</p>
-      <%= button_to "Stop Battletown emails", email_unsubscribe_path(token: params[:token]), method: :post, class: "btn btn--primary btn--lg" %>
+      <%= button_to "Stop Battletown emails", email_unsubscribe_path(token: params[:token]), method: :post, class: "btn btn--primary btn--lg", form: { data: { turbo: false } } %>
       <p class="email-unsubscribe__note">Nothing changes until you press the button.</p>
     <% elsif @state == :done %>
       <header class="page-header">
