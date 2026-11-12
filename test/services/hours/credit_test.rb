@@ -90,7 +90,7 @@ class Hours::CreditTest < ActiveSupport::TestCase
   end
 
   test "a custom cap from config is honoured" do
-    config = Hours::Config.new(daily_cap_seconds: 1_000, max_backfill_days: 3, active_seconds: 900)
+    config = Hours::Config.current.with(daily_cap_seconds: 1_000, max_backfill_days: 3, active_seconds: 900)
     assert_equal 1_000, credit(seconds: 5_000, config: config).credited_seconds
     assert_predicate credit(seconds: 5_000, config: config), :capped?
   end

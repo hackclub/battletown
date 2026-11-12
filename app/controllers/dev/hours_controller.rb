@@ -9,7 +9,8 @@ module Dev
     def show
       @today = Hours::Days.today(current_user)
       @config = Hours::Config.current
-      @days = Hours::Totals.seconds_by_date(current_user, (@today - 6)..@today)
+      @days = Hours::Totals.ledger_seconds_by_date(current_user, (@today - 6)..@today)
+      @first_counted = Hours::Days.first_counted_date(current_user)
     end
 
     def create

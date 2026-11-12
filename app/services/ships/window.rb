@@ -4,7 +4,8 @@ module Ships
   # It is the net seconds of the user's ledger entries whose `hackatime_project` is one of the Hackatime projects
   # linked to the project, on local dates AFTER the window end of the project's previous ship that still counts
   # (submitted or approved: a rejected or withdrawn ship gives its window back), or from the beginning when there is
-  # none. Entries without a Hackatime project (manual credits) and other projects' time are never included. Dates
+  # none, and never before the user's first counted date (`Hours::Days.first_counted_date`: hours coded before signing
+  # up earn no coins). Entries without a Hackatime project (manual credits) and other projects' time are never included. Dates
   # are the frozen local dates on the entries, so time zones and daylight saving are already settled there.
   #
   # `hours_since_previous_ship_before_window` is the hours already counted toward the 6 hour deflation threshold
@@ -26,7 +27,7 @@ module Ships
       return build({}) if names.empty?
 
       after = project.ships.where(status: Ship::WINDOW_STATUSES).maximum(:window_end_date)
-      entries = HourEntry.where(user_id: project.user_id, hackatime_project: names)
+      entries = HourEntry.where(user_id: project.user_id, hackatime_project: names, local_date: Hours::Days.first_counted_date(project.user)..)
       entries = entries.where("local_date > ?", after) if after
       by_date = entries.group(:local_date).sum(:seconds).select { |_, seconds| seconds.positive? }.sort.to_h
       build(by_date)

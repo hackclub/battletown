@@ -4,7 +4,8 @@ module Game
   # `user.with_lock` plus the unique (user_id, local_date) index.
   #
   # A local date is settled once `Days.settles_at(date, zone)` has passed, i.e. local midnight plus the grace period.
-  # The first date is the local date the account was created; every later date follows the previous stored row, whose
+  # The first date is the user's first counted date (`Hours::Days.first_counted_date`: the local date the account was
+  # created, by default; hours before it count for nothing); every later date follows the previous stored row, whose
   # streak state it continues. Late hours: an hours entry that lands on an already settled date does NOT change the
   # stored row (streaks and bonuses are final once settled), it only shows up in later live totals.
   #
@@ -20,12 +21,12 @@ module Game
       zone = Days.zone(user.time_zone)
       target = Days.last_settled_date(through, zone, grace_seconds: config.grace_seconds)
       # Cheap check without the lock: the dashboard calls this on every render.
-      return [] if next_date(user, zone) > target
+      return [] if next_date(user) > target
 
       source ||= HoursSource.current
       written = []
       user.with_lock do
-        first = next_date(user, zone)
+        first = next_date(user)
         next if first > target
 
         state = DailyResult.where(user_id: user.id).chronological.last&.streak_state || StreakCalculator.initial_state(config: config)
@@ -44,10 +45,10 @@ module Game
       written
     end
 
-    # The next date to settle: the day after the last stored row, or the account's creation date for a new user.
-    def next_date(user, zone)
+    # The next date to settle: the day after the last stored row, or the first counted date for a new user.
+    def next_date(user)
       last = DailyResult.where(user_id: user.id).maximum(:local_date)
-      last ? last + 1 : Days.local_date(user.created_at, zone)
+      last ? last + 1 : Hours::Days.first_counted_date(user)
     end
 
     # All users, one at a time; a failure for one user is logged (no personal data) and does not stop the rest.

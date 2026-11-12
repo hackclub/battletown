@@ -30,7 +30,7 @@ module Dashboard
       best_quick, best_goal, freeze_on = rows.pick(Arel.sql("MAX(streak_15)"), Arel.sql("MAX(goal_streak)"),
                                                    Arel.sql("MAX(local_date) FILTER (WHERE freeze_used)"))
       state = last&.streak_state || Game::StreakCalculator.initial_state(config: @config)
-      first = last ? last.local_date + 1 : Game::Days.local_date(@user.created_at, @user.time_zone)
+      first = last ? last.local_date + 1 : Hours::Days.first_counted_date(@user)
       seconds = Hours::Totals.seconds_by_date(@user, [ first, @today ].min..@today)
       last_frozen = !last.nil? && last.local_date == @today - 1 && last.freeze_used
 

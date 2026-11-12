@@ -17,5 +17,12 @@ module Hours
     def today(user_or_zone, now: Time.current) = local_date(now, user_or_zone)
 
     def zone_name(user_or_zone) = user_or_zone.respond_to?(:time_zone) ? user_or_zone.time_zone : user_or_zone
+
+    # The first local date whose hours count for the game (boss damage, streaks, coins, the dashboard): the local date
+    # the account was created on, in the user's zone, minus `days_before_signup_counted` (0 by default). Earlier hours
+    # stay in the ledger but count for nothing. Hours::Totals applies the same rule in SQL for all users at once.
+    def first_counted_date(user, config: Config.current)
+      local_date(user.created_at || Time.current, user) - config.days_before_signup_counted
+    end
   end
 end

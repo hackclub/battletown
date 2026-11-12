@@ -1,7 +1,7 @@
 <% content_for :title, "Dev hours" %>
 <%= dev_tool(:section, class: "container") do %>
   <h1>Add coded time</h1>
-  <p>Adds time to your own ledger for a local date (your time zone: <%= current_user.time_zone.presence || "UTC" %>). Dates from 3 days ago to today work; a day is capped at <%= @config.daily_cap_seconds / 3600 %> hours.</p>
+  <p>Adds time to your own ledger for a local date (your time zone: <%= current_user.time_zone.presence || "UTC" %>). Dates from 3 days ago to today work; a day is capped at <%= @config.daily_cap_seconds / 3600 %> hours. Time on dates before <%= @first_counted.iso8601 %> (before you signed up) stays in the ledger below but counts for nothing in the game.</p>
 
   <%= form_with url: dev_hours_path, method: :post, class: "card" do |form| %>
     <p>

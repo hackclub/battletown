@@ -53,8 +53,8 @@ module Ships
     # The ship's window dates whose streak day is not final yet (no bonus for them if approved now), as ApproveShip counts them.
     def unsettled_dates(ship, now: Time.current)
       zone = Game::Days.zone(ship.user.time_zone)
-      created = Game::Days.local_date(ship.user.created_at, zone)
-      ship.window_dates.reject { |date| date < created || Game::Days.settled?(date, zone, now) }
+      first_counted = Hours::Days.first_counted_date(ship.user)
+      ship.window_dates.reject { |date| date < first_counted || Game::Days.settled?(date, zone, now) }
     end
 
     # Hours text from the form ("1.25") to whole seconds, or the coded time when blank. Raises Invalid with a friendly message.

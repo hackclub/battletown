@@ -2,11 +2,14 @@ new_user:
   hca_uid: ident!new
   email: new@example.com
   display_name: Newbie
+  # Signed up well before any test date, so hours on past test dates count (Hours::Days.first_counted_date).
+  created_at: 2026-01-01 00:00:00
 
 onboarded:
   hca_uid: ident!onboarded
   email: done@example.com
   display_name: Veteran
+  created_at: 2026-01-01 00:00:00
   prize_key: tshirt
   project_kind: game
   coding_days: 5

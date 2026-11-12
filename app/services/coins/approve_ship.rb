@@ -8,7 +8,7 @@ module Coins
   # row (the ledger refuses zero).
   #
   # Window dates that are not settled yet (today, or yesterday inside the grace period) earn no bonus: a bonus is
-  # only paid on a day whose streak is final. Dates before the account existed likewise earn none. The dates that
+  # only paid on a day whose streak is final. Dates before the first counted date likewise earn none. The dates that
   # got no bonus for being unsettled are returned in `unsettled_dates`.
   #
   # Arguments: `ship_reference` is the ship record (or a [type, id] pair); `approved_seconds` the staff-approved
@@ -36,9 +36,9 @@ module Coins
         existing = CoinTransaction.where(user_id: user.id, idempotency_key: [ base_key, bonus_key ]).index_by(&:idempotency_key)
         next replay(existing, base_key, bonus_key) if existing.any?
 
-        zone = Game::Days.zone(user.time_zone)
+        first_counted = Hours::Days.first_counted_date(user)
         settled = DailyResult.where(user_id: user.id, local_date: dates).to_h { |row| [ row.local_date, row.bonus_bps ] }
-        unsettled = dates.reject { |date| settled.key?(date) || date < Game::Days.local_date(user.created_at, zone) }
+        unsettled = dates.reject { |date| settled.key?(date) || date < first_counted }
         coded = source.seconds_by_date(user, dates.first..dates.last).slice(*dates)
         payout = ShipPayout.call(approved_seconds: approved_seconds, coded_seconds_by_date: dates.to_h { |date| [ date, coded.fetch(date, 0) ] },
                                  bonus_bps_by_date: settled, hours_since_previous_ship_before_window: hours_since_previous_ship_before_window,

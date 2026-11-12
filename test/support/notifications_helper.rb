@@ -88,9 +88,10 @@ module NotificationsHelper
     FakeResponse.new(code, body.is_a?(String) ? body : JSON.generate(body), headers)
   end
 
-  # A committed-in-transaction onboarded user with a schedule; tweak with overrides.
+  # A committed-in-transaction onboarded user with a schedule; tweak with overrides. Signed up before any test date, so
+  # hours on past test dates count (Hours::Days.first_counted_date).
   def create_user(suffix = SecureRandom.hex(4), **attrs)
-    User.create!({ hca_uid: "ident!#{suffix}", slack_id: "U#{suffix.upcase}", onboarded_at: Time.utc(2026, 11, 1),
+    User.create!({ hca_uid: "ident!#{suffix}", slack_id: "U#{suffix.upcase}", created_at: Time.utc(2026, 1, 1), onboarded_at: Time.utc(2026, 11, 1),
                    onboarding_step: 4, coding_days: 127, coding_time: "18:30", time_zone: "UTC" }.merge(attrs))
   end
 end

@@ -12,6 +12,10 @@ shared:
     max_backfill_days: 3
     # A user counts as active on a date from this many credited seconds (15 minutes).
     active_seconds: 900
+    # Hours on local dates before the account's sign-up date (in the user's zone) stay in the ledger but count for
+    # nothing in the game: no boss damage, streak day, coins or dashboard time. This many days before the sign-up date
+    # count anyway; 0 means the sign-up date itself is the first that counts (fully).
+    days_before_signup_counted: 0
 
   # The coin economy and streaks (app/services/game/**, app/services/coins/**), read through Game::Config.
   coins:

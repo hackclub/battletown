@@ -10,7 +10,7 @@ class Bosses::CheckDefeatConcurrencyTest < ActiveSupport::TestCase
   THREADS = 4
 
   setup do
-    @users = Array.new(THREADS) { |index| User.create!(hca_uid: "ident!boss-race-#{index}-#{SecureRandom.hex(4)}", time_zone: "UTC") }
+    @users = Array.new(THREADS) { |index| User.create!(hca_uid: "ident!boss-race-#{index}-#{SecureRandom.hex(4)}", time_zone: "UTC", created_at: 1.year.ago) }
     @date = Time.current.utc.to_date
     @boss = make_boss(starts_on: @date - 1, hp_seconds: 1_000)
   end
