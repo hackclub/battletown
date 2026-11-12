@@ -61,6 +61,20 @@ Rails.application.routes.draw do
     post "feedback/:token", to: "feedback#create", constraints: { token: Nps::Token::PATH_FORMAT }
   end
 
+  # Crews, the "team bonus" (flag `team`): the routes do not exist while it is off. Always the signed-in person's own crew;
+  # /team/join/<token> is the invite link (a plain 404 for any token that does not work). Admin list at /admin/teams.
+  constraints Features::Constraint.new(:team) do
+    resource :team, only: %i[show create update] do
+      post :invite
+      delete :leave
+    end
+    get "team/join/:token", to: "team_joins#show", as: :team_join, constraints: { token: Team::TOKEN_FORMAT_PATH }
+    post "team/join/:token", to: "team_joins#create", constraints: { token: Team::TOKEN_FORMAT_PATH }
+    namespace :admin do
+      resources :teams, only: %i[index destroy]
+    end
+  end
+
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 

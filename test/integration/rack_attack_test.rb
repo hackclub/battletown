@@ -30,6 +30,14 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_not_equal 429, response.status
   end
 
+  test "crew invite links are limited to 30 a minute per IP, so tokens cannot be guessed in bulk" do
+    30.times { get "/team/join/#{'a' * 16}", headers: { "REMOTE_ADDR" => "203.0.113.20" } }
+    get "/team/join/#{'a' * 16}", headers: { "REMOTE_ADDR" => "203.0.113.20" }
+    assert_response :too_many_requests
+    get "/team/join/#{'a' * 16}", headers: { "REMOTE_ADDR" => "203.0.113.21" }
+    assert_not_equal 429, response.status
+  end
+
   test "a spoofed leading X-Forwarded-For entry does not reset the limit behind a proxy" do
     11.times do |i|
       post "/auth/hack_club", headers: { "REMOTE_ADDR" => "10.0.0.2", "X-Forwarded-For" => "198.51.100.#{i}, 203.0.113.9" }

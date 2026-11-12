@@ -1,0 +1,7 @@
+/* Crews (app/views/teams/**, team_joins/**, dashboard/_team). The shared components do almost everything; this only keeps the
+   invite link readable on a phone and places the dashboard card in the page grid. Tokens only. */
+.team .team__members { margin: 0; padding-left: var(--space-6); }
+.team .team__members li { padding-block: var(--space-1); overflow-wrap: anywhere; }
+.team input[readonly] { overflow: hidden; text-overflow: ellipsis; }
+
+@media (min-width: 48rem) { .dash-team { order: 1; grid-column: 1 / -1; } }

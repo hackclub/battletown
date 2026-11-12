@@ -70,6 +70,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     # Flagged routes only exist while their flag is on: switch on the flags that add admin routes so each one is covered.
     Flipper.enable(:nps)
     Flipper.enable(:quests)
+    Flipper.enable(:team) # routes behind a flag only exist while it is on: test them as they will be in use
     boss = Bosses::Seed.call && Boss.chronological.last
     teen = users(:new_user)
     teen.update_columns(onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4, created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
@@ -142,6 +143,28 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     assert_equal "pending", suggestion.reload.state
   end
 
+  # The crew pages have no ids: a person only ever reaches their own crew. Signed out, nothing opens and nothing changes; the
+  # invite link works only for a signed-in, onboarded person, and a token that is not a valid one never reaches a controller.
+  test "every crew route needs a signed-in person and the token routes only accept well-formed tokens" do
+    Flipper.enable(:team)
+    routes = app_routes.select { |_verb, _path, controller, _route| %w[teams team_joins].include?(controller) }
+    assert_operator routes.size, :>=, 8, "expected the crew routes to be found in the router"
+
+    token = Team.new_token
+    routes.each do |verb, path, *|
+      process(verb.downcase.to_sym, fill(path, token: token))
+      assert_response :redirect, "#{verb} #{path} must send a signed-out visitor away"
+      assert_redirected_to root_path
+    end
+    assert_equal 0, Team.count
+
+    sign_in_as users(:onboarded)
+    get "/team/join/short"
+    assert_response :not_found
+    get "/team/join/#{'a' * 33}"
+    assert_response :not_found
+  end
+
   test "the singular settings pages only ever touch the signed-in user's own rows" do
     owner = users(:onboarded)
     stranger = users(:new_user)
@@ -172,6 +195,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   # unknown path for everyone but a real admin (a 422 would reveal that the route exists).
   test "admin write routes are a 404, not a CSRF error, for signed-out visitors and non-admins" do
     Flipper.enable(:nps)
+    Flipper.enable(:team)
     ENV["ADMIN_HCA_UIDS"] = "someone-else"
     routes = app_routes.select { |verb, path, *| STATE_CHANGING.include?(verb) && path.start_with?("/admin/") }
     assert_operator routes.size, :>=, 5, "expected the admin write routes to be found in the router"
@@ -193,6 +217,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   test "every POST PATCH PUT and DELETE route rejects a request without a CSRF token, except /api/privacy" do
     Flipper.enable(:nps)
     Flipper.enable(:quests)
+    Flipper.enable(:team)
     # An admin, so the /admin writes get past the admin check and reach the CSRF check too.
     ENV["ADMIN_HCA_UIDS"] = users(:onboarded).hca_uid
     sign_in_as users(:onboarded)
@@ -204,7 +229,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
       assert_operator exempt.size, :>=, 2
 
       protected_routes.each do |verb, path, _controller, _route|
-        url = fill(path, step: "prize", provider: "hack_club", key: "keychain", token: "a" * 40)
+        url = fill(path, step: "prize", provider: "hack_club", key: "keychain", token: "a" * 24)
         process(verb.downcase.to_sym, url)
         assert_response :unprocessable_content, "#{verb} #{url} must reject a missing CSRF token"
       end

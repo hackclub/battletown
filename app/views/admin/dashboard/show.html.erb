@@ -41,6 +41,12 @@
             <p class="small">Score, trend and staff-only comments.</p>
           </li>
         <% end %>
+        <% if feature?(:team) %>
+          <li class="card card--tight admin-link">
+            <h2 class="card__title"><%= link_to "Crews", admin_teams_path %></h2>
+            <p class="small">Crew sizes and bonus coins paid.</p>
+          </li>
+        <% end %>
         <li class="card card--tight admin-link">
           <h2 class="card__title"><%= link_to "Weekly bosses", admin_bosses_path %></h2>
           <p class="small">Names, art and health for each week's boss.</p>

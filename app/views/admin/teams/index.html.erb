@@ -1,0 +1,50 @@
+<% content_for :title, "Admin crews" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>Crews</h1>
+      <p class="admin-dashboard__note">Aggregates only: sizes and the bonus coins paid. No member names, hours or ids are shown here. A crew name is written by teens, so treat it as untrusted text. Dissolving a crew removes its memberships; coins already paid stay.</p>
+    </header>
+
+    <dl class="admin-stat grid">
+      <div class="card card--tight admin-stat__item"><dt>Crews</dt><dd><%= number_with_delimiter(@crew_count) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>People in crews</dt><dd><%= number_with_delimiter(@people_in_crews) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>Bonus coins paid</dt><dd><%= number_with_delimiter(@total_paid) %></dd></div>
+    </dl>
+
+    <% if @teams.empty? %>
+      <p class="alert">No crews yet.</p>
+    <% else %>
+      <%= table_region("Crews") do %>
+        <table class="table admin-table">
+          <caption>Crews (newest first, up to <%= Admin::TeamsController::LIMIT %>)</caption>
+          <thead>
+            <tr>
+              <th scope="col">Crew</th>
+              <th scope="col" class="num admin-table__num">People</th>
+              <th scope="col" class="num admin-table__num">Bonus coins paid</th>
+              <th scope="col">Created (UTC)</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @teams.each do |team| %>
+              <tr id="team-<%= team.id %>">
+                <th scope="row"><%= team.name.presence || "Unnamed crew" %></th>
+                <td class="num admin-table__num"><%= @sizes.fetch(team.id, 0) %> of <%= @max_size %></td>
+                <td class="num admin-table__num"><%= number_with_delimiter(@paid.fetch(team.id, 0)) %></td>
+                <td><%= team.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
+                <td>
+                  <%= button_to "Dissolve", admin_team_path(team), method: :delete, class: "btn btn--sm",
+                                "aria-label": "Dissolve crew #{team.name.presence || team.id}",
+                                form: { data: { turbo_confirm: "Dissolve this crew? Its members are removed from it; coins already paid stay." } } %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

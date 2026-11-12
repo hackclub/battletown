@@ -7,6 +7,7 @@ class DashboardController < ApplicationController
     settle_finished_days
     @dashboard = Dashboard::Presenter.new(user: current_user)
     @quest_card = quest_card
+    @team_summary = Teams::Summary.for(current_user) if feature?(:team)
   end
 
   private

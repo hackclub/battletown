@@ -26,6 +26,8 @@ class Ship < ApplicationRecord
   # The ledger rows that reference this ship (approval and streak bonus). Read-only here: only for preloading
   # `coin_breakdown` on lists (`includes(:coin_transactions)`); the ledger itself is written by Coins::Ledger.
   has_many :coin_transactions, as: :reference, inverse_of: false
+  # The crew bonus decision for this ship (flag `team`); rows are deleted with the ship by the database.
+  has_one :team_payout, dependent: nil
   # Screenshots (flag `ship_screenshots`; none while it is off). The bytes are not loaded here (ShipImage.without_content);
   # the database deletes them with the ship.
   has_many :images, -> { without_content.in_order }, class_name: "ShipImage", inverse_of: :ship

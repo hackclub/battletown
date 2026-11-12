@@ -1,0 +1,90 @@
+<%# Your crew (flag `team`). Crewmates are shown by display name only: no hours, coins, Slack ids or emails. -%>
+<% content_for :title, "Your crew" %>
+<% percent = team_bonus_percent_text %>
+<div class="container team stack stack--lg">
+  <header class="page-header">
+    <p class="eyebrow">Crew</p>
+    <h1>Code with friends</h1>
+    <p class="lead">Start a crew of up to <%= @summary.max_size %>, share the link, and every day you code and a crewmate codes too, your hours that day earn a <%= percent %>% coin bonus. It is optional, and coding is never blocked.</p>
+  </header>
+
+  <% if @summary.in_crew? %>
+    <% team = @summary.team %>
+    <section class="card stack" aria-labelledby="crew-title">
+      <div class="cluster cluster--between">
+        <h2 id="crew-title" class="card__title"><%= team.name.presence || "Your crew" %></h2>
+        <span class="badge badge--info"><%= @summary.member_count %> of <%= @summary.max_size %> people</span>
+      </div>
+      <p class="muted small">Everyone in the crew sees each other's display name, and nothing else: no hours, no coins, no Slack or email.</p>
+      <ul class="list team__members">
+        <% @members.each do |member| %>
+          <li><%= crew_member_name(member) %><%= " (you)" if member.id == current_user.id %></li>
+        <% end %>
+      </ul>
+      <% if @summary.member_count < 2 %>
+        <p class="alert">You are the only one here so far. Send the invite link below to a buddy.</p>
+      <% end %>
+    </section>
+
+    <section class="card stack" aria-labelledby="invite-title" data-controller="clipboard">
+      <h2 id="invite-title" class="card__title">Invite a buddy</h2>
+      <% if team.invite_active? %>
+        <p>Only share this link with people you know. Anyone who has it can join until <strong><%= crew_time(team.invite_expires_at) %></strong>.</p>
+        <div class="field">
+          <label for="invite-link">Invite link</label>
+          <input id="invite-link" class="input" type="text" readonly value="<%= team_join_url(team.invite_token) %>" data-clipboard-target="source" autocomplete="off" spellcheck="false">
+        </div>
+        <p><button type="button" class="btn btn--primary" data-action="clipboard#copy" data-clipboard-target="button" hidden>Copy link</button>
+          <span class="small muted" role="status" data-clipboard-target="status"></span></p>
+      <% else %>
+        <p class="alert alert--warning">The invite link has expired. Make a new one to invite a buddy.</p>
+      <% end %>
+      <%= button_to "Make a new link", invite_team_path, method: :post, class: "btn btn--ghost",
+                    form: { data: { turbo_confirm: "Make a new link? The old one will stop working." } } %>
+    </section>
+
+    <section class="card stack" aria-labelledby="bonus-title">
+      <h2 id="bonus-title" class="card__title">Your crew bonus</h2>
+      <p>You have earned <strong><%= crew_coins(@summary.bonus_coins) %></strong> from your crew so far<%= " (on #{@summary.bonus_ships} #{'ship'.pluralize(@summary.bonus_ships)})" if @summary.bonus_ships.positive? %>.</p>
+      <p class="muted small">How it works: when staff approve a ship, each day of that ship on which at least one other crewmate also coded at least 15 minutes (and you both were in the crew for the whole day) earns <%= percent %>% extra coins on that day's hours. It is a separate line from your streak bonus. If you leave, coins you already earned stay yours.</p>
+    </section>
+
+    <section class="card stack" aria-labelledby="manage-title">
+      <h2 id="manage-title" class="card__title">Manage your crew</h2>
+      <%= form_with scope: :team, url: team_path, method: :patch, class: "stack stack--sm", data: { turbo: false } do |form| %>
+        <div class="field">
+          <%= form.label :name, "Crew name (optional)" %>
+          <%= form.text_field :name, value: team.name, maxlength: Team::NAME_MAX, class: "input", autocomplete: "off", "aria-describedby": "crew-name-hint" %>
+          <p class="field__hint" id="crew-name-hint">Up to <%= Team::NAME_MAX %> characters. Your crew and the Battletown staff can see it.</p>
+        </div>
+        <div><%= form.submit "Save name", class: "btn" %></div>
+      <% end %>
+      <%= button_to "Leave crew", leave_team_path, method: :delete, class: "btn btn--danger",
+                    form: { data: { turbo_confirm: "Leave this crew? You can join another one after the waiting time." } } %>
+      <p class="muted small">After you leave you can join another crew once <%= Teams::Config.current.leave_cooldown_seconds / 3600 %> hours have passed.</p>
+    </section>
+  <% else %>
+    <section class="card stack" aria-labelledby="start-title">
+      <h2 id="start-title" class="card__title">Start a crew</h2>
+      <ul class="list">
+        <li>You get a private invite link. Send it yourself to friends you know (Slack, in person). There is no search and no list of people.</li>
+        <li>Up to <%= @summary.max_size %> people per crew, one crew at a time.</li>
+        <li>You see each other's display names and nothing else.</li>
+        <li>When staff approve one of your ships, each day on which a crewmate also coded gets a <%= percent %>% coin bonus on your hours that day.</li>
+      </ul>
+      <% if @cooldown %>
+        <p class="alert alert--warning">You left a crew recently. You can start or join another one from <%= crew_time(@cooldown.ends_at) %>.</p>
+      <% else %>
+        <%= form_with scope: :team, url: team_path, method: :post, class: "stack stack--sm", data: { turbo: false } do |form| %>
+          <div class="field">
+            <%= form.label :name, "Crew name (optional)" %>
+            <%= form.text_field :name, maxlength: Team::NAME_MAX, class: "input", autocomplete: "off", "aria-describedby": "crew-name-hint" %>
+            <p class="field__hint" id="crew-name-hint">Up to <%= Team::NAME_MAX %> characters. Your crew and the Battletown staff can see it.</p>
+          </div>
+          <div><%= form.submit "Start a crew", class: "btn btn--primary btn--lg" %></div>
+        <% end %>
+      <% end %>
+      <p class="muted small">Got an invite link from a friend? Open it while you are signed in to Battletown.</p>
+    </section>
+  <% end %>
+</div>

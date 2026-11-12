@@ -17,6 +17,9 @@
         <%= @breakdown[:base] %> base <%= "coin".pluralize(@breakdown[:base]) %> + <%= @breakdown[:bonus] %> streak bonus <%= "coin".pluralize(@breakdown[:bonus]) %>
         = <strong><%= @breakdown[:total] %> <%= "coin".pluralize(@breakdown[:total]) %></strong>
       </p>
+      <% if feature?(:team) && @ship.team_payout&.coins.to_i.positive? %>
+        <p class="ship-result__line">Plus <strong><%= @ship.team_payout.coins %> <%= "coin".pluralize(@ship.team_payout.coins) %></strong> crew bonus, paid separately, for days a crewmate coded too.</p>
+      <% end %>
       <% if @ship.approved_seconds < @ship.coded_seconds %>
         <p class="projects-hint muted">You coded <%= ship_hours(@ship.coded_seconds) %>; the reviewer approved <%= ship_hours(@ship.approved_seconds) %>.</p>
       <% end %>

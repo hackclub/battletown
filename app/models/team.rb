@@ -4,6 +4,8 @@
 class Team < ApplicationRecord
   NAME_MAX = 40
   TOKEN_FORMAT = /\A[A-Za-z0-9_-]{16,32}\z/
+  # The same shape for the router (no anchors there).
+  TOKEN_FORMAT_PATH = /[A-Za-z0-9_-]{16,32}/
   # 12 random bytes = 96 bits, 16 URL-safe characters.
   TOKEN_BYTES = 12
 

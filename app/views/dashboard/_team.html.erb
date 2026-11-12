@@ -1,0 +1,18 @@
+<%# locals: (summary:) -%>
+<%# The crew card (flag `team`; the dashboard renders it only while the flag is on). Own numbers only, never a crewmate's. -%>
+<section class="card dash-panel dash-team" aria-labelledby="dash-team-title">
+  <h2 id="dash-team-title" class="dash-panel__title">Crew</h2>
+  <% if summary.in_crew? %>
+    <p><strong><%= summary.team.name.presence || "Your crew" %></strong>: <%= summary.member_count %> of <%= summary.max_size %> people.</p>
+    <p class="dash-muted">Crew bonus earned so far: <strong><%= crew_coins(summary.bonus_coins) %></strong>.</p>
+    <div class="dash-actions">
+      <%= link_to "Open your crew", team_path, class: "btn btn--ghost" %>
+      <%= link_to "Invite a buddy", team_path(anchor: "invite-title"), class: "btn btn--ghost" if summary.member_count < summary.max_size %>
+    </div>
+  <% else %>
+    <p>Code with friends. Start a crew, share the link, and when you each code on the same day you both get a <%= team_bonus_percent_text %>% bonus on those hours.</p>
+    <div class="dash-actions">
+      <%= link_to "Invite a buddy", team_path, class: "btn btn--primary" %>
+    </div>
+  <% end %>
+</section>

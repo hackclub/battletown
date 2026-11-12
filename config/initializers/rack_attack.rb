@@ -29,6 +29,12 @@ class Rack::Attack
     req.ip if req.path.start_with?("/feedback/")
   end
 
+  # Crew invite links (/team/join/<token>): a person opens one link, maybe twice; a script guessing tokens is stopped long
+  # before it matters (tokens are 96 random bits). Crew changes (create, rename, new link, leave) are human-sized too.
+  throttle("team/ip", limit: 30, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/team/join/") || (req.path.start_with?("/team") && !req.get?)
+  end
+
   # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept
   # out of the general throttle below so a burst of requests there can never block it.
   throttle("privacy/ip", limit: 120, period: 1.minute) do |req|
