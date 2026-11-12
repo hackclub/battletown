@@ -9,12 +9,16 @@
 #     the first) and/or a `primary_address` Hash;
 #   * a bare address Hash.
 # Country may be an ISO 3166-1 alpha-2 code (what Hack Club Auth documents) or a common country name / alpha-3.
-# Region may be a code or a full name; see config/address_time_zones.yml for the table and its known limits.
+# Region may be a code or a full name; see config/address_time_zones.yml for the tables and their known limits.
+# Which countries need no region comes from that file only, never from the host's tz database (whose
+# per-country zone lists differ between zone.tab and zone1970.tab and between tzdata releases).
 #
 # `call` returns an IANA name or nil. `zone_name` returns the ActiveSupport::TimeZone name that the schedule
 # step's select uses (and that User validates), or nil. Neither ever raises.
 class AddressTimeZone
-  REGIONS = YAML.safe_load_file(Rails.root.join("config/address_time_zones.yml")).freeze
+  TABLES = YAML.safe_load_file(Rails.root.join("config/address_time_zones.yml")).freeze
+  REGIONS = TABLES.fetch("regions").freeze
+  PRINCIPAL_ZONES = TABLES.fetch("principal_zones").freeze
   REGION_KEYS = %w[region state province administrative_area state_province].freeze
   COUNTRY_KEYS = %w[country country_code country_code_alpha2].freeze
   MAX_FIELD_LENGTH = 100
@@ -52,15 +56,14 @@ class AddressTimeZone
 
     # The ActiveSupport::TimeZone name for an IANA identifier. Many identifiers (America/Toronto,
     # Europe/Luxembourg, ...) have no Rails name of their own, so fall back to a Rails zone with the same
-    # UTC offsets all year, preferring one in the same country.
-    def rails_zone_name(iana, country_identifiers = [])
+    # UTC offsets all year.
+    def rails_zone_name(iana)
       names = ActiveSupport::TimeZone::MAPPING.select { |_, identifier| identifier == iana }.keys
       city = iana.split("/").last
       direct = names.find { |name| name.tr(" ", "_") == city } || names.first
       return direct if direct
 
-      equivalent = rails_zones_by_signature[signature(iana)].to_a
-      equivalent.find { |name| country_identifiers.include?(ActiveSupport::TimeZone::MAPPING[name]) } || equivalent.first
+      rails_zones_by_signature[signature(iana)].to_a.first
     end
 
     private
@@ -93,7 +96,7 @@ class AddressTimeZone
       country = country_code(value_for(address, COUNTRY_KEYS))
       return unless country
 
-      regional(country, value_for(address, REGION_KEYS)) || uniform(TZInfo::Country.get(country).zone_identifiers)
+      regional(country, value_for(address, REGION_KEYS)) || PRINCIPAL_ZONES[country]
     end
 
     def regional(country, region)
@@ -101,15 +104,6 @@ class AddressTimeZone
       return if key.blank? || !REGIONS.key?(country)
 
       region_index(country)[key]
-    end
-
-    # A country is usable without a region when it has one zone, or all its zones share the same rules
-    # (Germany's Europe/Busingen, Argentina's provinces, ...).
-    def uniform(identifiers)
-      return identifiers.first if identifiers.size == 1
-
-      names = identifiers.map { |iana| rails_zone_name(iana, identifiers) }
-      identifiers.first if names.none?(&:nil?) && names.uniq.size == 1
     end
 
     def value_for(address, keys)

@@ -46,6 +46,50 @@ class AddressTimeZoneTest < ActiveSupport::TestCase
 
   test "countries whose zones share rules need no region" do
     assert_equal "Europe/Berlin", zone("country" => "DE")
+    assert_equal "Europe/Zurich", zone("country" => "CH")
+    assert_equal "Europe/Oslo", zone("country" => "NO")
+    assert_equal "Europe/Helsinki", zone("country" => "FI")
+    assert_equal "Europe/Rome", zone("country" => "IT")
+    assert_equal "Europe/Stockholm", zone("country" => "SE")
+    assert_equal "Europe/Copenhagen", zone("country" => "DK")
+    assert_equal "America/Argentina/Buenos_Aires", zone("country" => "AR")
+    assert_equal "Europe/Oslo", zone("country" => "Norway")
+    assert_equal "Europe/Berlin", zone("country" => "DEU", "region" => "Bavaria")
+  end
+
+  test "rule-sharing countries get the Rails zone of their principal city" do
+    assert_equal "Berlin", AddressTimeZone.zone_name("address" => { "country" => "DE" })
+    assert_equal "Zurich", AddressTimeZone.zone_name("address" => { "country" => "CH" })
+    assert_equal "Rome", AddressTimeZone.zone_name("address" => { "country" => "IT" })
+    assert_equal "Helsinki", AddressTimeZone.zone_name("address" => { "country" => "FI" })
+  end
+
+  # The host tz database must not matter: zone.tab lists Germany as Berlin + Busingen, zone1970.tab (which
+  # TZInfo prefers and Ubuntu ships) as Berlin + Zurich and Norway / Sweden / Denmark as plain Berlin. CI broke on that.
+  test "which countries need no region comes from the config file, not the tz database's country lists" do
+    original = TZInfo::Country.method(:get)
+    TZInfo::Country.define_singleton_method(:get) { |*| raise "AddressTimeZone must not read tz country zone lists" }
+    begin
+      AddressTimeZone::PRINCIPAL_ZONES.each do |code, iana|
+        assert_equal iana, zone("country" => code), code
+      end
+      assert_equal "Europe/Oslo", zone("country" => "NO")
+      assert_equal "Europe/Berlin", zone("country" => "DE")
+      assert_nil zone("country" => "US")
+      assert_nil zone("country" => "RU")
+    ensure
+      TZInfo::Country.define_singleton_method(:get, original)
+    end
+  end
+
+  test "principal zones cover rule-sharing countries and never a country that needs a region" do
+    assert_empty AddressTimeZone::REGIONS.keys & AddressTimeZone::PRINCIPAL_ZONES.keys
+    %w[DE CH NO FI IT SE DK FR GB JP IN AR SJ AX LI].each { |code| assert AddressTimeZone::PRINCIPAL_ZONES.key?(code), code }
+    %w[US CA AU BR MX RU NZ CN ID ES PT CL].each { |code| refute AddressTimeZone::PRINCIPAL_ZONES.key?(code), code }
+    AddressTimeZone::PRINCIPAL_ZONES.each do |code, iana|
+      assert_match(/\A[A-Z]{2}\z/, code)
+      assert TZInfo::Timezone.get(iana), "#{code}: #{iana}"
+    end
   end
 
   test "country names and alpha-3 codes are normalised" do
@@ -65,6 +109,10 @@ class AddressTimeZoneTest < ActiveSupport::TestCase
     assert_nil zone("country" => "CA", "region" => "Yukon")
     assert_nil zone("country" => "RU")
     assert_nil zone("country" => "NZ")
+    assert_nil zone("country" => "CN")
+    assert_nil zone("country" => "ES")
+    assert_nil zone("country" => "PT")
+    assert_nil zone("country" => "ID")
   end
 
   test "junk, nil and empty inputs return nil and never raise" do
