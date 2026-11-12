@@ -11,7 +11,8 @@ module Ships
       ship.with_lock do
         next unless ship.open?
 
-        ship.update!(status: "withdrawn")
+        # A draft has no submitted_at, but every non-draft ship must have one (ships_submitted_at_check): discarding a draft stamps it.
+        ship.update!(status: "withdrawn", submitted_at: ship.submitted_at || Time.current)
         withdrawn = true
       end
       withdrawn
