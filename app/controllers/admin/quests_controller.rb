@@ -22,7 +22,7 @@ module Admin
 
     def create
       @quest = Quest.new(create_params)
-      if @quest.save
+      if saved_and_audited("quest_created") { @quest.save }
         redirect_to admin_quests_path, notice: "Saved the quest for the week of #{@quest.starts_on.strftime('%-d %B')}."
       else
         render :new, status: :unprocessable_content
@@ -32,7 +32,7 @@ module Admin
     def edit; end
 
     def update
-      if @quest.update(update_params)
+      if saved_and_audited("quest_updated") { @quest.update(update_params) }
         redirect_to admin_quests_path, notice: "Saved the quest for the week of #{@quest.starts_on.strftime('%-d %B')}."
       else
         render :edit, status: :unprocessable_content
@@ -42,6 +42,13 @@ module Admin
     private
 
     def set_quest = @quest = Quest.find(params[:id])
+
+    # The save and its audit row in one transaction (nothing is written when the quest is refused).
+    def saved_and_audited(action)
+      ActiveRecord::Base.transaction do
+        yield.tap { |ok| AdminAudit.record!(actor: current_user, action: action, subject: @quest, metadata: { quest_id: @quest.id, reward_coins: @quest.reward_coins }) if ok }
+      end
+    end
 
     def create_params = params.expect(quest: %i[starts_on goal_key target reward_coins])
 

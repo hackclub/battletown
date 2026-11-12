@@ -17,14 +17,14 @@ module Admin
     end
 
     def fulfill
-      MerchTrack::Fulfill.call(claim: @claim, by: current_user)
+      audited("merch_claim_fulfilled") { MerchTrack::Fulfill.call(claim: @claim, by: current_user) }
       redirect_to back_path, notice: "Marked #{@claim.item_name} fulfilled."
     rescue MerchTrack::Error => error
       redirect_to back_path, alert: error.message
     end
 
     def cancel
-      MerchTrack::Cancel.call(claim: @claim, by: current_user)
+      audited("merch_claim_cancelled") { MerchTrack::Cancel.call(claim: @claim, by: current_user) }
       redirect_to back_path, notice: "Cancelled #{@claim.item_name}."
     rescue MerchTrack::Error => error
       redirect_to back_path, alert: error.message
@@ -33,6 +33,15 @@ module Admin
     private
 
     def set_claim = @claim = MerchClaim.find(params[:id])
+
+    # The change and its audit row in one transaction. The service is idempotent: a repeat that changes nothing writes nothing.
+    def audited(action)
+      ActiveRecord::Base.transaction do
+        before = @claim.status
+        yield
+        AdminAudit.record!(actor: current_user, action: action, subject: @claim, metadata: { claim_id: @claim.id }) if @claim.reload.status != before
+      end
+    end
 
     # Keep the filter the staff member was looking at.
     def back_path = admin_merch_claims_path(status: (params[:status] if MerchClaim::STATUSES.include?(params[:status])))

@@ -13,7 +13,10 @@ module Admin
     def edit; end
 
     def update
-      if @boss.update(boss_params)
+      saved = ActiveRecord::Base.transaction do
+        @boss.update(boss_params).tap { |ok| AdminAudit.record!(actor: current_user, action: "boss_updated", subject: @boss, metadata: { boss_id: @boss.id }) if ok }
+      end
+      if saved
         redirect_to admin_bosses_path, notice: "Saved #{@boss.name}."
       else
         render :edit, status: :unprocessable_content

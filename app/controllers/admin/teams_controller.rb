@@ -19,7 +19,10 @@ module Admin
 
     def destroy
       team = Team.find(params[:id])
-      team.destroy!
+      ActiveRecord::Base.transaction do
+        team.destroy!
+        AdminAudit.record!(actor: current_user, action: "crew_dissolved", subject: team)
+      end
       redirect_to admin_teams_path, notice: "Dissolved the crew#{" \"#{team.name}\"" if team.name}."
     end
   end

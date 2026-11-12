@@ -7,7 +7,11 @@ module Admin
 
     def destroy
       ship = Ship.where.not(status: "draft").find(params[:ship_id])
-      removed = ShipImage.where(ship_id: ship.id, position: params[:position]).delete_all
+      removed = ActiveRecord::Base.transaction do
+        ShipImage.where(ship_id: ship.id, position: params[:position]).delete_all.tap do |count|
+          AdminAudit.record!(actor: current_user, action: "ship_screenshot_removed", subject: ship, metadata: { ship_id: ship.id, position: params[:position].to_i }) if count.positive?
+        end
+      end
       redirect_to admin_ship_path(ship), notice: (removed.positive? ? "Screenshot removed." : "That screenshot was already gone."), status: :see_other
     end
   end

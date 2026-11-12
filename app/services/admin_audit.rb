@@ -57,7 +57,22 @@ module AdminAudit
     order_address_purged
   ].freeze
 
-  ACTIONS = (USER_ACTIONS + NPS_ACTIONS + SHOP_ACTIONS + REVIEW_ACTIONS + ORDER_ACTIONS).freeze
+  # Everything else staff can change: ship decisions (they pay coins), screenshot removal, the weekly bosses and quests, crews,
+  # merch-track claims and the feature-flag console. Ids, amounts and codes only (the reason a teen is shown stays on the ship).
+  OTHER_ACTIONS = %w[
+    ship_approved
+    ship_rejected
+    ship_screenshot_removed
+    boss_updated
+    quest_created
+    quest_updated
+    crew_dissolved
+    merch_claim_fulfilled
+    merch_claim_cancelled
+    feature_flag_changed
+  ].freeze
+
+  ACTIONS = (USER_ACTIONS + NPS_ACTIONS + SHOP_ACTIONS + REVIEW_ACTIONS + ORDER_ACTIONS + OTHER_ACTIONS).freeze
 
   module_function
 

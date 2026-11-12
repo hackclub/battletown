@@ -22,7 +22,15 @@ module Admin
 
     def approve
       seconds = Ships::Approve.seconds_from_hours(@ship, params[:approved_hours])
-      result = Ships::Approve.call(ship: @ship, reviewer: current_user, approved_seconds: seconds)
+      # One transaction with the audit row: the coins and the decision are never unrecorded.
+      result = ActiveRecord::Base.transaction do
+        Ships::Approve.call(ship: @ship, reviewer: current_user, approved_seconds: seconds).tap do |done|
+          next unless done.approved?
+
+          AdminAudit.record!(actor: current_user, action: "ship_approved", subject: @ship,
+                             metadata: { ship_id: @ship.id, approved_seconds: done.ship.approved_seconds, base_coins: done.credit.base_coins, bonus_coins: done.credit.bonus_coins })
+        end
+      end
       if result.approved?
         redirect_to admin_ship_path(@ship), notice: approved_notice(result), status: :see_other
       else
@@ -34,7 +42,11 @@ module Admin
 
     def reject
       reason = Ships::Reject.reason_from(preset: params[:reason_preset], note: params[:reason_note])
-      result = Ships::Reject.call(ship: @ship, reviewer: current_user, reason: reason)
+      result = ActiveRecord::Base.transaction do
+        Ships::Reject.call(ship: @ship, reviewer: current_user, reason: reason).tap do |done|
+          AdminAudit.record!(actor: current_user, action: "ship_rejected", subject: @ship, metadata: { ship_id: @ship.id }) if done.rejected?
+        end
+      end
       if result.rejected?
         redirect_to admin_ships_path, notice: "Ship rejected. The teen can fix it and ship again.", status: :see_other
       else
