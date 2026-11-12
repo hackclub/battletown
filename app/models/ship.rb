@@ -23,6 +23,9 @@ class Ship < ApplicationRecord
   belongs_to :user
   belongs_to :project
   belongs_to :reviewer, class_name: "User", optional: true
+  # The ledger rows that reference this ship (approval and streak bonus). Read-only here: only for preloading
+  # `coin_breakdown` on lists (`includes(:coin_transactions)`); the ledger itself is written by Coins::Ledger.
+  has_many :coin_transactions, as: :reference, inverse_of: false
 
   before_validation :normalize_fields
 
@@ -69,8 +72,13 @@ class Ship < ApplicationRecord
   def window_dates = daily_seconds_by_date.keys
 
   # What approval credited, read from the ledger: { base:, bonus:, total: } in coins (zeros before approval).
+  # Uses the preloaded `coin_transactions` when the list loaded them, so a page of ships is one query, not one each.
   def coin_breakdown
-    rows = CoinTransaction.where(user_id: user_id, reference_type: self.class.name, reference_id: id).pluck(:kind, :amount)
+    rows = if coin_transactions.loaded?
+      coin_transactions.select { |row| row.user_id == user_id }.map { |row| [ row.kind, row.amount ] }
+    else
+      CoinTransaction.where(user_id: user_id, reference_type: self.class.name, reference_id: id).pluck(:kind, :amount)
+    end
     base = rows.sum { |kind, amount| kind == "ship_approval" ? amount : 0 }
     bonus = rows.sum { |kind, amount| kind == "streak_bonus" ? amount : 0 }
     { base: base, bonus: bonus, total: base + bonus }

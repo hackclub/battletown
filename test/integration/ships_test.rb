@@ -293,6 +293,32 @@ class ShipsTest < ActionDispatch::IntegrationTest
     assert_select ".ship-result .projects-hint", text: /You coded 3 hours; the reviewer approved 2 hours/
   end
 
+  test "the ships list reads every approved ship's coins in one query, however many there are" do
+    approve = lambda do |name|
+      project = make_project(@user, name: name, hackatime: name.parameterize)
+      (7..9).each { |day| code(@user, D[day], HOUR, hackatime: name.parameterize) }
+      ship = submit_ship(project)
+      travel_to(HOURS_NOW) { Ships::Approve.call(ship: ship, reviewer: @other_user, approved_seconds: 2 * HOUR, now: Time.current) }
+    end
+    count_queries = lambda do
+      count = 0
+      counter = ->(*, payload) { count += 1 unless payload[:name] == "SCHEMA" || payload[:sql].match?(/\A\s*(BEGIN|COMMIT|SAVEPOINT|RELEASE)/i) }
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { get ships_path }
+      assert_response :success
+      count
+    end
+    sign_in_as @user
+    approve.call("First Farm")
+    one = count_queries.call
+    approve.call("Second Farm")
+    approve.call("Third Farm")
+    three = count_queries.call
+
+    assert_select ".ship__result", count: 3
+    assert_select ".ship__result", text: /2 hours approved: 2\d coins/
+    assert_equal one, three
+  end
+
   test "an unverified user sees the unlock note beside approved coins, a verified one does not" do
     three_hours
     ship = submit_ship(@project)

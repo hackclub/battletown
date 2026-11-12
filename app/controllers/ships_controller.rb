@@ -8,7 +8,7 @@ class ShipsController < ApplicationController
   before_action :require_draft, only: %i[edit update]
 
   def index
-    @ships = current_user.ships.includes(:project).newest_first
+    @ships = current_user.ships.includes(:project, :coin_transactions).newest_first
   end
 
   def show
