@@ -43,7 +43,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     paths = %w[/auth/hack_club_address /Auth/Hack_Club_Address /auth/hack_club_address.json //auth/hack_club_address/]
     (limit + 2).times { |i| post paths[i % paths.size], headers: session_ip }
     # Signed out there is no per-person bucket (the strategy refuses anyone not signed in), so check the callback, which is per address.
-    21.times { |i| get ["/auth/hack_club_address/callback", "/Auth/Hack_Club_Address/Callback", "/auth/hack_club_address/callback.json"][i % 3], headers: { "REMOTE_ADDR" => "203.0.113.62" } }
+    21.times { |i| get [ "/auth/hack_club_address/callback", "/Auth/Hack_Club_Address/Callback", "/auth/hack_club_address/callback.json" ][i % 3], headers: { "REMOTE_ADDR" => "203.0.113.62" } }
     assert_response :too_many_requests
   end
 
