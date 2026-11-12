@@ -34,6 +34,7 @@ module Privacy
         before = delete_counters
         retained = retained_records(user_ids)
         removed = User.where(id: user_ids).delete_all
+        Team.sweep_empty! # a crew whose last member was just deleted goes too (memberships cascaded)
         deleted = delete_counters.to_h { |table, count| [ table, count - before.fetch(table, 0) ] }.select { |_, count| count.positive? }
         # The counters must account for every user we meant to delete; if not, refuse rather than report wrongly.
         raise "delete counters disagree with the users deleted" unless removed == user_ids.size && deleted["users"] == removed

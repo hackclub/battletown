@@ -167,3 +167,17 @@ shared:
     token_ttl_days: 7
     # Comments (free text from a teen) are emptied after this many days by `bin/rails nps:prune`; scores are kept.
     comment_retention_days: 90
+
+  # The crew ("buddy") bonus (app/services/teams/**), behind the Flipper flag `team`, read through Teams::Config.
+  team:
+    # The most people in one crew (a crew is 2 or more to earn anything).
+    max_size: 5
+    # Bonus percent of a day's base coins, paid at ship approval on each coded day that at least one crewmate also coded
+    # (at least hours.active_seconds, 15 minutes). One decimal at most. Separate from the streak bonus, never boss damage.
+    bonus_percent: 5.0
+    # After leaving a crew, this many hours before joining another one.
+    leave_cooldown_hours: 24
+    # An invite link works for this many hours after it was made or regenerated.
+    invite_ttl_hours: 72
+    # team:pay_pending only looks at ships approved within this many days.
+    pay_pending_days: 3

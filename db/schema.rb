@@ -44,12 +44,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130803) do
     t.index ["reference_type", "reference_id"], name: "index_coin_transactions_on_reference_type_and_reference_id"
     t.index ["user_id", "created_at"], name: "index_coin_transactions_on_user_id_and_created_at"
     t.index ["user_id", "idempotency_key"], name: "index_coin_transactions_on_user_id_and_idempotency_key", unique: true
-    t.check_constraint "(kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'refund'::character varying, 'quest_reward'::character varying]::text[])) AND amount > 0 OR kind::text = 'purchase'::text AND amount < 0 OR kind::text = 'adjustment'::text", name: "coin_transactions_sign_check"
+    t.check_constraint "(kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'refund'::character varying, 'quest_reward'::character varying, 'team_bonus'::character varying]::text[])) AND amount > 0 OR kind::text = 'purchase'::text AND amount < 0 OR kind::text = 'adjustment'::text", name: "coin_transactions_sign_check"
     t.check_constraint "(reference_type IS NULL) = (reference_id IS NULL)", name: "coin_transactions_reference_check"
     t.check_constraint "amount <> 0", name: "coin_transactions_amount_check"
     t.check_constraint "char_length(idempotency_key::text) >= 1 AND char_length(idempotency_key::text) <= 120", name: "coin_transactions_idempotency_key_check"
     t.check_constraint "created_by IS NULL OR created_by::text ~ '^[a-z0-9_:.-]{1,40}$'::text", name: "coin_transactions_created_by_check"
-    t.check_constraint "kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'purchase'::character varying, 'refund'::character varying, 'adjustment'::character varying, 'quest_reward'::character varying]::text[])", name: "coin_transactions_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'purchase'::character varying, 'refund'::character varying, 'adjustment'::character varying, 'quest_reward'::character varying, 'team_bonus'::character varying]::text[])", name: "coin_transactions_kind_check"
     t.check_constraint "note IS NULL OR char_length(note::text) <= 200", name: "coin_transactions_note_check"
   end
 
@@ -443,6 +443,46 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130803) do
     t.index ["subject_type", "subject_id"], name: "index_staff_access_logs_on_subject_type_and_subject_id"
   end
 
+  create_table "team_cooldowns", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.datetime "left_at", null: false
+    t.index ["user_id"], name: "index_team_cooldowns_on_user_id", unique: true
+  end
+
+  create_table "team_memberships", force: :cascade do |t|
+    t.bigint "team_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "joined_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["team_id"], name: "index_team_memberships_on_team_id"
+    t.index ["user_id"], name: "index_team_memberships_on_user_id", unique: true
+  end
+
+  create_table "team_payouts", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "ship_id", null: false
+    t.bigint "team_id"
+    t.integer "coins", default: 0, null: false
+    t.integer "matched_days", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.index ["ship_id"], name: "index_team_payouts_on_ship_id", unique: true
+    t.index ["team_id"], name: "index_team_payouts_on_team_id"
+    t.index ["user_id"], name: "index_team_payouts_on_user_id"
+    t.check_constraint "coins >= 0 AND matched_days >= 0", name: "team_payouts_amounts_check"
+  end
+
+  create_table "teams", force: :cascade do |t|
+    t.string "name", limit: 40
+    t.string "invite_token", limit: 32, null: false
+    t.datetime "invite_expires_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invite_token"], name: "index_teams_on_invite_token", unique: true
+    t.check_constraint "char_length(invite_token::text) >= 16 AND char_length(invite_token::text) <= 32", name: "teams_invite_token_check"
+    t.check_constraint "name IS NULL OR char_length(name::text) >= 1 AND char_length(name::text) <= 40", name: "teams_name_check"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "hca_uid", null: false
     t.string "email"
@@ -513,6 +553,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130803) do
   add_foreign_key "ships", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
   add_foreign_key "ships", "users", column: "reviewer_id", on_delete: :nullify
   add_foreign_key "ships", "users", on_delete: :cascade
+  add_foreign_key "team_cooldowns", "users", on_delete: :cascade
+  add_foreign_key "team_memberships", "teams", on_delete: :cascade
+  add_foreign_key "team_memberships", "users", on_delete: :cascade
+  add_foreign_key "team_payouts", "ships", on_delete: :cascade
+  add_foreign_key "team_payouts", "teams", on_delete: :nullify
+  add_foreign_key "team_payouts", "users", on_delete: :cascade
   add_foreign_key "staff_access_logs", "users", column: "actor_id", on_delete: :nullify
   add_foreign_key "welcome_back_windows", "users", on_delete: :cascade
 end

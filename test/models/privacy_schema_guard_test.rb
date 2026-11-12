@@ -91,6 +91,10 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     PlinkoDrop.create!(user: user, dropped_at: Time.current, local_date: Date.new(2026, 11, 9), slot: 4, points: 50, seed: 1, idempotency_key: "guard-drop-#{user.id}")
     PlinkoPlayer.create!(user: user, nickname: "Guard Otter #{user.id}", leaderboard_opt_in: true)
     NpsResponse.create!(user: user, score: 9, comment: "guard", answered_at: Time.current, prompt_window_date: Date.new(2026, 11, 9))
+    crew = Team.create!(name: "Guard crew", invite_token: Team.new_token, invite_expires_at: 1.day.from_now)
+    TeamMembership.create!(team: crew, user: user, joined_at: Time.current)
+    TeamCooldown.create!(user: user, left_at: Time.current)
+    TeamPayout.create!(user: user, ship: Ship.find_by!(user_id: user.id), team: crew, coins: 1, matched_days: 1)
     subject = Privacy::TokenVerifier::Subject.new(emails: [], slack_id: nil, identity_id: user.hca_uid)
 
     deleted = Privacy::Deleter.new(subject).call(dry_run: true).deleted
@@ -98,8 +102,9 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     # Tables that reference users directly, plus the ones that only reach a user through a project.
     # (A table whose only key to users is a nulling one, the staff access log, loses no rows when a person is deleted.)
     referencing = app_tables.select { |table| user_foreign_keys(table).any? { |fk| fk.on_delete == :cascade } }
-    through_projects = %w[link_suggestions]
-    assert_equal (referencing + through_projects + [ "users" ]).sort, deleted.keys.sort,
+    through_projects = %w[link_suggestions] # a crew with no members left is swept by Privacy::Deleter
+    swept = %w[teams]
+    assert_equal (referencing + through_projects + swept + [ "users" ]).sort, deleted.keys.sort,
                  "add a row for the new table to this test so its count is proven (every table that references users must show up)"
   end
 end
