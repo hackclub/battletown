@@ -1,0 +1,84 @@
+/* Shop: grid, balance banner, confirmation, orders, and the staff order queue. Tokens only. */
+.shop--narrow { max-width: 40rem; }
+
+.shop-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.shop-header > div { flex: 1 1 18rem; min-width: 0; }
+.shop-header p { margin: 0; }
+.shop-lead { color: var(--color-text-muted); font-size: var(--text-lg); }
+.shop-back { margin: 0 0 var(--space-4); }
+.shop-subhead { margin: var(--space-8) 0 var(--space-4); }
+.shop-note { margin: 0 0 var(--space-4); color: var(--color-text-muted); font-size: var(--text-sm); }
+
+/* Balance banner. Locked state: a dashed outline and words, never colour alone. */
+.shop-balance { margin-bottom: var(--space-6); }
+.shop-balance--locked { border: 2px dashed var(--color-primary); }
+.shop-balance__title { margin: 0 0 var(--space-3); font-size: var(--text-lg); }
+.shop-balance__figures { display: flex; flex-wrap: wrap; gap: var(--space-6); margin: 0 0 var(--space-3); }
+.shop-balance__figures dt { color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 700; }
+.shop-balance__figures dd { margin: 0; font-family: var(--font-display); font-size: var(--text-xl); line-height: var(--leading-tight); font-variant-numeric: tabular-nums; }
+.shop-dev { margin-top: var(--space-3); }
+.shop-dev form { margin: 0; }
+
+/* Free sticker card */
+.shop-sticker { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
+.shop-sticker__body { flex: 1 1 16rem; min-width: 0; }
+.shop-sticker__body h2 { margin: 0 0 var(--space-2); font-size: var(--text-lg); }
+.shop-sticker__body p { margin: 0; color: var(--color-text-muted); }
+.shop-sticker form { margin: 0; }
+
+/* Grid */
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.shop-item { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.shop-item form { margin: 0; }
+.shop-item__emoji { font-size: var(--text-2xl); line-height: 1; }
+.shop-item__image { width: 100%; max-height: 8rem; object-fit: contain; }
+.shop-item__name { margin: 0; font-size: var(--text-lg); }
+.shop-item__description { flex: 1; margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
+.shop-item__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; }
+.shop-item__price { color: var(--color-primary); font-family: var(--font-display); font-size: var(--text-lg); }
+.shop-item .btn { align-self: flex-start; text-align: center; }
+
+.shop-tier, .shop-status {
+  display: inline-block;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+/* Confirmation */
+.shop-confirm { display: flex; flex-direction: column; gap: var(--space-3); }
+.shop-confirm p { margin: 0; }
+.shop-confirm__form { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.shop-sums { margin: 0; }
+.shop-sums > div { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); }
+.shop-sums dt { color: var(--color-text-muted); }
+.shop-sums dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.shop-sums__after dd { color: var(--color-primary); font-family: var(--font-display); }
+
+/* Orders. The status is always written out; the border style only backs it up. */
+.shop-orders { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.shop-order__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
+.shop-order__name { margin: 0; font-size: var(--text-lg); }
+.shop-order__meta { margin: 0 0 var(--space-3); color: var(--color-text-muted); font-size: var(--text-sm); }
+.shop-order form { margin: 0; }
+.shop-status--requested { border-style: dashed; }
+.shop-status--fulfilled { border-color: var(--color-success); border-width: 2px; }
+.shop-status--cancelled { border-style: dotted; color: var(--color-text-muted); }
+
+/* Staff order queue (inside admin_tool; the orange tint comes from staff.css). */
+.admin-form--inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); max-width: none; margin-bottom: var(--space-4); }
+.admin-form--inline label { margin-bottom: var(--space-1); }
+.admin-table-wrap { overflow-x: auto; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.admin-actions form { margin: 0; }

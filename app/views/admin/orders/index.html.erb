@@ -1,0 +1,70 @@
+<% content_for :title, "Admin orders" %>
+<%= admin_tool(:div, class: "admin-dashboard container") do %>
+  <h1>Shop orders</h1>
+  <p class="admin-dashboard__note">Requested orders come first. Contact the person on Slack to arrange delivery, then mark the order fulfilled. Cancelling refunds the coins. Names and Slack ids are personal data: use them only to deliver the order.</p>
+  <p><strong id="requested-count"><%= @requested_count %></strong> <%= @requested_count == 1 ? "order is" : "orders are" %> waiting.</p>
+
+  <%= form_with url: admin_orders_path, method: :get, class: "admin-form admin-form--inline" do %>
+    <div>
+      <%= label_tag :status, "Status" %>
+      <%= select_tag :status, options_for_select([ [ "Any status", "" ] ] + Order::STATUSES.map { |s| [ s.capitalize, s ] }, @status) %>
+    </div>
+    <div>
+      <%= label_tag :kind, "Kind" %>
+      <%= select_tag :kind, options_for_select([ [ "Any kind", "" ], [ "Purchase", "purchase" ], [ "Signup sticker", "signup_sticker" ] ], @kind) %>
+    </div>
+    <%= button_tag "Filter", type: "submit", name: nil, class: "btn" %>
+  <% end %>
+
+  <% if @orders.empty? %>
+    <p>No orders match.</p>
+  <% else %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <caption>Orders (requested first, then newest, up to <%= Admin::OrdersController::LIMIT %>)</caption>
+        <thead>
+          <tr>
+            <th scope="col">Item</th>
+            <th scope="col">Person</th>
+            <th scope="col" class="admin-table__num">Coins</th>
+            <th scope="col">Status</th>
+            <th scope="col">Ordered (UTC)</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @orders.each do |order| %>
+            <% person = order.user.display_name.presence || "this person" %>
+            <tr id="order-<%= order.id %>">
+              <th scope="row"><%= order.display_name %><br><small><%= order.kind.tr("_", " ") %></small></th>
+              <td>
+                <%= order.user.display_name.presence || "No name" %><br>
+                <small>Slack: <%= order.user.slack_id.presence || "not set" %></small><br>
+                <small>Identity: <%= verification_label(order.user) %></small>
+              </td>
+              <td class="admin-table__num"><%= order.coins %></td>
+              <td>
+                <%= order_status_text(order) %>
+                <% if order.fulfilled? %><br><small><%= order.fulfilled_at.utc.strftime("%-d %b %H:%M") %></small><% end %>
+                <% if order.cancelled? %><br><small><%= order.cancelled_at.utc.strftime("%-d %b %H:%M") %></small><% end %>
+              </td>
+              <td><%= order.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
+              <td>
+                <% if order.requested? %>
+                  <div class="admin-actions">
+                    <%= button_to "Mark fulfilled", fulfill_admin_order_path(order, status: @status, kind: @kind), method: :patch, class: "btn",
+                                  "aria-label": "Mark fulfilled: #{order.display_name} for #{person}" %>
+                    <%= button_to "Cancel and refund", cancel_admin_order_path(order, status: @status, kind: @kind), method: :patch, class: "btn btn--ghost",
+                                  "aria-label": "Cancel and refund: #{order.display_name} for #{person}",
+                                  form: { data: { turbo_confirm: "Cancel this order and refund #{order.coins} coins?" } } %>
+                  </div>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  <p><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+<% end %>

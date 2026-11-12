@@ -1,0 +1,9 @@
+<%# Why spending is locked, and the way out. The same Hack Club verify link as the onboarding account step. %>
+<p class="shop-note" id="shop-verify-note">
+  Your coins unlock when you verify your identity with Hack Club. You keep earning them in the meantime, and coding is never blocked.
+  <% if current_user.verification_pending? %>
+    Your verification is being reviewed.
+  <% elsif current_user.verification_needs_submission? %>
+    <%= link_to "Verify with Hack Club", ShopHelper::VERIFY_URL, target: "_blank", rel: "noopener noreferrer" %> (opens in a new tab)
+  <% end %>
+</p>

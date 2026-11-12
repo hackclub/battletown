@@ -16,6 +16,7 @@ class User < ApplicationRecord
   has_many :projects, dependent: :destroy
   has_many :hackatime_links, dependent: :destroy
   has_many :link_suggestions, through: :projects
+  has_many :orders
 
   validates :hca_uid, presence: true, uniqueness: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, length: { maximum: 254 }, allow_blank: true

@@ -1,0 +1,23 @@
+<% content_for :title, "Confirm your order" %>
+<section class="container shop shop--narrow">
+  <p class="shop-back"><%= link_to "Back to the shop", shop_path %></p>
+  <h1>Get <%= @prize.name %>?</h1>
+
+  <div class="card shop-confirm">
+    <span class="shop-item__emoji" aria-hidden="true"><%= @prize.emoji %></span>
+    <p><%= @prize.description %></p>
+    <dl class="shop-sums">
+      <div><dt>Price</dt><dd id="confirm-price"><%= coins_text(@prize.coins) %></dd></div>
+      <div><dt>You have</dt><dd><%= coins_text(@spendable) %></dd></div>
+      <div class="shop-sums__after"><dt>Left after this</dt><dd id="confirm-after"><%= coins_text(@balance_after) %></dd></div>
+    </dl>
+    <p class="shop-note">This sends an order request. The team will message you on Slack to arrange delivery. Changed your mind? You can cancel the order from your orders page until it's fulfilled and your coins come straight back.</p>
+
+    <%= form_with url: orders_path, method: :post, class: "shop-confirm__form" do %>
+      <%= hidden_field_tag :prize_key, @prize.key, id: nil %>
+      <%= hidden_field_tag :idempotency_key, @idempotency_key, id: nil %>
+      <%= button_tag "Place order for #{coins_text(@prize.coins)}", type: "submit", class: "btn btn--primary btn--lg", data: { turbo_submits_with: "Placing order..." } %>
+      <%= link_to "Not now", shop_path, class: "btn btn--ghost" %>
+    <% end %>
+  </div>
+</section>

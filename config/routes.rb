@@ -26,6 +26,16 @@ Rails.application.routes.draw do
     end
   end
 
+  # The shop (signed in and onboarded). Orders are always looked up through current_user (others' ids are a 404).
+  get "shop", to: "shop#index"
+  get "shop/items/:key", to: "shop#show", as: :shop_item, constraints: { key: /[a-z0-9_]{1,60}/ }
+  post "shop/sticker", to: "sticker_claims#create", as: :shop_sticker
+  scope "shop" do
+    resources :orders, only: %i[index create] do
+      member { patch :cancel }
+    end
+  end
+
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 
@@ -41,12 +51,19 @@ Rails.application.routes.draw do
   namespace :dev do
     resource :hours, only: %i[show create], controller: "hours"
     resource :boss, only: :show, controller: "bosses"
+    resource :coins, only: :create, controller: "coins"
   end
 
   # Staff-only, read-only; a non-admin gets a 404. Keep above the /:ref catch-all (a referral slug can never be "admin").
   namespace :admin do
     root "dashboard#show"
     resources :bosses, only: %i[index edit update]
+    resources :orders, only: :index do
+      member do
+        patch :fulfill
+        patch :cancel
+      end
+    end
   end
 
   # Hack Club's data-deletion service (docs/PRIVACY_API.md): bearer-token authenticated, JSON only. The catch-all

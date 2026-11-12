@@ -171,6 +171,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035000) do
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying]::text[])", name: "notifications_status_check"
   end
 
+  create_table "orders", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "prize_key", limit: 60, null: false
+    t.string "prize_name", limit: 100, null: false
+    t.integer "coins", null: false
+    t.string "kind", null: false
+    t.string "status", default: "requested", null: false
+    t.string "idempotency_key", limit: 100, null: false
+    t.datetime "fulfilled_at"
+    t.datetime "cancelled_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status", "created_at"], name: "index_orders_on_status_and_created_at"
+    t.index ["user_id", "created_at"], name: "index_orders_on_user_id_and_created_at"
+    t.index ["user_id", "idempotency_key"], name: "index_orders_on_user_id_and_idempotency_key", unique: true
+    t.index ["user_id"], name: "index_orders_one_signup_sticker_per_user", unique: true, where: "((kind)::text = 'signup_sticker'::text)"
+    t.check_constraint "(status::text = 'cancelled'::text) = (cancelled_at IS NOT NULL)", name: "orders_cancelled_at_check"
+    t.check_constraint "(status::text = 'fulfilled'::text) = (fulfilled_at IS NOT NULL)", name: "orders_fulfilled_at_check"
+    t.check_constraint "char_length(idempotency_key::text) >= 1 AND char_length(idempotency_key::text) <= 100", name: "orders_idempotency_key_check"
+    t.check_constraint "char_length(prize_key::text) >= 1 AND char_length(prize_name::text) >= 1", name: "orders_prize_check"
+    t.check_constraint "coins >= 0", name: "orders_coins_check"
+    t.check_constraint "kind::text = 'signup_sticker'::text AND coins = 0 OR kind::text = 'purchase'::text AND coins > 0", name: "orders_kind_coins_check"
+    t.check_constraint "kind::text = ANY (ARRAY['purchase'::character varying, 'signup_sticker'::character varying]::text[])", name: "orders_kind_check"
+    t.check_constraint "status::text = ANY (ARRAY['requested'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying]::text[])", name: "orders_status_check"
+  end
+
   create_table "privacy_request_tokens", force: :cascade do |t|
     t.string "jti", null: false
     t.string "request_id"
@@ -245,5 +271,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035000) do
   add_foreign_key "hour_entries", "users", on_delete: :cascade
   add_foreign_key "link_suggestions", "projects", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
+  add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "projects", "users", on_delete: :cascade
 end

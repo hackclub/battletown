@@ -29,6 +29,7 @@
             <%= link_to "Dashboard", dashboard_path if current_user.onboarded? %>
             <%= link_to "Projects", projects_path if current_user.onboarded? %>
             <%= link_to "Hackatime", hackatime_path if current_user.onboarded? %>
+            <%= link_to "Shop", shop_path if current_user.onboarded? %>
             <%= admin_tool(:div, label: false) { link_to "Admin", admin_root_path } %>
             <%= button_to "Sign out", logout_path, method: :delete, class: "btn btn--ghost" %>
           <% else %>

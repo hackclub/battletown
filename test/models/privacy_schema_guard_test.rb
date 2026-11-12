@@ -61,6 +61,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     project.hackatime_links.create!(user_id: user.id, hackatime_project: "guard-project", link_method: "manual")
     project.link_suggestions.create!(hackatime_project: "guard-other")
     CoinTransaction.create!(user: user, amount: 5, kind: "refund", idempotency_key: "guard-#{user.id}")
+    Order.create!(user: user, prize_key: "sticker_pack", prize_name: "Sticker pack", coins: 20, kind: "purchase", idempotency_key: "guard-#{user.id}")
     DailyResult.create!(user: user, local_date: Date.new(2026, 11, 1), raw_seconds: 0, quick_met: false, goal_met: false,
                         streak_15: 0, goal_streak: 0, freeze_available: true)
     HackatimeConnection.create!(user: user, hackatime_uid: "1", access_token: "guard-token", scopes: "profile read", connected_at: Time.current)

@@ -61,7 +61,7 @@ Hack Club Auth (OIDC, discovery, PKCE, scopes `openid profile email name phone b
 ## Where to edit things
 
 - Design tokens: `app/assets/stylesheets/tokens.css` (placeholder until the Figma style guide lands)
-- Prizes: `config/prizes.yml` (placeholder, Amber owns the final shop)
+- Shop items: `config/prizes.yml` (placeholder, the designer replaces them; the only price is `coins`, hours are derived from `config/game.yml`)
 - Referral slugs (`/haven`, `/terra`, `/stardance`): `config/referrals.yml`
 - "How did you hear about us?" options on the onboarding account step: `config/referral_sources.yml` (generic answers) plus the programs from `config/referrals.yml`, via `ReferralSource`
 - Interfaces for page work: `docs/CONTRACT.md`
@@ -76,5 +76,5 @@ Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (shared Soli
 - Real Hack Club Auth login: the redirect to auth.hackclub.com works with the registered app; the full round trip (login, consent, callback) still needs a manual run with a real account.
 - Final design tokens and copy (Figma style guide pending).
 - Privacy policy and terms are placeholders; a GDPR/data request is in progress. Email and Slack ID are stored unencrypted for now.
-- Final shop items and prices, boss/streak/Plinko mechanics, notifications (Slack/email/SMS) are not built.
+- Final shop items and prices, Plinko and the shipping-address decision (orders are requests; the team arranges delivery on Slack) are open.
 - Production cache store: decided and built, but untested on a real deployment. Production uses Solid Cache in the app's PostgreSQL database for `Rails.cache` and the rack-attack counters (dev/test keep an in-process store); see docs/DEPLOY.md for the single-database layout and the post-deploy store check. Still to confirm with the platform: which container port it routes to (80 by default) and whether a proxy with a public address needs listing in `TRUSTED_PROXIES`.

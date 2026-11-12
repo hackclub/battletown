@@ -1,0 +1,42 @@
+<% content_for :title, "Your orders" %>
+<section class="container shop">
+  <header class="shop-header">
+    <div>
+      <h1>Your orders</h1>
+      <p class="shop-lead">You have <strong><%= coins_text(@total) %></strong>.</p>
+    </div>
+    <p><%= link_to "Back to the shop", shop_path, class: "btn btn--ghost" %></p>
+  </header>
+
+  <% if @orders.empty? %>
+    <div class="card">
+      <h2>No orders yet</h2>
+      <p>When you get something from the shop, it shows up here.</p>
+      <%= link_to "Browse the shop", shop_path, class: "btn btn--primary" %>
+    </div>
+  <% else %>
+    <ul class="shop-orders">
+      <% @orders.each do |order| %>
+        <li class="card shop-order" id="order-<%= order.id %>">
+          <div class="shop-order__head">
+            <h2 class="shop-order__name"><span aria-hidden="true"><%= order.emoji %></span> <%= order.display_name %></h2>
+            <span class="shop-status shop-status--<%= order.status %>"><%= order_status_text(order) %></span>
+          </div>
+          <p class="shop-order__meta">
+            <%= price_text(order.coins) %> &middot; ordered <%= order_date(order.created_at) %>
+            <% if order.fulfilled? %>&middot; fulfilled <%= order_date(order.fulfilled_at) %><% end %>
+            <% if order.cancelled? %>&middot; cancelled <%= order_date(order.cancelled_at) %><%= " (coins refunded)" if order.coins.positive? %><% end %>
+          </p>
+          <% if order.requested? %>
+            <p class="shop-note">The team will message you on Slack to arrange delivery.</p>
+            <% unless order.signup_sticker? %>
+              <%= button_to "Cancel order", cancel_order_path(order), method: :patch, class: "btn btn--ghost",
+                            "aria-label": "Cancel order: #{order.display_name}",
+                            form: { data: { turbo_confirm: "Cancel this order? Your #{coins_text(order.coins)} come back." } } %>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
