@@ -1,19 +1,24 @@
 <%= render layout: "onboardings/frame", locals: { step: "celebrate" } do %>
   <div data-controller="onboarding-celebration" data-action="turbo:before-cache@document->onboarding-celebration#clearConfetti" class="celebration">
     <div class="confetti" aria-hidden="true" data-onboarding-celebration-target="confetti"></div>
-    <p class="celebration__lead">Welcome to Battletown<%= ", #{current_user.display_name}" if current_user.display_name.present? %>. Here's your plan:</p>
-    <dl class="celebration__summary">
-      <% if (prize = current_user.prize) %>
-        <div><dt>Prize</dt><dd><%= prize.emoji %> <%= prize.name %> (<%= prize.hours_text %>)</dd></div>
-      <% end %>
-      <div><dt>Project</dt><dd><%= OnboardingsHelper::PROJECT_KINDS.dig(current_user.project_kind, :name) %></dd></div>
-      <div><dt>When</dt><dd><%= current_user.coding_day_names.map { |day| day_label(day) }.to_sentence %> at <%= current_user.coding_time %>, <%= current_user.time_zone %></dd></div>
-    </dl>
+    <div class="celebration__layout">
+      <div class="celebration__main">
+        <p class="celebration__lead">Welcome to Battletown<%= ", #{current_user.display_name}" if current_user.display_name.present? %>. Here's your plan:</p>
+        <dl class="celebration__summary card card--cream card--flat">
+          <% if (prize = current_user.prize) %>
+            <div><dt>Prize</dt><dd><span aria-hidden="true"><%= prize.emoji %></span> <%= prize.name %> (<%= prize.hours_text %>)</dd></div>
+          <% end %>
+          <div><dt>Project</dt><dd><%= OnboardingsHelper::PROJECT_KINDS.dig(current_user.project_kind, :name) %></dd></div>
+          <div><dt>When</dt><dd><%= coding_days_text(current_user) %> at <%= current_user.coding_time %>, <%= current_user.time_zone %></dd></div>
+        </dl>
+      </div>
+      <%= image_tag "design/hero-character.webp", alt: "", class: "celebration__art", width: 900, height: 757, loading: "lazy" %>
+    </div>
 
     <%= form_with url: onboarding_step_path("celebrate"), method: :patch do |f| %>
       <div class="onboarding__actions">
         <%= f.button "Enter Battletown", class: "btn btn--primary btn--lg" %>
-        <button type="button" class="btn btn--ghost celebration__sound" aria-pressed="true" data-onboarding-celebration-target="sound" data-action="onboarding-celebration#toggleSound">
+        <button type="button" class="btn celebration__sound" aria-pressed="true" data-onboarding-celebration-target="sound" data-action="onboarding-celebration#toggleSound">
           <span aria-hidden="true">♪</span><span>Sound <span data-state>on</span></span>
         </button>
       </div>

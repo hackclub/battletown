@@ -1,13 +1,17 @@
-<%# Attribute names are column names (prize_key), so show the labels people actually see on the form. %>
-<%# An empty field also trips the format/inclusion validations; "can't be blank" alone is enough. %>
-<% labels = { prize_key: "Prize", project_kind: "Project type", project_idea: "Project idea", coding_time: "Time", coding_days: "Days", time_zone: "Time zone", referral_source: "How you found us" } %>
-<% if current_user.errors.any? %>
-  <% errors = current_user.errors.group_by(&:attribute).flat_map { |_, list| list.any? { |e| e.type == :blank } ? list.select { |e| e.type == :blank } : list } %>
-  <div class="onboarding__errors" role="alert">
-    <p>Let's fix a couple of things:</p>
+<%# Error summary: announced on render (role=alert) and focused by onboarding-step; each line links to its field. %>
+<% errors = onboarding_errors %>
+<% if errors.any? %>
+  <div class="alert alert--danger onboarding__errors" role="alert" tabindex="-1" data-onboarding-step-target="errors">
+    <p class="alert__title">Let's fix a couple of things:</p>
     <ul>
-      <% errors.each do |error| %>
-        <li><%= labels.fetch(error.attribute, error.attribute.to_s.humanize) %> <%= error.message %></li>
+      <% errors.each do |attribute, message| %>
+        <li>
+          <% if (anchor = onboarding_error_anchor(attribute)) %>
+            <a href="#<%= anchor %>"><%= message %></a>
+          <% else %>
+            <%= message %>
+          <% end %>
+        </li>
       <% end %>
     </ul>
   </div>

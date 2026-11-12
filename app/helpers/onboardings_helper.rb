@@ -31,7 +31,56 @@ module OnboardingsHelper
     "ineligible" => "Your Hack Club account isn't eligible for this program right now. Reach out in Slack if you think that's a mistake."
   }.freeze
 
+  # Names people see for the attributes that can fail (attribute names are column names such as prize_key).
+  ERROR_LABELS = {
+    prize_key: "Prize", project_kind: "Project type", project_idea: "Project idea", coding_time: "Time",
+    coding_days: "Days", time_zone: "Time zone", referral_source: "How you found us"
+  }.freeze
+
+  # The id of the control an error should jump to (the first radio or day pill for the grouped fields).
+  ERROR_ANCHORS = {
+    project_kind: "user_project_kind_game", project_idea: "user_project_idea", coding_time: "user_coding_time",
+    coding_days: "user_day_monday", time_zone: "user_time_zone", referral_source: "user_referral_source"
+  }.freeze
+
+  # The status pill beside the identity verification copy (the pill says it in words; colour is only a hint).
+  VERIFICATION_BADGES = {
+    "verified" => { label: "Verified", tone: "success" },
+    "pending" => { label: "In review", tone: "info" },
+    "needs_submission" => { label: "Not verified yet", tone: "warning" },
+    "ineligible" => { label: "Not eligible", tone: "danger" }
+  }.freeze
+
   def onboarding_copy(step) = STEP_COPY.fetch(step)
+
+  # Error sentences like "Prize can't be blank". An empty field also trips the format/inclusion validations, so when
+  # a field is blank "can't be blank" alone is enough. Pass an attribute to get only that field's messages.
+  def onboarding_errors(attribute = nil)
+    list = current_user.errors.group_by(&:attribute).flat_map { |_, errors| errors.any? { |e| e.type == :blank } ? errors.select { |e| e.type == :blank } : errors }
+    list = list.select { |error| error.attribute == attribute } if attribute
+    list.map { |error| [ error.attribute, "#{ERROR_LABELS.fetch(error.attribute, error.attribute.to_s.humanize)} #{error.message}" ] }
+  end
+
+  def onboarding_error_anchor(attribute)
+    return "user_prize_key_#{Prize.paid.first.key}" if attribute == :prize_key
+
+    ERROR_ANCHORS[attribute]
+  end
+
+  # The error paragraph under a field (or group of fields); nil when the field is fine. Its id is "#{id}-error".
+  def onboarding_field_error(attribute, id:)
+    messages = onboarding_errors(attribute).map(&:last)
+    return if messages.empty?
+
+    tag.p(safe_join(messages, tag.br), class: "field__error", id: "#{id}-error")
+  end
+
+  # aria-invalid and aria-describedby for a control, merged with an optional hint id.
+  def onboarding_aria(attribute, id:, hint: nil)
+    invalid = onboarding_errors(attribute).any?
+    described = [ hint, ("#{id}-error" if invalid) ].compact.join(" ")
+    { invalid: (true if invalid), describedby: described.presence }.compact
+  end
 
   # The saved prize, so a rejected form submission can't change what the header shows.
   def onboarding_saved_prize = Prize.find(current_user.prize_key_in_database)
@@ -62,6 +111,13 @@ module OnboardingsHelper
   end
 
   def day_label(day) = day.capitalize
+
+  # "Every day" for all seven, otherwise "Monday, Wednesday, and Friday".
+  def coding_days_text(user)
+    return "Every day" if user.coding_days == 127
+
+    user.coding_day_names.map { |day| day_label(day) }.to_sentence
+  end
 
   # The user's current zone as an ActiveSupport::TimeZone, or nil when unset or not a valid zone name.
   def onboarding_time_zone

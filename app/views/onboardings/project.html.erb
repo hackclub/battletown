@@ -1,38 +1,39 @@
 <%= render layout: "onboardings/frame", locals: { step: "project" } do %>
   <%= form_with model: current_user, scope: :user, url: onboarding_step_path("project"), method: :patch, data: { controller: "onboarding-idea" } do |f| %>
     <%= render "onboardings/errors" %>
-    <fieldset class="onboarding__fieldset">
+    <%= tag.fieldset class: "field onboarding__fieldset", aria: onboarding_aria(:project_kind, id: "kind").slice(:describedby) do %>
       <legend class="onboarding__legend">What kind of project?</legend>
-      <div class="choice-grid choice-grid--kinds">
+      <%= onboarding_field_error(:project_kind, id: "kind") %>
+      <div class="toggle-group toggle-group--kinds">
         <% OnboardingsHelper::PROJECT_KINDS.each do |kind, info| %>
-          <label class="choice">
-            <%= f.radio_button :project_kind, kind, class: "choice__input" %>
-            <span class="choice__body">
-              <span class="choice__emoji" aria-hidden="true"><%= info[:emoji] %></span>
-              <span class="choice__name"><%= info[:name] %></span>
-            </span>
+          <label class="toggle">
+            <%= radio_button_tag "user[project_kind]", kind, current_user.project_kind == kind, id: "user_project_kind_#{kind}", class: "toggle__input" %>
+            <span class="toggle__label"><span aria-hidden="true"><%= info[:emoji] %></span> <%= info[:name] %></span>
           </label>
         <% end %>
       </div>
-    </fieldset>
+    <% end %>
 
-    <div class="onboarding__field">
+    <% max = User.validators_on(:project_idea).first.options[:maximum] %>
+    <div class="field onboarding__field <%= "field--invalid" if onboarding_errors(:project_idea).any? %>">
       <%= f.label :project_idea, "Got an idea? (optional)" %>
-      <%= f.text_area :project_idea, rows: 3, maxlength: User.validators_on(:project_idea).first.options[:maximum],
-            placeholder: "A sentence is plenty.", data: { onboarding_idea_target: "field", action: "input->onboarding-idea#count" } %>
-      <p class="onboarding__hint"><span data-onboarding-idea-target="count">0</span>/500</p>
+      <%= f.text_area :project_idea, rows: 3, maxlength: max, placeholder: "A sentence is plenty.",
+            aria: onboarding_aria(:project_idea, id: "user_project_idea", hint: "project-idea-count"),
+            data: { onboarding_idea_target: "field", action: "input->onboarding-idea#count" } %>
+      <%= onboarding_field_error(:project_idea, id: "user_project_idea") %>
+      <p class="field__hint onboarding__counter" id="project-idea-count"><span data-onboarding-idea-target="count">0</span>/<%= max %></p>
     </div>
 
-    <div class="onboarding__field">
-      <p class="onboarding__hint">Need a spark? Tap one to start from it:</p>
-      <ul class="chips">
+    <div class="field onboarding__field">
+      <p class="field__label" id="idea-presets-label">Need a spark? Tap one to start from it:</p>
+      <ul class="chips" aria-labelledby="idea-presets-label">
         <% OnboardingsHelper::IDEA_PRESETS.each do |preset| %>
           <li><button type="button" class="chip" data-action="onboarding-idea#fill" data-onboarding-idea-text-param="<%= preset %>"><%= preset %></button></li>
         <% end %>
       </ul>
-      <p class="onboarding__hint">
-        <span class="placeholder-link" aria-disabled="true">Guides (coming soon)</span> ·
-        <span class="placeholder-link" aria-disabled="true">Jumpstart playground (coming soon)</span>
+      <p class="field__hint">
+        <span class="badge badge--muted placeholder-link">Guides (coming soon)</span>
+        <span class="badge badge--muted placeholder-link">Jumpstart playground (coming soon)</span>
       </p>
     </div>
     <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>

@@ -1,45 +1,53 @@
 <%# Shared chrome for every step: progress, saved prize, heading, encouragement and a back link. %>
 <% copy = onboarding_copy(step) %>
 <% index = OnboardingsController::STEPS.index(step) %>
+<% total = OnboardingsController::STEPS.size %>
 <% content_for :title, copy[:title] %>
 
-<section class="container onboarding" data-controller="onboarding-step">
-  <nav class="onboarding-progress" aria-label="Onboarding progress" data-step="<%= index + 1 %>">
-    <div class="onboarding-progress__track" aria-hidden="true"><div class="onboarding-progress__fill"></div></div>
+<section class="container onboarding stack" data-controller="onboarding-step">
+  <nav class="onboarding-progress card card--tight" aria-label="Onboarding progress">
+    <div class="progress progress--goal progress--sm">
+      <div class="progress__head">
+        <span class="progress__label" id="onboarding-progress-label">Step <%= index + 1 %> of <%= total %><span class="visually-hidden">: <%= copy[:label] %></span></span>
+        <span class="progress__text" aria-hidden="true"><%= copy[:label] %></span>
+      </div>
+      <progress class="progress__bar" max="<%= total %>" value="<%= index + 1 %>" aria-labelledby="onboarding-progress-label"></progress>
+    </div>
     <ol class="onboarding-progress__steps">
       <% OnboardingsController::STEPS.each_with_index do |slug, i| %>
         <% reachable = i <= current_user.onboarding_step && !(slug == "celebrate" && current_user.onboarded?) %>
         <li class="onboarding-progress__step <%= "onboarding-progress__step--done" if i < index %> <%= "onboarding-progress__step--current" if i == index %>">
           <% if i == index %>
-            <span aria-current="step"><span class="onboarding-progress__num"><%= i + 1 %></span> <%= onboarding_copy(slug)[:label] %></span>
+            <span aria-current="step"><span class="onboarding-progress__num"><%= i + 1 %></span> <span class="onboarding-progress__label"><%= onboarding_copy(slug)[:label] %></span></span>
           <% elsif reachable %>
-            <%= link_to onboarding_step_path(slug) do %><span class="onboarding-progress__num"><%= i + 1 %></span> <%= onboarding_copy(slug)[:label] %><% end %>
+            <%= link_to onboarding_step_path(slug) do %><span class="onboarding-progress__num"><%= i + 1 %></span> <span class="onboarding-progress__label"><%= onboarding_copy(slug)[:label] %></span><% end %>
           <% else %>
-            <span><span class="onboarding-progress__num"><%= i + 1 %></span> <%= onboarding_copy(slug)[:label] %></span>
+            <span><span class="onboarding-progress__num"><%= i + 1 %></span> <span class="onboarding-progress__label"><%= onboarding_copy(slug)[:label] %></span></span>
           <% end %>
         </li>
       <% end %>
     </ol>
   </nav>
 
-  <% if index.positive? && (prize = onboarding_saved_prize) %>
-    <p class="onboarding-prize" aria-label="Your chosen prize">
-      <span class="onboarding-prize__label">Working toward</span>
-      <strong><%= prize.emoji %> <%= prize.name %></strong>
-      <span class="onboarding-prize__hours"><%= prize.hours_text %></span>
-    </p>
-  <% end %>
+  <div class="panel onboarding__panel">
+    <%# The celebration shows the prize in its own summary. %>
+    <% if index.positive? && index < total - 1 && (prize = onboarding_saved_prize) %>
+      <p class="onboarding-prize">
+        <span class="onboarding-prize__label">Working toward</span>
+        <strong><span aria-hidden="true"><%= prize.emoji %></span> <%= prize.name %></strong>
+        <span class="onboarding-prize__hours"><%= prize.hours_text %></span>
+      </p>
+    <% end %>
 
-  <header class="onboarding__header">
-    <h1 tabindex="-1" data-onboarding-step-target="heading"><%= copy[:title] %></h1>
-    <p class="onboarding__encouragement"><%= copy[:encouragement] %></p>
-  </header>
+    <header class="onboarding__header">
+      <h1 tabindex="-1" data-onboarding-step-target="heading"><%= copy[:title] %></h1>
+      <p class="lead onboarding__encouragement"><%= copy[:encouragement] %></p>
+    </header>
 
-  <div class="card onboarding__card">
     <%= yield %>
   </div>
 
-  <% if index.positive? && index < OnboardingsController::STEPS.size - 1 %>
-    <p class="onboarding__back"><%= link_to "← Back", onboarding_step_path(OnboardingsController::STEPS[index - 1]) %></p>
+  <% if index.positive? && index < total - 1 %>
+    <p class="onboarding__back"><%= link_to "← Back", onboarding_step_path(OnboardingsController::STEPS[index - 1]), class: "btn btn--ghost" %></p>
   <% end %>
 </section>

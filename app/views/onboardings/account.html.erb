@@ -1,25 +1,40 @@
 <%= render layout: "onboardings/frame", locals: { step: "account" } do %>
   <%= form_with model: current_user, scope: :user, url: onboarding_step_path("account"), method: :patch do |f| %>
     <%= render "onboardings/errors" %>
+    <% status = current_user.verification_status %>
+    <% badge = OnboardingsHelper::VERIFICATION_BADGES.fetch(status) %>
     <ul class="checks">
-      <li class="check check--<%= current_user.verification_status %>">
-        <h2 class="check__title">Identity verification</h2>
-        <p><%= OnboardingsHelper::VERIFICATION_COPY.fetch(current_user.verification_status) %></p>
+      <li class="check card card--cream card--flat check--<%= status %>">
+        <div class="check__head">
+          <h2 class="check__title">Identity verification</h2>
+          <span class="badge badge--<%= badge[:tone] %>"><%= badge[:label] %></span>
+        </div>
+        <p><%= OnboardingsHelper::VERIFICATION_COPY.fetch(status) %></p>
         <% unless current_user.verification_verified? || current_user.verification_ineligible? %>
-          <p><%= link_to "Verify with Hack Club", "https://auth.hackclub.com", target: "_blank", rel: "noopener noreferrer" %> (opens in a new tab)</p>
+          <p class="check__action"><%= link_to "Verify with Hack Club", "https://auth.hackclub.com", class: "btn btn--sm", target: "_blank", rel: "noopener noreferrer" %> <span class="muted small">(opens in a new tab)</span></p>
         <% end %>
       </li>
-      <li class="check">
-        <h2 class="check__title">Hackatime</h2>
-        <p>Connecting Hackatime is optional, and you can do it any time after this step from the Hackatime link in the header.</p>
+      <li class="check card card--cream card--flat">
+        <div class="check__head">
+          <h2 class="check__title">Hackatime</h2>
+          <span class="badge badge--muted">Optional</span>
+        </div>
+        <% if current_user.onboarded? %>
+          <p>Connecting Hackatime is optional. <%= link_to "Connect it on the Hackatime page", hackatime_path %> any time.</p>
+        <% else %>
+          <p>Connecting Hackatime is optional, and you can do it any time after this step: open Settings in the header, then Hackatime.</p>
+        <% end %>
       </li>
-      <li class="check">
+      <li class="check card card--cream card--flat">
         <h2 class="check__title">How you found us</h2>
         <% if current_user.referral_source_in_database.present? %>
           <p><%= referral_summary(current_user.referral_source_in_database) %></p>
         <% else %>
-          <%= f.label :referral_source, "How did you hear about us? (optional)" %>
-          <%= f.select :referral_source, referral_source_options, { include_blank: "Skip" } %>
+          <div class="field <%= "field--invalid" if onboarding_errors(:referral_source).any? %>">
+            <%= f.label :referral_source, "How did you hear about us? (optional)" %>
+            <%= f.select :referral_source, referral_source_options, { include_blank: "Skip" }, aria: onboarding_aria(:referral_source, id: "user_referral_source") %>
+            <%= onboarding_field_error(:referral_source, id: "user_referral_source") %>
+          </div>
         <% end %>
       </li>
     </ul>

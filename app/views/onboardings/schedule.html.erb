@@ -1,23 +1,25 @@
 <%= render layout: "onboardings/frame", locals: { step: "schedule" } do %>
   <%= form_with model: current_user, scope: :user, url: onboarding_step_path("schedule"), method: :patch, data: { controller: "timezone" } do |f| %>
     <%= render "onboardings/errors" %>
-    <fieldset class="onboarding__fieldset">
+    <%= tag.fieldset class: "field onboarding__fieldset", aria: onboarding_aria(:coding_days, id: "days").slice(:describedby) do %>
       <legend class="onboarding__legend">Which days do you want to code?</legend>
-      <div class="days" data-controller="onboarding-days" data-action="change->onboarding-days#sync">
+      <%= onboarding_field_error(:coding_days, id: "days") %>
+      <div class="days toggle-group" data-controller="onboarding-days" data-action="change->onboarding-days#sync">
         <% User::DAYS.each do |day| %>
-          <label class="day">
-            <%= check_box_tag "user[coding_day_names][]", day, current_user.coding_day_names.include?(day), id: "user_day_#{day}", class: "day__input", data: { onboarding_days_target: "day" } %>
-            <span class="day__label"><%= day_label(day).first(3) %></span>
+          <label class="day toggle">
+            <%= check_box_tag "user[coding_day_names][]", day, current_user.coding_day_names.include?(day), id: "user_day_#{day}", class: "day__input toggle__input", data: { onboarding_days_target: "day" } %>
+            <span class="day__label toggle__label"><span aria-hidden="true"><%= day_label(day).first(3) %></span><span class="visually-hidden"><%= day_label(day) %></span></span>
           </label>
         <% end %>
         <%# Revealed by onboarding-days; without JS the pills above work on their own. %>
         <button type="button" class="day-all" hidden aria-pressed="<%= current_user.coding_days == 127 %>" data-onboarding-days-target="all" data-action="onboarding-days#toggleAll">Every day</button>
       </div>
-    </fieldset>
+    <% end %>
 
-    <div class="onboarding__field">
+    <div class="field onboarding__field <%= "field--invalid" if onboarding_errors(:coding_time).any? %>">
       <%= f.label :coding_time, "What time works best?" %>
-      <%= f.time_field :coding_time, value: current_user.coding_time || "18:00" %>
+      <%= f.time_field :coding_time, value: current_user.coding_time || "18:00", aria: onboarding_aria(:coding_time, id: "user_coding_time") %>
+      <%= onboarding_field_error(:coding_time, id: "user_coding_time") %>
     </div>
 
     <%# The time zone is derived from the address at sign-in; the select is tucked away but still submits with the form. %>
@@ -30,13 +32,18 @@
           Which time zone are you in? <span class="timezone__change">Choose time zone</span>
         <% end %>
       </summary>
-      <div class="timezone__body">
+      <div class="timezone__body field <%= "field--invalid" if onboarding_errors(:time_zone).any? %>">
         <%= f.label :time_zone, "Your time zone" %>
-        <%= f.select :time_zone, time_zone_options, { include_blank: "Choose your time zone" }, data: { timezone_target: "select", action: "timezone#update" } %>
+        <%= f.select :time_zone, time_zone_options, { include_blank: "Choose your time zone" },
+              aria: onboarding_aria(:time_zone, id: "user_time_zone"), data: { timezone_target: "select", action: "timezone#update" } %>
+        <%= onboarding_field_error(:time_zone, id: "user_time_zone") %>
       </div>
     </details>
 
-    <p class="onboarding__hint">We'll remind you with a Slack DM on your coding days. No email or phone number needed.</p>
+    <p class="field__hint onboarding__note">We'll remind you with a Slack DM on your coding days. No email or phone number needed.</p>
+    <% if current_user.slack_id.blank? %>
+      <p class="alert alert--warning onboarding__note" role="note">Your Hack Club account isn't linked to a Slack account yet, so we can't DM you. Your plan is saved for when it is.</p>
+    <% end %>
     <%# TODO: SMS reminders, pending a privacy decision. %>
     <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
   <% end %>
