@@ -1,0 +1,37 @@
+<%# locals: (status:, from: "merch") -%>
+<%# One boss week for the signed-in person: seven day dots (each with a text alternative), "N of 5 days", the week's item,
+    and either the claim button or the reason it is locked. Used by the dashboard card and every row of /merch. -%>
+<% progress = status.progress %>
+<% item = status.item %>
+<div class="merch-status merch-status--<%= status.state %>">
+  <ol class="merch-days" aria-label="Goal days this week">
+    <% progress.days.each do |day| %>
+      <li class="merch-day merch-day--<%= day.state %><%= ' is-today' if day.today %>">
+        <span class="merch-day__dot" aria-hidden="true"><%= merch_day_mark(day) %></span>
+        <span class="merch-day__name" aria-hidden="true"><%= day.date.strftime("%a") %></span>
+        <span class="visually-hidden"><%= merch_day_text(day) %></span>
+      </li>
+    <% end %>
+  </ol>
+  <p class="merch-legend" aria-hidden="true">✓ goal met &middot; … still counting &middot; – no goal that day</p>
+
+  <p class="merch-count"><strong><%= status.count_text %></strong> <span class="merch-count__rule"><%= status.goal_rule_text %></span></p>
+
+  <p class="merch-item">
+    <span class="merch-item__emoji" aria-hidden="true"><%= item.emoji %></span>
+    <span class="merch-item__text"><strong><%= item.name %></strong><% if item.description.present? %><br><span class="merch-item__desc"><%= item.description %></span><% end %></span>
+  </p>
+
+  <p class="merch-message"><%= status.message %></p>
+
+  <% if status.needs_verification? %>
+    <%= render "merch/locked" %>
+  <% elsif status.state == :needs_ship %>
+    <p class="merch-note"><%= link_to "Go to your projects", projects_path %> to ship something.</p>
+  <% end %>
+
+  <% if status.can_claim? %>
+    <%= button_to "Claim this reward", merch_claim_path(boss_id: status.boss.id, from: from), method: :post, class: "btn btn--primary",
+                  "aria-label": "Claim this reward: #{item.name}" %>
+  <% end %>
+</div>

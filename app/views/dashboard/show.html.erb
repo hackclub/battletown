@@ -22,6 +22,10 @@
     </div>
   </section>
 
+  <% if feature?(:merch_track) && (merch = @dashboard.merch_track) %>
+    <%= render "dashboard/merch", panel: merch %>
+  <% end %>
+
   <%= render "dashboard/coins", coins: @dashboard.coins %>
   <%= render "dashboard/hackatime", hackatime: @dashboard.hackatime %>
   <%= render "dashboard/prize", prize: @dashboard.prize %>

@@ -19,6 +19,14 @@
           <p class="admin-link__count"><%= admin_badge("#{requested_orders} requested", requested_orders.positive? ? "badge--warning" : "badge--muted") %></p>
           <p class="small">Fulfil or cancel what people ordered.</p>
         </li>
+        <% if feature?(:merch_track) %>
+          <% requested_merch = MerchClaim.where(status: "requested").count %>
+          <li class="card card--tight admin-link">
+            <h2 class="card__title"><%= link_to "Merch claims", admin_merch_claims_path %></h2>
+            <p class="admin-link__count"><%= admin_badge("#{requested_merch} requested", requested_merch.positive? ? "badge--warning" : "badge--muted") %></p>
+            <p class="small">Fulfil or cancel weekly reward claims.</p>
+          </li>
+        <% end %>
         <li class="card card--tight admin-link">
           <h2 class="card__title"><%= link_to "Metrics", admin_metrics_path %></h2>
           <p class="small">Daily and weekly actives, funnel, last active day.</p>

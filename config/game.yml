@@ -105,3 +105,35 @@ shared:
       add_project:
         title: "Add a project"
         description: "Add a project to Battletown this boss week."
+
+  # The weekly merch track (app/services/merch_track/**), behind the Flipper flag `merch_track`. Hit the daily goal
+  # (streaks.goal_minutes) on this many days of a boss week to earn that week's item. No coins are involved; the team
+  # arranges delivery with the person on Slack. The items are placeholders until the designer replaces them. No prices
+  # belong in this file (a test checks).
+  merch_track:
+    # Settled daily-goal days (local dates inside the boss's week, from the day the account was created) needed to earn
+    # the week's item. A day the freeze covered is not a goal day. 1 to 7.
+    days_required: 5
+    # Claiming also needs at least one approved ship (ever), on top of identity verification with Hack Club.
+    claim_requires_ship: true
+    # What a boss week beyond the list below earns: none (no reward) or repeat_last (the last item again).
+    after_last_week: none
+    # One item per boss week, in order: the first boss earns the first item, and so on. key: lowercase letters, digits
+    # and underscores, unique. name: up to 60 characters. description: up to 160. emoji: shown beside the name.
+    week_items:
+      - key: week_1_sticker
+        name: Week 1 sticker
+        description: A sticker to celebrate your first goal week.
+        emoji: "\U0001F3F7"
+      - key: week_2_item
+        name: Week 2 reward
+        description: Placeholder for the week 2 reward.
+        emoji: "\U0001F381"
+      - key: week_3_item
+        name: Week 3 reward
+        description: Placeholder for the week 3 reward.
+        emoji: "\U0001F381"
+      - key: week_4_item
+        name: Week 4 reward
+        description: Placeholder for the week 4 reward.
+        emoji: "\U0001F3C6"

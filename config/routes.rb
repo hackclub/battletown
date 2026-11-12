@@ -47,6 +47,12 @@ Rails.application.routes.draw do
     resource :notifications, only: %i[show update]
   end
 
+  # The weekly merch track (flag `merch_track`): the routes exist only while it is on, otherwise a plain 404.
+  constraints Features::Constraint.new(:merch_track) do
+    get "merch", to: "merch#index", as: :merch
+    post "merch/weeks/:boss_id/claim", to: "merch_claims#create", as: :merch_claim, constraints: { boss_id: /\d+/ }
+  end
+
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 
@@ -87,6 +93,12 @@ Rails.application.routes.draw do
         patch :approve
         patch :reject
       end
+    end
+    # The weekly merch track queue (flag `merch_track`).
+    constraints Features::Constraint.new(:merch_track) do
+      get "merch", to: "merch_claims#index", as: :merch_claims
+      patch "merch/:id/fulfill", to: "merch_claims#fulfill", as: :fulfill_merch_claim, constraints: { id: /\d+/ }
+      patch "merch/:id/cancel", to: "merch_claims#cancel", as: :cancel_merch_claim, constraints: { id: /\d+/ }
     end
   end
 

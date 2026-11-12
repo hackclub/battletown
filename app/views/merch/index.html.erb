@@ -1,0 +1,39 @@
+<% content_for :title, "Reward track" %>
+<section class="container merch stack">
+  <header class="page-header">
+    <p class="eyebrow">Weekly rewards</p>
+    <h1>The reward track</h1>
+    <p class="lead">Code <%= @goal_minutes %> minutes or more on <strong><%= @required %> days</strong> of a boss week and that week's reward is yours to claim.
+      A short week is just a fresh start next week.</p>
+    <p class="merch-note">To claim a reward you verify your identity with Hack Club<%= " and have at least one approved ship" if @requires_ship %>. The team then messages you on Slack to arrange delivery.
+      Coding is never blocked.</p>
+    <p><%= link_to "Back to the dashboard", dashboard_path, class: "btn btn--ghost" %></p>
+  </header>
+
+  <ol class="merch-weeks" role="list">
+    <% @rows.each do |row| %>
+      <li class="card merch-week" id="merch-week-<%= row.week.number %>">
+        <div class="merch-week__head">
+          <h2 class="merch-week__title">Week <%= row.week.number %>: <%= row.week.item.name %></h2>
+          <% if row.status %>
+            <%= merch_state_badge(row.status) %>
+          <% else %>
+            <span class="badge badge--muted">Coming up</span>
+          <% end %>
+        </div>
+        <% if row.week.boss %>
+          <p class="merch-week__dates"><%= merch_week_range(row.week.boss) %></p>
+        <% end %>
+        <% if row.status %>
+          <%= render "merch/status", status: row.status, from: "merch" %>
+        <% else %>
+          <p class="merch-item">
+            <span class="merch-item__emoji" aria-hidden="true"><%= row.week.item.emoji %></span>
+            <span class="merch-item__text"><%= row.week.item.description %></span>
+          </p>
+          <p class="merch-message"><%= row.week.boss ? "This week hasn't started yet." : "This week starts when the next boss arrives." %></p>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+</section>

@@ -70,6 +70,15 @@ module Dashboard
 
     def goal_streak = @goal_streak ||= build_goal_streak
 
+    # --- the weekly merch track (flag `merch_track`; nil while it is off or when no week has an item to show) ---
+
+    def merch_track
+      return unless Features.enabled?(:merch_track)
+      return @merch_track if defined?(@merch_track)
+
+      @merch_track = MerchTrack::Panel.for(user, today: today_date, now: now)
+    end
+
     # --- coins ---
 
     def coins

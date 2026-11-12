@@ -82,6 +82,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     HackatimeConnection.create!(user: user, hackatime_uid: "1", access_token: "guard-token", scopes: "profile read", connected_at: Time.current)
     HackatimeDayWindow.create!(user: user, local_date: Date.new(2026, 11, 9), starts_at: Time.utc(2026, 11, 9), ends_at: Time.utc(2026, 11, 10), hackatime_uid: "1")
     guard_boss = Boss.create!(name: "Guard boss", art_key: "placeholder", starts_on: Date.new(2099, 1, 2), ends_on: Date.new(2099, 1, 8), hp_seconds: 3600)
+    MerchClaim.create!(user: user, boss: guard_boss, item_key: "guard_item", item_name: "Guard item", claimed_at: Time.current)
     guard_quest = Quest.create!(starts_on: guard_boss.starts_on, goal_key: "add_project", reward_coins: 15)
     QuestCompletion.create!(user: user, quest: guard_quest, completed_at: Time.current, coin_transaction: CoinTransaction.find_by!(user: user, idempotency_key: "guard-#{user.id}"))
     PlinkoDrop.create!(user: user, dropped_at: Time.current, local_date: Date.new(2026, 11, 9), slot: 4, points: 50, seed: 1, idempotency_key: "guard-drop-#{user.id}")

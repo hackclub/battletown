@@ -1,0 +1,12 @@
+<%# locals: (panel:) -%>
+<%# The dashboard's weekly reward card (flag `merch_track`; the presenter returns nil while it is off). Styles: merch.css. -%>
+<section class="card dash-panel merch-card" aria-labelledby="dash-merch-title">
+  <h2 id="dash-merch-title" class="dash-panel__title">This week's reward track</h2>
+  <%= render "merch/status", status: panel.status, from: "dashboard" %>
+  <% if panel.waiting.positive? %>
+    <p class="merch-note"><%= panel.waiting_text %></p>
+  <% end %>
+  <div class="dash-actions">
+    <%= link_to "See the whole track", merch_path, class: "btn btn--ghost" %>
+  </div>
+</section>

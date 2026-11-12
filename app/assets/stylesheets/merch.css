@@ -1,0 +1,58 @@
+/* The weekly merch track (app/views/merch/**, app/views/dashboard/_merch.html.erb). Built from the shared design system
+   (.card, .badge, .btn, .page-header); this file only holds what those classes cannot do: the seven day dots and the
+   week rows. Every state is also said in words (a visually hidden sentence per dot, the count, the message); the glyph
+   shapes differ per state so the dots do not rely on colour alone. Tokens only. */
+.merch { max-width: 48rem; }
+.merch-note { margin: 0 0 var(--space-3); color: var(--color-text-muted); }
+
+/* The dashboard card sits across the whole row when there is room. */
+@media (min-width: 48rem) { .merch-card { grid-column: 1 / -1; } }
+
+.merch-status { display: grid; gap: var(--space-3); }
+.merch-status > * { margin: 0; min-width: 0; }
+
+/* Seven dots on one row that shrink with the card, never a sideways scroll. */
+.merch-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-2); max-width: 24rem; margin: 0; padding: 0; list-style: none; }
+.merch-day { display: grid; justify-items: center; gap: var(--space-1); min-width: 0; }
+.merch-day__dot {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  max-inline-size: 2.75rem;
+  aspect-ratio: 1;
+  border: 2px solid var(--color-ink-brown);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-ink-brown);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+.merch-day__name { color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 700; }
+.merch-day--met .merch-day__dot { border-color: var(--color-success); background: var(--color-success); color: var(--color-bg); }
+.merch-day--pending .merch-day__dot { border-style: dashed; border-color: var(--color-ink-blue); color: var(--color-ink-blue); }
+.merch-day--missed .merch-day__dot { border-color: var(--color-field-border); color: var(--color-text-muted); }
+.merch-day--future .merch-day__dot { border-color: var(--color-border); background: transparent; }
+.merch-day--not_counted .merch-day__dot { border-style: dotted; border-color: var(--color-border); background: transparent; color: var(--color-text-muted); }
+.merch-day.is-today .merch-day__dot { box-shadow: 0 0 0 3px var(--color-highlight); }
+.merch-day.is-today .merch-day__name { color: var(--color-ink-brown); }
+
+.merch-legend { color: var(--color-text-muted); font-size: var(--text-sm); }
+.merch-count strong { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 400; letter-spacing: var(--tracking-heading); }
+.merch-count__rule { display: block; color: var(--color-text-muted); font-size: var(--text-sm); }
+
+.merch-item { display: flex; align-items: center; gap: var(--space-3); }
+.merch-item__emoji { flex: none; display: grid; place-items: center; inline-size: 3rem; block-size: 3rem; border-radius: var(--radius-full); background: var(--color-card-blue-light); font-size: var(--text-xl); line-height: 1; }
+.merch-item__text { min-width: 0; }
+.merch-item__desc { color: var(--color-text-muted); font-size: var(--text-sm); }
+.merch-message { font-weight: 700; }
+.merch-status .btn { justify-self: start; }
+.merch-status form { margin: 0; }
+
+/* The track page: one card per week. */
+.merch-weeks { display: grid; gap: var(--space-6); margin: 0; padding: 0; list-style: none; }
+.merch-week { display: grid; gap: var(--space-3); min-width: 0; }
+.merch-week > * { margin: 0; }
+.merch-week__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+.merch-week__title { margin: 0; font-size: var(--text-xl); }
+.merch-week__dates { color: var(--color-text-muted); font-size: var(--text-sm); }

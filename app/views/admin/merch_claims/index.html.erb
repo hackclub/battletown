@@ -1,0 +1,71 @@
+<% content_for :title, "Admin merch claims" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>Weekly merch claims</h1>
+      <p class="admin-dashboard__note">Requested claims come first. Contact the person on Slack to arrange delivery, then mark the claim fulfilled. No coins are involved. Names and Slack ids are personal data: use them only to deliver the reward.</p>
+    </header>
+
+    <p class="admin-count"><strong id="requested-count"><%= @requested_count %></strong> <%= @requested_count == 1 ? "claim is" : "claims are" %> waiting.</p>
+
+    <%= form_with url: admin_merch_claims_path, method: :get, class: "card card--tight admin-form admin-form--inline" do %>
+      <div class="field">
+        <%= label_tag :status, "Status" %>
+        <%= select_tag :status, options_for_select([ [ "Any status", "" ] ] + MerchClaim::STATUSES.map { |s| [ s.capitalize, s ] }, @status), class: "select" %>
+      </div>
+      <%= button_tag "Filter", type: "submit", name: nil, class: "btn btn--primary" %>
+    <% end %>
+
+    <% if @claims.empty? %>
+      <p class="alert">No claims match.</p>
+    <% else %>
+      <%= table_region("Merch claims") do %>
+        <table class="table admin-table">
+          <caption>Merch claims (requested first, then newest, up to <%= Admin::MerchClaimsController::LIMIT %>)</caption>
+          <thead>
+            <tr>
+              <th scope="col">Reward</th>
+              <th scope="col">Person</th>
+              <th scope="col">Week</th>
+              <th scope="col">Status</th>
+              <th scope="col">Claimed (UTC)</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @claims.each do |claim| %>
+              <% person = claim.user.display_name.presence || "this person" %>
+              <tr id="merch-claim-<%= claim.id %>">
+                <th scope="row"><%= claim.item_name %><br><small>merch track</small></th>
+                <td>
+                  <%= claim.user.display_name.presence || "No name" %><br>
+                  <small>Slack: <%= claim.user.slack_id.presence || "not set" %></small><br>
+                  <small>Identity: <%= verification_label(claim.user) %></small>
+                </td>
+                <td><%= merch_week_range(claim.boss) %></td>
+                <td>
+                  <%= admin_badge(claim.status.capitalize, AdminHelper::ORDER_BADGES.fetch(claim.status)) %>
+                  <% if claim.fulfilled? %><br><small><%= claim.fulfilled_at.utc.strftime("%-d %b %H:%M") %></small><% end %>
+                  <% if claim.cancelled? %><br><small><%= claim.cancelled_at.utc.strftime("%-d %b %H:%M") %></small><% end %>
+                </td>
+                <td><%= claim.claimed_at.utc.strftime("%-d %b %Y %H:%M") %></td>
+                <td>
+                  <% if claim.requested? %>
+                    <div class="admin-actions">
+                      <%= button_to "Mark fulfilled", admin_fulfill_merch_claim_path(claim, status: @status), method: :patch, class: "btn btn--primary btn--sm",
+                                    "aria-label": "Mark fulfilled: #{claim.item_name} for #{person}" %>
+                      <%= button_to "Cancel", admin_cancel_merch_claim_path(claim, status: @status), method: :patch, class: "btn btn--sm",
+                                    "aria-label": "Cancel: #{claim.item_name} for #{person}",
+                                    form: { data: { turbo_confirm: "Cancel this claim?" } } %>
+                    </div>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

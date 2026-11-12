@@ -1,0 +1,12 @@
+<%# Why claiming is locked, and the way out. The same Hack Club verify link as the shop and the onboarding account step. %>
+<div class="card card--cream card--tight shop-lock" id="merch-verify-note">
+  <p class="shop-lock__head"><span class="badge badge--warning">Locked for now</span></p>
+  <p>
+    Rewards unlock when you verify your identity with Hack Club. You keep earning goal days in the meantime, and coding is never blocked.
+    <% if current_user.verification_pending? %>
+      Your verification is being reviewed.
+    <% elsif current_user.verification_needs_submission? %>
+      <%= link_to "Verify with Hack Club", ShopHelper::VERIFY_URL, target: "_blank", rel: "noopener noreferrer" %> (opens in a new tab)
+    <% end %>
+  </p>
+</div>
