@@ -82,3 +82,6 @@
 .admin-table-wrap { overflow-x: auto; }
 .admin-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .admin-actions form { margin: 0; }
+/* On a narrow screen the table keeps readable columns and scrolls sideways inside its wrapper, not the page. */
+.admin-table-wrap .admin-table { min-width: 46rem; }
+.admin-table-wrap { position: relative; max-width: 100%; } /* positioned so the visually-hidden header text is clipped with the table */
