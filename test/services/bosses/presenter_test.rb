@@ -81,7 +81,7 @@ class Bosses::PresenterTest < ActiveSupport::TestCase
   test "the last day says it ends today" do
     presenter = present(today: THURSDAY)
     assert_equal 1, presenter.days_left
-    assert_equal "Last day, ends tonight", presenter.days_left_text
+    assert_equal "Last day, make it count", presenter.days_left_text
     assert_match(/Ends today\.\z/, presenter.summary)
   end
 

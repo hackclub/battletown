@@ -124,3 +124,6 @@
   .boss-card__banner { animation: none; }
   .boss-card__bar::-webkit-progress-value { transition: none; }
 }
+
+/* Development page only (app/views/dev/bosses/show.html.erb): breathing room under the green frame. */
+.dev-boss-card { margin-top: var(--space-4); }

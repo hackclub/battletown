@@ -77,3 +77,4 @@
 }
 .admin-form__errors p { margin-bottom: var(--space-1); font-weight: 700; }
 .admin-form__errors ul { margin: 0; padding-inline-start: var(--space-6); }
+.admin-dashboard__after { margin-top: var(--space-4); }

@@ -39,7 +39,7 @@ module Bosses
         damage = 0
       end
       new(facts: Facts.new(today: today, boss: boss, damage: damage, user_seconds: (2 * 3600) + (35 * 60),
-                           active_today: 12, upcoming_on: (today + 3 if boss.nil?), previous_escaped_name: nil))
+                           active_today: 12, upcoming_on: (today.next_occurring(:friday) if boss.nil?), previous_escaped_name: nil))
     end
 
     def self.human_duration(seconds)
@@ -107,7 +107,7 @@ module Bosses
     def days_left_text
       case days_left
       when 0 then nil
-      when 1 then "Last day, ends tonight"
+      when 1 then "Last day, make it count"
       else "#{days_left} days left, ends #{end_day_name}"
       end
     end
