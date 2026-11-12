@@ -87,7 +87,7 @@ Left as-is because Figma defines nothing: spacing scale (`--space-*`), type scal
 
 ## (c) Gaps
 
-Priorities follow the whiteboard canvas (P0 = EOD 11/11, P1 = high, P2 = by launch). Note the sources disagree on landing: the 11/9 meeting notes say landing is P0 and the canvas says P1. I use P0 for things that block the landing looking like the Figma.
+Priorities follow the whiteboard canvas (P0 = EOD 11/11, P1 = high, P2 = by launch). Note the sources disagree on landing: the planning notes say landing is P0 and the canvas says P1. I use P0 for things that block the landing looking like the Figma.
 
 ### Figma vs the current build
 
@@ -106,7 +106,7 @@ Pri is the priority of what is still open; DONE rows are resolved and kept for t
 | P1 | Onboarding: no Figma frames exist for any of the 5 steps, so the build (prize, project, schedule, account, celebrate) has nothing to be checked against. It inherits the new tokens and fonts. | none | `onboardings/*` |
 | P1 | No Figma frames for the shop, boss UI (HP bar, community icons), streak UI, team UI or Plinko; only the dashboard concept `1:4` exists (see the product notes table). | none | not built |
 | P1 | Update 2026-11-11: the landing page below the hero now follows Armand's map design (signpost, boss arena, prize market, FAQ river, last call, joined by a dotted path), not Figma. The hero is still from Figma. The podiums are driven by the prize catalogue (`Prize`, in hours); Armand's product photos in `landing/prizes/` are kept for the final lineup and only the matching one is wired up (`LandingHelper::PRIZE_ART`). The earlier Figma-fidelity rebuild of this page was dropped in the merge (the `design/` assets stay for the style guide). | `134:1151`, `136:75` | `landing/show.html.erb` |
-| P1 | Art is the stated launch blocker: boss, hero and background due EOD 11/11, two more bosses TBD (canvas, 11/9 meeting). The hero painting is now in the repo; the notes still call for 2-3 boss assets and Figma has one boss/town painting. | `65:494`, `14:324`-`14:327` | `hero-art-*.webp` only |
+| P1 | Art is the stated launch blocker: boss, hero and background due EOD 11/11, two more bosses still to come. The hero painting is now in the repo; the notes still call for 2-3 boss assets and Figma has one boss/town painting. | `65:494`, `14:324`-`14:327` | `hero-art-*.webp` only |
 | P2 | Mobile: no mobile frames anywhere in Figma. The landing mobile layout was designed independently (see "Deliberate deviations"); onboarding and dashboard responsive CSS is unreviewed against a design. | none | responsive CSS |
 | P2 | Scroll chevron under the hero CTA appears only in the earlier `57:411` variant, not in the latest frames. Not built. | `57:411` | none |
 | P2 | `1:268` (blue tower, "Lost? Click here for guides") has no stated purpose; the signposts (`136:30`-`136:56`), image refs and small frames (`65:491`-`65:493`, `13:15`-`13:17`) were not mapped to any screen. | listed in (a) | none |
@@ -125,17 +125,17 @@ Build status below is observed from the repo views and the running app, not from
 
 | Pri | Concept (source) | In Figma | In the build |
 | --- | --- | --- | --- |
-| P0 | Weekly community boss: 1 hour = 1% of a 100-hour boss, community icons on the home page (11/6 meeting, canvas "Weekly boss battle") | Only an unlabelled coral block (`1:305`) and a CTA TODO (`1:263`). No boss HP bar, no community icons. | Not built. Landing copy mentions a boss health bar; dashboard says "coming soon". |
+| P0 | Weekly community boss: 1 hour = 1% of a 100-hour boss, community icons on the home page (planning notes, canvas "Weekly boss battle") | Only an unlabelled coral block (`1:305`) and a CTA TODO (`1:263`). No boss HP bar, no community icons. | Not built. Landing copy mentions a boss health bar; dashboard says "coming soon". |
 | P0 | Landing prizes priced in hours, shop in currency (11/9) | No prize UI on the landing frames (Group 5/8 panels are empty). No shop frame. | Landing shows hours (`pluralize(prize.hours, "hour")`); prices are now in coins (`config/prizes.yml`) and the shop is built. Prize list is a set of cards, not a selectable picker that carries through, which the 11/6 notes ask for. |
 | P0 | Free sticker for signup (11/6, canvas "Signup sticker") | Not shown. | Landing line "Free sticker when you sign up". Fulfilment is built as a request the team handles on Slack (see the shop section of `docs/CONTRACT.md`). |
 | P1 | Streaks: 15-minute daily sticker streak; daily-goal streak with a bonus ramp of 5% to 20% over 14 days, holding at the cap; 1-day freeze (canvas, 11/9, 11/6) | Only the "15 minutes to your daily goal" label and bar in `1:4`. No streak counter, ramp or freeze UI. | Not built. Onboarding stores coding days and time only. Landing FAQ mentions streak bonuses in general terms. |
-| P1 | Team, quest and returning bonuses (canvas, 11/9) | Nothing. | Not built. Canvas defines team bonus as a small multiplier on overlapping hours; the 11/9 meeting describes it as a buddy/invite bonus. Whether those are the same rule is unclear. |
+| P1 | Team, quest and returning bonuses (canvas) | Nothing. | Not built. Canvas defines team bonus as a small multiplier on overlapping hours; the planning notes describe it as a buddy/invite bonus. Whether those are the same rule is unclear. |
 | P1 | Onboarding: prize (visible throughout), project with ideation help, schedule, referral capture by path, celebration with sound, progress bar on top (11/6) | Nothing. | Built: progress bar, saved prize shown from step 2, presets, "Guides (coming soon)" and "Jumpstart playground (coming soon)" placeholders, schedule, account (IDV status, Hackatime placeholder), celebration with synth sound and mute, path referrals (`/haven`, `/terra`, `/stardance`). |
 | P1 | Shipping: force IDV; ship reminders at 5h/10h; hour deductions after 6h (marked "?" on the canvas) (canvas, 11/6) | Nothing. | IDV status stored, not enforced (README says enforce at shipping). Reminders not built. |
 | P2 | Plinko daily minigame: one ball per 5 minutes coded, leaderboard, shareable to Slack (11/6, canvas "Daily Plinko") | Nothing. | Not built. Fishing was floated as an alternative; not decided. |
 | P2 | Home loop: Plinko, then code 15 minutes, hit goal, celebrate; prominent streak display; one start-coding button into Hackatime; sidebar (11/6) | Partly implied by `1:4` (one progress bar). | Not built. |
 | P2 | Notifications (Slack, email, SMS), NPS every 2 days, metrics, guides, admin (canvas) | Nothing. | Not built. Schedule step says "We'll nudge you on Slack", but sending is not built. |
-| P2 | 1 month run, possible 1 month extension (canvas, 11/9) | n/a | Stated in landing FAQ ("launches this week and runs for at least a month"). |
+| P2 | 1 month run, possible 1 month extension (canvas) | n/a | Stated in landing FAQ ("launches this week and runs for at least a month"). |
 
 Source discrepancies worth a decision: day 1 of the streak ramp is 5% on the canvas but "base" in the 11/9 notes; and "Village" (notes) versus "Battletown" (Figma, build). Group 5's grey hero background was a placeholder for the painted art in Group 8, which the build now uses.
 
