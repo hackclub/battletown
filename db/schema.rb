@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035008) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_035009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035008) do
     t.check_constraint "bonus_bps >= 0 AND bonus_bps <= 10000", name: "daily_results_bonus_bps_check"
     t.check_constraint "raw_seconds >= 0 AND raw_seconds <= 86400", name: "daily_results_raw_seconds_check"
     t.check_constraint "streak_15 >= 0 AND goal_streak >= 0 AND days_since_freeze >= 0", name: "daily_results_counters_check"
+  end
+
+  create_table "flipper_features", force: :cascade do |t|
+    t.string "key", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_flipper_features_on_key", unique: true
+  end
+
+  create_table "flipper_gates", force: :cascade do |t|
+    t.string "feature_key", null: false
+    t.string "key", null: false
+    t.text "value"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["feature_key", "key", "value"], name: "index_flipper_gates_on_feature_key_and_key_and_value", unique: true
   end
 
   create_table "hackatime_connections", force: :cascade do |t|

@@ -66,6 +66,11 @@ Rails.application.routes.draw do
     resource :styleguide, only: :show, controller: "styleguide"
   end
 
+  # The feature-flag console (Flipper UI): admins only, a plain 404 for everyone else. Keep it above the /:ref catch-all.
+  constraints Features::AdminConstraint.new do
+    mount Flipper::UI.app(Flipper) => "/admin/flipper", as: :flipper_ui
+  end
+
   # Staff-only, read-only; a non-admin gets a 404. Keep above the /:ref catch-all (a referral slug can never be "admin").
   namespace :admin do
     root "dashboard#show"

@@ -53,6 +53,15 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     assert_not defined?(ActionMailbox::Engine), "Action Mailbox is not used and must stay out of the app"
   end
 
+  # app_routes only lists controller routes; a mounted Rack app brings its own routes, so each must be listed here.
+  test "every mounted Rack app is known, and the Flipper console sits behind the admin-only constraint" do
+    mounted = Rails.application.routes.routes.reject { |route| route.defaults[:controller] }
+    assert_equal [ "/admin/flipper", "/cable" ], mounted.map { |route| route.path.spec.to_s }.sort, "a new mounted app needs its own security test"
+
+    flipper = mounted.find { |route| route.path.spec.to_s == "/admin/flipper" }
+    assert_equal [ Features::AdminConstraint ], flipper.app.constraints.map(&:class)
+  end
+
   # --- (b) every /admin route is a 404 for the signed-out and for non-admins ---
 
   test "every admin route is a 404 for signed-out visitors and non-admins, whatever the verb" do

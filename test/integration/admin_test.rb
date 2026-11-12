@@ -58,7 +58,7 @@ class AdminTest < ActionDispatch::IntegrationTest
     get "/admin"
     assert_select ".table-wrap[tabindex='0'][role=region][aria-label] > table.admin-table", 6
     assert_select "h1", 1
-    assert_select "nav[aria-label='Admin sections'] a", 4
+    assert_select "nav[aria-label='Admin sections'] a", 5
     assert_select "[style]", 0
   end
 

@@ -75,3 +75,8 @@ gem "omniauth_openid_connect"
 gem "rack-attack"
 
 gem "omniauth-oauth2", "~> 1.9"
+
+# Feature flags: every new feature ships switched off until the owner flips it at /admin/flipper (see docs/CONTRACT.md)
+gem "flipper", "~> 1.4"
+gem "flipper-active_record", "~> 1.4", require: false # required lazily by config/initializers/flipper.rb
+gem "flipper-ui", "~> 1.4"
