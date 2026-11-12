@@ -8,7 +8,7 @@
         <% selected = onboarding_prize_selection %>
         <% Prize.paid.each do |prize| %>
           <label class="choice">
-            <%# radio_button_tag, not f.radio_button: the form builder wraps an invalid field in a div, which would break the "input + body" styling. %>
+            <%# radio_button_tag keeps the radio directly before its card body (the "input + body" styling); the builder would add an association-based id and error handling we do not need. %>
             <%= radio_button_tag "user[prize_key]", prize.key, prize.key == selected, id: "user_prize_key_#{prize.key}", class: "choice__input" %>
             <span class="choice__body">
               <span class="choice__art">
