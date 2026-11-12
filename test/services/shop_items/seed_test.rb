@@ -36,6 +36,19 @@ class ShopItems::SeedTest < ActiveSupport::TestCase
     assert_equal before, ShopItem.order(:key).pluck(:key, :name, :coins, :position, :updated_at)
   end
 
+  # The catalogue is first created by a migration that runs before `requires_shipping` exists (a database upgrading step by
+  # step from an older release): the seed has to work against that older table.
+  test "seeding works on a table that does not have requires_shipping yet, as in a database upgrading step by step" do
+    ShopItem.delete_all
+    ActiveRecord::Base.connection.remove_column :shop_items, :requires_shipping
+    ShopItem.reset_column_information
+    assert_equal YAML_KEYS.size, ShopItems::Seed.call
+    assert_equal YAML_KEYS.sort, ShopItem.pluck(:key).sort
+  ensure
+    ActiveRecord::Base.connection.add_column :shop_items, :requires_shipping, :boolean, default: true, null: false unless ShopItem.column_names.include?("requires_shipping")
+    ShopItem.reset_column_information
+  end
+
   test "it never overwrites an edited item, an archived one or one with a picture" do
     item = ShopItem.find_by!(key: "tshirt")
     item.update!(name: "Edited tee", coins: 77, description: "Mine", active: false, emoji: "🎽", tier: "weekly")

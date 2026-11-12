@@ -31,6 +31,10 @@ module ShopItems
       missing = missing.reject { |row| row[:kind] == "free_signup" } if ShopItem.exists?(kind: "free_signup")
       return 0 if missing.empty?
 
+      # Only the columns this table has: the migration that creates the table runs before later ones add `requires_shipping`
+      # (a database upgrading step by step), and those columns then take their own defaults.
+      columns = ShopItem.column_names.map(&:to_sym)
+      missing = missing.map { |row| row.slice(*columns) }
       missing.each do |row|
         item = ShopItem.new(row.merge(position: row[:position] + offset))
         raise ArgumentError, "config/prizes.yml: #{row[:key]}: #{item.errors.full_messages.to_sentence}" unless item.valid?
