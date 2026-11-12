@@ -339,6 +339,19 @@ class Orders::TransitionsTest < ActiveSupport::TestCase
     assert_not_nil order_in("cancelled").cancelled_at
   end
 
+  test "the old Shop::Cancel and Shop::Fulfill doorways still work and return the order" do
+    cancelled = order_for
+    assert_equal cancelled, Shop::Cancel.call(order: cancelled, by: @buyer)
+    assert_predicate cancelled.reload, :cancelled?
+    by_staff = order_for
+    Shop::Cancel.call(order: by_staff, by: @staff)
+    assert_equal [ "staff", "other" ], by_staff.events.last.then { |e| [ e.actor_kind, e.reason_code ] }
+    fulfilled = order_for
+    assert_predicate Shop::Fulfill.call(order: fulfilled, by: @staff), :fulfilled?
+    assert_raises(Orders::NotAllowed) { Shop::Fulfill.call(order: order_for, by: @buyer) }
+    assert_equal 2, refunds_for.count
+  end
+
   # --- placing, the cap ---
 
   test "a person can have at most the configured number of orders waiting, friendly error, and a repeat of an old order still works" do

@@ -21,7 +21,7 @@ module AdminHelper
   end
 
   # Staff see the real status, a hold included (the buyer's page and list never do).
-  def admin_order_badge(order)
+  def admin_order_badge(order, _text = nil)
     tag.span(staff_order_status_text(order), class: class_names("badge shop-status", "shop-status--#{order.status}", OrderStatusHelper::ORDER_STATUS_BADGES.fetch(order.status)))
   end
 
