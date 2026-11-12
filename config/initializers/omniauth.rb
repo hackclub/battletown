@@ -33,7 +33,26 @@ class HcaDiscoveryCache
 end
 SWD.cache = HcaDiscoveryCache.new
 
+require Rails.root.join("lib/omniauth/strategies/hackatime")
+
+# Hackatime must be reached over https in production (the tokens travel to it); a local fake provider may use http.
+hackatime_base_url = Rails.configuration.x.hackatime.base_url
+if Rails.env.production? && URI(hackatime_base_url).scheme != "https"
+  raise "HACKATIME_URL must be an https URL in production"
+end
+
 Rails.application.config.middleware.use OmniAuth::Builder do
+  # Account linking, not sign-in: the callback is handled by HackatimeConnectionsController and never creates
+  # or signs in a user. Scopes are exactly the two the Hackatime OAuth app has: read and profile.
+  provider :hackatime,
+    Rails.configuration.x.hackatime.client_id || Rails.application.credentials.dig(:hackatime, :client_id),
+    Rails.configuration.x.hackatime.client_secret || Rails.application.credentials.dig(:hackatime, :client_secret),
+    scope: Rails.configuration.x.hackatime.scopes,
+    redirect_uri: Rails.configuration.x.hackatime.redirect_uri,
+    client_options: { site: hackatime_base_url },
+    # Read at request time so the provider URL can be pointed at a local fake (tests, HACKATIME_URL) without a reboot.
+    setup: ->(env) { env["omniauth.strategy"].options.client_options.site = Rails.configuration.x.hackatime.base_url }
+
   provider :openid_connect,
     name: :hack_club,
     issuer: Rails.configuration.x.hca.issuer,

@@ -78,6 +78,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_030001) do
     t.check_constraint "streak_15 >= 0 AND goal_streak >= 0 AND days_since_freeze >= 0", name: "daily_results_counters_check"
   end
 
+  create_table "hackatime_connections", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "hackatime_uid", null: false
+    t.text "access_token", null: false
+    t.text "refresh_token"
+    t.string "scopes", default: "", null: false
+    t.datetime "expires_at"
+    t.datetime "connected_at", null: false
+    t.datetime "last_synced_at"
+    t.string "last_error_code", limit: 40
+    t.boolean "needs_reconnect", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["hackatime_uid"], name: "index_hackatime_connections_on_hackatime_uid", unique: true
+    t.index ["user_id"], name: "index_hackatime_connections_on_user_id", unique: true
+    t.check_constraint "char_length(access_token) <= 4000", name: "hackatime_connections_access_token_length_check"
+    t.check_constraint "char_length(hackatime_uid::text) >= 1 AND char_length(hackatime_uid::text) <= 40", name: "hackatime_connections_uid_length_check"
+    t.check_constraint "char_length(scopes::text) <= 100", name: "hackatime_connections_scopes_length_check"
+    t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "hackatime_connections_last_error_code_check"
+    t.check_constraint "refresh_token IS NULL OR char_length(refresh_token) <= 4000", name: "hackatime_connections_refresh_token_length_check"
+  end
+
   create_table "hackatime_links", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "project_id", null: false
@@ -217,6 +239,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_030001) do
 
   add_foreign_key "coin_transactions", "users", on_delete: :cascade
   add_foreign_key "daily_results", "users", on_delete: :cascade
+  add_foreign_key "hackatime_connections", "users", on_delete: :cascade
   add_foreign_key "hackatime_links", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
   add_foreign_key "hackatime_links", "users", on_delete: :cascade
   add_foreign_key "hour_entries", "users", on_delete: :cascade

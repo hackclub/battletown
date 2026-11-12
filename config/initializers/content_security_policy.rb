@@ -13,7 +13,9 @@ Rails.application.configure do
     policy.object_src :none
     policy.base_uri :self
     policy.frame_ancestors :none
-    policy.form_action :self, Rails.configuration.x.hca.issuer
+    # Chrome also checks redirects after a form POST against form-action: the "Connect" buttons POST to this app,
+    # which redirects to Hack Club Auth or Hackatime, so both origins must be listed.
+    policy.form_action :self, Rails.configuration.x.hca.issuer, Rails.configuration.x.hackatime.base_url
   end
 
   config.content_security_policy_nonce_generator = ->(_request) { SecureRandom.base64(16) }

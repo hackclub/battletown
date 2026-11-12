@@ -73,3 +73,5 @@ gem "omniauth"
 gem "omniauth-rails_csrf_protection"
 gem "omniauth_openid_connect"
 gem "rack-attack"
+
+gem "omniauth-oauth2", "~> 1.9"

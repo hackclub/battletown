@@ -4,6 +4,16 @@
 # and recreated between test runs. Don't rely on the data there!
 
 Rails.application.configure do
+  # Fixed Hackatime OAuth credentials, so a developer's real ones in .env are never used (or sent anywhere) by tests.
+  config.x.hackatime.client_id = "test-client-id"
+  config.x.hackatime.client_secret = "test-client-secret"
+
+  # Throwaway Active Record encryption keys for the test suite. They protect nothing real (no secret lives in the test
+  # database) and are public on purpose, so tests never depend on a developer's .env.
+  config.active_record.encryption.primary_key = "test-primary-key-0000000000000000"
+  config.active_record.encryption.deterministic_key = "test-deterministic-key-00000000000"
+  config.active_record.encryption.key_derivation_salt = "test-key-derivation-salt-0000000"
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # While tests run files are not watched, reloading is not necessary.

@@ -1,6 +1,14 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # Hackatime tokens are encrypted at rest (HackatimeConnection). Fail loudly at boot rather than at the first
+  # connection. The asset build (SECRET_KEY_BASE_DUMMY) has no environment, so it is exempt.
+  unless ENV["SECRET_KEY_BASE_DUMMY"].present?
+    missing = %w[ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+                 ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT].select { |name| ENV[name].blank? }
+    raise "Missing environment variables: #{missing.join(", ")} (Active Record encryption keys, see docs/DEPLOY.md)" if missing.any?
+  end
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.

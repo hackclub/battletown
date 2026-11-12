@@ -3,6 +3,9 @@ class User < ApplicationRecord
   DAYS = %w[monday tuesday wednesday thursday friday saturday sunday].freeze
   ONBOARDING_STEPS = 4
 
+  # Deleted by the database (ON DELETE CASCADE), so the data-deletion API removes the Hackatime tokens too.
+  has_one :hackatime_connection, dependent: nil
+
   enum :verification_status, {
     needs_submission: "needs_submission",
     pending: "pending",
