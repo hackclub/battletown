@@ -86,17 +86,8 @@
 }
 .boss-card__lead { max-width: 32rem; font-size: var(--text-lg); }
 
-.boss-card__banner {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  border-bottom: var(--border-chunky) solid var(--color-sign-yellow-edge);
-  background: var(--color-highlight);
-  color: var(--color-text);
-}
+.boss-card__banner { margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); }
 .boss-card__banner p { margin-bottom: var(--space-1); }
-.boss-card__banner p:last-child { margin-bottom: 0; }
-.boss-card__banner-title { font-family: var(--font-display); font-size: var(--text-xl); }
 
 /* The health bar: label above, the skewed bar, then the pink plate with the numbers in words (Figma 156:667). */
 .boss-card__health { margin-bottom: var(--space-2); padding-inline-end: var(--space-3); gap: var(--space-2); }

@@ -5,8 +5,8 @@
 
   <% if today.first_run %>
     <%# Brand-new: say what to do first and give the three steps, each ticked off as it happens. -%>
-    <div class="dash-callout on-light">
-      <p class="dash-callout__title">Code for <%= today.quick_minutes %> minutes to start your streak.</p>
+    <div class="callout dash-callout on-light">
+      <p class="callout__title">Code for <%= today.quick_minutes %> minutes to start your streak.</p>
       <ol class="dash-steps">
         <li class="dash-step <%= "dash-step--done" if d.hackatime.state == :connected %>">
           <span class="dash-step__mark" aria-hidden="true"><%= d.hackatime.state == :connected ? "✓" : "1" %></span>

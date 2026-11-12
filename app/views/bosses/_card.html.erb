@@ -21,8 +21,8 @@
       <h2 id="boss-card-title" class="boss-card__title"><%= presenter.boss_name %></h2>
 
       <% if presenter.state == :defeated %>
-        <div class="boss-card__banner on-light" role="status">
-          <p class="boss-card__banner-title">Boss defeated!</p>
+        <div class="callout boss-card__banner on-light" role="status">
+          <p class="callout__title">Boss defeated!</p>
           <p>Together you took down <%= presenter.boss_name %>. Nice work, everyone.<%= " That is #{presenter.overkill_text} of overkill." if presenter.overkill_text %></p>
         </div>
       <% end %>
