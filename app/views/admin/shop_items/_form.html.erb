@@ -86,7 +86,10 @@
       <% end %>
 
       <% if creating %>
-        <label class="option"><%= form.check_box :active %> Put it in the shop right away <span class="field__hint">(untick to add it archived and show it later)</span></label>
+        <div class="field">
+          <label class="option"><%= form.check_box :active, "aria-describedby": "item-active-hint" %> Put it in the shop right away</label>
+          <span id="item-active-hint" class="field__hint admin-form__hint">Untick to add it archived and show it later.</span>
+        </div>
       <% end %>
 
       <div class="cluster">

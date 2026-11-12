@@ -10,6 +10,8 @@
 .admin-shop-edit > * { min-width: 0; }
 .admin-shop-edit .admin-form-card { max-width: none; }
 .admin-shop-preview { max-width: 20rem; }
+/* Staff pages tint every .card's text; the preview must look exactly like the shop's blue card, so it keeps the card's own colours. */
+.admin-page .admin-shop-preview .card--chunky { color: var(--color-bg); }
 .admin-shop-preview .shop-item__image[hidden], .admin-shop-preview [hidden] { display: none; }
 .admin-shop-archive h2 { margin-top: 0; }
 @media (min-width: 64rem) {

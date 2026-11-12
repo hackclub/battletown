@@ -63,9 +63,9 @@
             <% unless prize.tier == "shop" %><span class="badge badge--warning shop-tier"><%= prize.tier.capitalize %></span><% end %>
           </p>
           <% if @locked %>
-            <button type="button" class="btn btn--block" disabled aria-describedby="shop-verify-note" aria-label="<%= prize.name %>: <%= shop_locked_aria(@spend_state) %>"><%= shop_locked_label(@spend_state) %></button>
+            <button type="button" class="btn btn--block" disabled aria-describedby="shop-verify-note" aria-label="<%= shop_locked_label(@spend_state) %>: <%= prize.name %>"><%= shop_locked_label(@spend_state) %></button>
           <% elsif @spendable < prize.coins %>
-            <button type="button" class="btn btn--block" disabled aria-label="<%= prize.name %>: <%= coins_text(prize.coins - @spendable) %> short">Need <%= coins_text(prize.coins - @spendable) %> more</button>
+            <button type="button" class="btn btn--block" disabled aria-label="Need <%= coins_text(prize.coins - @spendable) %> more: <%= prize.name %>">Need <%= coins_text(prize.coins - @spendable) %> more</button>
           <% else %>
             <%= link_to "Get this", shop_item_path(prize.key), class: "btn btn--primary btn--block", "aria-label": "Get this: #{prize.name}" %>
           <% end %>

@@ -12,7 +12,7 @@
       <% end %>
       <span class="shop-item__emoji" aria-hidden="true" data-shop-item-preview-target="emoji" <%= "hidden" if item.image? && item.persisted? %>><%= item.emoji %></span>
     </div>
-    <h3 class="card__title shop-item__name" data-shop-item-preview-target="name"><%= item.name.presence || "Item name" %></h3>
+    <h2 class="card__title shop-item__name" data-shop-item-preview-target="name"><%= item.name.presence || "Item name" %></h2>
     <p class="shop-item__description" data-shop-item-preview-target="description"><%= item.description.presence || "A line about the item." %></p>
     <p class="shop-item__meta">
       <span class="shop-item__price" data-shop-item-preview-target="price"><%= coins_text(item.coins.to_i) %></span>

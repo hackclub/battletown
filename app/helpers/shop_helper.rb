@@ -38,10 +38,6 @@ module ShopHelper
     { not_eligible: "Not available yet", stale: "Sign in to refresh" }.fetch(state, "Locked until you verify")
   end
 
-  def shop_locked_aria(state)
-    { not_eligible: "locked, not available yet", stale: "locked, sign in to refresh" }.fetch(state, "locked until you verify")
-  end
-
   # Staff pages: "verified", plus (flag on) whether Hack Club Auth said they are YSWS eligible and whether the copy is old.
   def staff_identity_text(user)
     text = verification_label(user)
