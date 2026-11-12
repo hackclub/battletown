@@ -10,6 +10,10 @@ class User < ApplicationRecord
     ineligible: "ineligible"
   }, default: :needs_submission, prefix: :verification
 
+  has_many :projects, dependent: :destroy
+  has_many :hackatime_links, dependent: :destroy
+  has_many :link_suggestions, through: :projects
+
   validates :hca_uid, presence: true, uniqueness: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, length: { maximum: 254 }, allow_blank: true
   validates :display_name, length: { maximum: 100 }
@@ -56,6 +60,9 @@ class User < ApplicationRecord
   end
 
   def onboarded? = onboarded_at.present?
+
+  # The one project hours should count toward right now (nil until they have one). Other features read this.
+  def active_project = projects.find_by(active: true)
 
   def coding_day_names
     DAYS.each_with_index.filter_map { |day, index| day if coding_days.anybits?(1 << index) }

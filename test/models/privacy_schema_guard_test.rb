@@ -57,12 +57,17 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     user = users(:onboarded)
     Notification.create!(user: user, kind: "daily_reminder", status: "sent", scheduled_for: Time.current, due_at: Time.current, idempotency_key: "guard-#{user.id}")
     HourEntry.create!(user: user, local_date: Date.new(2026, 11, 10), seconds: 600, source: "manual", note: "guard", idempotency_key: "guard-#{user.id}")
+    project = Project.create!(user: user, name: "Guard project", kind: "game")
+    project.hackatime_links.create!(user_id: user.id, hackatime_project: "guard-project", link_method: "manual")
+    project.link_suggestions.create!(hackatime_project: "guard-other")
     subject = Privacy::TokenVerifier::Subject.new(emails: [], slack_id: nil, identity_id: user.hca_uid)
 
     deleted = Privacy::Deleter.new(subject).call(dry_run: true).deleted
 
+    # Tables that reference users directly, plus the ones that only reach a user through a project.
     referencing = app_tables.select { |table| user_foreign_keys(table).any? }
-    assert_equal (referencing + [ "users" ]).sort, deleted.keys.sort,
+    through_projects = %w[link_suggestions]
+    assert_equal (referencing + through_projects + [ "users" ]).sort, deleted.keys.sort,
                  "add a row for the new table to this test so its count is proven (every table that references users must show up)"
   end
 end

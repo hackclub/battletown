@@ -10,9 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_020002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "hackatime_links", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "project_id", null: false
+    t.string "hackatime_project", null: false
+    t.string "link_method", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_hackatime_links_on_project_id"
+    t.index ["user_id", "hackatime_project"], name: "index_hackatime_links_on_user_and_name", unique: true
+    t.check_constraint "char_length(hackatime_project::text) >= 1 AND char_length(hackatime_project::text) <= 120 AND hackatime_project::text !~ '[[:cntrl:]]'::text AND hackatime_project::text = btrim(hackatime_project::text)", name: "hackatime_links_name_check"
+    t.check_constraint "link_method::text = ANY (ARRAY['manual'::character varying, 'auto_repo'::character varying, 'confirmed'::character varying]::text[])", name: "hackatime_links_method_check"
+  end
 
   create_table "hour_entries", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -35,6 +48,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_010000) do
     t.check_constraint "source::text = 'adjustment'::text OR seconds > 0", name: "hour_entries_positive_unless_adjustment_check"
     t.check_constraint "source::text = 'hackatime'::text OR note IS NOT NULL", name: "hour_entries_note_required_check"
     t.check_constraint "source::text = ANY (ARRAY['hackatime'::character varying, 'manual'::character varying, 'adjustment'::character varying]::text[])", name: "hour_entries_source_check"
+  end
+
+  create_table "link_suggestions", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.string "hackatime_project", null: false
+    t.string "state", default: "pending", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "hackatime_project"], name: "index_link_suggestions_on_project_and_name", unique: true
+    t.check_constraint "char_length(hackatime_project::text) >= 1 AND char_length(hackatime_project::text) <= 120 AND hackatime_project::text !~ '[[:cntrl:]]'::text AND hackatime_project::text = btrim(hackatime_project::text)", name: "link_suggestions_name_check"
+    t.check_constraint "state::text = ANY (ARRAY['pending'::character varying, 'accepted'::character varying, 'declined'::character varying]::text[])", name: "link_suggestions_state_check"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -74,6 +98,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_010000) do
     t.check_constraint "request_id IS NULL OR length(request_id::text) <= 255", name: "privacy_request_tokens_request_id_check"
   end
 
+  create_table "projects", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.string "kind", default: "undecided", null: false
+    t.text "idea"
+    t.string "repo_url"
+    t.string "demo_url"
+    t.string "status", default: "active", null: false
+    t.string "guide_key"
+    t.boolean "active", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["id", "user_id"], name: "index_projects_on_id_and_user_id", unique: true
+    t.index ["user_id", "created_at"], name: "index_projects_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_projects_one_active_per_user", unique: true, where: "active"
+    t.check_constraint "NOT active OR status::text = 'active'::text", name: "projects_active_not_archived_check"
+    t.check_constraint "char_length(idea) <= 500", name: "projects_idea_length_check"
+    t.check_constraint "char_length(name::text) >= 1 AND char_length(name::text) <= 60 AND btrim(name::text) <> ''::text", name: "projects_name_check"
+    t.check_constraint "demo_url IS NULL OR char_length(demo_url::text) <= 300 AND demo_url::text ~ '^https://[^[:space:]/?\#@]+([/?#][^[:space:]]*)?$'::text", name: "projects_demo_url_check"
+    t.check_constraint "guide_key IS NULL OR (guide_key::text = ANY (ARRAY['sd'::character varying, 'playground'::character varying]::text[]))", name: "projects_guide_key_check"
+    t.check_constraint "kind::text = ANY (ARRAY['game'::character varying, 'website'::character varying, 'app'::character varying, 'tool'::character varying, 'hardware'::character varying, 'undecided'::character varying]::text[])", name: "projects_kind_check"
+    t.check_constraint "repo_url IS NULL OR char_length(repo_url::text) <= 300 AND repo_url::text ~ '^https://github\\.com/[a-z0-9-]{1,39}/(?!\\.+$)[a-z0-9._-]{1,100}$'::text", name: "projects_repo_url_check"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "projects_status_check"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "hca_uid", null: false
     t.string "email"
@@ -102,6 +151,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_010000) do
     t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying, 'pending'::character varying, 'verified'::character varying, 'ineligible'::character varying]::text[])", name: "users_verification_status_check"
   end
 
+  add_foreign_key "hackatime_links", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
+  add_foreign_key "hackatime_links", "users", on_delete: :cascade
   add_foreign_key "hour_entries", "users", on_delete: :cascade
+  add_foreign_key "link_suggestions", "projects", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
+  add_foreign_key "projects", "users", on_delete: :cascade
 end
