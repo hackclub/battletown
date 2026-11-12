@@ -128,6 +128,17 @@ class AdminMetricsTest < ActiveSupport::TestCase
     assert_equal [ 100.0, 33.3, 66.7, 66.7, 66.7, 33.3, 33.3 ], metrics.funnel.map(&:percent)
   end
 
+  test "a first coded day needs the threshold within one local date, however many rows make it up" do
+    split = extra_user(2)
+    add(split, TODAY - 3, 10 * MINUTE)
+    add(split, TODAY - 3, 5 * MINUTE)
+    spread = extra_user(3)
+    add(spread, TODAY - 3, 10 * MINUTE)
+    add(spread, TODAY - 2, 10 * MINUTE)
+
+    assert_equal 1, funnel["First coded day"]
+  end
+
   test "the funnel is all zero percent with no users" do
     User.delete_all
     assert metrics.funnel.all? { |step| step.count.zero? && step.percent.zero? }

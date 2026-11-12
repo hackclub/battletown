@@ -99,19 +99,23 @@ class AdminMetrics
   end
 
   # How many users ever reached each step (each step on its own, all-time), and the share of everyone who signed up.
+  # Correlated EXISTS on the per-user indexes, not `IN (subquery)`: PostgreSQL does not hash an IN list inside an
+  # aggregate FILTER, so with a large ledger it re-read the whole subquery once per user (tens of seconds).
   def funnel
     row = select(<<~SQL, minimum: @minimum).first
       SELECT COUNT(*) AS signed_up,
              COUNT(*) FILTER (WHERE users.onboarded_at IS NOT NULL) AS onboarded,
-             COUNT(*) FILTER (WHERE users.id IN (SELECT user_id FROM hackatime_connections)
-                                 OR users.id IN (SELECT user_id FROM hour_entries WHERE source = 'hackatime')) AS hackatime,
-             COUNT(*) FILTER (WHERE users.id IN (
-               SELECT user_id FROM #{COUNTED_ENTRIES} GROUP BY user_id, local_date HAVING SUM(seconds) >= :minimum
+             COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM hackatime_connections WHERE hackatime_connections.user_id = users.id)
+                                 OR EXISTS (SELECT 1 FROM hour_entries WHERE hour_entries.user_id = users.id AND hour_entries.source = 'hackatime')) AS hackatime,
+             COUNT(*) FILTER (WHERE EXISTS (
+               SELECT 1 FROM hour_entries
+               WHERE hour_entries.user_id = users.id AND hour_entries.local_date >= users.signed_up_on - CAST(:days_before AS integer)
+               GROUP BY hour_entries.local_date HAVING SUM(hour_entries.seconds) >= :minimum
              )) AS coded,
-             COUNT(*) FILTER (WHERE users.id IN (SELECT user_id FROM ships WHERE submitted_at IS NOT NULL)) AS shipped,
-             COUNT(*) FILTER (WHERE users.id IN (SELECT user_id FROM ships WHERE status = 'approved')) AS approved,
-             COUNT(*) FILTER (WHERE users.id IN (
-               SELECT user_id FROM orders WHERE kind = 'purchase' AND status <> 'cancelled'
+             COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM ships WHERE ships.user_id = users.id AND ships.submitted_at IS NOT NULL)) AS shipped,
+             COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM ships WHERE ships.user_id = users.id AND ships.status = 'approved')) AS approved,
+             COUNT(*) FILTER (WHERE EXISTS (
+               SELECT 1 FROM orders WHERE orders.user_id = users.id AND orders.kind = 'purchase' AND orders.status <> 'cancelled'
              )) AS purchased
       FROM users
     SQL
