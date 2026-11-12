@@ -62,7 +62,19 @@ Anything that ordinary users must not see is tinted like Hack Club Bank does: **
 - Tokens (`tokens.css`): `--color-dev`, `--color-dev-bg`, `--color-dev-border`, `--color-dev-ink`, and the same four with `admin`. Text, outline and tag pairs pass WCAG AA.
 - Rules: never ship staff UI without the helper. The gate is server-side (the helper renders nothing, the route or controller must also refuse: `dev_login` returns 404 outside development). CSS alone hides nothing.
 - `User#admin?` is true only when the user's `hca_uid` (the Hack Club Auth `sub`) is in the comma-separated `ADMIN_HCA_UIDS` env var (`AdminAllowlist`: whitespace trimmed, blanks ignored, exact case-sensitive match, empty or unset = nobody). It is read at call time and re-checked from the database user on every request, so removing an id takes effect on the next request or deploy. Admin pages live under `/admin` (`Admin::BaseController`): signed-out visitors and non-admins get the same 404 as an unknown path (never a redirect, no hint the area exists), responses are `Cache-Control: no-store`, and the dashboard is read-only aggregates with no PII (`AdminStats`); the ship review queue is the one place that shows a teen's display name (never email, Slack id or Hack Club Auth id). The gate is server-side only: `admin_tool` just hides UI, the controller must also refuse. Title: `content_for :title, "Admin"`. Locally, `ADMIN_HCA_UIDS=dev-user` makes the Dev login user an admin.
-- The only dev-only UI today is the "Dev login" chip in the header nav (signed-out visitors, once per page).
+- Dev-only UI today: the "Dev login" chip in the header (signed-out visitors, once per page), `/dev/hours`, `/dev/boss` and the shop's test-coins button. Admin-only UI: the "Admin" header link and everything under `/admin`. Small staff chips drop their button chrome; buttons inside a staff page or panel look like normal buttons.
+
+## Header navigation (`app/views/layouts/application.html.erb`)
+
+Signed-in, onboarded users get `<nav aria-label="Main">`: Dashboard, Projects, Ships, Shop, then a native `<details class="site-menu">` "Settings" holding Hackatime and Notifications (no JavaScript). Admin and Sign out sit in `.site-header__account` (signed-out visitors get Sign in and the Dev login chip there). Use `nav_link(label, path)` (`ApplicationHelper`) for a header link: it adds `aria-current="page"` on the current section. New top-level pages go in the Main nav only if they are everyday pages; everything else goes under Settings.
+
+## Security conventions (enforced by `test/integration/route_security_test.rb`, which reads the router)
+
+- Every `/admin` route answers 404, never a redirect, for signed-out visitors and non-admins.
+- Every user-scoped record (projects, links, link suggestions, ships, orders) is looked up through `current_user`; someone else's id is a 404.
+- Every POST, PATCH, PUT and DELETE route has CSRF protection, except `/api/privacy/*` (bearer-token JSON API).
+- Only the Rails frameworks the app uses are loaded (`config/application.rb`): no Active Storage, Action Mailbox or Action Text, so no `/rails/...` upload or inbound-email endpoints.
+- Logs carry no email, name, Slack id, tokens or free text (`test/integration/full_flow_log_privacy_test.rb`; `config/initializers/filter_parameter_logging.rb`).
 
 ## CSP (enforced)
 
@@ -122,6 +134,8 @@ A ship asks staff to turn the time coded on one project since its last ship into
 - Tunables in `config/game.yml` under `ships:` (`min_hours`, `approval_step_hours`, `rejection_reasons`), read through `Ships::Config.current`.
 - Routes (signed in and onboarded; other users' ids are a 404): `GET /ships`, `GET /ships/:id`, `GET|PATCH /ships/:id/edit` (drafts), `PATCH /ships/:id/withdraw`, `GET /projects/:project_id/ships/new` (`?from=<rejected ship id>` pre-fills a fix), `POST /projects/:project_id/ships` (`ship_action=draft|submit`). Staff (orange `admin_tool`, 404 for everyone else): `GET /admin/ships` (waiting first, oldest first, `?status=`), `GET /admin/ships/:id`, `PATCH /admin/ships/:id/approve` (`approved_hours`, blank = all coded, can only be lowered, in steps), `PATCH /admin/ships/:id/reject` (`reason_preset` and/or `reason_note`).
 - Events (`ActiveSupport::Notifications`, payload is the ship id only, never a name or text; fired after the change is saved; the Slack reminder task can subscribe, the ship code sends nothing): `ship_submitted.battletown` (`ship_id:`), `ship_approved.battletown` (`ship_id:`), `ship_rejected.battletown` (`ship_id:`).
+- Staff can never approve or reject their own ship: `Ships::Approve::OwnShip` / `Ships::Reject::OwnShip` (kinds of `Invalid`, friendly message), and the admin page shows no forms for it.
+- A ship's submitted date is shown in the teen's local time zone (`ship_submitted_on`), so it lines up with the window's local dates.
 - Not built yet: screenshot uploads (needs storage and CSP decisions).
 
 ## Notifications (`app/services/notifications`, `app/models/notification.rb`, `Settings::NotificationsController`)

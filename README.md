@@ -1,20 +1,20 @@
 # Battletown
 
 Battletown is a Hack Club You Ship We Ship (YSWS) program, run by Amber and Armand (formerly called "Village"). Teens code, log time with Hackatime, and chip away at a shared boss to earn prizes from a shop.
-This repo is the user-facing platform: landing page, sign-up, onboarding and dashboard (Rails 8.1, PostgreSQL, importmap, plain CSS).
+This repo is the platform: landing page, sign-up, onboarding, dashboard, projects, a Hackatime hours ledger, streaks and coins, the weekly boss, ships with staff review, the shop and orders, Slack reminders, a small admin area and Hack Club's data-deletion API (Rails 8.1, PostgreSQL, importmap, plain CSS). What is built and what is still open: [docs/PLATFORM_BACKLOG.md](docs/PLATFORM_BACKLOG.md).
 
 ## Setup
 
 ```sh
 bundle install
 cp .env.example .env   # then fill in HCA_CLIENT_ID / HCA_CLIENT_SECRET (gitignored; loaded by dotenv-rails in development/test only)
-bin/rails db:prepare
+bin/rails db:prepare   # also creates the launch bosses; `bin/rails bosses:seed` is safe to repeat
 bin/dev            # or bin/rails s -p 3000
 ```
 
 For real Hack Club Auth sign-in in development, the app's redirect URI in auth.hackclub.com (Developer Apps) must be exactly `http://localhost:3000/auth/hack_club/callback`, and the server must run on port 3000 (matching `APP_URL`).
 
-Sign in locally with the **Dev login** button (development only, no Hack Club Auth credentials needed).
+Sign in locally with the **Dev login** button (development only, no Hack Club Auth credentials needed). With it you also get development-only tools: `/dev/hours` adds coded time for a local date, the shop has a "Give me 100 test coins" button, and `/dev/boss` previews boss states. `ADMIN_HCA_UIDS=dev-user bin/rails s` makes the Dev login user staff (`/admin`). Staff cannot approve their own ship, so to try the review flow use a second staff id or move the ship's owner to another uid.
 
 ## Tests and parallel worktrees
 
@@ -62,6 +62,7 @@ Nothing runs by itself; schedule these on the host (all are safe to repeat, and 
 | minute | `bin/rails notifications:dispatch` | sends the queued Slack DMs |
 | 15 minutes | `bin/rails notifications:ship_reminders` | queues the 5 hour reminder and 10 hour nudge for projects that crossed them |
 | hour | `bin/rails game:settle` | settles finished days (streaks and bonuses) |
+| hour, only with `HOURS_SOURCE=http` | `bin/rails "hackatime:sync[all]"` | pulls recent Hackatime hours for linked accounts |
 
 ## How auth works
 
@@ -71,6 +72,7 @@ Hack Club Auth (OIDC, discovery, PKCE, scopes `openid profile email name phone b
 ## Where to edit things
 
 - Design tokens: `app/assets/stylesheets/tokens.css` (placeholder until the Figma style guide lands)
+- Game numbers (daily cap, streak bonus ramp, coins per hour, boss settings, ship thresholds): `config/game.yml`; Slack message copy and timing: `config/notifications.yml`
 - Shop items: `config/prizes.yml` (placeholder, the designer replaces them; the only price is `coins`, hours are derived from `config/game.yml`)
 - Referral slugs (`/haven`, `/terra`, `/stardance`): `config/referrals.yml`
 - "How did you hear about us?" options on the onboarding account step: `config/referral_sources.yml` (generic answers) plus the programs from `config/referrals.yml`, via `ReferralSource`

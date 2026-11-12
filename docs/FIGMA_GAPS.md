@@ -1,7 +1,7 @@
 # Figma gaps and token changes
 
 Source: Figma file `Qi9ARDNu8fxsTT1C43DDgL` (one page, "Page 1", node `0:1`), read on 2026-11-11 with the Figma MCP (read-only).
-Product notes: Granola folder "Village" (meetings 11/2, 11/3, 11/6, 11/9) and the Slack canvas "Village — whiteboard plan (11/9)" (`F0CG8T25BNV`).
+Product notes: the team's planning notes and planning board (not part of this repository).
 
 "Observed" means I saw it in a Figma frame, a repo file or a running page. "Unclear" means the source is silent, ambiguous or I did not open it.
 Reference exports (small PNGs) are in `docs/design/`.
@@ -126,8 +126,8 @@ Build status below is observed from the repo views and the running app, not from
 | Pri | Concept (source) | In Figma | In the build |
 | --- | --- | --- | --- |
 | P0 | Weekly community boss: 1 hour = 1% of a 100-hour boss, community icons on the home page (11/6 meeting, canvas "Weekly boss battle") | Only an unlabelled coral block (`1:305`) and a CTA TODO (`1:263`). No boss HP bar, no community icons. | Not built. Landing copy mentions a boss health bar; dashboard says "coming soon". |
-| P0 | Landing prizes priced in hours, shop in currency (11/9) | No prize UI on the landing frames (Group 5/8 panels are empty). No shop frame. | Landing shows hours (`pluralize(prize.hours, "hour")`); `price_usd` exists in `config/prizes.yml` but there is no shop page or currency concept. Prize list is a set of cards, not a selectable picker that carries through, which the 11/6 notes ask for. |
-| P0 | Free sticker for signup (11/6, canvas "Signup sticker") | Not shown. | Landing line "Free sticker when you sign up". Fulfilment and budget not built. |
+| P0 | Landing prizes priced in hours, shop in currency (11/9) | No prize UI on the landing frames (Group 5/8 panels are empty). No shop frame. | Landing shows hours (`pluralize(prize.hours, "hour")`); prices are now in coins (`config/prizes.yml`) and the shop is built. Prize list is a set of cards, not a selectable picker that carries through, which the 11/6 notes ask for. |
+| P0 | Free sticker for signup (11/6, canvas "Signup sticker") | Not shown. | Landing line "Free sticker when you sign up". Fulfilment is built as a request the team handles on Slack (see the shop section of `docs/CONTRACT.md`). |
 | P1 | Streaks: 15-minute daily sticker streak; daily-goal streak with a bonus ramp of 5% to 20% over 14 days, holding at the cap; 1-day freeze (canvas, 11/9, 11/6) | Only the "15 minutes to your daily goal" label and bar in `1:4`. No streak counter, ramp or freeze UI. | Not built. Onboarding stores coding days and time only. Landing FAQ mentions streak bonuses in general terms. |
 | P1 | Team, quest and returning bonuses (canvas, 11/9) | Nothing. | Not built. Canvas defines team bonus as a small multiplier on overlapping hours; the 11/9 meeting describes it as a buddy/invite bonus. Whether those are the same rule is unclear. |
 | P1 | Onboarding: prize (visible throughout), project with ideation help, schedule, referral capture by path, celebration with sound, progress bar on top (11/6) | Nothing. | Built: progress bar, saved prize shown from step 2, presets, "Guides (coming soon)" and "Jumpstart playground (coming soon)" placeholders, schedule, account (IDV status, Hackatime placeholder), celebration with synth sound and mute, path referrals (`/haven`, `/terra`, `/stardance`). |

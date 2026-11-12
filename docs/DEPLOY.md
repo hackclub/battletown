@@ -40,7 +40,10 @@ Never commit real values. Shapes below are examples only.
 | `HTTP_PORT` | no | Port Thruster listens on inside the container, default 80. Set it if the platform insists on another port (for example the value of its `PORT`). Do not set `PORT` for this: Thruster overrides it for Puma. | `8080` |
 | `SOLID_QUEUE_IN_PUMA` | no, leave unset | Would run the Solid Queue supervisor inside Puma. There are no jobs and no queue tables, so enabling it only crashes the supervisor. See "Background jobs". | |
 | `ADMIN_HCA_UIDS` | no | Comma-separated Hack Club Auth `sub` values of admins. Unset: nobody is an admin and `/admin` returns 404. | `ident!abc123,ident!def456` |
-| `SLACK_BOT_TOKEN` | no (reserved for the notifications work, not read by the app yet) | Bot token that enables real Slack DMs. Unset: the null adapter is used and nothing is sent. Treat as a secret. | `xoxb-...` |
+| `SLACK_BOT_TOKEN` | no | Bot token (scope `chat:write`) that enables real Slack DMs. Unset: the null adapter is used and nothing is sent. Environment only, never the repository; see [SLACK_APP.md](SLACK_APP.md). Treat as a secret. | `xoxb-...` |
+| `NOTIFICATIONS_ENABLED` | no | Master switch for sending queued Slack messages: nothing is sent unless it is exactly `true` (default off). In production the dispatcher also refuses to run without a real adapter, so setting it without `SLACK_BOT_TOKEN` sends nothing. | `true` |
+| `PRIVACY_AUDIENCE` | no | Audience a Hack Club data-deletion token must carry. Default `battletown`. | `battletown` |
+| `PRIVACY_JWKS_URL` | no, leave unset | Where the data-deletion signing keys are fetched. Default `https://yeet.hackclub.com/.well-known/jwks.json`; `https` only in production. | |
 
 `bin/rails runner 'p Rails.application.config.hosts'` is a quick way to see the host allowlist the container ended up with.
 
@@ -70,9 +73,22 @@ One PostgreSQL database, set with `DATABASE_URL`. `config/database.yml` defines 
 
 Solid Queue and Solid Cable are installed as gems but not configured: the previous `queue` and `cable` database entries had no schema or consumer, would have made `db:prepare` fail on a single-database platform, and are removed. Action Cable uses the in-process `async` adapter (no Redis).
 
+## Scheduled commands (cron)
+
+Nothing runs by itself. Schedule these on the host with the same environment as the app; all of them are safe to repeat, and the Slack ones stay silent while `NOTIFICATIONS_ENABLED` is not `true`:
+
+| Every | Command | Why |
+| --- | --- | --- |
+| minute | `bin/rails notifications:dispatch` | sends the queued Slack DMs |
+| 15 minutes | `bin/rails notifications:ship_reminders` | queues the ship reminders for projects that crossed an hours threshold |
+| hour | `bin/rails game:settle` | settles finished local days (streaks and bonuses; the dashboard also settles lazily) |
+| hour, only with `HOURS_SOURCE=http` | `bin/rails "hackatime:sync[all]"` | pulls recent Hackatime hours for linked accounts |
+
+Once, after the first `db:prepare`: `bin/rails bosses:seed` creates the launch bosses (idempotent; `db:seed` calls it too, and `db:prepare` only seeds a brand-new database).
+
 ## Background jobs
 
-There are none today and Active Job uses the in-process `:async` adapter (jobs run in the web process and are lost on restart). When real jobs arrive (Slack notifications), either keep `:async` for fire-and-forget work or add Solid Queue properly: run `bin/rails solid_queue:install`, add its tables (queue schema in its own migration path, mirroring `cache` in `config/database.yml`), set `config.active_job.queue_adapter = :solid_queue` in `config/environments/production.rb`, then set `SOLID_QUEUE_IN_PUMA=1`.
+Active Job uses the in-process `:async` adapter (jobs run in the web process and are lost on restart); the only job is `DispatchNotificationsJob`, which the cron command above replaces. If real jobs arrive, either keep `:async` for fire-and-forget work or add Solid Queue properly: run `bin/rails solid_queue:install`, add its tables (queue schema in its own migration path, mirroring `cache` in `config/database.yml`), set `config.active_job.queue_adapter = :solid_queue` in `config/environments/production.rb`, then set `SOLID_QUEUE_IN_PUMA=1`.
 
 ## Client IPs and throttling
 
@@ -120,5 +136,5 @@ Dockerfile note: it has no `HEALTHCHECK` instruction, because a wrong one can ma
 - A missing `HCA_CLIENT_ID` / `HCA_CLIENT_SECRET` is not detected at boot; sign-in fails when a visitor tries it. The smoke test catches it.
 - `/up` does not check the database. A database outage shows up as 500s, not as a failing health check.
 - If the cache table is missing (only possible if `db:prepare` did not run), the landing page's cached member count raises; run `db:prepare`.
-- Active Storage is loaded by Rails but unused (`config.active_storage.service = :local`, nothing is uploaded).
+- Only the Rails frameworks the app uses are loaded (no Active Storage, Action Mailbox or Action Text), so there are no `/rails/...` upload or inbound-email endpoints.
 - Headers: Rails default security headers, an enforced nonce-based CSP, a Permissions-Policy, and HSTS (one year, subdomains included) via `force_ssl`. HSTS is sent whenever the request looks like HTTPS, and `assume_ssl` makes every request look like HTTPS, so the proxy must be the only way in.
