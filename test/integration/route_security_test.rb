@@ -45,6 +45,14 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     path.gsub(/:(\w+)/) { params.fetch(Regexp.last_match(1).to_sym, "1").to_s }
   end
 
+  test "no framework upload, mailbox or conductor endpoints are routed" do
+    framework = Rails.application.routes.routes.map { |route| route.path.spec.to_s }.select { |path| path.start_with?("/rails/") }
+    assert_equal [ "/up" ], Rails.application.routes.routes.map { |route| route.path.spec.to_s }.grep(%r{\A/up}).map { |path| path.sub("(.:format)", "") }
+    assert_empty framework, "unexpected framework routes: #{framework.join(', ')}"
+    assert_not defined?(ActiveStorage::Engine), "Active Storage is not used and must stay out of the app"
+    assert_not defined?(ActionMailbox::Engine), "Action Mailbox is not used and must stay out of the app"
+  end
+
   # --- (b) every /admin route is a 404 for the signed-out and for non-admins ---
 
   test "every admin route is a 404 for signed-out visitors and non-admins, whatever the verb" do

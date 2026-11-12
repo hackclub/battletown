@@ -1,6 +1,17 @@
 require_relative "boot"
 
-require "rails/all"
+require "rails"
+# Only the frameworks the app uses. Active Storage, Action Mailbox and Action Text are left out on purpose: nothing
+# uploads or receives email, and each of them would otherwise add public /rails/... endpoints.
+%w[
+  active_record/railtie
+  active_job/railtie
+  action_controller/railtie
+  action_mailer/railtie
+  action_view/railtie
+  action_cable/engine
+  rails/test_unit/railtie
+].each { |railtie| require railtie }
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
