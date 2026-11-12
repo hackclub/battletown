@@ -42,8 +42,95 @@ Validation allowlists (all enforced by the model; use strong params and let `sav
 
 ## CSS
 
-Tokens (`tokens.css`, placeholder, will be replaced): `--color-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`, `--font-*`, `--container-width`. Use tokens, never raw values.
-Classes in `application.css`: `.container`, `.page`, `.prose`, `.btn` (`--primary`, `--ghost`, `--lg`), `.card`, `.flash`, `.visually-hidden`. Add `landing.css` / `onboarding.css` in `app/assets/stylesheets/`; propshaft includes every file via `stylesheet_link_tag :app`.
+Tokens (`tokens.css`): `--color-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`, `--font-*`, `--container-width`. Use tokens, never raw values. Shared classes live in `application.css` and `components.css`; the full reference is the next section. Add `landing.css` / `onboarding.css` style files in `app/assets/stylesheets/`; propshaft includes every file via `stylesheet_link_tag :app`.
+
+## Design system (restyle foundation)
+
+Source: the Figma file (key `Qi9ARDNu8fxsTT1C43DDgL`; only the landing, CTA, signposts, boss map and shop-card experiments are drawn, everything else is derived in the same style). Live preview of every token and component: `/dev/styleguide` (development only, green `dev_tool`, 404 elsewhere, no login). The colour list and the contrast table on that page are read from `tokens.css`, so they cannot drift. Image assets: `app/assets/images/design/` (`README.md` lists origin node, use and size).
+
+### Rules
+
+- The page is sky (`--color-page` `#b1dcfe`). Content sits on cream (`--color-bg`) or white (`--color-surface`) cards and panels, never bare text blocks that need pink. Pink `--color-cta` is for fills and 24px+ display type only (3.1:1). Smaller pink things use `--color-primary` (fill) or `--color-link` (text).
+- Poetsen One (`--font-display`, one weight) for headings, buttons, signs, big numbers. M PLUS Rounded 1c (`--font-body`, 500) for everything you read (paragraphs, labels, inputs, tables). `--tracking-display` (-0.06em) only at 24px and up. No new fonts.
+- Spacing: only `--space-*` (1, 2, 3, 4, 6, 8, 12, 16, 24, 32). Radius: `--radius-md` controls, `--radius-lg` cards and buttons at 24px, `--radius-xl` panels, `--radius-card` shop cards. The signature "chunky edge" is a 6px `--color-cta-edge` bottom border under cards, panels, the header and table wrappers; buttons show it as an inset bottom shadow that shrinks when pressed.
+- Tap targets are at least `--tap-size` (44px). Every interactive element keeps the 3px `--color-focus` ring (`:focus-visible`); dark bands swap it to cream.
+- No inline `style=""` or `<script>` (CSP). Progress values come from the native `<progress value max>`, never from a style attribute.
+- The foundation lives in cascade layers (`@layer reset, base, layout, components, utilities`). Page stylesheets (`landing.css`, `dashboard.css`, `staff.css`, ...) are not layered, so they always win regardless of load order: write only what differs from the shared defaults, and prefer composing the shared classes in the view over new page CSS.
+- Staff UI stays as before: `dev_tool` (green) and `admin_tool` (orange) with `staff.css` (dashed outline plus label). Staff styles are unlayered and override the shared components, so a button inside a small staff chip drops its chrome and a `.btn` that is itself staff stays a pill. Do not give staff pages the pink/sky game look.
+
+### Tokens (changed or new; every existing token name is kept)
+
+| Token | Old | New |
+| --- | --- | --- |
+| `--color-page` | (new) | `#b1dcfe` sky, the `body` background |
+| `--color-text-muted` | `#6b6150` (4.2:1 on sky, failed) | `#4a4234` (6.9:1 on sky, 9.8:1 on cream) |
+| `--color-link`, `--color-link-hover` | (new; links used `--color-primary`) | `#a60040`, `#7a002f` |
+| `--color-field-border` | (new) | `#4a4234` |
+| `--color-ink-blue` | (new) | `#0044b2` (text on sky, secondary buttons, current nav, footer) |
+| `--color-map` | (new) | `#1472d5` |
+| `--color-cta-press` | (new) | `#ff2d84` (CTA edge) |
+| `--color-sign-yellow/-blue/-pink` and `-edge` | (new) | `#ffd000/#187be0/#ff4797`, edges `#cc8400/#114fab/#d2276e` |
+| `--color-hp-fill/-empty/-outline` | (new) | `#ff4797`, `#860d41`, `#ffffff` |
+| `--color-progress`, `-stripe`, `-track` | (new) | `#00c400`, `#00a800`, `#e6e2cd` |
+| `--color-card-blue`, `-edge`, `-light`, `--color-card-title` | (new) | `#0e3f91`, `#000062`, `#295cb2`, `#aae5ff` |
+| `--color-success/danger/warning/info` `-bg` and `-ink` | (new) | tints for alerts, flashes and badges |
+| `--text-md`, `--text-sign-title/-body`, `--text-hero-title`, `--text-sign-number` | (new) | 1.5rem, 4rem, 2.25rem, 6rem, 8rem (Figma 24, 64, 36, 96, 128px) |
+| `--tracking-heading` | (new) | `-0.03em` |
+| `--space-24`, `--space-32`, `--radius-card`, `--shadow-card-edge`, `--container-wide`, `--tap-size` | (new) | 6rem, 8rem, 3.125rem, extruded card base, 90rem, 2.75rem |
+
+`--color-bg` stays cream `#fffef5`, `--color-primary` stays `#cc0052` (button fill, AA at any size), `--color-cta` stays `#ff4797`. `--color-focus-on-light`, `--color-link-on-light`, `--color-link-hover-on-light` and `--color-muted-on-light` hold the light-surface values that dark bands override and cards restore; use the plain names in components.
+
+### Contrast (WCAG 2.x; computed by `DesignSystem::Contrast`, tested)
+
+| Pair | Ratio | Need |
+| --- | --- | --- |
+| Text `#000` on cream / white / sky | 20.8 / 21.0 / 14.5 | 4.5 |
+| Muted `#4a4234` on sky / cream / white | 6.9 / 9.8 / 9.9 | 4.5 |
+| Link `#a60040` on sky / cream / white | 5.4 / 7.7 / 7.8 | 4.5 |
+| Ink blue `#0044b2` on sky / cream | 5.9 / 8.4 | 4.5 |
+| Cream on ink blue (current nav link, footer) | 8.4 | 4.5 |
+| Cream on `--color-primary` / on danger | 5.6 / 5.9 | 4.5 |
+| Cream on CTA pink `#ff4797` (24px+ only) | 3.1 | 3 (large) |
+| Cream on map blue `#1472d5` | 4.7 | 4.5 |
+| Ink blue on sign yellow | 5.8 | 4.5 |
+| White on sign blue / sign pink (24px+ only) | 4.2 / 3.2 | 3 (large) |
+| White on boss health empty | 9.8 | 4.5 |
+| Boss health fill vs empty (non-text) | 3.1 | 3 |
+| Card title `#aae5ff` on card blue | 7.2 | 4.5 |
+| Ink on tint: success / danger / warning | 7.7 / 8.1 / 8.2 | 4.5 |
+| Field border on white; focus ring on sky / cream (non-text) | 9.9; 3.8 / 5.4 | 3 |
+| Dev tint / admin tint ink | 7.4 / 7.0 | 4.5 |
+
+Where Figma fails (white or cream on pink below 24px, `#0044b2` on the map, white on sign blue below 24px) the system uses the brief's compliant value or a container: small buttons use `--color-primary`, the map note belongs in a cream `.card` or `.alert`, sign body copy stays 24px+ (or use `#1776d8`, 4.6:1).
+
+### Class reference (markup in `/dev/styleguide`)
+
+- **Layout**: `.container` (`--wide`), `.page`, `.prose`, `.stack` (`--sm`, `--lg`), `.cluster` (`--between`, `--end`), `.grid` (`--grid-min`, `--2`, `--3`), `.band` (`--cream`, `--map`, `--ink`, `--wave`), `.on-map`, `.on-ink`, `.on-light`, `.section-head`, `.page-header`, `.eyebrow`, `.lead`, `.display`, `.muted`, `.small`, `.center`, `.numeric`, `.visually-hidden`, `.skip-link`.
+- **Buttons**: `.btn` (secondary: cream, ink-blue outline) with `--primary`, `--ghost`, `--danger`, `--sm`, `--lg`, `--cta`, `--block`. `.btn--primary.btn--lg` and `.btn--cta` are the Figma pink CTA at 24px display type. Works on `<a>`, `<button>` and `button_to`. `disabled` or `aria-disabled="true"` for the disabled look. The landing's cream-wrapped `.cta` stays in `landing.css`.
+  `<%= button_to "Save", path, class: "btn btn--primary" %>` / `<%= link_to "Add a project", new_project_path, class: "btn btn--primary btn--lg" %>`
+- **Forms**: bare `input`, `textarea`, `select` already get the look (`.input`, `.textarea`, `.select` add `width: 100%`). `.field` (label, `.field__hint`, `.field__error`, `.field--invalid`, `aria-invalid="true"` on the control, `aria-describedby` for hint and error), `fieldset.field` with `<legend>`, `.option` (checkbox or radio row), `.toggle-group` with `.toggle` > `.toggle__input` + `.toggle__label` (pill toggle, shows a tick when checked).
+  `<div class="field"><label for="x">Name</label><input id="x" class="input" aria-describedby="x-hint"><p class="field__hint" id="x-hint">Up to 60 characters.</p></div>`
+- **Cards and panels**: `.card` (`--cream`, `--sky`, `--flat`, `--tight`, `--chunky`), `.card__title`, `.card__media`, `.panel` (`--white`, `--narrow`).
+- **Badges**: `.badge` with `--primary`, `--info`, `--success`, `--warning`, `--danger`, `--muted` (`.badge--active` is kept as an alias of `--primary`).
+- **Progress**: `.progress` (`--goal`, `--prize`, `--boss`, `--sm`) with `.progress__head` > `.progress__label` + `.progress__text`, then a native `<progress class="progress__bar" max value aria-labelledby>`. Boss: pink = health left, dark = lost; it needs a dark or map background to show its white outline.
+- **Tables and lists**: `.table-wrap` (give it `tabindex="0"`, `role="region"`, `aria-label`) around `.table` (`--zebra`, `.num` cells), `.list`.
+- **Alerts**: `.alert` (`--success`, `--danger`, `--warning`, default info) and `.flash` (the layout renders `flash--notice`, `flash--alert`, others as info). Always state the meaning in words.
+- **Empty state**: `.empty` with `.empty__art`, `.empty__title`, `.empty__text`, `.empty__actions`.
+- **Header, nav, footer** (`layouts/application.html.erb`, `layouts/_main_nav.html.erb`): logo (decorative image plus visually hidden "Battletown") then the labelled `<nav aria-label="Main">` (Dashboard, Projects, Ships, Shop, native `<details>` Settings with Hackatime and Notifications), then Admin, Sign out or Sign in and the Dev login chip. The current page is `aria-current="page"` on a filled ink-blue pill. Two rows on phones (320px up), one row from 48rem, no JavaScript. Footer is an ink-blue band with a labelled Legal nav.
+
+### How to build a page in this style
+
+1. `content_for :title`, then `<div class="container stack">` (or `.container--wide` for a landing band) in the view; the layout already provides `<main class="page">`.
+2. Start with a `.page-header` (`.eyebrow`, `h1`, `.lead`), then put content in `.card`s or one `.panel`. Use `.grid grid--2` for columns and `.stack` for vertical rhythm.
+3. One primary action per card (`.btn--primary`); use `.btn--lg` only for the page's main call to action; quiet actions are `.btn--ghost`.
+4. Forms: `.field` per control, errors as `.field__error` (and an `.alert--danger` summary), the submit as `.btn--primary`.
+5. Progress and status as `.progress` and `.badge`, never colour alone.
+6. Check it at 320, 390, 768 and 1440 wide, tab through it, and add page CSS only for what the shared classes cannot do.
+
+### Assets and checks
+
+- `app/assets/images/design/` (logo, signposts, swooshes, map art, boss, hero painting and character, `wave-top.svg`); see its `README.md`.
+- `test/integration/stylesheets_test.rb` (stylesheets exist and link, every `url()` resolves, design images are safe and documented), `test/integration/styleguide_test.rb` (404 outside development, renders in development with no inline style or script), `test/services/design_system/tokens_test.rb` (token names kept, every contrast pair passes, every colour has a swatch). `RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1 bin/rails assets:precompile` must succeed.
 
 ## Projects and Hackatime links
 
@@ -62,7 +149,7 @@ Anything that ordinary users must not see is tinted like Hack Club Bank does: **
 - Tokens (`tokens.css`): `--color-dev`, `--color-dev-bg`, `--color-dev-border`, `--color-dev-ink`, and the same four with `admin`. Text, outline and tag pairs pass WCAG AA.
 - Rules: never ship staff UI without the helper. The gate is server-side (the helper renders nothing, the route or controller must also refuse: `dev_login` returns 404 outside development). CSS alone hides nothing.
 - `User#admin?` is true only when the user's `hca_uid` (the Hack Club Auth `sub`) is in the comma-separated `ADMIN_HCA_UIDS` env var (`AdminAllowlist`: whitespace trimmed, blanks ignored, exact case-sensitive match, empty or unset = nobody). It is read at call time and re-checked from the database user on every request, so removing an id takes effect on the next request or deploy. Admin pages live under `/admin` (`Admin::BaseController`): signed-out visitors and non-admins get the same 404 as an unknown path (never a redirect, no hint the area exists), responses are `Cache-Control: no-store`, and the dashboard is read-only aggregates with no PII (`AdminStats`); the ship review queue is the one place that shows a teen's display name (never email, Slack id or Hack Club Auth id). The gate is server-side only: `admin_tool` just hides UI, the controller must also refuse. Title: `content_for :title, "Admin"`. Locally, `ADMIN_HCA_UIDS=dev-user` makes the Dev login user an admin.
-- Dev-only UI today: the "Dev login" chip in the header (signed-out visitors, once per page), `/dev/hours`, `/dev/boss` and the shop's test-coins button. Admin-only UI: the "Admin" header link and everything under `/admin`. Small staff chips drop their button chrome; buttons inside a staff page or panel look like normal buttons.
+- Dev-only UI today: the "Dev login" chip in the header (signed-out visitors, once per page), `/dev/hours`, `/dev/boss`, `/dev/styleguide` (no login) and the shop's test-coins button. Admin-only UI: the "Admin" header link and everything under `/admin`. Small staff chips drop their button chrome; buttons inside a staff page or panel look like normal buttons.
 
 ## Admin metrics (`/admin/metrics`, `AdminMetrics`, `Admin::MetricsController`)
 

@@ -63,6 +63,7 @@ Rails.application.routes.draw do
     resource :hours, only: %i[show create], controller: "hours"
     resource :boss, only: :show, controller: "bosses"
     resource :coins, only: :create, controller: "coins"
+    resource :styleguide, only: :show, controller: "styleguide"
   end
 
   # Staff-only, read-only; a non-admin gets a 404. Keep above the /:ref catch-all (a referral slug can never be "admin").

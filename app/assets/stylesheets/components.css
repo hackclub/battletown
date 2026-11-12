@@ -294,23 +294,24 @@
     --color-text-muted: var(--color-bg);
     color: var(--color-bg);
   }
+  .band--map .btn--ghost, .band--ink .btn--ghost, .on-map .btn--ghost, .on-ink .btn--ghost { --btn-fg: var(--color-bg); }
+  .band--map .btn--ghost:hover, .band--ink .btn--ghost:hover, .on-map .btn--ghost:hover, .on-ink .btn--ghost:hover { --btn-bg: transparent; }
   .band--map { --band-bg: var(--color-map); }
   .band--ink { --band-bg: var(--color-ink-blue); }
 
-  /* Sky swoosh edge (Figma 151:268/151:269): a wavy cap above the band, painted in --swoosh-color via a mask of
-     design/swoosh-sky.svg. Put it on the band that follows a hero. */
-  .band--swoosh { margin-top: clamp(2rem, 8vw, 7rem); }
-  .band--swoosh::before {
+  /* Wavy cap above a band (like the pale wave on top of the map, Figma 152:469): the band's own colour is masked into
+     a wave (design/wave-top.svg) that sits on the edge of the section above. Add .band--wave to the band. */
+  .band--wave { margin-top: clamp(2rem, 6vw, 5rem); }
+  .band--wave::before {
     content: "";
     position: absolute;
     inset-inline: 0;
     bottom: calc(100% - 1px);
-    aspect-ratio: 1529 / 339;
-    max-height: clamp(2rem, 8vw, 7rem);
     width: 100%;
+    height: clamp(2rem, 6vw, 5rem);
     background: var(--band-bg);
-    -webkit-mask: url("design/swoosh-sky.svg") center bottom / 100% 100% no-repeat;
-    mask: url("design/swoosh-sky.svg") center bottom / 100% 100% no-repeat;
+    -webkit-mask: url("design/wave-top.svg") center bottom / 100% 100% no-repeat;
+    mask: url("design/wave-top.svg") center bottom / 100% 100% no-repeat;
     pointer-events: none;
   }
 }

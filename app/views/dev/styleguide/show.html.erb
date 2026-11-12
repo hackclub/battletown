@@ -1,0 +1,375 @@
+<% content_for :title, "Style guide" %>
+<%# Development-only (the controller 404s elsewhere). Everything here uses the real shared classes; the colour list and
+    contrast table are read from tokens.css. Markup for each component is documented in docs/CONTRACT.md. %>
+<% arrow = capture do %><svg class="icon" viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg><% end %>
+
+<div class="container sg">
+  <%= dev_tool(:header, class: "stack stack--sm") do %>
+    <h1>Battletown style guide</h1>
+    <p>Every token and shared component, as shipped in <code class="sg-code">tokens.css</code>, <code class="sg-code">application.css</code> and <code class="sg-code">components.css</code>. Development only; compare with the Figma frames and read the class reference in <code class="sg-code">docs/CONTRACT.md</code> ("Design system"). The header at the top and the footer at the bottom of this page are the live ones.</p>
+  <% end %>
+
+  <nav aria-label="Style guide sections">
+    <ul class="sg-toc">
+      <% %w[colours type spacing links buttons forms cards bands badges progress tables alerts empty layout staff nav assets].each do |id| %>
+        <li><a href="#<%= id %>"><%= id.capitalize %></a></li>
+      <% end %>
+    </ul>
+  </nav>
+
+  <%# ------------------------------------------------------------ Colours %>
+  <section class="sg-section" id="colours" aria-labelledby="h-colours">
+    <h2 id="h-colours">Colours</h2>
+    <p class="sg-note">Names are the CSS custom properties. The page is sky (<code>--color-page</code>); content sits on cream (<code>--color-bg</code>) or white (<code>--color-surface</code>) cards. Pink (<code>--color-cta</code>) is for fills and 24px+ type only.</p>
+    <ul class="sg-swatches">
+      <% @colors.each do |token| %>
+        <li class="sg-swatch" data-token="<%= token.name %>">
+          <span class="sg-swatch__chip"></span>
+          <span class="sg-swatch__name"><%= token.name %></span>
+          <span class="sg-swatch__hex"><%= token.value %></span>
+          <span class="sg-swatch__use"><%= token.comment %></span>
+        </li>
+      <% end %>
+    </ul>
+
+    <h3>Contrast (WCAG 2.x)</h3>
+    <p class="sg-note">Needs 4.5:1 for text, 3:1 for large text (24px+ display type) and for borders, focus rings and fills. Computed from the tokens above.</p>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Contrast table">
+      <table class="table table--zebra">
+        <thead><tr><th scope="col">Pair</th><th scope="col">Foreground</th><th scope="col">Background</th><th scope="col" class="num">Ratio</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead>
+        <tbody>
+          <% @contrast.each do |pair, ratio, ok| %>
+            <tr>
+              <th scope="row"><%= pair.label %></th>
+              <td><code><%= pair.fg %></code></td>
+              <td><code><%= pair.bg %></code></td>
+              <td class="num"><%= format("%.2f", ratio) %>:1</td>
+              <td><%= pair.need %>:1 <%= "(#{pair.note})" if pair.note %></td>
+              <td><span class="badge <%= ok ? "badge--success" : "badge--danger" %>"><%= ok ? "Pass" : "Fail" %></span></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <%# ------------------------------------------------------------ Type %>
+  <section class="sg-section" id="type" aria-labelledby="h-type">
+    <h2 id="h-type">Type</h2>
+    <p class="sg-note">Poetsen One (<code>--font-display</code>) for headings, buttons, signs and big numbers; M PLUS Rounded 1c (<code>--font-body</code>, 500) for everything you read. Only apply <code>--tracking-display</code> (-0.06em) at 24px and up.</p>
+    <div class="card">
+      <h1>Heading 1: Welcome, Dev User</h1>
+      <h2>Heading 2: Weekly boss</h2>
+      <h3>Heading 3: Today</h3>
+      <h4>Heading 4: Small heading</h4>
+      <p class="eyebrow">Eyebrow label</p>
+      <p class="lead">Lead paragraph: one size up, for the sentence under a page title.</p>
+      <p>Body text in M PLUS Rounded 1c at 16px with a 1.6 line height. It wraps long words such as <code>supercalifragilisticexpialidocious_and_more_and_more_and_more</code> instead of scrolling the page sideways.</p>
+      <p class="small">Small text (<code>.small</code>) for hints and footnotes.</p>
+      <p class="muted">Muted text (<code>.muted</code>) still passes AA on cream and on sky.</p>
+    </div>
+    <h3>Scale tokens</h3>
+    <% @type_tokens.each do |token| %>
+      <% key = token.name.delete_prefix("--text-") %>
+      <div class="sg-type">
+        <span class="sg-type__meta"><%= token.name %>: <%= token.value %> <%= token.comment.present? ? "(#{token.comment.truncate(70)})" : "" %></span>
+        <p class="sg-type__sample sg-type__sample--<%= key %>">Fight together</p>
+      </div>
+    <% end %>
+  </section>
+
+  <%# ------------------------------------------------------------ Spacing %>
+  <section class="sg-section" id="spacing" aria-labelledby="h-spacing">
+    <h2 id="h-spacing">Spacing and shape</h2>
+    <div class="card stack stack--sm">
+      <% @space_tokens.each do |token| %>
+        <p class="sg-space"><span class="sg-space__bar sg-space__bar--<%= token.name.delete_prefix("--space-") %>"></span><%= token.name %> <%= token.value %></p>
+      <% end %>
+    </div>
+    <div class="sg-row">
+      <% @radius_tokens.each do |token| %>
+        <span class="sg-radius sg-radius--<%= token.name.delete_prefix("--radius-") %>"><%= token.name.delete_prefix("--") %><br><%= token.value %></span>
+      <% end %>
+    </div>
+    <p class="sg-note">The chunky edge: <code>--border-chunky</code> (6px) in <code>--color-cta-edge</code> under every card, panel, header and table wrapper. Pressed buttons shrink their inset edge. Tap targets are at least <code>--tap-size</code> (44px).</p>
+  </section>
+
+  <%# ------------------------------------------------------------ Links %>
+  <section class="sg-section" id="links" aria-labelledby="h-links">
+    <h2 id="h-links">Links</h2>
+    <div class="card">
+      <p>A paragraph with an <a href="#links">inline link</a> and a <a href="https://example.com/some/very/long/address/that/must/wrap/instead/of/overflowing/the/card">very long link address that must wrap</a>. Links are always underlined and dark raspberry (<code>--color-link</code>).</p>
+    </div>
+  </section>
+
+  <%# ------------------------------------------------------------ Buttons %>
+  <section class="sg-section" id="buttons" aria-labelledby="h-buttons">
+    <h2 id="h-buttons">Buttons</h2>
+    <p class="sg-note">Hover, press (click and hold) and keyboard focus (Tab) are live on every button. All are at least 44px tall. Large and CTA buttons use the Figma pink at 24px display type; everything smaller uses the AA raspberry.</p>
+    <h3>Variants</h3>
+    <div class="sg-demo">
+      <div class="sg-row">
+        <button type="button" class="btn btn--primary">Primary</button>
+        <button type="button" class="btn">Secondary</button>
+        <button type="button" class="btn btn--ghost">Ghost</button>
+        <button type="button" class="btn btn--danger">Danger</button>
+        <a href="#buttons" class="btn btn--primary">Link as button</a>
+      </div>
+      <div class="sg-row">
+        <button type="button" class="btn btn--primary" disabled>Primary disabled</button>
+        <button type="button" class="btn" disabled>Secondary disabled</button>
+        <button type="button" class="btn btn--primary" aria-disabled="true">aria-disabled</button>
+      </div>
+    </div>
+    <h3>Sizes and CTA</h3>
+    <div class="sg-demo">
+      <div class="sg-row">
+        <button type="button" class="btn btn--primary btn--sm">Small</button>
+        <button type="button" class="btn btn--primary">Medium (default)</button>
+        <button type="button" class="btn btn--primary btn--lg">Large CTA <%= arrow %></button>
+        <button type="button" class="btn btn--cta">Join the fight <%= arrow %></button>
+        <button type="button" class="btn btn--lg">Large secondary</button>
+      </div>
+      <button type="button" class="btn btn--primary btn--block">Block button (full width)</button>
+      <p class="sg-note">The landing's wrapped cream CTA (Figma 138:172) is the <code>.cta</code> markup in <code>landing.css</code>:</p>
+      <div class="sg-row"><button type="button" class="cta"><span class="cta__face"><span class="cta__label">Join 150 other fighters</span><svg class="cta__arrow" viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg></span></button></div>
+    </div>
+    <h3>On a map band (focus ring flips to cream)</h3>
+    <div class="band band--map sg-demo">
+      <div class="sg-row">
+        <button type="button" class="btn btn--cta">Join the fight <%= arrow %></button>
+        <button type="button" class="btn btn--primary">Primary</button>
+        <button type="button" class="btn">Secondary</button>
+        <button type="button" class="btn btn--ghost">Ghost</button>
+      </div>
+      <p>Text on the map band is cream, <a href="#buttons">links too</a>.</p>
+    </div>
+  </section>
+
+  <%# ------------------------------------------------------------ Forms %>
+  <section class="sg-section" id="forms" aria-labelledby="h-forms">
+    <h2 id="h-forms">Forms</h2>
+    <form class="card stack" action="#forms" method="get">
+      <div class="field">
+        <label for="sg-name">Project name</label>
+        <input id="sg-name" class="input" type="text" value="Battletown clone" aria-describedby="sg-name-hint">
+        <p class="field__hint" id="sg-name-hint">Up to 60 characters. This is a hint.</p>
+      </div>
+      <div class="field field--invalid">
+        <label for="sg-repo">Repository link</label>
+        <input id="sg-repo" class="input" type="url" value="not a link" aria-invalid="true" aria-describedby="sg-repo-err">
+        <p class="field__error" id="sg-repo-err">Enter a GitHub repository link, like https://github.com/you/your-project.</p>
+      </div>
+      <div class="field">
+        <label for="sg-idea">Idea</label>
+        <textarea id="sg-idea" class="textarea" rows="3">What are you building?</textarea>
+      </div>
+      <div class="field">
+        <label for="sg-kind">Kind of project</label>
+        <select id="sg-kind" class="select"><option>Game</option><option>Website</option><option>App</option></select>
+      </div>
+      <div class="field">
+        <label for="sg-disabled">Disabled</label>
+        <input id="sg-disabled" class="input" type="text" value="Cannot edit this" disabled>
+      </div>
+      <fieldset class="field">
+        <legend>Checkboxes and radios</legend>
+        <label class="option"><input type="checkbox" checked> Send me a Slack reminder</label>
+        <label class="option"><input type="checkbox"> Weekly summary</label>
+        <label class="option"><input type="radio" name="sg-radio" checked> Option one</label>
+        <label class="option"><input type="radio" name="sg-radio"> Option two</label>
+      </fieldset>
+      <fieldset class="field">
+        <legend>Pill toggles (the day picker)</legend>
+        <div class="toggle-group">
+          <% %w[Mon Tue Wed Thu Fri Sat Sun].each_with_index do |day, index| %>
+            <label class="toggle"><input class="toggle__input" type="checkbox" <%= "checked" if index < 5 %>><span class="toggle__label"><%= day %></span></label>
+          <% end %>
+          <label class="toggle"><input class="toggle__input" type="checkbox" disabled><span class="toggle__label">Disabled</span></label>
+        </div>
+      </fieldset>
+      <div class="cluster">
+        <button type="submit" class="btn btn--primary btn--lg">Save</button>
+        <button type="button" class="btn btn--ghost">Cancel</button>
+      </div>
+    </form>
+  </section>
+
+  <%# ------------------------------------------------------------ Cards %>
+  <section class="sg-section" id="cards" aria-labelledby="h-cards">
+    <h2 id="h-cards">Cards and panels</h2>
+    <div class="grid grid--3">
+      <article class="card"><h3 class="card__title">.card</h3><p>White, 28px radius, 6px cream edge.</p></article>
+      <article class="card card--cream"><h3 class="card__title">.card--cream</h3><p>Cream face.</p></article>
+      <article class="card card--sky"><h3 class="card__title">.card--sky</h3><p>Sky face, for hints.</p></article>
+      <article class="card card--flat"><h3 class="card__title">.card--flat</h3><p>No edge or shadow, for nesting.</p></article>
+      <article class="card card--chunky">
+        <%= image_tag "design/boss-weekly.webp", alt: "", class: "card__media sg-card-media" %>
+        <h3 class="card__title">.card--chunky</h3>
+        <p>The shop and prize card (Figma 156:665).</p>
+        <span class="badge badge--warning">20 coins</span>
+      </article>
+    </div>
+    <section class="panel stack"><h3>.panel</h3><p>A large cream sheet (48px radius) for a whole section or form. Use <code>.panel--white</code> for white and <code>.panel--narrow</code> for a centred 42rem column.</p></section>
+  </section>
+
+  <%# ------------------------------------------------------------ Bands %>
+  <section class="sg-section" id="bands" aria-labelledby="h-bands">
+    <h2 id="h-bands">Bands and the map</h2>
+    <p class="sg-note">Full-bleed sections for the landing: <code>.band</code> (sky), <code>.band--cream</code>, <code>.band--map</code>, <code>.band--ink</code>; add <code>.band--wave</code> for the wavy cap. Dark bands switch text, link and focus colours to cream, and cards inside them stay normal.</p>
+    <div class="band sg-map">
+      <div class="stack"><h3>Sky band</h3><p>The default band is the page colour.</p></div>
+    </div>
+    <div class="band band--map band--wave sg-map">
+      <div class="stack">
+        <h3>Map band with a wave cap</h3>
+        <p>Cream text on <code>--color-map</code> (4.7:1). <a href="#bands">A link</a>.</p>
+        <div class="card"><p>A card inside the band keeps its own colours. <a href="#bands">Link inside the card</a>.</p></div>
+        <div class="progress progress--boss">
+          <div class="progress__head"><span class="progress__label" id="sg-hp-map">Boss health</span><span class="progress__text">150 of 300 hours left</span></div>
+          <progress class="progress__bar" max="300" value="150" aria-labelledby="sg-hp-map">150 of 300 hours left</progress>
+        </div>
+        <div class="cluster"><%= image_tag "design/map-tree.svg", alt: "", width: 36, height: 59 %><%= image_tag "design/map-house.svg", alt: "", width: 75, height: 36 %></div>
+      </div>
+    </div>
+    <div class="band band--ink sg-map"><p>Ink band (the footer colour): cream text at 8.4:1. <a href="#bands">A link</a>.</p></div>
+  </section>
+
+  <%# ------------------------------------------------------------ Badges %>
+  <section class="sg-section" id="badges" aria-labelledby="h-badges">
+    <h2 id="h-badges">Badges</h2>
+    <div class="sg-row">
+      <span class="badge">Default</span><span class="badge badge--primary">Active</span><span class="badge badge--info">Info</span>
+      <span class="badge badge--success">Approved</span><span class="badge badge--warning">Waiting</span>
+      <span class="badge badge--danger">Rejected</span><span class="badge badge--muted">Archived</span>
+    </div>
+  </section>
+
+  <%# ------------------------------------------------------------ Progress %>
+  <section class="sg-section" id="progress" aria-labelledby="h-progress">
+    <h2 id="h-progress">Progress bars</h2>
+    <p class="sg-note">One component over a native <code>&lt;progress&gt;</code>: the numbers are in text (<code>.progress__text</code>), so no colour-only meaning and no JavaScript.</p>
+    <div class="card stack">
+      <% [
+        [ "", "Onboarding (default pink)", 2, 5, "Step 2 of 5" ],
+        [ "progress--goal", "Daily goal", 10, 15, "10 of 15 minutes" ],
+        [ "progress--prize", "Prize", 12, 20, "12 of 20 coins" ],
+        [ "progress--goal progress--sm", "Daily goal, small", 5, 15, "5 of 15 minutes" ],
+        [ "progress--goal", "Empty", 0, 15, "0 of 15 minutes" ],
+        [ "progress--goal", "Full", 15, 15, "15 of 15 minutes" ]
+      ].each_with_index do |(variant, label, value, max, text), index| %>
+        <div class="progress <%= variant %>">
+          <div class="progress__head"><span class="progress__label" id="sg-p<%= index %>"><%= label %></span><span class="progress__text"><%= text %></span></div>
+          <progress class="progress__bar" max="<%= max %>" value="<%= value %>" aria-labelledby="sg-p<%= index %>"><%= text %></progress>
+        </div>
+      <% end %>
+    </div>
+    <div class="card stack">
+      <% [ [ 150, "150 of 300 hours left" ], [ 30, "30 of 300 hours left" ], [ 300, "300 of 300 hours left" ] ].each_with_index do |(value, text), index| %>
+        <div class="progress progress--boss">
+          <div class="progress__head"><span class="progress__label" id="sg-b<%= index %>">Boss health</span><span class="progress__text"><%= text %></span></div>
+          <progress class="progress__bar" max="300" value="<%= value %>" aria-labelledby="sg-b<%= index %>"><%= text %></progress>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <%# ------------------------------------------------------------ Tables %>
+  <section class="sg-section" id="tables" aria-labelledby="h-tables">
+    <h2 id="h-tables">Tables and lists</h2>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Orders example">
+      <table class="table table--zebra">
+        <caption>Your orders</caption>
+        <thead><tr><th scope="col">Item</th><th scope="col">Status</th><th scope="col" class="num">Coins</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Sticker pack</th><td><span class="badge badge--success">Fulfilled</span></td><td class="num">20</td></tr>
+          <tr><th scope="row">Keychain</th><td><span class="badge badge--warning">Waiting</span></td><td class="num">60</td></tr>
+          <tr><th scope="row">Enamel pin</th><td><span class="badge badge--danger">Cancelled</span></td><td class="num">80</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="list card">
+      <li><span>Dashboard</span><span class="badge">Done</span></li>
+      <li><span>Projects</span><a href="#tables">Open</a></li>
+      <li><span>Shop</span><span class="muted">Coming soon</span></li>
+    </ul>
+  </section>
+
+  <%# ------------------------------------------------------------ Alerts %>
+  <section class="sg-section" id="alerts" aria-labelledby="h-alerts">
+    <h2 id="h-alerts">Alerts and flash messages</h2>
+    <p class="sg-note">The layout renders each Rails flash as <code>&lt;div class="flash flash--notice" role="status"&gt;</code> under the header. <code>.alert</code> is the inline version.</p>
+    <div class="sg-flash-stack">
+      <div class="flash flash--notice" role="status">Saved. This is a notice flash.</div>
+      <div class="flash flash--alert" role="status">Something went wrong. This is an alert flash.</div>
+      <div class="flash flash--warning" role="status">Heads up. A warning flash.</div>
+      <div class="flash" role="status">Plain info flash (any other type).</div>
+    </div>
+    <div class="alert alert--success"><p class="alert__title">Ship approved</p><p>You earned 12 coins. <a href="#alerts">See it</a>.</p></div>
+    <div class="alert alert--danger"><p class="alert__title">We could not save that</p><p>Fix the highlighted fields and try again.</p></div>
+    <div class="alert alert--warning"><p>Waiting for review: usually within a day.</p></div>
+    <div class="alert"><p>Info alert: cream with an ink-blue edge.</p></div>
+  </section>
+
+  <%# ------------------------------------------------------------ Empty %>
+  <section class="sg-section" id="empty" aria-labelledby="h-empty">
+    <h2 id="h-empty">Empty state and section headings</h2>
+    <div class="empty">
+      <%= image_tag "design/map-tree.svg", alt: "", class: "empty__art" %>
+      <h3 class="empty__title">No projects yet</h3>
+      <p class="empty__text">A project is what you code on and ship. Add your first one to start.</p>
+      <div class="empty__actions"><a class="btn btn--primary" href="#empty">Add a project</a><a class="btn btn--ghost" href="#empty">How it works</a></div>
+    </div>
+    <div class="section-head"><h2>Section heading</h2><a href="#empty">View all</a></div>
+    <div class="page-header"><p class="eyebrow">Page header</p><h1>Page title</h1><p class="lead">A short lead under the title.</p></div>
+  </section>
+
+  <%# ------------------------------------------------------------ Layout %>
+  <section class="sg-section" id="layout" aria-labelledby="h-layout">
+    <h2 id="h-layout">Layout helpers</h2>
+    <p class="sg-note"><code>.container</code> (72rem; <code>--wide</code> 90rem), <code>.page</code> (the main area), <code>.stack</code>, <code>.cluster</code>, <code>.grid</code> (auto-fit, <code>--grid-min</code>), <code>.grid--2</code>, <code>.grid--3</code>, <code>.prose</code> (42rem).</p>
+    <div class="sg-demo sg-boxes">
+      <div class="stack stack--sm"><div>.stack--sm</div><div>second item</div></div>
+      <div class="cluster"><div>.cluster</div><div>wraps</div><div>when it must</div></div>
+      <div class="grid grid--3"><div>.grid--3</div><div>two</div><div>three</div></div>
+    </div>
+  </section>
+
+  <%# ------------------------------------------------------------ Staff %>
+  <section class="sg-section" id="staff" aria-labelledby="h-staff">
+    <h2 id="h-staff">Staff-only UI</h2>
+    <p class="sg-note">Green = development only, orange = admin only (dashed outline plus a label). Use the helpers <code>dev_tool</code> and <code>admin_tool</code>; the orange block below is hand-written preview markup, only because this page is development-only.</p>
+    <%= dev_tool(:div, class: "stack stack--sm") do %>
+      <p>A <code>dev_tool</code> panel with a <button type="button" class="btn btn--primary btn--sm">normal button</button> inside.</p>
+    <% end %>
+    <div class="admin-only stack stack--sm"><p>An admin-only panel (preview markup). <button type="button" class="btn btn--sm">Approve</button> <button type="button" class="btn btn--danger btn--sm">Reject</button></p></div>
+    <div class="sg-row">
+      <%= dev_tool(:div, label: false) { tag.button("Dev login", type: "button", class: "btn btn--ghost") } %>
+    </div>
+  </section>
+
+  <%# ------------------------------------------------------------ Nav %>
+  <section class="sg-section" id="nav" aria-labelledby="h-nav">
+    <h2 id="h-nav">Header navigation (signed in)</h2>
+    <p class="sg-note">This page is signed out, so the live header shows Sign in. Here is the signed-in header as it looks for onboarded users (<code>layouts/_main_nav</code>), with the current page marked by <code>aria-current="page"</code>.</p>
+    <div class="sg-demo">
+      <div class="site-header"><div class="container site-header__inner">
+        <a href="#nav" class="site-header__brand"><%= image_tag "design/logo.svg", alt: "", class: "site-header__logo", width: 77, height: 44 %><span class="visually-hidden">Battletown (preview)</span></a>
+        <%= render "layouts/main_nav", label: "Main (preview)" %>
+        <div class="site-header__account"><button type="button" class="btn btn--ghost">Sign out</button></div>
+      </div></div>
+      <nav class="site-header__nav" aria-label="Current page preview"><a href="#nav" aria-current="page">Current page</a><a href="#nav">Other page</a><details class="site-menu"><summary>Settings</summary><div class="site-menu__panel"><a href="#nav">Hackatime</a><a href="#nav">Notifications</a></div></details></nav>
+    </div>
+  </section>
+
+  <%# ------------------------------------------------------------ Assets %>
+  <section class="sg-section" id="assets" aria-labelledby="h-assets">
+    <h2 id="h-assets">Design assets</h2>
+    <p class="sg-note">From <code>app/assets/images/design/</code> (see its README for origin and use). Use <code>image_tag "design/&lt;file&gt;"</code>; decorative art gets <code>alt=""</code>.</p>
+    <ul class="sg-gallery">
+      <% %w[logo.svg signpost-1-yellow.svg signpost-2-blue.svg signpost-3-pink.svg signpost-pole.svg swoosh-sky.svg swoosh-fade.svg map-tree.svg map-house.svg map-band.svg map-river.svg boss-shadow.svg boss-weekly.webp hero-painting.webp hero-character.webp icon-arrow.svg].each do |file| %>
+        <li><%= image_tag "design/#{file}", alt: "" %><span><%= file %></span></li>
+      <% end %>
+    </ul>
+  </section>
+</div>

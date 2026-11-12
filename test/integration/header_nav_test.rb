@@ -54,6 +54,17 @@ class HeaderNavTest < ActionDispatch::IntegrationTest
     assert_select "main#main"
   end
 
+  test "the brand link is named Battletown once: a decorative logo plus visually hidden text" do
+    sign_in_as users(:onboarded)
+    get dashboard_path
+    assert_select "header a.site-header__brand[href='#{root_path}']" do
+      assert_select "img.site-header__logo[alt='']", 1
+      assert_select "span.visually-hidden", "Battletown"
+    end
+    assert_select "header nav", 1
+    assert_select "footer nav[aria-label=Legal]", 1
+  end
+
   test "signed-out visitors and people still onboarding get no Main nav" do
     get root_path
     assert_select "nav[aria-label=Main]", 0
