@@ -10,9 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "hour_entries", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "local_date", null: false
+    t.integer "seconds", null: false
+    t.string "hackatime_project", limit: 120
+    t.string "source", null: false
+    t.string "idempotency_key", limit: 120, null: false
+    t.string "note", limit: 200
+    t.string "created_by", limit: 40
+    t.datetime "recorded_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.index ["local_date"], name: "index_hour_entries_on_local_date"
+    t.index ["user_id", "idempotency_key"], name: "index_hour_entries_on_user_id_and_idempotency_key", unique: true
+    t.index ["user_id", "local_date"], name: "index_hour_entries_on_user_id_and_local_date"
+    t.check_constraint "char_length(idempotency_key::text) >= 1 AND char_length(idempotency_key::text) <= 120", name: "hour_entries_idempotency_key_check"
+    t.check_constraint "created_by IS NULL OR created_by::text ~ '^[a-z0-9_:.-]{1,40}$'::text", name: "hour_entries_created_by_check"
+    t.check_constraint "hackatime_project IS NULL OR char_length(hackatime_project::text) >= 1 AND char_length(hackatime_project::text) <= 120", name: "hour_entries_hackatime_project_check"
+    t.check_constraint "note IS NULL OR char_length(note::text) >= 1 AND char_length(note::text) <= 200", name: "hour_entries_note_length_check"
+    t.check_constraint "seconds <> 0 AND seconds >= '-86400'::integer AND seconds <= 86400", name: "hour_entries_seconds_check"
+    t.check_constraint "source::text = 'adjustment'::text OR seconds > 0", name: "hour_entries_positive_unless_adjustment_check"
+    t.check_constraint "source::text = 'hackatime'::text OR note IS NOT NULL", name: "hour_entries_note_required_check"
+    t.check_constraint "source::text = ANY (ARRAY['hackatime'::character varying, 'manual'::character varying, 'adjustment'::character varying]::text[])", name: "hour_entries_source_check"
+  end
 
   create_table "notifications", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -79,5 +102,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_150000) do
     t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying, 'pending'::character varying, 'verified'::character varying, 'ineligible'::character varying]::text[])", name: "users_verification_status_check"
   end
 
+  add_foreign_key "hour_entries", "users", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
 end

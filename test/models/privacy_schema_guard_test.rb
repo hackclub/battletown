@@ -56,6 +56,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
   test "every table referencing users is counted when a user is deleted" do
     user = users(:onboarded)
     Notification.create!(user: user, kind: "daily_reminder", status: "sent", scheduled_for: Time.current, due_at: Time.current, idempotency_key: "guard-#{user.id}")
+    HourEntry.create!(user: user, local_date: Date.new(2026, 11, 10), seconds: 600, source: "manual", note: "guard", idempotency_key: "guard-#{user.id}")
     subject = Privacy::TokenVerifier::Subject.new(emails: [], slack_id: nil, identity_id: user.hca_uid)
 
     deleted = Privacy::Deleter.new(subject).call(dry_run: true).deleted

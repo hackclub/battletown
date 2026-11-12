@@ -1,0 +1,11 @@
+# Game tunables, one top-level key per feature. Read through each feature's own config class
+# (hours: Hours::Config). Tunables only: no per-user data and no secrets.
+shared:
+  # The hours ledger (app/services/hours/**).
+  hours:
+    # The most coded time one user can have credited for one local date (anti-abuse). Positive credits are clamped to it.
+    daily_cap_seconds: 43200
+    # A credit may not be dated further back than this many days before the user's local today (adjustments are exempt).
+    max_backfill_days: 3
+    # A user counts as active on a date from this many credited seconds (15 minutes).
+    active_seconds: 900

@@ -1,0 +1,27 @@
+<% content_for :title, "Dev hours" %>
+<%= dev_tool(:section, class: "container") do %>
+  <h1>Add coded time</h1>
+  <p>Adds time to your own ledger for a local date (your time zone: <%= current_user.time_zone.presence || "UTC" %>). Dates from 3 days ago to today work; a day is capped at <%= @config.daily_cap_seconds / 3600 %> hours.</p>
+
+  <%= form_with url: dev_hours_path, method: :post, class: "card" do |form| %>
+    <p>
+      <%= form.label :local_date, "Local date" %>
+      <%= form.date_field :local_date, value: @today, min: @today - @config.max_backfill_days, max: @today, required: true %>
+    </p>
+    <p>
+      <%= form.label :minutes, "Minutes coded" %>
+      <%= form.number_field :minutes, value: 30, min: 1, max: 1440, step: 1, required: true %>
+    </p>
+    <%= form.submit "Add time", class: "btn btn--primary" %>
+  <% end %>
+
+  <h2>Last 7 days</h2>
+  <table>
+    <thead><tr><th scope="col">Local date</th><th scope="col">Minutes</th></tr></thead>
+    <tbody>
+      <% (@today - 6..@today).reverse_each do |date| %>
+        <tr><th scope="row"><%= date.iso8601 %></th><td><%= (@days[date] || 0) / 60 %></td></tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -18,6 +18,11 @@ Rails.application.routes.draw do
   delete "logout", to: "sessions#destroy"
   post "dev_login", to: "sessions#dev_login"
 
+  # Development-only tools (404 everywhere else, enforced in the controller).
+  namespace :dev do
+    resource :hours, only: %i[show create], controller: "hours"
+  end
+
   # Staff-only, read-only; a non-admin gets a 404. Keep above the /:ref catch-all (a referral slug can never be "admin").
   namespace :admin do
     root "dashboard#show"

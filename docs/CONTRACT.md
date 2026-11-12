@@ -70,3 +70,12 @@ Importmap + Stimulus. Add `app/javascript/controllers/foo_controller.js` (auto-r
 ## Tests
 
 Minitest + fixtures (`test/fixtures/users.yml` has `new_user` and `onboarded`). To sign in during tests see `test/integration/access_test.rb` (`OmniAuth.config.test_mode`).
+
+## Hours ledger (`app/services/hours`, `app/services/hackatime`)
+
+Append-only `hour_entries` (seconds per user per frozen local date; `HourEntry` is read-only once saved, corrections are `adjustment` rows). Tunables are in `config/game.yml` under `hours:` (`daily_cap_seconds`, `max_backfill_days`, `active_seconds`; add other features as their own top-level key).
+
+- Write: `Hours::Credit.call(user:, seconds:, source:, idempotency_key:, local_date: nil | at: nil, hackatime_project: nil, note: nil, created_by: nil)` returns a `Result` (`entry`, `status` in `:created :clamped :duplicate :capped`, `credited_seconds`). Raises `Hours::Credit::Rejected` for input that can never be credited.
+- Read: `Hours::Totals.seconds_by_date(user, range)`, `.seconds_for_date(user, date)`, `.seconds_in_range(range)` (all users), `.active_user_count(date)`. Dates are the frozen local dates; `Hours::Days.local_date(instant, user)` / `.today(user)` do the zone maths.
+- Hackatime seam: `Hackatime::Source#daily_seconds(user:, from:, to:)`, `Hackatime::NullSource` (default), `Hackatime::CsvSource.new(path)`; `Hours::Sync.call(user_or_rows, ...)`. Rake: `hours:import[path]`, `hours:credit[slack_id,date,seconds,note]`.
+- Development only: `/dev/hours` adds minutes to the signed-in user for a local date (404 elsewhere).

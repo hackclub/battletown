@@ -29,6 +29,9 @@ gem "solid_cable"
 # Verifies the ES256 tokens Hack Club's data-deletion service sends (see docs/PRIVACY_API.md)
 gem "jwt", "~> 3.2"
 
+# Reads the Hackatime hours CSV for hours:import (csv is a bundled gem, not default, since Ruby 3.4)
+gem "csv"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
