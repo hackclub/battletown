@@ -72,7 +72,7 @@
                     <ul class="admin-shop-counts" role="list">
                       <% counts.each do |status, count| %>
                         <% next if count.zero? %>
-                        <li><%= admin_badge("#{count} #{status}", AdminHelper::ORDER_BADGES.fetch(status)) %></li>
+                        <li><%= admin_badge("#{count} #{status.tr('_', ' ')}", OrderStatusHelper::ORDER_STATUS_BADGES.fetch(status)) %></li>
                       <% end %>
                     </ul>
                   <% end %>

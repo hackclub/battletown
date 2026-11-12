@@ -55,6 +55,25 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     assert_not_equal 60, ShopItem.find_by!(key: "tshirt").coins
   end
 
+  # Found by the volume run: the list read an old three-status badge table and answered 500 as soon as one order was on hold,
+  # shipped or refunded.
+  test "the list and the edit page show counts for orders in every one of the six statuses" do
+    buyer = users(:new_user)
+    give_coins(buyer, 1000)
+    Order::STATUSES.each_with_index do |status, index|
+      stamp = { "fulfilled" => :fulfilled_at, "cancelled" => :cancelled_at, "shipped" => :shipped_at, "refunded" => :refunded_at }[status]
+      attrs = { user: buyer, prize_key: "keychain", prize_name: "Keychain", coins: 30, kind: "purchase", idempotency_key: "six-#{index}", status: status }
+      attrs[stamp] = Time.current if stamp
+      Order.create!(attrs)
+    end
+    admin!
+    get "/admin/shop"
+    assert_response :success
+    Order::STATUSES.each { |status| assert_select ".admin-shop-counts li", text: /1 #{status.tr('_', ' ')}/ }
+    get "/admin/shop/keychain/edit"
+    assert_response :success
+  end
+
   # --- who can reach it ---
 
   test "signed-out visitors and non-admins get a 404 on every shop admin route and nothing changes" do
