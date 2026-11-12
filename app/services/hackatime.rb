@@ -7,11 +7,17 @@ module Hackatime
   # Hackatime, for users who linked their account: Hackatime::HttpSource). A CSV import names its own source
   # (hours:import), so "csv" is not a selectable default.
   def self.source
-    name = ENV["HOURS_SOURCE"].presence || Rails.application.config_for(:game).dig(:hours, :hours_source) || "null"
-    case name.to_s
+    case source_name
     when "null" then NullSource.new
     when "http" then HttpSource.new
-    else raise ArgumentError, "hours_source must be one of #{SOURCES.join(", ")}"
     end
+  end
+
+  # The configured source's name ("null" or "http"); raises ArgumentError for anything else.
+  def self.source_name
+    name = (ENV["HOURS_SOURCE"].presence || Rails.application.config_for(:game).dig(:hours, :hours_source) || "null").to_s
+    raise ArgumentError, "hours_source must be one of #{SOURCES.join(", ")}" unless SOURCES.include?(name)
+
+    name
   end
 end

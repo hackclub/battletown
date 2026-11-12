@@ -28,10 +28,11 @@ module Hackatime
       @fake.on("GET", PROJECTS) { |req| [ 200, { "projects" => projects_by_day.fetch(req.query["start_date"][0, 10], []) } ] }
     end
 
-    def run_task(*args)
+    # Runs the task as configured for live Hackatime unless another hours source is given.
+    def run_task(*args, hours_source: "http")
       task = Rake::Task["hackatime:sync"]
       task.reenable
-      capture_io { task.invoke(*args) }.first
+      with_env("HOURS_SOURCE", hours_source) { capture_io { task.invoke(*args) }.first }
     end
 
     def with_env(name, value)
@@ -98,6 +99,23 @@ module Hackatime
       connection.update!(needs_reconnect: false)
       @fake.on("GET", PROJECTS) { |_req| [ 429, {} ] }
       assert_match(/users=0 needs_reconnect=0 retry_later=1/, run_task(@user.id.to_s))
+    end
+
+    test "hackatime:sync does nothing, and never calls Hackatime, unless the hours source is http" do
+      connect_hackatime(@user)
+      serve("2026-11-11" => [ { "name" => "battletown", "total_seconds" => 900 } ])
+
+      [ nil, "null" ].each do |hours_source|
+        assert_equal "hackatime:sync skipped: the hours source is null, not http (set HOURS_SOURCE=http to sync)\n",
+                     run_task("all", hours_source: hours_source)
+      end
+      assert_empty @fake.requests_for("GET", PROJECTS)
+      assert_equal 0, HourEntry.where(user_id: @user.id).count
+
+      task = Rake::Task["hackatime:sync"]
+      task.reenable
+      with_env("HOURS_SOURCE", "carrier-pigeon") { assert_raises(SystemExit) { capture_io { task.invoke("all") } } }
+      assert_empty @fake.requests_for("GET", PROJECTS)
     end
 
     test "hackatime:sync needs a target" do

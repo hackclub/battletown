@@ -124,7 +124,7 @@ Every job uses `concurrencyPolicy: forbid` (a fire is skipped while the previous
   steps:
     - { type: app, deployment: web, command: "bin/rails notifications:prune", timeoutSeconds: 600, retries: 1 }
 
-- name: hackatime-sync              # create only once HOURS_SOURCE=http is set on web
+- name: hackatime-sync              # create once HOURS_SOURCE=http is set on web (a no-op until then)
   description: Credit recent Hackatime time for linked accounts
   scheduleCron: "35 * * * *"       # UTC; half an hour away from game-settle
   enabled: true
@@ -161,7 +161,7 @@ Every job uses `concurrencyPolicy: forbid` (a fire is skipped while the previous
 Notes:
 
 - **`game-settle`** runs at minute 5 so the settle instant of whole-hour zones has just passed. It tries every user, prints its counts line, then exits 1 when any user failed (`errors=` above 0), so the run shows as failed; the one retry and the next hour try those users again (settling is idempotent).
-- **`hackatime-sync`** calls Hackatime whenever it runs; the task does not check `HOURS_SOURCE` itself, which is why the job must not exist before that is set. Per-user failures are counted (`retry_later=`, `needs_reconnect=`), not raised, so retries stay at 0 and the next hour tries again. Order against `game-settle` does not matter: the grace period gives late hours several hours to land before a day settles.
+- **`hackatime-sync`** checks the hours source first, the same way the app does (`HOURS_SOURCE`, else `hours_source` in `config/game.yml`): unless it is `http` it prints `hackatime:sync skipped: ...`, exits 0 and never calls Hackatime (an unknown value fails the run). So creating the job early is harmless, but it only costs pod starts until `HOURS_SOURCE=http` is set on `web`. Per-user failures are counted (`retry_later=`, `needs_reconnect=`), not raised, so retries stay at 0 and the next hour tries again. Order against `game-settle` does not matter: the grace period gives late hours several hours to land before a day settles.
 - **`privacy-purge-tokens`** is only a backstop (expired ids are also deleted as requests arrive). The time is arbitrary off-peak.
 - **`notifications-prune`** is the exception among the notification tasks: it sends nothing and only enforces retention, and finished rows exist even while notifications are off (changing a reminder schedule cancels the pending row), so create it now.
 - **`notifications-dispatch`** prints `enabled=false` and exits 0 while `NOTIFICATIONS_ENABLED` is not `true`, and in production refuses to send without `SLACK_BOT_TOKEN` (`halted=true`). Every 5 minutes is 288 pod starts a day instead of 1,440: reminders go out up to 5 minutes late, far inside `max_lateness_seconds` (3 hours), and the 5-minute send lease matches the cadence. A run handles at most 100 rows and one message per person (the task's built-in limit), roughly 1,200 an hour at this cadence; if reminders bunch up at popular times beyond that, tighten to `*/2` rather than adding steps. Retries 0 and a generous timeout because a run killed mid-send is the one way a DM can repeat (the leased row comes back after 5 minutes); the next fire is never more than 5 minutes away anyway.
