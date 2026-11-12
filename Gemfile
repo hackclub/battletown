@@ -39,7 +39,7 @@ gem "bootsnap", require: false
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.2"
 
 # The ship screenshot processor (app/services/ship_images/processor.rb) calls libvips directly. image_processing 1.x
 # pulled this in; 2.x does not, so it is a direct dependency here and bumping image_processing cannot drop it. require: false
