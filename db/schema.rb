@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_051207) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -202,7 +202,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_051207) do
     t.boolean "enabled", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id", "kind"], name: "index_notification_preferences_on_user_id_and_kind", unique: true
+    t.string "channel", default: "slack_dm", null: false
+    t.index ["user_id", "kind", "channel"], name: "index_notification_preferences_on_user_kind_channel", unique: true
+    t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notification_preferences_channel_check"
     t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying]::text[])", name: "notification_preferences_kind_check"
   end
 
@@ -226,7 +228,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_051207) do
     t.index ["user_id", "kind"], name: "index_notifications_one_pending_per_user_kind", unique: true, where: "(((status)::text = 'pending'::text) AND ((kind)::text = 'daily_reminder'::text))"
     t.index ["user_id"], name: "index_notifications_on_user_id"
     t.check_constraint "attempts >= 0 AND attempts <= 10", name: "notifications_attempts_check"
-    t.check_constraint "channel::text = 'slack_dm'::text", name: "notifications_channel_check"
+    t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notifications_channel_check"
     t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying]::text[])", name: "notifications_kind_check"
     t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "notifications_last_error_code_check"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying, 'skipped'::character varying]::text[])", name: "notifications_status_check"
@@ -380,6 +382,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_051207) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.date "signed_up_on", null: false
+    t.datetime "email_opted_out_at"
+    t.string "email_unsubscribe_nonce", default: -> { "(gen_random_uuid())::text" }, null: false
     t.index ["hca_uid"], name: "index_users_on_hca_uid", unique: true
     t.index ["slack_id"], name: "index_users_on_slack_id"
     t.check_constraint "char_length(project_idea) <= 500", name: "users_project_idea_length_check"

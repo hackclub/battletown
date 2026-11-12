@@ -68,6 +68,10 @@ class User < ApplicationRecord
 
   def onboarded? = onboarded_at.present?
 
+  # The "no email at all" switch (Notifications::Email, behind the `email` flag): set by the settings page and by the
+  # one-click unsubscribe link in every email.
+  def email_opted_out? = email_opted_out_at.present?
+
   # The one project hours should count toward right now (nil until they have one). Other features read this.
   def active_project = projects.find_by(active: true)
 

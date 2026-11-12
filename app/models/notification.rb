@@ -5,7 +5,7 @@ class Notification < ApplicationRecord
   # (`subject_id`): link_question a LinkSuggestion, ship_reminder / ship_mvp a Project, ship_approved / ship_rejected a Ship.
   KINDS = %w[daily_reminder link_question ship_reminder ship_mvp ship_approved ship_rejected].freeze
   EVENT_KINDS = (KINDS - %w[daily_reminder]).freeze
-  CHANNELS = %w[slack_dm].freeze
+  CHANNELS = %w[slack_dm email].freeze
   # skipped: handled by an adapter that does not really deliver (the log adapter in development, the null adapter in
   # tests), so nothing reached Slack; last_error_code says why. Never recorded as sent.
   STATUSES = %w[pending sent failed cancelled skipped].freeze
