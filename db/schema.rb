@@ -220,7 +220,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_143002) do
     t.string "channel", default: "slack_dm", null: false
     t.index ["user_id", "kind", "channel"], name: "index_notification_preferences_on_user_kind_channel", unique: true
     t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notification_preferences_channel_check"
-    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying, 'nps_prompt'::character varying]::text[])", name: "notification_preferences_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying, 'nps_prompt'::character varying, 'order_shipped'::character varying, 'order_fulfilled'::character varying, 'order_cancelled'::character varying, 'order_refunded'::character varying]::text[])", name: "notification_preferences_kind_check"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -244,7 +244,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_143002) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
     t.check_constraint "attempts >= 0 AND attempts <= 10", name: "notifications_attempts_check"
     t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notifications_channel_check"
-    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying, 'nps_prompt'::character varying]::text[])", name: "notifications_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying, 'nps_prompt'::character varying, 'order_shipped'::character varying, 'order_fulfilled'::character varying, 'order_cancelled'::character varying, 'order_refunded'::character varying]::text[])", name: "notifications_kind_check"
     t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "notifications_last_error_code_check"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying, 'skipped'::character varying]::text[])", name: "notifications_status_check"
   end
@@ -263,6 +263,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_143002) do
     t.check_constraint "score >= 0 AND score <= 10", name: "nps_responses_score_check"
   end
 
+  create_table "order_events", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "actor_id"
+    t.string "actor_kind", limit: 10, null: false
+    t.string "action", limit: 20, null: false
+    t.string "from_status", limit: 20
+    t.string "to_status", limit: 20
+    t.string "reason_code", limit: 30
+    t.string "note", limit: 300
+    t.datetime "created_at", null: false
+    t.index ["actor_id"], name: "index_order_events_on_actor_id", where: "(actor_id IS NOT NULL)"
+    t.index ["order_id", "created_at"], name: "index_order_events_on_order_id_and_created_at"
+    t.check_constraint "action::text = ANY (ARRAY['held'::character varying, 'released'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying, 'tracking_updated'::character varying, 'note_added'::character varying]::text[])", name: "order_events_action_check"
+    t.check_constraint "actor_kind::text = 'staff'::text OR actor_id IS NULL", name: "order_events_actor_check"
+    t.check_constraint "actor_kind::text = ANY (ARRAY['buyer'::character varying, 'staff'::character varying, 'system'::character varying]::text[])", name: "order_events_actor_kind_check"
+    t.check_constraint "from_status IS NULL OR (from_status::text = ANY (ARRAY['requested'::character varying, 'on_hold'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[]))", name: "order_events_from_status_check"
+    t.check_constraint "note IS NULL OR char_length(note::text) >= 1 AND char_length(note::text) <= 300 AND note::text !~ '[[:cntrl:]]'::text", name: "order_events_note_check"
+    t.check_constraint "reason_code IS NULL OR reason_code::text ~ '^[a-z_]{2,30}$'::text", name: "order_events_reason_code_check"
+    t.check_constraint "to_status IS NULL OR (to_status::text = ANY (ARRAY['requested'::character varying, 'on_hold'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[]))", name: "order_events_to_status_check"
+  end
+
   create_table "orders", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "prize_key", limit: 60, null: false
@@ -275,18 +296,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_143002) do
     t.datetime "cancelled_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "shipped_at"
+    t.datetime "refunded_at"
+    t.string "tracking_carrier", limit: 20
+    t.string "tracking_number", limit: 60
+    t.string "tracking_label", limit: 40
     t.index ["status", "created_at"], name: "index_orders_on_status_and_created_at"
     t.index ["user_id", "created_at"], name: "index_orders_on_user_id_and_created_at"
     t.index ["user_id", "idempotency_key"], name: "index_orders_on_user_id_and_idempotency_key", unique: true
     t.index ["user_id"], name: "index_orders_one_signup_sticker_per_user", unique: true, where: "((kind)::text = 'signup_sticker'::text)"
+    t.check_constraint "(status::text <> 'fulfilled'::text OR fulfilled_at IS NOT NULL) AND (fulfilled_at IS NULL OR (status::text = ANY (ARRAY['fulfilled'::character varying, 'refunded'::character varying]::text[])))", name: "orders_fulfilled_at_check"
     t.check_constraint "(status::text = 'cancelled'::text) = (cancelled_at IS NOT NULL)", name: "orders_cancelled_at_check"
-    t.check_constraint "(status::text = 'fulfilled'::text) = (fulfilled_at IS NOT NULL)", name: "orders_fulfilled_at_check"
+    t.check_constraint "(status::text = 'refunded'::text) = (refunded_at IS NOT NULL)", name: "orders_refunded_at_check"
+    t.check_constraint "(tracking_carrier IS NULL) = (tracking_number IS NULL)", name: "orders_tracking_pair_check"
     t.check_constraint "char_length(idempotency_key::text) >= 1 AND char_length(idempotency_key::text) <= 100", name: "orders_idempotency_key_check"
     t.check_constraint "char_length(prize_key::text) >= 1 AND char_length(prize_name::text) >= 1", name: "orders_prize_check"
     t.check_constraint "coins >= 0", name: "orders_coins_check"
     t.check_constraint "kind::text = 'signup_sticker'::text AND coins = 0 OR kind::text = 'purchase'::text AND coins > 0", name: "orders_kind_coins_check"
     t.check_constraint "kind::text = ANY (ARRAY['purchase'::character varying, 'signup_sticker'::character varying]::text[])", name: "orders_kind_check"
-    t.check_constraint "status::text = ANY (ARRAY['requested'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying]::text[])", name: "orders_status_check"
+    t.check_constraint "shipped_at IS NULL OR (status::text = ANY (ARRAY['shipped'::character varying, 'fulfilled'::character varying, 'refunded'::character varying]::text[]))", name: "orders_shipped_at_status_check"
+    t.check_constraint "status::text <> 'shipped'::text OR shipped_at IS NOT NULL", name: "orders_shipped_at_check"
+    t.check_constraint "status::text = ANY (ARRAY['requested'::character varying, 'on_hold'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[])", name: "orders_status_check"
+    t.check_constraint "tracking_carrier IS NULL OR tracking_carrier::text ~ '^[a-z_]{2,20}$'::text", name: "orders_tracking_carrier_check"
+    t.check_constraint "tracking_label IS NULL OR tracking_carrier::text = 'other'::text AND char_length(tracking_label::text) >= 1 AND char_length(tracking_label::text) <= 40 AND tracking_label::text !~ '[[:cntrl:]]'::text", name: "orders_tracking_label_check"
+    t.check_constraint "tracking_number IS NULL OR tracking_number::text ~ '^[A-Za-z0-9][A-Za-z0-9 -]{2,59}$'::text AND shipped_at IS NOT NULL", name: "orders_tracking_number_check"
   end
 
   create_table "plinko_drops", force: :cascade do |t|
@@ -564,6 +597,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_143002) do
   add_foreign_key "notification_preferences", "users", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "nps_responses", "users", on_delete: :cascade
+  add_foreign_key "order_events", "orders", on_delete: :cascade
+  add_foreign_key "order_events", "users", column: "actor_id", on_delete: :nullify
   add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "plinko_drops", "users", on_delete: :cascade
   add_foreign_key "plinko_players", "users", on_delete: :cascade

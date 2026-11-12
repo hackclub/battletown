@@ -1,0 +1,53 @@
+# Tunables for the order lifecycle (app/services/orders/**). Read through Orders::Config.current.
+# Prices are coins only; nothing in this file is secret or personal.
+shared:
+  # An order still `requested` for this many whole days or more gets an "Overdue" chip in the staff queue.
+  overdue_days: 7
+
+  # A person can have at most this many orders waiting (`requested`) at once. The friendly error asks them to wait for the team.
+  max_open_requested: 5
+
+  # Throttles (config/initializers/rack_attack.rb): orders a signed-in person can place per hour, and staff changes
+  # (hold, ship, cancel, note ...) per address per minute. The export has its own, smaller limit.
+  orders_per_hour: 10
+  staff_actions_per_minute: 60
+  exports_per_10_minutes: 6
+
+  # The CSV export stops at this many rows (the audit event records the real count and whether it was cut).
+  export_max_rows: 5000
+
+  # The longest note staff can add to an order (the database enforces 300).
+  note_max: 300
+
+  # Why staff cancel or refund an order. The key is stored on the history row; the label is what staff see. Keys are
+  # lower-case words and underscores. The buyer never sees these.
+  reason_codes:
+    out_of_stock: "Out of stock"
+    buyer_request: "Buyer request"
+    address_problem: "Delivery problem"
+    fraud_abuse: "Fraud or abuse"
+    duplicate: "Duplicate order"
+    other: "Other"
+
+  # Carriers a tracking number can be entered for. `url` is a public tracking page on https with {number} where the number
+  # goes (it is URL-encoded, spaces removed); no `url` means the number is shown without a link ("other" takes a short label).
+  carriers:
+    post:
+      name: "Post"
+    usps:
+      name: "USPS"
+      url: "https://tools.usps.com/go/TrackConfirmAction?tLabels={number}"
+    royal_mail:
+      name: "Royal Mail"
+      url: "https://www.royalmail.com/track-your-item#/tracking-results/{number}"
+    ups:
+      name: "UPS"
+      url: "https://www.ups.com/track?tracknum={number}"
+    dhl:
+      name: "DHL"
+      url: "https://www.dhl.com/global-en/home/tracking/tracking-express.html?submit=1&tracking-id={number}"
+    fedex:
+      name: "FedEx"
+      url: "https://www.fedex.com/fedextrack/?trknbr={number}"
+    other:
+      name: "Other"

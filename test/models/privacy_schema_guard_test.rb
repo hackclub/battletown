@@ -20,7 +20,8 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
   NULLIFY_ALLOWED = {
     "ships.reviewer_id" => "the staff member who reviewed a ship; the ship belongs to the teen",
     "admin_audit_events.actor_id" => "the staff member who did it; the trail holds ids and amounts, never another person's identity",
-    "project_reviews.reviewer_id" => "the staff member who reviewed a project; the review belongs to the project (and so to the teen)"
+    "project_reviews.reviewer_id" => "the staff member who reviewed a project; the review belongs to the project (and so to the teen)",
+    "order_events.actor_id" => "the person who changed the order (a staff member, or the buyer); the history row belongs to the order, which cascades"
   }.freeze
 
   # Tables that are not about a person: the Rails bookkeeping tables and the token ids of this very feature.
@@ -79,8 +80,9 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     # (A table whose only key to users is a nulling one, the staff access log, loses no rows when a person is deleted.)
     referencing = app_tables.select { |table| user_foreign_keys(table).any? { |fk| fk.on_delete == :cascade } }
     through_projects = %w[link_suggestions project_reviews] # a crew with no members left is swept by Privacy::Deleter
+    through_orders = %w[order_events] # the history of an order goes with the order (ON DELETE CASCADE)
     swept = %w[teams]
-    assert_equal (referencing + through_projects + swept + [ "users" ]).sort, deleted.keys.sort,
+    assert_equal (referencing + through_projects + through_orders + swept + [ "users" ]).sort, deleted.keys.sort,
                  "add a row for the new table to this test so its count is proven (every table that references users must show up)"
   end
 end

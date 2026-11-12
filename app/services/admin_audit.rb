@@ -37,7 +37,20 @@ module AdminAudit
     project_note_added
   ].freeze
 
-  ACTIONS = (USER_ACTIONS + NPS_ACTIONS + SHOP_ACTIONS + REVIEW_ACTIONS).freeze
+  # Orders (Orders::* services and the CSV export): ids, statuses and reason codes only, never a note or a tracking number.
+  ORDER_ACTIONS = %w[
+    order_held
+    order_released
+    order_shipped
+    order_fulfilled
+    order_cancelled
+    order_refunded
+    order_tracking_updated
+    order_note_added
+    order_exported
+  ].freeze
+
+  ACTIONS = (USER_ACTIONS + NPS_ACTIONS + SHOP_ACTIONS + REVIEW_ACTIONS + ORDER_ACTIONS).freeze
 
   module_function
 

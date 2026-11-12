@@ -14,7 +14,8 @@ module EveryTableRows
     project.link_suggestions.create!(hackatime_project: "guard-other")
     Projects::Review.flag(project: project, reviewer: users(:new_user), preset: "Other", details: "guard") # reaches the teen only through the project
     CoinTransaction.create!(user: user, amount: 5, kind: "refund", idempotency_key: "guard-#{user.id}")
-    Order.create!(user: user, prize_key: "sticker_pack", prize_name: "Sticker pack", coins: 20, kind: "purchase", idempotency_key: "guard-#{user.id}")
+    guard_order = Order.create!(user: user, prize_key: "sticker_pack", prize_name: "Sticker pack", coins: 20, kind: "purchase", idempotency_key: "guard-#{user.id}")
+    OrderEvent.create!(order: guard_order, actor_kind: "staff", action: "note_added", from_status: "requested", to_status: "requested", note: "guard")
     HourEntry.create!(user: user, local_date: Date.new(2026, 11, 9), seconds: 3600, source: "manual", note: "guard", hackatime_project: "guard-project", idempotency_key: "guard-ship-#{user.id}")
     Ship.create!(user: user, project: project, status: "submitted", description: "Guard ship", repo_url: "https://github.com/guard/ship", coded_seconds: 3600,
                  window_start_date: Date.new(2026, 11, 9), window_end_date: Date.new(2026, 11, 9), daily_seconds: { "2026-11-09" => 3600 }, submitted_at: Time.current)
