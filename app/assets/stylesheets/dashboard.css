@@ -55,10 +55,6 @@
 .dash-meter__bar::-webkit-progress-value { background: var(--color-primary); }
 .dash-meter__bar::-moz-progress-bar { background: var(--color-primary); }
 .dash-meter__text { margin: var(--space-1) 0 0; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
-/* Goal reached: a green bar; past it, the words celebrate too (never colour alone) */
-.dash-meter--done .dash-meter__bar::-webkit-progress-value { background: var(--color-success); }
-.dash-meter--done .dash-meter__bar::-moz-progress-bar { background: var(--color-success); }
-.dash-meter--smashed .dash-meter__text { color: var(--color-success); font-weight: 700; }
 
 .dash-checks { display: grid; gap: var(--space-1); margin: 0 0 var(--space-4); padding: 0; list-style: none; }
 .dash-check { display: flex; gap: var(--space-2); align-items: baseline; }

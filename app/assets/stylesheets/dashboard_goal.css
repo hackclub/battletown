@@ -1,0 +1,6 @@
+/* Today panel goal states, kept apart from dashboard.css so the page restyle owns that file. The modifier selectors
+   outrank the base .dash-meter rules, so load order does not matter.
+   Goal reached: a green bar; past it, the words celebrate too (never colour alone). */
+.dash-meter--done .dash-meter__bar::-webkit-progress-value { background: var(--color-success); }
+.dash-meter--done .dash-meter__bar::-moz-progress-bar { background: var(--color-success); }
+.dash-meter--smashed .dash-meter__text { color: var(--color-success); font-weight: 700; }
