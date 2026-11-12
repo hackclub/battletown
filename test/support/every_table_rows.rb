@@ -12,6 +12,7 @@ module EveryTableRows
     project = Project.create!(user: user, name: "Guard project", kind: "game")
     project.hackatime_links.create!(user_id: user.id, hackatime_project: "guard-project", link_method: "manual")
     project.link_suggestions.create!(hackatime_project: "guard-other")
+    Projects::Review.flag(project: project, reviewer: users(:new_user), preset: "Other", details: "guard") # reaches the teen only through the project
     CoinTransaction.create!(user: user, amount: 5, kind: "refund", idempotency_key: "guard-#{user.id}")
     Order.create!(user: user, prize_key: "sticker_pack", prize_name: "Sticker pack", coins: 20, kind: "purchase", idempotency_key: "guard-#{user.id}")
     HourEntry.create!(user: user, local_date: Date.new(2026, 11, 9), seconds: 3600, source: "manual", note: "guard", hackatime_project: "guard-project", idempotency_key: "guard-ship-#{user.id}")

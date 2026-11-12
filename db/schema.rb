@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_130804) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_143002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -329,6 +329,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130804) do
     t.check_constraint "request_id IS NULL OR length(request_id::text) <= 255", name: "privacy_request_tokens_request_id_check"
   end
 
+  create_table "project_reviews", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.bigint "reviewer_id"
+    t.string "status", null: false
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.index ["project_id", "created_at"], name: "index_project_reviews_on_project_id_and_created_at", order: { created_at: :desc }
+    t.index ["reviewer_id"], name: "index_project_reviews_on_reviewer_id"
+    t.check_constraint "note IS NULL OR char_length(note) <= 500", name: "project_reviews_note_length_check"
+    t.check_constraint "status::text <> 'flagged'::text OR note IS NOT NULL AND note ~ '[^[:space:]]'::text", name: "project_reviews_flag_needs_note_check"
+    t.check_constraint "status::text = ANY (ARRAY['ok'::character varying, 'flagged'::character varying]::text[])", name: "project_reviews_status_check"
+  end
+
   create_table "projects", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "name", null: false
@@ -341,9 +354,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130804) do
     t.boolean "active", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "review_status", default: "unreviewed", null: false
+    t.datetime "reviewed_at"
     t.index ["id", "user_id"], name: "index_projects_on_id_and_user_id", unique: true
+    t.index ["review_status", "created_at"], name: "index_projects_on_review_status_and_created_at"
     t.index ["user_id", "created_at"], name: "index_projects_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_projects_one_active_per_user", unique: true, where: "active"
+    t.check_constraint "(review_status::text = 'unreviewed'::text) = (reviewed_at IS NULL)", name: "projects_reviewed_at_check"
     t.check_constraint "NOT active OR status::text = 'active'::text", name: "projects_active_not_archived_check"
     t.check_constraint "char_length(idea) <= 500", name: "projects_idea_length_check"
     t.check_constraint "char_length(name::text) >= 1 AND char_length(name::text) <= 60 AND btrim(name::text) <> ''::text", name: "projects_name_check"
@@ -351,6 +368,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130804) do
     t.check_constraint "guide_key IS NULL OR (guide_key::text = ANY (ARRAY['sd'::character varying, 'playground'::character varying]::text[]))", name: "projects_guide_key_check"
     t.check_constraint "kind::text = ANY (ARRAY['game'::character varying, 'website'::character varying, 'app'::character varying, 'tool'::character varying, 'hardware'::character varying, 'undecided'::character varying]::text[])", name: "projects_kind_check"
     t.check_constraint "repo_url IS NULL OR char_length(repo_url::text) <= 300 AND repo_url::text ~ '^https://github\\.com/[a-z0-9-]{1,39}/(?!\\.+$)[a-z0-9._-]{1,100}$'::text", name: "projects_repo_url_check"
+    t.check_constraint "review_status::text = ANY (ARRAY['unreviewed'::character varying, 'ok'::character varying, 'flagged'::character varying]::text[])", name: "projects_review_status_check"
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "projects_status_check"
   end
 
@@ -549,6 +567,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130804) do
   add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "plinko_drops", "users", on_delete: :cascade
   add_foreign_key "plinko_players", "users", on_delete: :cascade
+  add_foreign_key "project_reviews", "projects", on_delete: :cascade
+  add_foreign_key "project_reviews", "users", column: "reviewer_id", on_delete: :nullify
   add_foreign_key "projects", "users", on_delete: :cascade
   add_foreign_key "quest_completions", "coin_transactions", on_delete: :cascade
   add_foreign_key "quest_completions", "quests", on_delete: :cascade

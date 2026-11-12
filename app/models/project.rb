@@ -5,6 +5,7 @@
 class Project < ApplicationRecord
   KINDS = User::PROJECT_KINDS
   STATUSES = %w[active archived].freeze
+  REVIEW_STATUSES = %w[unreviewed ok flagged].freeze # staff only; see ProjectReview and docs/CONTRACT.md "Project review"
   GUIDE_KEYS = %w[sd playground].freeze # nil for none; guides themselves are not built yet
   MAX_PER_USER = 10
   NAME_RANGE = 1..60
@@ -18,6 +19,9 @@ class Project < ApplicationRecord
   has_many :hackatime_links, dependent: :destroy
   has_many :link_suggestions, dependent: :destroy
   has_many :ships, dependent: :destroy
+  # Staff review history (deleted with the project by the database). The teen never sees it; the denormalised
+  # `review_status` / `reviewed_at` are written only by Projects::Review, never through the project form.
+  has_many :project_reviews, -> { latest_first }, inverse_of: :project
 
   before_validation :normalize_fields
   before_validation :claim_active_slot, on: :create
@@ -26,6 +30,7 @@ class Project < ApplicationRecord
   validates :kind, inclusion: { in: KINDS }
   validates :idea, length: { maximum: IDEA_MAX }
   validates :status, inclusion: { in: STATUSES }
+  validates :review_status, inclusion: { in: REVIEW_STATUSES }
   validates :guide_key, inclusion: { in: GUIDE_KEYS }, allow_nil: true
   validate :repo_url_is_a_github_repo
   validate :demo_url_is_https
@@ -39,6 +44,10 @@ class Project < ApplicationRecord
 
   STATUSES.each do |name|
     define_method(:"status_#{name}?") { status == name }
+  end
+
+  REVIEW_STATUSES.each do |name|
+    define_method(:"review_#{name}?") { review_status == name }
   end
 
   # A short title for a project the user has not named: the first sentence of the idea (shortened), else "My <kind>".

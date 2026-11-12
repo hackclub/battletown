@@ -1,0 +1,157 @@
+require "test_helper"
+
+class Projects::ReviewTest < ActiveSupport::TestCase
+  setup do
+    @owner = users(:new_user)
+    @staff = users(:onboarded)
+    @second = User.create!(hca_uid: "ident!second-staff", email: "second@example.test", display_name: "Second Staff")
+    @project = Project.create!(user: @owner, name: "Cow Game", kind: "game")
+  end
+
+  Review = Projects::Review
+
+  test "marking OK appends a row and copies it onto the project" do
+    review = Review.ok(project: @project, reviewer: @staff)
+    @project.reload
+    assert_equal "ok", @project.review_status
+    assert_equal review.created_at.to_i, @project.reviewed_at.to_i
+    assert_equal [ "ok" ], @project.project_reviews.map(&:status)
+    assert_nil review.note
+    assert_equal @staff, review.reviewer
+  end
+
+  test "marking OK keeps an optional note, squished" do
+    review = Review.ok(project: @project, reviewer: @staff, note: "  Looks \n good  ")
+    assert_equal "Looks good", review.note
+  end
+
+  test "flagging needs a reason: a preset, details, or both" do
+    assert_equal "Needs a safety check", Review.flag(project: @project, reviewer: @staff, preset: "Needs a safety check").note
+    assert_equal "Links don't work: 404 on the demo", Review.flag(project: @project, reviewer: @staff, preset: "Links don't work", details: "404 on the demo").note
+    assert_equal "only my words", Review.flag(project: @project, reviewer: @staff, details: "only my words").note
+    assert_equal "flagged", @project.reload.review_status
+  end
+
+  test "flagging without a reason is refused and changes nothing" do
+    [ [ nil, nil ], [ "", "  " ], [ "Not a preset", "" ], [ "Other", "" ], [ "Other", "   " ] ].each do |preset, details|
+      assert_raises(Review::Invalid, [ preset, details ].inspect) { Review.flag(project: @project, reviewer: @staff, preset: preset, details: details) }
+    end
+    assert_equal "unreviewed", @project.reload.review_status
+    assert_nil @project.reviewed_at
+    assert_equal 0, ProjectReview.count
+  end
+
+  test "an unknown preset is ignored when details are given" do
+    assert_equal "my words", Review.flag(project: @project, reviewer: @staff, preset: "<script>", details: "my words").note
+  end
+
+  test "the whole reason may be 500 characters and not one more" do
+    Review.flag(project: @project, reviewer: @staff, details: "a" * 500)
+    error = assert_raises(Review::Invalid) { Review.flag(project: @project, reviewer: @staff, details: "a" * 501) }
+    assert_includes error.message, "501"
+    assert_raises(Review::Invalid) { Review.flag(project: @project, reviewer: @staff, preset: "Looks like someone else's work", details: "a" * 480) }
+    assert_raises(Review::Invalid) { Review.ok(project: @project, reviewer: @staff, note: "b" * 501) }
+    assert_equal 1, ProjectReview.count
+  end
+
+  test "clearing needs a flag, and records an OK row" do
+    error = assert_raises(Review::Invalid) { Review.clear(project: @project, reviewer: @staff) }
+    assert_includes error.message, "not flagged"
+    Review.flag(project: @project, reviewer: @staff, preset: "Other", details: "odd")
+    Review.clear(project: @project, reviewer: @second, note: "Checked, fine")
+    assert_equal "ok", @project.reload.review_status
+    assert_equal [ "ok", "flagged" ], @project.project_reviews.map(&:status)
+    assert_raises(Review::Invalid) { Review.clear(project: @project, reviewer: @staff) } # already cleared
+  end
+
+  test "a note keeps the current state and needs a review first" do
+    assert_raises(Review::Invalid) { Review.add_note(project: @project, reviewer: @staff, note: "hi") }
+    Review.flag(project: @project, reviewer: @staff, details: "odd")
+    Review.add_note(project: @project, reviewer: @second, note: "Asked in Slack")
+    assert_equal "flagged", @project.reload.review_status
+    assert_equal [ "Asked in Slack", "odd" ], @project.project_reviews.map(&:note)
+    assert_raises(Review::Invalid) { Review.add_note(project: @project, reviewer: @staff, note: "   ") }
+  end
+
+  test "history is newest first and the latest row is the current state" do
+    now = Time.current
+    travel_to(now - 3.hours) { Review.ok(project: @project, reviewer: @staff) }
+    travel_to(now - 2.hours) { Review.flag(project: @project, reviewer: @second, details: "later") }
+    travel_to(now - 1.hour) { Review.clear(project: @project, reviewer: @staff) }
+    assert_equal %w[ok flagged ok], @project.project_reviews.map(&:status)
+    assert_equal "ok", @project.reload.review_status
+    assert_equal @project.project_reviews.first.status, @project.review_status
+  end
+
+  test "the project's copy always equals its newest row, whatever the sequence" do
+    steps = [ -> { Review.ok(project: @project, reviewer: @staff) }, -> { Review.flag(project: @project, reviewer: @second, details: "x") },
+              -> { Review.add_note(project: @project, reviewer: @staff, note: "n") }, -> { Review.clear(project: @project, reviewer: @second) },
+              -> { Review.flag(project: @project, reviewer: @staff, details: "y") } ]
+    steps.each do |step|
+      step.call
+      @project.reload
+      assert_equal @project.project_reviews.first.status, @project.review_status
+      assert_equal @project.project_reviews.first.created_at.to_i, @project.reviewed_at.to_i
+    end
+  end
+
+  test "staff cannot review their own project, and nothing is written" do
+    mine = Project.create!(user: @staff, name: "Mine", kind: "tool")
+    [ -> { Review.ok(project: mine, reviewer: @staff) }, -> { Review.flag(project: mine, reviewer: @staff, details: "x") },
+      -> { Review.clear(project: mine, reviewer: @staff) }, -> { Review.add_note(project: mine, reviewer: @staff, note: "x") } ].each do |attempt|
+      error = assert_raises(Review::OwnProject) { attempt.call }
+      assert_equal Review::OWN_PROJECT_MESSAGE, error.message
+      assert_kind_of Review::Invalid, error
+    end
+    assert_equal 0, ProjectReview.count
+    assert_equal "unreviewed", mine.reload.review_status
+  end
+
+  test "a review needs a reviewer" do
+    assert_raises(Review::Invalid) { Review.ok(project: @project, reviewer: nil) }
+  end
+
+  test "reviewing changes nothing about coding, hours, coins, ships or the project itself" do
+    HourEntry.create!(user: @owner, local_date: Date.new(2026, 11, 9), seconds: 3600, source: "manual", note: "t", hackatime_project: "cows", idempotency_key: "r1")
+    before = [ @owner.reload.attributes, HourEntry.count, CoinTransaction.count, Ship.count, Order.count, Notification.count ]
+    project_before = @project.reload.attributes.except("review_status", "reviewed_at")
+    Review.flag(project: @project, reviewer: @staff, details: "x")
+    Review.clear(project: @project, reviewer: @staff)
+    assert_equal before, [ @owner.reload.attributes, HourEntry.count, CoinTransaction.count, Ship.count, Order.count, Notification.count ]
+    assert_equal project_before, @project.reload.attributes.except("review_status", "reviewed_at")
+    assert @project.status_active?
+  end
+
+  test "a failed review writes nothing: the row, the copy and the audit event go together" do
+    original = Projects::ReviewAudit.method(:record!)
+    Projects::ReviewAudit.define_singleton_method(:record!) { |**| raise "audit down" }
+    assert_raises(RuntimeError) { Review.flag(project: @project, reviewer: @staff, details: "x") }
+    assert_equal 0, ProjectReview.count
+    assert_equal "unreviewed", @project.reload.review_status
+  ensure
+    Projects::ReviewAudit.define_singleton_method(:record!, original)
+  end
+
+  test "each action writes its audit event when AdminAudit exists" do
+    events = []
+    stub = Module.new { define_singleton_method(:record!) { |**args| events << args } }
+    Object.const_set(:AdminAudit, stub) unless defined?(::AdminAudit)
+    skip "the real AdminAudit is loaded; its own tests cover the log" unless ::AdminAudit.equal?(stub)
+
+    Review.ok(project: @project, reviewer: @staff)
+    Review.flag(project: @project, reviewer: @staff, details: "x")
+    Review.add_note(project: @project, reviewer: @staff, note: "n")
+    Review.clear(project: @project, reviewer: @staff)
+    assert_equal %w[project_reviewed project_flagged project_note_added project_cleared], events.map { |event| event[:action] }
+    assert(events.all? { |event| event[:actor] == @staff && event[:subject] == @project })
+    assert_equal [ "ok", "flagged", "flagged", "ok" ], events.map { |event| event.dig(:metadata, "status") }
+    assert_not_includes events.inspect, "Cow Game", "no project name or note text in the audit metadata"
+  ensure
+    Object.send(:remove_const, :AdminAudit) if defined?(::AdminAudit) && ::AdminAudit.equal?(stub)
+  end
+
+  test "without AdminAudit the adapter does nothing and reviews still work" do
+    skip "AdminAudit exists" if defined?(::AdminAudit)
+    assert_nothing_raised { Review.ok(project: @project, reviewer: @staff) }
+  end
+end
