@@ -1,7 +1,27 @@
-<section class="container">
-  <h1>Welcome, <%= current_user.display_name.presence || "adventurer" %></h1>
-  <% if (prize = current_user.prize) %>
-    <p class="card">You're working toward: <strong><%= prize.emoji %> <%= prize.name %></strong> (<%= prize.hours_text %>)</p>
-  <% end %>
-  <p class="card">Boss battle coming soon.</p>
+<%# The signed-in home page. Every number and sentence comes from Dashboard::Presenter (@dashboard); the partials only
+    lay it out. One h1, one h2 per section (the boss card owns its own h2). Styles: dashboard.css. -%>
+<section class="container dashboard">
+  <header class="dashboard__header">
+    <h1>Welcome, <%= @dashboard.name %></h1>
+    <p class="dashboard__date"><time datetime="<%= @dashboard.today_date.iso8601 %>"><%= @dashboard.date_text %></time></p>
+  </header>
+
+  <%= render "bosses/card", presenter: @dashboard.boss %>
+
+  <%= render "dashboard/today", d: @dashboard %>
+
+  <section class="dashboard__streaks" aria-labelledby="dash-streaks-title">
+    <h2 id="dash-streaks-title">Streaks</h2>
+    <div class="dashboard__streak-cards">
+      <%= render "dashboard/streak_card", card: @dashboard.quick_streak, key: "quick", freeze: true %>
+      <%= render "dashboard/streak_card", card: @dashboard.goal_streak, key: "goal", freeze: false %>
+    </div>
+  </section>
+
+  <div class="dashboard__grid">
+    <%= render "dashboard/coins", coins: @dashboard.coins %>
+    <%= render "dashboard/project", project: @dashboard.project %>
+    <%= render "dashboard/hackatime", hackatime: @dashboard.hackatime %>
+    <%= render "dashboard/prize", prize: @dashboard.prize %>
+  </div>
 </section>

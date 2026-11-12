@@ -1,0 +1,48 @@
+<%# locals: (project:) -%>
+<section class="card dash-panel dash-project" aria-labelledby="dash-project-title">
+  <h2 id="dash-project-title">Active project</h2>
+
+  <% if project.nil? %>
+    <p>You don't have an active project yet. A project is what you code on and ship.</p>
+    <div class="dash-actions">
+      <%= link_to "Add a project", new_project_path, class: "btn btn--primary" %>
+      <%= link_to "Your projects", projects_path, class: "btn btn--ghost" %>
+    </div>
+  <% else %>
+    <h3 class="dash-project__name"><%= project.name %></h3>
+    <p class="dash-project__meta"><%= project.linked_text %>. <%= link_to "Edit project", edit_project_path(project.id) %></p>
+    <p>Coded since your last ship: <strong><%= project.window_text %></strong> <span class="dash-muted">(at least <%= project.min_text %> to ship)</span></p>
+
+    <% ship = project.ship %>
+    <% if project.can_ship %>
+      <div class="dash-actions">
+        <%= link_to "Ship", new_project_ship_path(project.id), class: "btn btn--primary" %>
+      </div>
+    <% elsif ship&.open %>
+      <div class="dash-actions">
+        <% if ship.status == "draft" %>
+          <%= link_to "Continue draft", edit_ship_path(ship.id), class: "btn btn--primary" %>
+        <% else %>
+          <%= link_to "View your ship", ship_path(ship.id), class: "btn btn--ghost" %>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="dash-reason"><%= project.reason %></p>
+      <% if project.readiness == :no_link %>
+        <div class="dash-actions"><%= link_to "Link a Hackatime project", edit_project_path(project.id), class: "btn btn--ghost" %></div>
+      <% end %>
+    <% end %>
+
+    <% if ship %>
+      <div class="dash-ship">
+        <p class="dash-ship__line"><span class="dash-muted">Latest ship:</span> <span class="badge ship-status ship-status--<%= ship.status %>"><%= ship.label %></span></p>
+        <p><%= ship.message %></p>
+        <% if ship.reason %><p class="dash-ship__reason">Reviewer note: <%= ship.reason %></p><% end %>
+        <% if ship.status == "rejected" %>
+          <p><%= link_to "Fix and ship again", new_project_ship_path(project.id, from: ship.id) %></p>
+        <% end %>
+      </div>
+    <% end %>
+    <p class="dash-more"><%= link_to "All your ships", ships_path %></p>
+  <% end %>
+</section>

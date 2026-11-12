@@ -1,0 +1,14 @@
+<%# locals: (card:, key:, freeze:) -%>
+<%# One streak card. The state is always said in words (headline and message); the icon is decoration. -%>
+<% icon = { empty: "○", active: "\u{1F525}", frozen: "❄", broken: "\u{1F331}" }.fetch(card.state) %>
+<article class="card dash-streak dash-streak--<%= card.state %>" aria-labelledby="dash-streak-<%= key %>-title">
+  <h3 id="dash-streak-<%= key %>-title" class="dash-streak__title"><%= card.title %></h3>
+  <p class="dash-streak__count"><span class="dash-streak__icon" aria-hidden="true"><%= icon %></span> <strong><%= card.headline %></strong></p>
+  <p class="dash-streak__message"><%= card.message %></p>
+  <ul class="dash-facts">
+    <% if card.today_bonus_text %><li><%= card.today_bonus_text %></li><% end %>
+    <% if card.next_bonus_text %><li><%= card.next_bonus_text %></li><% end %>
+    <% if freeze && card.freeze_text %><li><span aria-hidden="true">&#10052;</span> <%= card.freeze_text %></li><% end %>
+    <% if card.best_text %><li><%= card.best_text %></li><% end %>
+  </ul>
+</article>

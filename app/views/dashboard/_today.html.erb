@@ -1,0 +1,35 @@
+<%# locals: (d:) -%>
+<% today = d.today %>
+<section class="card dash-panel dash-today" aria-labelledby="dash-today-title">
+  <h2 id="dash-today-title">Today</h2>
+
+  <% if today.first_run %>
+    <div class="dash-callout">
+      <p class="dash-callout__title">Code for <%= today.quick_minutes %> minutes to start your streak.</p>
+      <% if d.hackatime.state == :not_connected %>
+        <p><%= link_to "Connect Hackatime", hackatime_path %> and your coding time counts automatically.</p>
+      <% else %>
+        <p>Your coding time shows up here after Hackatime syncs.</p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="dash-meter">
+    <label for="dash-today-progress" class="dash-meter__label">Minutes coded today</label>
+    <progress id="dash-today-progress" class="dash-meter__bar" max="<%= today.progress_max %>" value="<%= today.progress_value %>" aria-describedby="dash-today-text"><%= today.progress_text %></progress>
+    <p id="dash-today-text" class="dash-meter__text"><%= today.progress_text %> (your daily goal)</p>
+  </div>
+
+  <ul class="dash-checks">
+    <li class="dash-check <%= "dash-check--done" if today.quick_met %>">
+      <span class="dash-check__mark" aria-hidden="true"><%= today.quick_met ? "✓" : "○" %></span>
+      <span><%= today.quick_text %></span>
+    </li>
+    <li class="dash-check <%= "dash-check--done" if today.goal_met %>">
+      <span class="dash-check__mark" aria-hidden="true"><%= today.goal_met ? "✓" : "○" %></span>
+      <span><%= today.goal_met ? "Daily goal reached" : "Daily goal: #{today.goal_minutes} minutes" %></span>
+    </li>
+  </ul>
+
+  <p class="dash-bonus"><%= today.bonus_message %></p>
+</section>

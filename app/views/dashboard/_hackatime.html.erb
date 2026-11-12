@@ -1,0 +1,16 @@
+<%# locals: (hackatime:) -%>
+<section class="card dash-panel dash-hackatime dash-hackatime--<%= hackatime.state.to_s.dasherize %>" aria-labelledby="dash-hackatime-title">
+  <h2 id="dash-hackatime-title">Hackatime</h2>
+  <p class="dash-hackatime__status"><span aria-hidden="true"><%= { connected: "✓", needs_reconnect: "!", not_connected: "○" }.fetch(hackatime.state) %></span> <strong><%= hackatime.title %></strong></p>
+  <p><%= hackatime.message %></p>
+  <div class="dash-actions">
+    <% case hackatime.state %>
+    <% when :connected %>
+      <%= link_to "Hackatime settings", hackatime_path, class: "btn btn--ghost" %>
+    <% when :needs_reconnect %>
+      <%= link_to "Reconnect Hackatime", hackatime_path, class: "btn btn--primary" %>
+    <% else %>
+      <%= link_to "Connect Hackatime", hackatime_path, class: "btn btn--primary" %>
+    <% end %>
+  </div>
+</section>

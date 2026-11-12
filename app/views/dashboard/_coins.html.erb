@@ -1,0 +1,15 @@
+<%# locals: (coins:) -%>
+<section class="card dash-panel dash-coins" aria-labelledby="dash-coins-title">
+  <h2 id="dash-coins-title">Coins</h2>
+  <p class="dash-big"><strong><%= coins.total_text %></strong> <span class="dash-big__label">in your balance</span></p>
+  <% if coins.show_spendable %>
+    <p>Spendable now: <strong><%= coins.spendable_text %></strong></p>
+  <% end %>
+  <% if coins.locked && coins.total.positive? %>
+    <%= render "ships/unlock_note" %>
+  <% end %>
+  <div class="dash-actions">
+    <%= link_to "Open the shop", shop_path, class: "btn btn--ghost" %>
+    <%= link_to "Your orders", orders_path, class: "btn btn--ghost" if coins.has_orders %>
+  </div>
+</section>

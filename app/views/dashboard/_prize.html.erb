@@ -1,0 +1,18 @@
+<%# locals: (prize:) -%>
+<% if prize %>
+  <section class="card dash-panel dash-prize" aria-labelledby="dash-prize-title">
+    <h2 id="dash-prize-title">Your prize</h2>
+    <p class="dash-prize__name"><span aria-hidden="true"><%= prize.emoji %></span> <strong><%= prize.name %></strong>, <%= prize.price_text %><% if prize.hours_text %> <span class="dash-muted">(about <%= prize.hours_text %> of approved coding)</span><% end %></p>
+    <% unless prize.free %>
+      <div class="dash-meter">
+        <label for="dash-prize-progress" class="dash-meter__label">Coins toward <%= prize.name %></label>
+        <progress id="dash-prize-progress" class="dash-meter__bar" max="<%= prize.price_coins %>" value="<%= prize.progress_value %>" aria-describedby="dash-prize-text"><%= prize.progress_text %></progress>
+        <p id="dash-prize-text" class="dash-meter__text"><%= prize.progress_text %></p>
+      </div>
+    <% end %>
+    <p><%= prize.message %></p>
+    <div class="dash-actions">
+      <%= link_to "See it in the shop", shop_path, class: "btn btn--ghost" %>
+    </div>
+  </section>
+<% end %>
