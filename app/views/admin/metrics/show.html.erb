@@ -1,4 +1,4 @@
-<% content_for :title, "Admin" %>
+<% content_for :title, "Admin metrics" %>
 <% hours = ->(seconds) { number_with_precision(seconds / 3600.0, precision: 1, delimiter: ",") } %>
 <% day_label = ->(date) { tag.time(date.strftime("%a %-d %b"), datetime: date.iso8601) } %>
 <div class="container container--wide">

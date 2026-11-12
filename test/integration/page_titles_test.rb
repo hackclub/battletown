@@ -67,4 +67,14 @@ class PageTitlesTest < ActionDispatch::IntegrationTest
   ensure
     original.nil? ? ENV.delete("ADMIN_HCA_UIDS") : ENV["ADMIN_HCA_UIDS"] = original
   end
+
+  test "an apostrophe or ampersand in a page name is escaped once, not twice" do
+    sign_in_as users(:new_user)
+    user = users(:new_user)
+    user.update!(onboarding_step: User::ONBOARDING_STEPS)
+    get onboarding_step_path("celebrate")
+    assert_response :success
+    assert_select "title", text: "You're in! - BattleTown", count: 1
+    assert_no_match(/&amp;#39;|&amp;amp;/, response.body)
+  end
 end

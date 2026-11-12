@@ -7,7 +7,10 @@ module ApplicationHelper
   def page_title
     return TITLE_BRAND unless signed_in?
 
-    "#{content_for(:title).presence || 'Home'} - #{TITLE_BRAND}"
+    # content_for escapes what it is given and the layout escapes the whole title again, so "You're in!" would show
+    # as "You&#39;re in!" in the tab: unescape once here and let the layout do the one escape.
+    page = content_for(:title).presence
+    "#{page ? CGI.unescapeHTML(page.to_s) : 'Home'} - #{TITLE_BRAND}"
   end
 
   # A header link that says which page you are on: aria-current="page" on the current section, so screen readers and
