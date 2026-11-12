@@ -27,6 +27,31 @@ class ShopTest < ActionDispatch::IntegrationTest
     post_order_as @user, prize_key: prize_key, key: key
   end
 
+  test "the confirm page sends the price it showed, and an order placed at a price that has since changed is refused" do
+    verified!(@user)
+    give_coins(@user, 500)
+    sign_in_as @user
+    get shop_item_path("tshirt")
+    assert_response :success
+    assert_select "form#order-form input[name=expected_coins][value='50']"
+    key = css_select("form#order-form input[name=idempotency_key]").first["value"]
+
+    ShopItem.find_by!(key: "tshirt").update!(coins: 90)
+    assert_no_difference -> { Order.count } do
+      post_order_as @user, prize_key: "tshirt", key: key, expected_coins: "50"
+    end
+    assert_redirected_to shop_item_path("tshirt", draft: key)
+    follow_redirect!
+    assert_match(/price changed/i, response.body)
+    assert_includes response.body, "90"
+    assert_equal 500, Coins::Balance.total(@user)
+
+    assert_difference -> { Order.count }, 1 do
+      post_order_as @user, prize_key: "tshirt", key: key, expected_coins: "90"
+    end
+    assert_equal 410, Coins::Balance.total(@user)
+  end
+
   # --- access ---
 
   test "signed-out visitors are sent home from every shop route" do

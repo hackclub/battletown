@@ -11,8 +11,9 @@ module Orders
   class Place
     def self.call(...) = new(...).call
 
-    def initialize(user:, prize_key:, idempotency_key:, address_id: nil, address_required: false)
+    def initialize(user:, prize_key:, idempotency_key:, address_id: nil, address_required: false, expected_coins: nil)
       @user = user
+      @expected_coins = expected_coins
       @prize_key = prize_key
       @key = idempotency_key
       @address_id = address_id
@@ -24,7 +25,7 @@ module Orders
         fresh = new_order?
         raise TooManyOpen if fresh && waiting_count >= Config.current.max_open_requested
 
-        order = Shop::Purchase.call(user: @user, prize_key: @prize_key, idempotency_key: @key)
+        order = Shop::Purchase.call(user: @user, prize_key: @prize_key, idempotency_key: @key, expected_coins: @expected_coins)
         AttachAddress.for_new_order!(order: order, user: @user, draft_key: @key.to_s, address_id: @address_id) if fresh && @address_required
         order
       end

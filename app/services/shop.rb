@@ -42,6 +42,10 @@ module Shop
   end
 
   # The same idempotency key was reused for a different request.
+  class PriceChanged < Error
+    def initialize(msg = "The price changed while you were looking. Check the new price and place the order again.") = super
+  end
+
   class KeyConflict < Error
     def initialize(msg = "That request was already used for something else. Please try again.") = super
   end

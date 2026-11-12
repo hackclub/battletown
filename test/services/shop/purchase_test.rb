@@ -19,6 +19,37 @@ class Shop::PurchaseTest < ActiveSupport::TestCase
     assert_equal [ "Order", order.id ], [ debit.reference_type, debit.reference_id ]
   end
 
+  # The page shows a price and the form sends it back as `expected_coins`: a staff price change in between is refused with a
+  # friendly message instead of charging more (or less) than the buyer agreed to.
+  test "the price the buyer saw must still be the price: a change in between is refused and nothing is written" do
+    verified!(@user)
+    give_coins(@user, 500)
+    ShopItem.find_by!(key: "tshirt").update!(coins: 80)
+    error = assert_raises(Shop::PriceChanged) { Shop::Purchase.call(user: @user, prize_key: "tshirt", idempotency_key: "k-price", expected_coins: 50) }
+    assert_match(/price changed/i, error.message)
+    assert_equal 0, Order.count
+    assert_equal 500, Coins::Balance.total(@user)
+
+    order = Shop::Purchase.call(user: @user, prize_key: "tshirt", idempotency_key: "k-price", expected_coins: 80)
+    assert_equal 80, order.coins
+    assert_equal 420, Coins::Balance.total(@user)
+    assert_equal order, Shop::Purchase.call(user: @user, prize_key: "tshirt", idempotency_key: "k-price", expected_coins: 50), "a repeat of an order that exists never re-checks the price"
+  end
+
+  test "no expected price means no check (callers that never showed a price)" do
+    verified!(@user)
+    give_coins(@user, 500)
+    assert_equal 50, Shop::Purchase.call(user: @user, prize_key: "tshirt", idempotency_key: "k-none").coins
+  end
+
+  test "a purchase key cannot take the name of the free sticker's key, which would lock the person out of their sticker" do
+    verified!(@user)
+    give_coins(@user, 500)
+    assert_raises(Shop::KeyConflict) { Shop::Purchase.call(user: @user, prize_key: "tshirt", idempotency_key: "signup_sticker") }
+    assert_equal 0, Order.count
+    assert_equal "signup_sticker", Shop::ClaimSticker.call(user: @user).prize_key
+  end
+
   test "an unverified user cannot buy, even with coins, and nothing is written" do
     give_coins(@user, 500)
     assert_equal 0, Shop::Spendable.balance(@user)

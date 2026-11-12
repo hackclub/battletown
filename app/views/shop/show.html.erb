@@ -36,6 +36,7 @@
       <%= form_with url: orders_path, method: :post, id: "order-form", class: "shop-confirm__form" do %>
         <%= hidden_field_tag :prize_key, @prize.key, id: nil %>
         <%= hidden_field_tag :idempotency_key, @idempotency_key, id: nil %>
+        <%= hidden_field_tag :expected_coins, @prize.coins, id: nil %>
         <%= button_tag "Place order for #{coins_text(@prize.coins)}", type: "submit", class: "btn btn--primary btn--lg",
                        disabled: true,
                        data: { ship_to_picker_target: "submit", turbo_submits_with: "Placing order..." } %>
@@ -48,6 +49,7 @@
     <%= form_with url: orders_path, method: :post, class: "shop-confirm__form" do %>
       <%= hidden_field_tag :prize_key, @prize.key, id: nil %>
       <%= hidden_field_tag :idempotency_key, @idempotency_key, id: nil %>
+      <%= hidden_field_tag :expected_coins, @prize.coins, id: nil %>
       <%= button_tag "Place order for #{coins_text(@prize.coins)}", type: "submit", class: "btn btn--primary btn--lg", data: { turbo_submits_with: "Placing order..." } %>
       <%= link_to "Not now", shop_path, class: "btn" %>
     <% end %>

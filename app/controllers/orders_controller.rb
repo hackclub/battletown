@@ -25,9 +25,11 @@ class OrdersController < ApplicationController
     prize = Prize.find(text_param(:prize_key))
     shipped = prize.present? && prize.requires_shipping?
     order = Orders::Place.call(user: current_user, prize_key: text_param(:prize_key), idempotency_key: text_param(:idempotency_key),
-                               address_id: text_param(:address_id), address_required: shipped)
+                               address_id: text_param(:address_id), address_required: shipped, expected_coins: expected_coins)
     redirect_to order_path(order), notice: placed_notice(order, shipped)
   rescue Orders::AddressError => error
+    redirect_to shop_item_path(prize.key, draft: text_param(:idempotency_key)), alert: error.message
+  rescue Shop::PriceChanged => error
     redirect_to shop_item_path(prize.key, draft: text_param(:idempotency_key)), alert: error.message
   rescue Shop::Error => error
     redirect_to shop_path, alert: error.message
@@ -63,6 +65,12 @@ class OrdersController < ApplicationController
   end
 
   private
+
+  # The price the confirm page showed (a plain whole number), or nil when the form did not send one.
+  def expected_coins
+    text = text_param(:expected_coins)
+    Integer(text, 10) if text.match?(/\A\d{1,9}\z/)
+  end
 
   def placed_notice(order, shipped)
     if shipped
