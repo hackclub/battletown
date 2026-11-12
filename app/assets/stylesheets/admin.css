@@ -1,87 +1,86 @@
-/* Admin dashboard (Admin::DashboardController). Wrapped in `admin_tool`, so it already has the orange tint, dashed
-   outline and tag from staff.css; this file only lays out the stat tiles and plain tables. Tokens only. */
-.admin-dashboard { margin-block: var(--space-4); }
+/* Admin and development pages. Everything is built from the shared components (cards, tables, buttons, fields, badges,
+   alerts); these rules only add what is staff-only. The whole page sits inside `admin_tool` / `dev_tool`, which already
+   gives the tint, the dashed outline and the "Admin" / "Dev" tag (staff.css), so staff pages look native but are
+   unmistakable. Tokens only. */
+.admin-page, .dev-page { display: block; padding: var(--space-4); }
+@media (min-width: 48rem) { .admin-page, .dev-page { padding: var(--space-6); } }
+.admin-page::before, .dev-page::before { margin-bottom: var(--space-3); }
+.admin-page > *, .dev-page > * { min-width: 0; margin-block: 0; }
+/* Doubled class: staff.css resets form margins with a more specific selector. */
+.admin-page.admin-only > * + *, .dev-page.dev-only > * + * { margin-top: var(--space-6); }
+.admin-page .page-header, .dev-page .page-header { margin-bottom: 0; }
+.admin-page.admin-only > .admin-back { margin-top: 0; }
+.admin-back { font-weight: 700; }
+.admin-back a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
+.admin-page h1, .dev-page h1 { font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem); }
+.admin-page h2, .dev-page h2 { font-size: var(--text-lg); }
+.admin-page h3 { font-size: var(--text-base); letter-spacing: 0; }
+.admin-dashboard__note, .dev-page__note { max-width: 48rem; color: var(--staff-ink); font-weight: 500; }
+.admin-count { margin: 0; font-size: var(--text-lg); }
+.admin-count strong { font-family: var(--font-display); font-weight: 400; font-size: var(--text-xl); }
 
-.admin-dashboard__note { color: var(--color-admin-ink); }
+/* Staff-only headings and tables: a hint of the staff tint, so a screenshot of an admin table is never mistaken for a
+   teen-facing page. */
+.admin-page .table thead th { background: var(--color-admin-bg); color: var(--color-admin-ink); }
+.admin-page .card, .admin-page .table-wrap { border-bottom-color: var(--color-admin); color: var(--color-text); }
+.dev-page .table thead th { background: var(--color-dev-bg); color: var(--color-dev-ink); }
+.dev-page .card, .dev-page .table-wrap { border-bottom-color: var(--color-dev); color: var(--color-text); }
 
-.admin-stat {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  margin: 0 0 var(--space-6);
-}
-.admin-stat__item {
-  flex: 1 1 10rem;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-admin-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-.admin-stat dt { font-size: var(--text-sm); font-weight: 700; color: var(--color-admin-ink); }
-.admin-stat dd { margin: 0; font-family: var(--font-display); font-size: var(--text-2xl); line-height: var(--leading-tight); }
+/* Dashboard: section links as tappable cards (the heading link stretches over the whole card), then the stat tiles. */
+.admin-links { --grid-min: 14rem; margin: 0; padding: 0; list-style: none; }
+.admin-link { position: relative; display: grid; gap: var(--space-2); align-content: start; }
+.admin-link > * { margin: 0; }
+.admin-link .card__title { margin: 0; }
+.admin-link a { color: var(--color-link); }
+.admin-link a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.admin-link:hover { filter: brightness(1.03); }
+.admin-link:has(a:focus-visible) { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.admin-link a:focus-visible { outline: none; }
+.admin-stat { --grid-min: 12rem; }
+.admin-stat__item { display: grid; gap: var(--space-1); margin: 0; }
+.admin-stat dt { font-size: var(--text-sm); font-weight: 700; }
+.admin-stat dd { margin: 0; font-family: var(--font-display); font-size: var(--text-2xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-heading); }
+.admin-grid { --grid-min: min(100%, 20rem); align-items: start; }
+.admin-grid > * { min-width: 0; }
 
-.admin-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: var(--space-6);
-  align-items: start;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: var(--text-sm);
-}
-.admin-table caption {
-  padding-bottom: var(--space-2);
-  color: var(--color-admin-ink);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  text-align: start;
-}
-.admin-table th, .admin-table td {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-admin-border);
-  text-align: start;
-  overflow-wrap: anywhere;
-}
-.admin-table thead th { background: var(--color-admin-bg); color: var(--color-admin-ink); }
-.admin-table tbody th { font-weight: 500; }
-.admin-table .admin-table__num { text-align: end; font-variant-numeric: tabular-nums; }
-
-/* Boss edit form (Admin::BossesController). */
-.admin-form { max-width: 28rem; }
-.admin-form label { display: block; font-weight: 700; }
-.admin-form input[type="text"], .admin-form input[type="number"], .admin-form select {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 2px solid var(--color-text-muted);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-}
-.admin-form input:disabled { background: var(--color-surface-raised); color: var(--color-text-muted); }
-.admin-form__hint { display: block; color: var(--color-admin-ink); font-size: var(--text-sm); }
-.admin-form__errors {
-  max-width: 28rem;
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-danger);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-.admin-form__errors p { margin-bottom: var(--space-1); font-weight: 700; }
-.admin-form__errors ul { margin: 0; padding-inline-start: var(--space-6); }
-.admin-dashboard__after { margin-top: var(--space-4); }
-
-/* Wide tables scroll sideways inside their own box on a phone instead of squeezing every word into one letter a line. */
+/* Tables */
+.admin-table td, .admin-table th { overflow-wrap: anywhere; }
+.admin-table tbody th { font-weight: 700; text-align: start; }
+.admin-table td small { color: var(--color-text-muted); }
+.admin-page .table-wrap, .dev-page .table-wrap { position: relative; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.admin-actions form { margin: 0; }
+/* position: relative keeps the visually hidden column headings inside the scrolling box instead of widening the page.
+   Wide tables scroll inside .table-wrap on a phone; cells keep a single line so nothing squeezes into a letter a line. */
 @media (max-width: 40rem) {
-  /* position: relative keeps the visually hidden column headings inside the scrolling box. */
-  .admin-table { position: relative; display: block; overflow-x: auto; }
   .admin-table th, .admin-table td { white-space: nowrap; }
+  .admin-table .card__title, .admin-table caption { white-space: normal; }
 }
+
+/* Ship queue filters: one pill button per status; the current one is filled and carries aria-current. */
+.admin-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* Review page */
+.admin-dl { display: grid; grid-template-columns: minmax(0, 10rem) minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
+.admin-dl dt { font-weight: 700; }
+.admin-dl dd { margin: 0; overflow-wrap: anywhere; }
+.admin-text { white-space: pre-line; }
+.admin-panel { align-content: start; }
+.admin-panel > h3 { margin-top: var(--space-6); }
+.admin-panel .table-wrap { margin-top: var(--space-4); }
+.admin-warning { margin: 0; }
+.admin-warning p + p { font-weight: 500; }
+@media (max-width: 30rem) {
+  .admin-dl { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .admin-dl dd { margin-bottom: var(--space-3); }
+}
+
+/* Forms: boss edit, approve, reject, order filter, dev hours. */
+.admin-form-card, .dev-form { max-width: 32rem; }
+.admin-form__hint { display: block; }
+.admin-form__errors { margin: 0; max-width: 32rem; }
+.admin-form__errors ul { margin: 0; padding-inline-start: var(--space-6); font-weight: 500; }
+.admin-form--inline { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-3) var(--space-4); max-width: none; }
+.admin-form--inline .field { flex: 1 1 12rem; }
+.admin-form--inline .btn { flex: none; }
+.admin-dl a { display: inline-flex; align-items: center; min-height: var(--tap-size); }

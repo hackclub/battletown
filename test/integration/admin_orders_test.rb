@@ -129,6 +129,6 @@ class AdminOrdersTest < ActionDispatch::IntegrationTest
     as_admin
     get admin_root_path
     assert_select "a[href='#{admin_orders_path}']", text: "Shop orders"
-    assert_select "p", text: /2 requested/
+    assert_select ".admin-link p", text: /2 requested/
   end
 end

@@ -1,30 +1,53 @@
 <% content_for :title, "Admin" %>
-<%= admin_tool(:div, class: "admin-dashboard container") do %>
-  <h1>Admin dashboard</h1>
-  <p class="admin-dashboard__note">Read-only, aggregate counts only. No names, emails or ids are shown here. Signup days are UTC.</p>
+<% requested_orders = Order.where(status: "requested").count %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <header class="page-header">
+      <h1>Admin dashboard</h1>
+      <p class="admin-dashboard__note">Read-only, aggregate counts only. No names, emails or ids are shown here. Signup days are UTC.</p>
+    </header>
 
-  <p><%= link_to "Metrics", admin_metrics_path %> (daily and weekly actives, funnel, last active day)</p>
-  <p><%= link_to "Weekly bosses", admin_bosses_path %></p>
-  <p><%= link_to "Shop orders", admin_orders_path %> (<%= Order.where(status: "requested").count %> requested)</p>
-  <p><%= link_to "Ship review queue", admin_ships_path %> (<%= @pending_ships %> waiting)</p>
+    <nav aria-label="Admin sections">
+      <ul class="grid admin-links">
+        <li class="card card--tight admin-link">
+          <h2 class="card__title"><%= link_to "Ship review queue", admin_ships_path %></h2>
+          <p class="admin-link__count"><%= admin_badge("#{@pending_ships} waiting", @pending_ships.positive? ? "badge--warning" : "badge--muted") %></p>
+          <p class="small">Approve or reject submitted ships.</p>
+        </li>
+        <li class="card card--tight admin-link">
+          <h2 class="card__title"><%= link_to "Shop orders", admin_orders_path %></h2>
+          <p class="admin-link__count"><%= admin_badge("#{requested_orders} requested", requested_orders.positive? ? "badge--warning" : "badge--muted") %></p>
+          <p class="small">Fulfil or cancel what people ordered.</p>
+        </li>
+        <li class="card card--tight admin-link">
+          <h2 class="card__title"><%= link_to "Metrics", admin_metrics_path %></h2>
+          <p class="small">Daily and weekly actives, funnel, last active day.</p>
+        </li>
+        <li class="card card--tight admin-link">
+          <h2 class="card__title"><%= link_to "Weekly bosses", admin_bosses_path %></h2>
+          <p class="small">Names, art and health for each week's boss.</p>
+        </li>
+      </ul>
+    </nav>
 
-  <dl class="admin-stat">
-    <div class="admin-stat__item">
-      <dt>Total users</dt>
-      <dd><%= number_with_delimiter(@stats.total_users) %></dd>
+    <dl class="admin-stat grid">
+      <div class="card card--tight admin-stat__item">
+        <dt>Total users</dt>
+        <dd><%= number_with_delimiter(@stats.total_users) %></dd>
+      </div>
+      <div class="card card--tight admin-stat__item">
+        <dt>Onboarded</dt>
+        <dd><%= number_with_delimiter(@stats.onboarded) %></dd>
+      </div>
+    </dl>
+
+    <div class="admin-grid grid grid--2">
+      <%= render "admin/dashboard/table", caption: "Signups per day (last #{AdminStats::SIGNUP_DAYS} days)", heading: "Day (UTC)", rows: @stats.signups_per_day %>
+      <%= render "admin/dashboard/table", caption: "Onboarding funnel (reached at least this step)", heading: "Step", rows: @stats.onboarding_funnel %>
+      <%= render "admin/dashboard/table", caption: "Verification status", heading: "Status", rows: @stats.verification %>
+      <%= render "admin/dashboard/table", caption: "How people heard about us", heading: "Source", rows: @stats.referral_sources %>
+      <%= render "admin/dashboard/table", caption: "Prize picks", heading: "Prize", rows: @stats.prizes %>
+      <%= render "admin/dashboard/table", caption: "Project kinds", heading: "Kind", rows: @stats.project_kinds %>
     </div>
-    <div class="admin-stat__item">
-      <dt>Onboarded</dt>
-      <dd><%= number_with_delimiter(@stats.onboarded) %></dd>
-    </div>
-  </dl>
-
-  <div class="admin-grid">
-    <%= render "admin/dashboard/table", caption: "Signups per day (last #{AdminStats::SIGNUP_DAYS} days)", heading: "Day (UTC)", rows: @stats.signups_per_day %>
-    <%= render "admin/dashboard/table", caption: "Onboarding funnel (reached at least this step)", heading: "Step", rows: @stats.onboarding_funnel %>
-    <%= render "admin/dashboard/table", caption: "Verification status", heading: "Status", rows: @stats.verification %>
-    <%= render "admin/dashboard/table", caption: "How people heard about us", heading: "Source", rows: @stats.referral_sources %>
-    <%= render "admin/dashboard/table", caption: "Prize picks", heading: "Prize", rows: @stats.prizes %>
-    <%= render "admin/dashboard/table", caption: "Project kinds", heading: "Kind", rows: @stats.project_kinds %>
-  </div>
-<% end %>
+  <% end %>
+</div>

@@ -1,0 +1,8 @@
+<%# The "is this yours?" callout. Local: suggestions. Each answer is a PATCH to the link suggestion. %>
+<% if suggestions.any? %>
+  <section class="alert projects-suggest" aria-labelledby="suggestions-heading">
+    <h2 class="alert__title" id="suggestions-heading">Is this yours?</h2>
+    <p class="projects-suggest__lead">We found Hackatime projects that look like yours. Saying yes links the time to your project. Nothing is linked unless you say so.</p>
+    <ul class="suggestions"><%= render partial: "projects/suggestion", collection: suggestions, as: :suggestion %></ul>
+  </section>
+<% end %>

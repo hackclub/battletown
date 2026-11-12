@@ -1,10 +1,10 @@
 <li class="suggestion">
   <p class="suggestion__text">
-    We noticed a Hackatime project called <strong><%= suggestion.hackatime_project %></strong>.
+    We noticed a Hackatime project called <strong class="chip-name"><%= suggestion.hackatime_project %></strong>.
     Is it part of <strong><%= suggestion.project.name %></strong>?
   </p>
   <div class="suggestion__actions">
-    <%= button_to "Yes, link it", accept_project_link_suggestion_path(suggestion.project, suggestion), method: :patch, class: "btn btn--primary" %>
-    <%= button_to "No thanks", decline_project_link_suggestion_path(suggestion.project, suggestion), method: :patch, class: "btn btn--ghost" %>
+    <%= button_to "Yes, link it", accept_project_link_suggestion_path(suggestion.project, suggestion), method: :patch, class: "btn btn--primary btn--sm" %>
+    <%= button_to "No thanks", decline_project_link_suggestion_path(suggestion.project, suggestion), method: :patch, class: "btn btn--sm" %>
   </div>
 </li>

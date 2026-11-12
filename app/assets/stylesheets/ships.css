@@ -1,99 +1,47 @@
-/* Ships: the form, the list, one ship, and the staff review queue (admin pieces sit inside `admin_tool`, which already
-   gives the orange tint; this file lays them out). Reuses the projects form classes. Tokens only. */
-.ship-window { margin-bottom: var(--space-6); }
-.ship-window h2 { margin-top: 0; font-size: var(--text-lg); }
-.ship-rules { margin-top: var(--space-4); color: var(--color-text-muted); font-size: var(--text-sm); }
-.ship-rules summary { cursor: pointer; color: var(--color-text); font-weight: 600; }
-.ship-rules ul { margin: var(--space-2) 0 0; padding-inline-start: var(--space-6); }
-.ship-hint { margin: 0 0 var(--space-4); color: var(--color-text-muted); }
+/* Ships: the form (hours window, checklist), the list and one ship. Reuses the projects classes (projects.css) and the
+   shared components (components.css). Staff review pieces live in admin.css. Tokens only. */
+.ship-window .progress { margin-block: var(--space-1); }
+.ship-checklist { display: grid; gap: var(--space-2); }
+.ship-checklist__title { margin: 0; font-size: var(--text-base); letter-spacing: 0; }
+.ship-checklist .list > li { gap: var(--space-2) var(--space-3); padding-block: var(--space-2); }
+.ship-rules { color: var(--color-text-muted); font-size: var(--text-sm); }
+.ship-rules summary { display: flex; align-items: center; min-height: var(--tap-size); cursor: pointer; color: var(--color-link); font-weight: 700; }
+.ship-rules ul { margin: 0; padding-inline-start: var(--space-6); }
+.ship-rules li + li { margin-top: var(--space-2); }
+.ship-hint { margin: 0; }
 
-/* "Your coins unlock when you verify" */
-.ship-note {
-  margin: 0 0 var(--space-6);
-  padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-secondary);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-surface));
-  color: var(--color-text);
-}
-.ship-note p { margin: 0; }
-.ship-note p + p { margin-top: var(--space-1); }
-.ship-note__title { font-weight: 700; }
+/* "Your coins unlock when you verify": the identity-lock note, a callout with a title */
+.ship-note { margin: 0; border-radius: var(--radius-md); }
+.ship-note p + p { margin-top: var(--space-1); font-weight: 500; }
+.ship-note__title { font-weight: 400; }
 
 /* List and cards */
 .ship { min-width: 0; }
-.ship__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
-.ship__head--page { margin-bottom: var(--space-4); }
+.ship > * { margin-block: 0; }
+.ship > * + * { margin-top: var(--space-3); }
+.ship__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.ship__head--page { margin-bottom: 0; }
 .ship__head--page h1 { margin: 0; }
-.ship__name { margin: 0; font-size: var(--text-lg); overflow-wrap: anywhere; }
-.ship__meta { margin: 0 0 var(--space-2); color: var(--color-text-muted); font-size: var(--text-sm); }
-.ship__result { margin: 0 0 var(--space-3); font-weight: 600; overflow-wrap: anywhere; }
-.ship__result--rejected { color: var(--color-danger); }
-.ship__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.ship-status--approved { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 15%, var(--color-surface)); }
-.ship-status--rejected { border-color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface)); }
-.ship-status--withdrawn { color: var(--color-text-muted); }
+.ship__name { margin: 0; font-size: var(--text-lg); letter-spacing: var(--tracking-heading); overflow-wrap: anywhere; }
+.ship__name a { color: var(--color-text); text-decoration-color: var(--color-link); }
+.ship__meta { color: var(--color-text-muted); font-size: var(--text-sm); }
+.ship__result { font-weight: 700; overflow-wrap: anywhere; }
+.ship__actions { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); }
+.ship__actions .btn { flex: none; }
 
 /* One ship */
-.ship-result, .ship-facts { margin-bottom: var(--space-6); }
-.ship-result h2, .ship-facts h2 { margin-top: 0; font-size: var(--text-lg); }
-.ship-result--rejected { border: 2px solid var(--color-danger); }
-.ship-result__line { font-size: var(--text-lg); }
-.ship-dl, .admin-dl { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0; }
-.ship-dl dt, .admin-dl dt { font-weight: 700; }
-.ship-dl dd, .admin-dl dd { margin: 0; overflow-wrap: anywhere; }
-.ship-dl__text, .admin-text { white-space: pre-line; }
-.ship-form + .projects-actions, .projects--narrow > form.button_to { margin-top: var(--space-4); }
-
-/* Staff queue */
-.admin-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
-.admin-filter {
-  padding: var(--space-1) var(--space-3);
-  border: 2px solid var(--color-admin-border);
-  border-radius: var(--radius-full);
-  background: var(--color-surface);
-  color: var(--color-admin-ink);
-  font-weight: 700;
-  text-decoration: none;
-}
-.admin-filter--current { background: var(--color-admin-ink); color: var(--color-bg); }
-.admin-panel {
-  min-width: 0;
-  padding: var(--space-4);
-  border: 1px solid var(--color-admin-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-.admin-panel h2 { margin-top: 0; font-size: var(--text-lg); color: var(--color-admin-ink); }
-.admin-panel h3 { margin-top: var(--space-6); font-size: var(--text-base); color: var(--color-admin-ink); }
-.admin-panel .admin-dl + .admin-table { margin-top: var(--space-4); }
-.admin-panel .admin-table { margin-bottom: var(--space-4); }
-.admin-grid + .admin-grid, .admin-grid + .admin-table { margin-top: var(--space-6); }
-.admin-table + p { margin-top: var(--space-4); }
-.admin-warning {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-admin-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-.admin-warning p { margin: 0; }
-.admin-warning__title { font-weight: 700; color: var(--color-admin-ink); }
-.admin-form textarea {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 2px solid var(--color-text-muted);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-}
-.admin-panel .admin-form { max-width: none; }
+.ship-result__line { margin: 0; font-size: var(--text-lg); }
+.ship-result__line strong { font-family: var(--font-display); font-weight: 400; font-size: var(--text-xl); }
+.ship-result--rejected { box-shadow: 0 0 0 3px var(--color-danger), var(--shadow-sm); }
+.ship-dl { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0; }
+.ship-dl dt { font-weight: 700; }
+.ship-dl dd { margin: 0; overflow-wrap: anywhere; }
+.ship-dl__text { white-space: pre-line; }
+.ship-dl a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
 
 @media (max-width: 30rem) {
-  .ship-dl, .admin-dl { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .ship-dl dd, .admin-dl dd { margin-bottom: var(--space-2); }
-  .admin-dashboard > .admin-table { display: block; overflow-x: auto; }
+  .ship-dl { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ship-dl dd { margin-bottom: var(--space-3); }
 }
+
+.ship__name a { display: inline-flex; align-items: center; min-height: var(--tap-size); }

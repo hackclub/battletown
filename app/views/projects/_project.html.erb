@@ -1,9 +1,10 @@
 <% info = project_kind_info(project.kind) %>
-<li class="card project <%= "project--active" if project.active? %>">
+<% names = project.hackatime_links.sort_by(&:id).map(&:hackatime_project) %>
+<li class="card project <%= "project--active" if project.active? %> <%= "project--archived" if project.status_archived? %>">
   <div class="project__head">
     <h2 class="project__name"><%= project.name %></h2>
     <% if project.active? %><span class="badge badge--active">Active project</span><% end %>
-    <% if project.status_archived? %><span class="badge">Archived</span><% end %>
+    <% if project.status_archived? %><span class="badge badge--muted">Archived</span><% end %>
   </div>
   <p class="project__kind"><span aria-hidden="true"><%= info[:emoji] %></span> <%= info[:name] %></p>
   <% if project.idea.present? %><p class="project__idea"><%= project.idea %></p><% end %>
@@ -15,20 +16,21 @@
     </ul>
   <% end %>
 
-  <% names = project.hackatime_links.sort_by(&:id).map(&:hackatime_project) %>
-  <p class="project__hackatime">
+  <div class="project__hackatime">
     <% if names.any? %>
-      <span class="project__label">Hackatime:</span> <%= safe_join(names.map { |name| tag.span(name, class: "chip-name") }, " ") %>
+      <span class="badge badge--success">Hackatime linked</span>
+      <%= safe_join(names.map { |name| tag.span(name, class: "chip-name") }, " ") %>
     <% else %>
-      <span class="project__label">No Hackatime project linked yet.</span>
+      <span class="badge badge--warning">No Hackatime project linked yet</span>
+      <%= link_to "Link one", edit_project_path(project), class: "project__link-one" if project.status_active? %>
     <% end %>
-  </p>
+  </div>
 
   <div class="project__actions">
     <%= link_to "Ship", new_project_ship_path(project), class: "btn btn--primary" if project.status_active? %>
-    <%= link_to "Edit", edit_project_path(project), class: "btn btn--ghost" %>
+    <%= link_to "Edit", edit_project_path(project), class: "btn" %>
     <% if project.status_active? && !project.active? %>
-      <%= button_to "Make active", activate_project_path(project), method: :patch, class: "btn btn--primary" %>
+      <%= button_to "Make active", activate_project_path(project), method: :patch, class: "btn" %>
     <% end %>
     <% if project.status_active? %>
       <%= button_to "Archive", archive_project_path(project), method: :patch, class: "btn btn--ghost" %>

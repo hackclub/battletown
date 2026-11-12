@@ -1,10 +1,13 @@
 <% content_for :title, "Notifications" %>
-<section class="container notification-settings">
-  <h1>Notifications</h1>
-  <p class="notification-settings__lead">Battletown can send you a Slack message when something happens. Pick the ones you want. You can change this any time, and coding is never affected.</p>
+<div class="container notification-settings stack stack--lg">
+  <header class="page-header">
+    <p class="eyebrow">Settings</p>
+    <h1>Notifications</h1>
+    <p class="lead notification-settings__lead">Battletown can send you a Slack message when something happens. Pick the ones you want. You can change this any time, and coding is never affected.</p>
+  </header>
 
   <% if current_user.slack_id.blank? %>
-    <p class="notification-settings__note" role="note">We can't message you on Slack yet because your Hack Club account isn't linked to a Slack account. Your choices are saved for when it is.</p>
+    <p class="alert alert--warning notification-settings__note" role="note">We can't message you on Slack yet because your Hack Club account isn't linked to a Slack account. Your choices are saved for when it is.</p>
   <% end %>
 
   <%= form_with url: settings_notifications_path, method: :patch, class: "card notification-settings__form", data: { turbo: false } do %>
@@ -25,7 +28,7 @@
       </ul>
     </fieldset>
     <div class="notification-settings__actions">
-      <%= submit_tag "Save", class: "btn btn--primary" %>
+      <%= submit_tag "Save", class: "btn btn--primary btn--lg" %>
     </div>
   <% end %>
-</section>
+</div>

@@ -1,8 +1,10 @@
+<%# Locals: record, messages (defaults to the project's), title %>
+<% messages = local_assigns[:messages] || project_error_messages(record) %>
 <% if record.errors.any? %>
-  <div class="projects-errors" role="alert">
-    <p>Let's fix a couple of things:</p>
+  <div class="alert alert--danger projects-errors" role="alert">
+    <p class="alert__title"><%= local_assigns[:title] || "Let's fix a couple of things" %></p>
     <ul>
-      <% project_error_messages(record).each do |message| %>
+      <% messages.each do |message| %>
         <li><%= message %></li>
       <% end %>
     </ul>

@@ -1,45 +1,51 @@
 <% content_for :title, "Admin ships" %>
-<%= admin_tool(:div, class: "admin-dashboard container") do %>
-  <h1>Ship review queue</h1>
-  <p class="admin-dashboard__note">Waiting ships first, oldest first. Names are shown so you can follow up; there are no emails or ids here. Showing up to <%= Admin::ShipsController::LIMIT %> ships.</p>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>Ship review queue</h1>
+      <p class="admin-dashboard__note">Waiting ships first, oldest first. Names are shown so you can follow up; there are no emails or ids here. Showing up to <%= Admin::ShipsController::LIMIT %> ships.</p>
+    </header>
 
-  <nav class="admin-filters" aria-label="Filter by status">
-    <% filters = [ [ nil, "All", @counts.values.sum ] ] + Admin::ShipsController::FILTERS.map { |status| [ status, (status == "submitted" ? "Waiting" : status.humanize), @counts.fetch(status, 0) ] } %>
-    <% filters.each do |status, label, count| %>
-      <%= link_to "#{label} (#{count})", admin_ships_path(status: status), class: class_names("admin-filter", "admin-filter--current": @status == status), "aria-current": (@status == status ? "page" : nil) %>
+    <nav class="admin-filters" aria-label="Filter by status">
+      <% filters = [ [ nil, "All", @counts.values.sum ] ] + Admin::ShipsController::FILTERS.map { |status| [ status, (status == "submitted" ? "Waiting" : status.humanize), @counts.fetch(status, 0) ] } %>
+      <% filters.each do |status, label, count| %>
+        <%= link_to "#{label} (#{count})", admin_ships_path(status: status), class: class_names("btn btn--sm admin-filter", "btn--primary admin-filter--current": @status == status), "aria-current": (@status == status ? "page" : nil) %>
+      <% end %>
+    </nav>
+
+    <% if @ships.empty? %>
+      <p class="alert">No ships here yet.</p>
+    <% else %>
+      <%= table_region("Ships") do %>
+        <table class="table table--zebra admin-table">
+          <caption>Ships</caption>
+          <thead>
+            <tr>
+              <th scope="col">Teen</th>
+              <th scope="col">Project</th>
+              <th scope="col" class="num admin-table__num">Coded</th>
+              <th scope="col">Window</th>
+              <th scope="col">Submitted</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="visually-hidden">Review</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @ships.each do |ship| %>
+              <tr>
+                <th scope="row"><%= ship.user.display_name.presence || "No name" %></th>
+                <td><%= ship.project.name %></td>
+                <td class="num admin-table__num"><%= ship_hours(ship.coded_seconds) %></td>
+                <td><%= ship_dates_text(ship.window_start_date, ship.window_end_date) %></td>
+                <td><%= ship.submitted_at.utc.strftime("%b %-d %H:%M UTC") %></td>
+                <td><%= admin_ship_badge(ship) %></td>
+                <td><%= link_to(ship.status_submitted? ? "Review" : "View", admin_ship_path(ship), class: class_names("btn btn--sm", "btn--primary": ship.status_submitted?), "aria-label": "#{ship.status_submitted? ? 'Review' : 'View'} #{ship.project.name}") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
     <% end %>
-  </nav>
-
-  <% if @ships.empty? %>
-    <p>No ships here yet.</p>
-  <% else %>
-    <table class="admin-table">
-      <caption>Ships</caption>
-      <thead>
-        <tr>
-          <th scope="col">Teen</th>
-          <th scope="col">Project</th>
-          <th scope="col" class="admin-table__num">Coded</th>
-          <th scope="col">Window</th>
-          <th scope="col">Submitted</th>
-          <th scope="col">Status</th>
-          <th scope="col"><span class="visually-hidden">Review</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @ships.each do |ship| %>
-          <tr>
-            <th scope="row"><%= ship.user.display_name.presence || "No name" %></th>
-            <td><%= ship.project.name %></td>
-            <td class="admin-table__num"><%= ship_hours(ship.coded_seconds) %></td>
-            <td><%= ship_dates_text(ship.window_start_date, ship.window_end_date) %></td>
-            <td><%= ship.submitted_at.utc.strftime("%b %-d %H:%M UTC") %></td>
-            <td><%= ship.status_submitted? ? "Waiting" : ship.status.humanize %></td>
-            <td><%= link_to(ship.status_submitted? ? "Review" : "View", admin_ship_path(ship), "aria-label": "#{ship.status_submitted? ? 'Review' : 'View'} #{ship.project.name}") %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
   <% end %>
-  <p><%= link_to "Back to the admin dashboard", admin_root_path %></p>
-<% end %>
+</div>

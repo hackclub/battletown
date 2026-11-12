@@ -9,10 +9,10 @@
     <% breakdown = ship.coin_breakdown %>
     <p class="ship__result"><%= ship_hours(ship.approved_seconds) %> approved: <%= breakdown[:total] %> coins (<%= breakdown[:base] %> + <%= breakdown[:bonus] %> streak bonus)</p>
   <% when "rejected" %>
-    <p class="ship__result ship__result--rejected">Reviewer note: <%= ship.rejection_reason %></p>
+    <p class="alert alert--danger ship__result ship__result--rejected">Reviewer note: <%= ship.rejection_reason %></p>
   <% end %>
   <div class="ship__actions">
-    <%= link_to "Details", ship_path(ship), class: "btn btn--ghost" %>
+    <%= link_to "Details", ship_path(ship), class: "btn" %>
     <% if ship.status_draft? %><%= link_to "Continue draft", edit_ship_path(ship), class: "btn btn--primary" %><% end %>
     <% if ship.status_rejected? %><%= link_to "Fix and ship again", new_project_ship_path(ship.project, from: ship.id), class: "btn btn--primary" %><% end %>
   </div>

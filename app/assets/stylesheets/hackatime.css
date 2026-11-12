@@ -1,38 +1,15 @@
-/* Hackatime connection settings (/hackatime). Tokens only, see docs/CONTRACT.md. */
-.hackatime { max-width: 40rem; }
-
-.hackatime__card { display: grid; gap: var(--space-3); }
-.hackatime__card p { margin: 0; overflow-wrap: anywhere; }
-.hackatime__title { margin: 0; }
-
-.hackatime__status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  justify-self: start;
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid currentcolor;
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: 700;
-}
-.hackatime__status::before {
-  content: "";
-  width: var(--space-2);
-  height: var(--space-2);
-  border-radius: var(--radius-full);
-  background: currentcolor;
-}
-.hackatime__status--on { color: var(--color-success); }
-.hackatime__status--warn { color: var(--color-danger); }
-.hackatime__status--off { color: var(--color-text-muted); }
-
-.hackatime__meta, .hackatime__fine { color: var(--color-text-muted); font-size: var(--text-sm); }
-
+/* Hackatime connection settings (/hackatime). Shared components do the work; this is the layout only. Tokens only. */
+.hackatime { max-width: 48rem; }
+.hackatime__card { display: grid; gap: var(--space-4); }
+.hackatime__card > * { margin: 0; }
+.hackatime__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+.hackatime__head > * { margin: 0; }
+.hackatime__status { align-self: center; }
+.hackatime__meta { color: var(--color-text-muted); }
+.hackatime__share { display: grid; gap: var(--space-4); }
+@media (min-width: 40rem) { .hackatime__share { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.hackatime__share h3 { margin-bottom: var(--space-2); font-size: var(--text-base); letter-spacing: 0; }
+.hackatime__share ul { margin: 0; padding-inline-start: var(--space-6); }
+.hackatime__share li + li { margin-top: var(--space-1); }
 .hackatime__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.hackatime__card form { justify-self: start; }
-.hackatime__actions form { justify-self: auto; }
-
-@media (max-width: 40rem) {
-  .hackatime__card { padding: var(--space-4); }
-}
+.hackatime__actions form, .hackatime__card form { margin: 0; }

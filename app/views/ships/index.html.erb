@@ -1,18 +1,19 @@
 <% content_for :title, "Your ships" %>
-<section class="container projects">
-  <header class="projects-header">
-    <div>
+<div class="container projects stack stack--lg">
+  <header class="page-header projects-header">
+    <div class="projects-header__text">
       <h1>Your ships</h1>
-      <p class="projects-lead">Ship a project to turn the hours you coded into approved hours and coins.</p>
+      <p class="lead">Ship a project to turn the hours you coded into approved hours and coins.</p>
     </div>
     <%= link_to "Your projects", projects_path, class: "btn btn--primary btn--lg" %>
   </header>
 
   <% if @ships.empty? %>
-    <div class="card projects-empty-card">
-      <h2>No ships yet</h2>
-      <p>When you've coded a while on a project, press Ship on it from your projects page. It shows how many hours are ready to ship.</p>
-      <%= link_to "Go to your projects", projects_path, class: "btn btn--primary" %>
+    <div class="empty projects-empty-card">
+      <%= image_tag "design/map-house.svg", alt: "", class: "empty__art" %>
+      <h2 class="empty__title">No ships yet</h2>
+      <p class="empty__text">A ship is a project you send in for review. When you've coded a while, press Ship on it from your projects page. It shows how many hours are ready to ship.</p>
+      <div class="empty__actions"><%= link_to "Go to your projects", projects_path, class: "btn btn--primary btn--lg" %></div>
     </div>
   <% else %>
     <% if @ships.any?(&:status_approved?) %>
@@ -22,4 +23,4 @@
       <%= render partial: "ships/ship", collection: @ships, as: :ship %>
     </ul>
   <% end %>
-</section>
+</div>

@@ -1,54 +1,55 @@
 <% content_for :title, "Edit project" %>
-<section class="container projects projects--narrow">
+<div class="container projects projects--narrow stack stack--lg">
   <p class="projects-back"><%= link_to "← All projects", projects_path %></p>
-  <h1>Edit <%= @project.name_was.presence || "project" %></h1>
+  <header class="page-header">
+    <p class="eyebrow">Edit project</p>
+    <h1>Edit <%= @project.name_was.presence || "project" %></h1>
+  </header>
 
-  <% if @suggestions.any? %>
-    <section class="card projects-section" aria-labelledby="suggestions-heading">
-      <h2 id="suggestions-heading">Is this yours?</h2>
-      <ul class="suggestions"><%= render partial: "projects/suggestion", collection: @suggestions, as: :suggestion %></ul>
-    </section>
-  <% end %>
+  <%= render "projects/suggestions", suggestions: @suggestions %>
 
-  <div class="card projects-section"><%= render "projects/form", project: @project %></div>
+  <section class="card" aria-labelledby="details-heading">
+    <h2 id="details-heading" class="card__title">Details</h2>
+    <%= render "projects/form", project: @project %>
+  </section>
 
-  <section class="card projects-section" aria-labelledby="hackatime-heading">
-    <h2 id="hackatime-heading">Hackatime projects</h2>
-    <p class="projects-hint">Time you log on a linked Hackatime project belongs to this project. Type the name exactly as it shows on Hackatime.</p>
+  <section class="card stack" aria-labelledby="hackatime-heading">
+    <h2 id="hackatime-heading" class="card__title">Hackatime projects</h2>
+    <p class="muted">Time you log on a linked Hackatime project belongs to this project. Type the name exactly as it shows on Hackatime.</p>
 
     <% if @links.any? %>
-      <ul class="links">
+      <ul class="links list">
         <% @links.each do |link| %>
           <li class="links__item">
-            <span class="links__name"><%= link.hackatime_project %></span>
+            <span class="links__name chip-name"><%= link.hackatime_project %></span>
             <span class="links__how"><%= { "manual" => "linked by you", "auto_repo" => "linked by matching repo", "confirmed" => "you confirmed" }.fetch(link.link_method) %></span>
-            <%= button_to "Unlink", project_hackatime_link_path(@project, link), method: :delete, class: "btn btn--ghost" %>
+            <%= button_to "Unlink", project_hackatime_link_path(@project, link), method: :delete, class: "btn btn--sm", "aria-label": "Unlink #{link.hackatime_project}" %>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="projects-empty">Nothing linked yet. Coding still counts, it just can't be shipped until a Hackatime project is linked.</p>
+      <p class="alert alert--warning projects-empty">Nothing linked yet. Coding still counts, it just can't be shipped until a Hackatime project is linked.</p>
     <% end %>
 
-    <%= form_with scope: :hackatime_link, url: project_hackatime_links_path(@project), class: "link-form" do |f| %>
-      <div class="projects-field">
+    <%= form_with scope: :hackatime_link, url: project_hackatime_links_path(@project), class: "link-form stack" do |f| %>
+      <div class="field">
         <%= f.label :hackatime_project, "Hackatime project name" %>
-        <%= f.text_field :hackatime_project, maxlength: HackatimeLink::NAME_MAX, required: true, autocomplete: "off" %>
+        <%= f.text_field :hackatime_project, class: "input", maxlength: HackatimeLink::NAME_MAX, required: true, autocomplete: "off" %>
       </div>
-      <%= f.button "Link it", class: "btn btn--primary" %>
+      <div><%= f.button "Link it", class: "btn btn--primary" %></div>
     <% end %>
   </section>
 
-  <section class="card projects-section" aria-labelledby="manage-heading">
-    <h2 id="manage-heading">Manage</h2>
+  <section class="card stack" aria-labelledby="manage-heading">
+    <h2 id="manage-heading" class="card__title">Manage</h2>
+    <p class="muted">Archiving hides a project without losing anything. Deleting removes it and its Hackatime links for good.</p>
     <div class="projects-actions">
       <% if @project.status_active? %>
-        <%= button_to "Archive", archive_project_path(@project), method: :patch, class: "btn btn--ghost" %>
+        <%= button_to "Archive", archive_project_path(@project), method: :patch, class: "btn" %>
       <% else %>
-        <%= button_to "Unarchive", unarchive_project_path(@project), method: :patch, class: "btn btn--ghost" %>
+        <%= button_to "Unarchive", unarchive_project_path(@project), method: :patch, class: "btn" %>
       <% end %>
-      <%= button_to "Delete project", project_path(@project), method: :delete, class: "btn btn--ghost projects-delete", form: { data: { turbo_confirm: "Delete #{@project.name_was}? This can't be undone." } } %>
+      <%= button_to "Delete project", project_path(@project), method: :delete, class: "btn btn--danger projects-delete", form: { data: { turbo_confirm: "Delete #{@project.name_was}? This can't be undone." } } %>
     </div>
-    <p class="projects-hint">Archiving hides a project without losing anything. Deleting removes it and its Hackatime links for good.</p>
   </section>
-</section>
+</div>

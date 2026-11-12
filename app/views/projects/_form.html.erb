@@ -1,33 +1,33 @@
-<%= form_with model: project, scope: :project, url: (project.persisted? ? project_path(project) : projects_path), class: "projects-form" do |f| %>
+<%= form_with model: project, scope: :project, url: (project.persisted? ? project_path(project) : projects_path), class: "projects-form stack" do |f| %>
   <%= render "projects/errors", record: project %>
 
-  <div class="projects-field">
+  <div class="field">
     <%= f.label :name, "Project name" %>
-    <%= f.text_field :name, maxlength: Project::NAME_RANGE.max, required: true, autocomplete: "off" %>
-    <p class="projects-hint">Up to <%= Project::NAME_RANGE.max %> characters. You can rename it any time.</p>
+    <%= f.text_field :name, class: "input", maxlength: Project::NAME_RANGE.max, required: true, autocomplete: "off", "aria-describedby": "project-name-hint" %>
+    <p class="field__hint" id="project-name-hint">Up to <%= Project::NAME_RANGE.max %> characters. You can rename it any time.</p>
   </div>
 
-  <div class="projects-field">
+  <div class="field">
     <%= f.label :kind, "What kind of project is it?" %>
-    <%= f.select :kind, project_kind_options %>
+    <%= f.select :kind, project_kind_options, {}, class: "select" %>
   </div>
 
-  <div class="projects-field">
+  <div class="field">
     <%= f.label :idea, "What is it? (optional)" %>
-    <%= f.text_area :idea, rows: 3, maxlength: Project::IDEA_MAX, placeholder: "A sentence is plenty." %>
-    <p class="projects-hint">Up to <%= Project::IDEA_MAX %> characters.</p>
+    <%= f.text_area :idea, class: "textarea", rows: 3, maxlength: Project::IDEA_MAX, placeholder: "A sentence is plenty.", "aria-describedby": "project-idea-hint" %>
+    <p class="field__hint" id="project-idea-hint">Up to <%= Project::IDEA_MAX %> characters.</p>
   </div>
 
-  <div class="projects-field">
+  <div class="field">
     <%= f.label :repo_url, "GitHub link (optional)" %>
-    <%= f.url_field :repo_url, maxlength: Project::URL_MAX, placeholder: "https://github.com/you/your-repo", autocomplete: "off" %>
-    <p class="projects-hint">The repository's main page. If a Hackatime project uses the same repo, we can link them for you.</p>
+    <%= f.url_field :repo_url, class: "input", maxlength: Project::URL_MAX, placeholder: "https://github.com/you/your-repo", autocomplete: "off", "aria-describedby": "project-repo-hint" %>
+    <p class="field__hint" id="project-repo-hint">The repository's main page. If a Hackatime project uses the same repo, we can link them for you.</p>
   </div>
 
-  <div class="projects-field">
+  <div class="field">
     <%= f.label :demo_url, "Demo link (optional)" %>
-    <%= f.url_field :demo_url, maxlength: Project::URL_MAX, placeholder: "https://", autocomplete: "off" %>
-    <p class="projects-hint">Where people can try it. Must start with https://</p>
+    <%= f.url_field :demo_url, class: "input", maxlength: Project::URL_MAX, placeholder: "https://", autocomplete: "off", "aria-describedby": "project-demo-hint" %>
+    <p class="field__hint" id="project-demo-hint">Where people can try it. Must start with https://</p>
   </div>
 
   <div class="projects-actions">

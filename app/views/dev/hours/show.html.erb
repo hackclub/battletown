@@ -1,31 +1,39 @@
 <% content_for :title, "Dev hours" %>
-<%= dev_tool(:section, class: "container") do %>
-  <h1>Add coded time</h1>
-  <p>Adds time to your own ledger for a local date (your time zone: <%= current_user.time_zone.presence || "UTC" %>). Dates from 3 days ago to today work; a day is capped at <%= @config.daily_cap_seconds / 3600 %> hours. Time on dates before <%= @first_counted.iso8601 %> (before you signed up) stays in the ledger below but counts for nothing in the game.</p>
+<div class="container">
+  <%= dev_tool(:section, class: "dev-page") do %>
+    <header class="page-header">
+      <h1>Add coded time</h1>
+      <p class="dev-page__note">Adds time to your own ledger for a local date (your time zone: <%= current_user.time_zone.presence || "UTC" %>). Dates from 3 days ago to today work; a day is capped at <%= @config.daily_cap_seconds / 3600 %> hours. Time on dates before <%= @first_counted.iso8601 %> (before you signed up) stays in the ledger below but counts for nothing in the game.</p>
+    </header>
 
-  <%= form_with url: dev_hours_path, method: :post, class: "card" do |form| %>
-    <p>
-      <%= form.label :local_date, "Local date" %>
-      <%= form.date_field :local_date, value: @today, min: @today - @config.max_backfill_days, max: @today, required: true %>
-    </p>
-    <p>
-      <%= form.label :minutes, "Minutes coded" %>
-      <%= form.number_field :minutes, value: 30, min: 1, max: 1440, step: 1, required: true %>
-    </p>
-    <p>
-      <%= form.label :hackatime_project, "Hackatime project (optional)" %>
-      <%= form.text_field :hackatime_project, maxlength: 120, placeholder: "Needed for a ship: the name you linked to a project" %>
-    </p>
-    <%= form.submit "Add time", class: "btn btn--primary" %>
+    <%= form_with url: dev_hours_path, method: :post, class: "card dev-form stack" do |form| %>
+      <div class="field">
+        <%= form.label :local_date, "Local date" %>
+        <%= form.date_field :local_date, class: "input", value: @today, min: @today - @config.max_backfill_days, max: @today, required: true %>
+      </div>
+      <div class="field">
+        <%= form.label :minutes, "Minutes coded" %>
+        <%= form.number_field :minutes, class: "input", value: 30, min: 1, max: 1440, step: 1, required: true %>
+      </div>
+      <div class="field">
+        <%= form.label :hackatime_project, "Hackatime project (optional)" %>
+        <%= form.text_field :hackatime_project, class: "input", maxlength: 120, placeholder: "Needed for a ship: the name you linked to a project", "aria-describedby": "dev-hours-project-hint" %>
+        <p class="field__hint" id="dev-hours-project-hint">Use the exact name you linked on a project's edit page.</p>
+      </div>
+      <div><%= form.submit "Add time", class: "btn btn--primary" %></div>
+    <% end %>
+
+    <h2>Last 7 days</h2>
+    <%= table_region("Last 7 days") do %>
+      <table class="table table--zebra">
+        <caption class="visually-hidden">Minutes coded in the last 7 local days</caption>
+        <thead><tr><th scope="col">Local date</th><th scope="col" class="num">Minutes</th></tr></thead>
+        <tbody>
+          <% (@today - 6..@today).reverse_each do |date| %>
+            <tr><th scope="row"><%= date.iso8601 %></th><td class="num"><%= (@days[date] || 0) / 60 %></td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
   <% end %>
-
-  <h2>Last 7 days</h2>
-  <table>
-    <thead><tr><th scope="col">Local date</th><th scope="col">Minutes</th></tr></thead>
-    <tbody>
-      <% (@today - 6..@today).reverse_each do |date| %>
-        <tr><th scope="row"><%= date.iso8601 %></th><td><%= (@days[date] || 0) / 60 %></td></tr>
-      <% end %>
-    </tbody>
-  </table>
-<% end %>
+</div>

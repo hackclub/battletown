@@ -130,7 +130,7 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
     sign_in_admin
     get "/admin"
     assert_select ".admin-only a[href='/admin/ships']", "Ship review queue"
-    assert_select ".admin-only", text: /\(1 waiting\)/
+    assert_select ".admin-link p", text: /1 waiting/
   end
 
   # --- one ship ---

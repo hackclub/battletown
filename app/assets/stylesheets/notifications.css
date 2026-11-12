@@ -1,51 +1,27 @@
-/* Notification settings (/settings/notifications). Tokens only, see docs/CONTRACT.md. */
-.notification-settings { max-width: 40rem; }
-
-.notification-settings__lead { color: var(--color-text-muted); }
-
-.notification-settings__note {
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-raised);
-}
-
+/* Notification settings (/settings/notifications). Each choice is one tappable row: the whole row toggles its checkbox
+   (the label's ::after covers the row), and a ticked row is also tinted. Tokens only. */
+.notification-settings { max-width: 48rem; }
 .notification-settings__form { display: grid; gap: var(--space-6); }
-
 .notification-settings__fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
-.notification-settings__legend {
-  margin-bottom: var(--space-3);
-  padding: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-}
-
+.notification-settings__legend { margin-bottom: var(--space-3); padding: 0; font-family: var(--font-display); font-size: var(--text-lg); }
 .notification-settings__list { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
-
 .notification-settings__item {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3);
-  border: 1px solid var(--color-border);
+  min-height: var(--tap-size);
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg);
 }
-
-.notification-settings__box {
-  flex: none;
-  width: var(--space-6);
-  height: var(--space-6);
-  margin: var(--space-1) 0 0;
-  accent-color: var(--color-primary);
-}
-
-.notification-settings__label { display: grid; gap: var(--space-1); flex: 1; min-width: 0; cursor: pointer; }
+.notification-settings__item:has(:checked) { border-color: var(--color-primary); background: var(--color-surface); }
+.notification-settings__item:has(:focus-visible) { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.notification-settings__item:has(:focus-visible) :focus-visible { outline: none; }
+.notification-settings__box { position: relative; z-index: 1; margin-top: 0.1rem; }
+.notification-settings__label { display: grid; gap: var(--space-1); flex: 1; min-width: 0; font-weight: 500; cursor: pointer; }
+.notification-settings__label::after { content: ""; position: absolute; inset: 0; }
 .notification-settings__title { font-weight: 700; overflow-wrap: anywhere; }
 .notification-settings__hint { color: var(--color-text-muted); font-size: var(--text-sm); overflow-wrap: anywhere; }
-
-.notification-settings__actions { display: flex; }
-
-@media (max-width: 40rem) {
-  .notification-settings__form { padding: var(--space-4); }
-}
+.notification-settings__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }

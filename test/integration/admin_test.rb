@@ -52,6 +52,16 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "every admin table sits in a named, keyboard-focusable scroll region, and the page has one h1" do
+    make_admin(users(:onboarded))
+    sign_in_as users(:onboarded)
+    get "/admin"
+    assert_select ".table-wrap[tabindex='0'][role=region][aria-label] > table.admin-table", 6
+    assert_select "h1", 1
+    assert_select "nav[aria-label='Admin sections'] a", 4
+    assert_select "[style]", 0
+  end
+
   test "an admin sees the dashboard with no-store caching and the Admin title" do
     make_admin(users(:onboarded))
     sign_in_as users(:onboarded)

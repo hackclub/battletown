@@ -20,8 +20,12 @@ module ShipsHelper
 
   def ship_status_label(ship) = STATUS_LABELS.fetch(ship.status)
 
+  # Badge colour classes per status; the label is always the words, never colour alone.
+  STATUS_BADGES = { "draft" => "badge--muted", "submitted" => "badge--info", "approved" => "badge--success",
+                    "rejected" => "badge--danger", "withdrawn" => "badge--muted" }.freeze
+
   def ship_status_badge(ship)
-    tag.span(ship_status_label(ship), class: "badge ship-status ship-status--#{ship.status}")
+    tag.span(ship_status_label(ship), class: "badge #{STATUS_BADGES.fetch(ship.status)} ship-status ship-status--#{ship.status}")
   end
 
   # "Nov 3 to Nov 9" (or just "Nov 3" for one day).

@@ -1,42 +1,42 @@
 <% content_for :title, "Ship: #{@ship.project.name}" %>
-<section class="container projects projects--narrow">
+<div class="container projects projects--narrow stack stack--lg">
   <p class="projects-back"><%= link_to "Back to your ships", ships_path %></p>
-  <header class="ship__head ship__head--page">
+  <header class="page-header ship__head ship__head--page">
     <h1><%= @ship.project.name %></h1>
     <%= ship_status_badge(@ship) %>
   </header>
 
   <% case @ship.status %>
   <% when "submitted" %>
-    <p class="projects-lead">Waiting for review. A staff member will look at it soon. You can keep coding: time you log from now goes into your next ship.</p>
+    <p class="alert projects-lead">Waiting for review. A staff member will look at it soon. You can keep coding: time you log from now goes into your next ship.</p>
   <% when "approved" %>
-    <section class="card ship-result" aria-labelledby="ship-result-heading">
-      <h2 id="ship-result-heading">Approved</h2>
+    <section class="card ship-result stack" aria-labelledby="ship-result-heading">
+      <h2 id="ship-result-heading" class="card__title">Approved</h2>
       <p class="ship-result__line">
         <%= ship_hours(@ship.approved_seconds) %> approved <span aria-hidden="true">&rarr;</span><span class="visually-hidden">gives</span>
         <%= @breakdown[:base] %> base <%= "coin".pluralize(@breakdown[:base]) %> + <%= @breakdown[:bonus] %> streak bonus <%= "coin".pluralize(@breakdown[:bonus]) %>
         = <strong><%= @breakdown[:total] %> <%= "coin".pluralize(@breakdown[:total]) %></strong>
       </p>
       <% if @ship.approved_seconds < @ship.coded_seconds %>
-        <p class="projects-hint">You coded <%= ship_hours(@ship.coded_seconds) %>; the reviewer approved <%= ship_hours(@ship.approved_seconds) %>.</p>
+        <p class="projects-hint muted">You coded <%= ship_hours(@ship.coded_seconds) %>; the reviewer approved <%= ship_hours(@ship.approved_seconds) %>.</p>
       <% end %>
       <%= render "ships/unlock_note" %>
     </section>
   <% when "rejected" %>
-    <section class="card ship-result ship-result--rejected" aria-labelledby="ship-result-heading">
-      <h2 id="ship-result-heading">Needs changes</h2>
-      <p>A reviewer said: <%= @ship.rejection_reason %></p>
+    <section class="card ship-result ship-result--rejected stack" aria-labelledby="ship-result-heading">
+      <h2 id="ship-result-heading" class="card__title">Needs changes</h2>
+      <p class="alert alert--danger">A reviewer said: <%= @ship.rejection_reason %></p>
       <p>Your hours are still yours: fix it and ship the same hours again.</p>
-      <%= link_to "Fix and ship again", new_project_ship_path(@ship.project, from: @ship.id), class: "btn btn--primary" %>
+      <div><%= link_to "Fix and ship again", new_project_ship_path(@ship.project, from: @ship.id), class: "btn btn--primary btn--lg" %></div>
     </section>
   <% when "withdrawn" %>
-    <p class="projects-lead">You withdrew this ship, so its hours are free for your next one.</p>
+    <p class="alert projects-lead">You withdrew this ship, so its hours are free for your next one.</p>
   <% when "draft" %>
-    <p class="projects-lead">This is a draft. Nobody has seen it yet.</p>
+    <p class="alert projects-lead">This is a draft. Nobody has seen it yet.</p>
   <% end %>
 
-  <section class="card ship-facts" aria-labelledby="ship-facts-heading">
-    <h2 id="ship-facts-heading">What you sent</h2>
+  <section class="card ship-facts stack" aria-labelledby="ship-facts-heading">
+    <h2 id="ship-facts-heading" class="card__title">What you sent</h2>
     <dl class="ship-dl">
       <dt>Hours coded</dt><dd><%= ship_hours(@ship.coded_seconds) %> (<%= ship_dates_text(@ship.window_start_date, @ship.window_end_date) %>)</dd>
       <% if @ship.submitted_at %><dt>Submitted</dt><dd><%= ship_submitted_on(@ship, year: true) %></dd><% end %>
@@ -49,9 +49,9 @@
   <div class="projects-actions">
     <% if @ship.status_draft? %><%= link_to "Continue draft", edit_ship_path(@ship), class: "btn btn--primary" %><% end %>
     <% if @ship.open? %>
-      <%= button_to (@ship.status_draft? ? "Discard draft" : "Withdraw ship"), withdraw_ship_path(@ship), method: :patch, class: "btn btn--ghost",
+      <%= button_to (@ship.status_draft? ? "Discard draft" : "Withdraw ship"), withdraw_ship_path(@ship), method: :patch, class: "btn",
                     form: { data: { turbo_confirm: (@ship.status_submitted? ? "Withdraw this ship? Its hours go back into your next ship." : nil) } } %>
     <% end %>
     <%= link_to "Your projects", projects_path, class: "btn btn--ghost" %>
   </div>
-</section>
+</div>

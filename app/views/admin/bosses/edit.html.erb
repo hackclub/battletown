@@ -1,39 +1,48 @@
 <% content_for :title, "Edit #{@boss.name_was}" %>
-<%= admin_tool(:div, class: "admin-dashboard container") do %>
-  <h1>Edit <%= @boss.name_was %></h1>
-  <p class="admin-dashboard__note"><%= @boss.starts_on.strftime("%A %-d %B") %> to <%= @boss.ends_on.strftime("%A %-d %B %Y") %>. The dates are fixed.</p>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the weekly bosses", admin_bosses_path %></p>
+    <header class="page-header">
+      <h1>Edit <%= @boss.name_was %></h1>
+      <p class="admin-dashboard__note"><%= @boss.starts_on.strftime("%A %-d %B") %> to <%= @boss.ends_on.strftime("%A %-d %B %Y") %>. The dates are fixed.</p>
+    </header>
 
-  <% if @boss.errors.any? %>
-    <div class="admin-form__errors" role="alert">
-      <p>That was not saved:</p>
-      <ul>
-        <% @boss.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+    <% if @boss.errors.any? %>
+      <div class="alert alert--danger admin-form__errors" role="alert">
+        <p class="alert__title">That was not saved</p>
+        <ul>
+          <% @boss.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="card admin-form-card">
+      <%= form_with model: @boss, url: admin_boss_path(@boss), method: :patch, class: "admin-form stack" do |form| %>
+        <div class="field">
+          <%= form.label :name, "Name (1 to 60 characters)" %>
+          <%= form.text_field :name, class: "input", maxlength: 60, required: true %>
+        </div>
+        <div class="field">
+          <%= form.label :art_key, "Art" %>
+          <%= form.select :art_key, Boss::ART_KEYS, {}, class: "select" %>
+        </div>
+        <div class="field">
+          <%= form.label :hp_hours, "Health (hours of coding)" %>
+          <% if @boss.started? %>
+            <%= form.text_field :hp_hours, class: "input", disabled: true, "aria-describedby": "hp-locked" %>
+            <span id="hp-locked" class="field__hint admin-form__hint">Locked: this boss has started, so its health can no longer change.</span>
+          <% else %>
+            <%= form.number_field :hp_hours, class: "input", min: 1, max: Boss::MAX_HP_SECONDS / 3600, step: "any", required: true, "aria-describedby": "hp-hint" %>
+            <span id="hp-hint" class="field__hint admin-form__hint">Editable until the boss starts on <%= @boss.starts_on.strftime("%A %-d %B") %>.</span>
+          <% end %>
+        </div>
+        <div class="cluster">
+          <%= form.submit "Save boss", class: "btn btn--primary" %>
+          <%= link_to "Cancel", admin_bosses_path, class: "btn btn--ghost" %>
+        </div>
+      <% end %>
     </div>
   <% end %>
-
-  <%= form_with model: @boss, url: admin_boss_path(@boss), method: :patch, class: "admin-form" do |form| %>
-    <p>
-      <%= form.label :name, "Name (1 to 60 characters)" %>
-      <%= form.text_field :name, maxlength: 60, required: true %>
-    </p>
-    <p>
-      <%= form.label :art_key, "Art" %>
-      <%= form.select :art_key, Boss::ART_KEYS %>
-    </p>
-    <p>
-      <%= form.label :hp_hours, "Health (hours of coding)" %>
-      <% if @boss.started? %>
-        <%= form.text_field :hp_hours, disabled: true, "aria-describedby": "hp-locked" %>
-        <span id="hp-locked" class="admin-form__hint">Locked: this boss has started, so its health can no longer change.</span>
-      <% else %>
-        <%= form.number_field :hp_hours, min: 1, max: Boss::MAX_HP_SECONDS / 3600, step: "any", required: true, "aria-describedby": "hp-hint" %>
-        <span id="hp-hint" class="admin-form__hint">Editable until the boss starts on <%= @boss.starts_on.strftime("%A %-d %B") %>.</span>
-      <% end %>
-    </p>
-    <%= form.submit "Save boss", class: "btn btn--primary" %>
-    <%= link_to "Cancel", admin_bosses_path, class: "btn btn--ghost" %>
-  <% end %>
-<% end %>
+</div>

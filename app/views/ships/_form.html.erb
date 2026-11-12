@@ -1,7 +1,8 @@
 <%# Locals: ship, project, readiness, window, previous_ship (nil for a first ship), min_seconds %>
 <% config = Game::Config.current %>
-<section class="card ship-window" aria-labelledby="ship-window-heading">
-  <h2 id="ship-window-heading">
+<% form_shown = readiness == :ready || (readiness == :too_few && ship.persisted?) %>
+<section class="card ship-window stack" aria-labelledby="ship-window-heading">
+  <h2 id="ship-window-heading" class="card__title">
     <% if readiness == :ready || readiness == :too_few %>
       You've coded <%= ship_hours(window.seconds) %> on this project <%= previous_ship ? "since your last ship" : "so far" %>
     <% else %>
@@ -21,6 +22,38 @@
     <p><%= ship_dates_text(window.start_date, window.end_date) %>, from the Hackatime projects linked to <strong><%= project.name %></strong>.</p>
   <% end %>
 
+  <% unless readiness == :no_link %>
+    <div class="progress progress--prize">
+      <div class="progress__head">
+        <span class="progress__label" id="ship-progress-label">Time you can ship</span>
+        <span class="progress__text"><%= readiness == :ready ? "#{ship_hours(window.seconds)}: enough to ship" : "#{ship_hours(window.seconds)} of #{ship_hours(min_seconds)} needed" %></span>
+      </div>
+      <progress class="progress__bar" max="<%= min_seconds %>" value="<%= [ window.seconds, min_seconds ].min %>" aria-labelledby="ship-progress-label"><%= ship_hours(window.seconds) %></progress>
+    </div>
+  <% end %>
+
+  <div class="ship-checklist">
+    <h3 class="ship-checklist__title" id="ship-checklist-title">What a ship needs</h3>
+    <ul class="list" aria-labelledby="ship-checklist-title">
+      <li>
+        <span>A Hackatime project linked to this project</span>
+        <%= readiness == :no_link ? tag.span("To do", class: "badge badge--warning") : tag.span("Done", class: "badge badge--success") %>
+      </li>
+      <li>
+        <span>At least <%= ship_hours(min_seconds) %> coded since your last ship</span>
+        <%= readiness == :ready ? tag.span("Done", class: "badge badge--success") : tag.span("To do", class: "badge badge--warning") %>
+      </li>
+      <li>
+        <span>A few words on what you built</span>
+        <%= tag.span(form_shown ? "In the form below" : "To do", class: "badge badge--muted") %>
+      </li>
+      <li>
+        <span>A public GitHub link so the reviewer can open it</span>
+        <%= tag.span(form_shown ? "In the form below" : "To do", class: "badge badge--muted") %>
+      </li>
+    </ul>
+  </div>
+
   <details class="ship-rules">
     <summary>How does a ship count my time?</summary>
     <ul>
@@ -34,55 +67,49 @@
   </details>
 </section>
 
-<% if readiness == :ready || (readiness == :too_few && ship.persisted?) %>
+<% if form_shown %>
   <% if readiness == :too_few %>
-    <p class="ship-hint">Your draft is saved. You can submit it once you have at least <%= ship_hours(min_seconds) %>.</p>
+    <p class="alert ship-hint">Your draft is saved. You can submit it once you have at least <%= ship_hours(min_seconds) %>.</p>
   <% end %>
-  <%= form_with model: ship, scope: :ship, url: (ship.persisted? ? ship_path(ship) : project_ships_path(project)), method: (ship.persisted? ? :patch : :post), class: "projects-form ship-form" do |f| %>
-    <% if ship.errors.any? %>
-      <div class="projects-errors" role="alert">
-        <p>This ship was not sent yet:</p>
-        <ul>
-          <% ship_error_messages(ship).each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
+  <section class="card" aria-labelledby="ship-form-heading">
+    <h2 id="ship-form-heading" class="card__title">Tell the reviewer</h2>
+    <%= form_with model: ship, scope: :ship, url: (ship.persisted? ? ship_path(ship) : project_ships_path(project)), method: (ship.persisted? ? :patch : :post), class: "projects-form ship-form stack" do |f| %>
+      <%= render "projects/errors", record: ship, messages: ship_error_messages(ship), title: "This ship was not sent yet" %>
+
+      <div class="field">
+        <%= f.label :description, "What did you build? (required)" %>
+        <%= f.text_area :description, class: "textarea", rows: 5, maxlength: Ship::DESCRIPTION_MAX, required: true, placeholder: "A few sentences: what it does and what you did since your last ship.", "aria-describedby": "ship-description-hint" %>
+        <p class="field__hint" id="ship-description-hint">Up to <%= Ship::DESCRIPTION_MAX %> characters. The reviewer reads this.</p>
       </div>
-    <% end %>
 
-    <div class="projects-field">
-      <%= f.label :description, "What did you build? (required)" %>
-      <%= f.text_area :description, rows: 5, maxlength: Ship::DESCRIPTION_MAX, required: true, placeholder: "A few sentences: what it does and what you did since your last ship." %>
-      <p class="projects-hint">Up to <%= Ship::DESCRIPTION_MAX %> characters. The reviewer reads this.</p>
-    </div>
-
-    <div class="projects-field">
-      <%= f.label :repo_url, "GitHub link (required)" %>
-      <%= f.url_field :repo_url, maxlength: Ship::URL_MAX, required: true, placeholder: "https://github.com/you/your-repo", autocomplete: "off" %>
-      <p class="projects-hint">The repository's main page. It must be public so the reviewer can open it.</p>
-    </div>
-
-    <div class="projects-field">
-      <%= f.label :demo_url, "Demo link (optional)" %>
-      <%= f.url_field :demo_url, maxlength: Ship::URL_MAX, placeholder: "https://", autocomplete: "off" %>
-      <p class="projects-hint">Where the reviewer can try it. Must start with https://</p>
-    </div>
-
-    <% unless current_user.verification_verified? %>
-      <div class="ship-note" role="note">
-        <p class="ship-note__title">You can ship before you verify.</p>
-        <p>Approved coins are saved for you and unlock when you verify your identity with Hack Club. <%= ship_verify_link %> (opens in a new tab) whenever you like.</p>
+      <div class="field">
+        <%= f.label :repo_url, "GitHub link (required)" %>
+        <%= f.url_field :repo_url, class: "input", maxlength: Ship::URL_MAX, required: true, placeholder: "https://github.com/you/your-repo", autocomplete: "off", "aria-describedby": "ship-repo-hint" %>
+        <p class="field__hint" id="ship-repo-hint">The repository's main page. It must be public so the reviewer can open it.</p>
       </div>
-    <% end %>
 
-    <div class="projects-actions">
-      <% if readiness == :ready %>
-        <%= f.button "Submit ship", name: "ship_action", value: "submit", class: "btn btn--primary btn--lg" %>
+      <div class="field">
+        <%= f.label :demo_url, "Demo link (optional)" %>
+        <%= f.url_field :demo_url, class: "input", maxlength: Ship::URL_MAX, placeholder: "https://", autocomplete: "off", "aria-describedby": "ship-demo-hint" %>
+        <p class="field__hint" id="ship-demo-hint">Where the reviewer can try it. Must start with https://</p>
+      </div>
+
+      <% unless current_user.verification_verified? %>
+        <div class="alert ship-note" role="note">
+          <p class="alert__title ship-note__title">You can ship before you verify.</p>
+          <p>Approved coins are saved for you and unlock when you verify your identity with Hack Club. <%= ship_verify_link %> (opens in a new tab) whenever you like.</p>
+        </div>
       <% end %>
-      <%= f.button "Save draft", name: "ship_action", value: "draft", formnovalidate: true, class: "btn btn--ghost" %>
-      <%= link_to "Cancel", projects_path, class: "btn btn--ghost" %>
-    </div>
-  <% end %>
+
+      <div class="projects-actions">
+        <% if readiness == :ready %>
+          <%= f.button "Submit ship", name: "ship_action", value: "submit", class: "btn btn--primary btn--lg" %>
+        <% end %>
+        <%= f.button "Save draft", name: "ship_action", value: "draft", formnovalidate: true, class: "btn" %>
+        <%= link_to "Cancel", projects_path, class: "btn btn--ghost" %>
+      </div>
+    <% end %>
+  </section>
 <% else %>
-  <p><%= link_to "Back to your projects", projects_path, class: "btn btn--ghost" %></p>
+  <p><%= link_to "Back to your projects", projects_path, class: "btn" %></p>
 <% end %>

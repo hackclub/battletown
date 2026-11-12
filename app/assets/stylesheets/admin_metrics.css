@@ -1,19 +1,28 @@
-/* /admin/metrics (Admin::MetricsController). Kept minimal on top of the shared admin styles; tokens only.
-   Each number has a decorative <progress> bar beside it (aria-hidden; the number is the real value). */
-.admin-metrics__section { margin-top: var(--space-8); }
-.admin-metrics__definition { max-width: 44rem; font-size: var(--text-sm); }
-.admin-metrics__table { max-width: 44rem; }
+/* /admin/metrics. Same tables as the rest of the admin pages (admin.css); each number also gets a decorative <progress>
+   bar beside it (aria-hidden: the number is the real value). Tokens only. */
+.admin-metrics__section { display: grid; gap: var(--space-3); }
+.admin-metrics__section > * { margin: 0; }
+.admin-metrics__definition { max-width: 48rem; font-size: var(--text-sm); }
 .admin-metrics__table tbody th { white-space: nowrap; }
 .admin-metrics__bar-cell { width: 30%; }
 .admin-metrics__bar {
+  -webkit-appearance: none;
+  appearance: none;
   display: block;
   width: 100%;
   min-width: var(--space-16);
   height: var(--space-3);
-  accent-color: var(--color-admin);
+  border: 2px solid var(--color-admin-ink);
+  border-radius: var(--radius-full);
+  background: var(--color-admin-bg);
+  overflow: hidden;
 }
+.admin-metrics__bar::-webkit-progress-bar { background: var(--color-admin-bg); }
+.admin-metrics__bar::-webkit-progress-value { background: var(--color-admin); border-radius: var(--radius-full); }
+.admin-metrics__bar::-moz-progress-bar { background: var(--color-admin); border-radius: var(--radius-full); }
 
 /* On a phone the bars give way so the numbers fit without scrolling sideways. */
 @media (max-width: 40rem) {
   .admin-metrics__bar-cell { display: none; }
 }
+.admin-metrics .table-wrap { max-width: 56rem; }
