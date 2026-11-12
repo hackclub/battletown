@@ -261,7 +261,8 @@
     color: var(--color-bg);
   }
   .card--chunky .card__title { color: var(--color-card-title); font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
-  .card--chunky a { color: var(--color-card-title); }
+  /* A link in a chunky card is pale blue; a .btn keeps its own label colour (a cream button face needs ink, not pale blue). */
+  .card--chunky a:not(.btn) { color: var(--color-card-title); }
   .card--chunky .card__media { background: var(--color-card-blue-light); }
 
   /* Large cream sheet for a whole page section or a form: Figma's CTA wrapper at page scale (48px radius). */

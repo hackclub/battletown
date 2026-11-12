@@ -5,16 +5,6 @@
 .shop-back { margin: 0; }
 /* A quiet button at the start of a line lines its label up with the text under it. */
 .shop-back .btn, .shop .page-header .btn--ghost { margin-inline-start: -1.25em; }
-/* The shared badge colours, restated here so another page's older unlayered .badge rule cannot wash them out. */
-.shop .badge {
-  display: inline-flex;
-  padding: 0 var(--space-3);
-  border: 2px solid var(--badge-border);
-  background: var(--badge-bg);
-  color: var(--badge-fg);
-  font-size: var(--text-sm);
-  line-height: 1.6;
-}
 .shop-note { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
 .alert.shop-note { color: var(--alert-ink); font-size: var(--text-base); }
 
@@ -74,8 +64,6 @@
 .shop-item__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; }
 .shop-item__price { padding: 0 var(--space-4); border-radius: var(--radius-full); background: var(--color-bg); color: var(--color-ink-blue); font-family: var(--font-display); font-size: var(--text-lg); line-height: 1.6; font-variant-numeric: tabular-nums; }
 .shop-item .btn--primary { --btn-border: var(--color-bg); }
-/* .card--chunky a would paint the link button's label pale blue; a button keeps its own label colour. */
-.shop-item a.btn, .shop-item a.btn:hover { color: var(--btn-fg); }
 /* A button you cannot press yet stays fully readable: dashed cream outline instead of a washed-out fill. */
 .shop-item .btn:disabled { --btn-bg: transparent; --btn-fg: var(--color-bg); --btn-border: var(--color-bg); --btn-edge: transparent; border-style: dashed; opacity: 1; }
 
