@@ -14,7 +14,10 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
 
   # Foreign keys to users that deliberately do NOT cascade, with the reason: the row is about someone else (the subject
   # of the row is reached through a cascading key), and the key is nulled so the staff member is forgotten.
-  NULLIFY_ALLOWED = { "ships.reviewer_id" => "the staff member who reviewed a ship; the ship belongs to the teen" }.freeze
+  NULLIFY_ALLOWED = {
+    "ships.reviewer_id" => "the staff member who reviewed a ship; the ship belongs to the teen",
+    "staff_access_logs.actor_id" => "the staff member who looked at something sensitive; the log holds no one else's identity"
+  }.freeze
 
   # Tables that are not about a person: the Rails bookkeeping tables and the token ids of this very feature.
   EXEMPT_TABLES = %w[schema_migrations ar_internal_metadata privacy_request_tokens].freeze
@@ -87,12 +90,14 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     QuestCompletion.create!(user: user, quest: guard_quest, completed_at: Time.current, coin_transaction: CoinTransaction.find_by!(user: user, idempotency_key: "guard-#{user.id}"))
     PlinkoDrop.create!(user: user, dropped_at: Time.current, local_date: Date.new(2026, 11, 9), slot: 4, points: 50, seed: 1, idempotency_key: "guard-drop-#{user.id}")
     PlinkoPlayer.create!(user: user, nickname: "Guard Otter #{user.id}", leaderboard_opt_in: true)
+    NpsResponse.create!(user: user, score: 9, comment: "guard", answered_at: Time.current, prompt_window_date: Date.new(2026, 11, 9))
     subject = Privacy::TokenVerifier::Subject.new(emails: [], slack_id: nil, identity_id: user.hca_uid)
 
     deleted = Privacy::Deleter.new(subject).call(dry_run: true).deleted
 
     # Tables that reference users directly, plus the ones that only reach a user through a project.
-    referencing = app_tables.select { |table| user_foreign_keys(table).any? }
+    # (A table whose only key to users is a nulling one, the staff access log, loses no rows when a person is deleted.)
+    referencing = app_tables.select { |table| user_foreign_keys(table).any? { |fk| fk.on_delete == :cascade } }
     through_projects = %w[link_suggestions]
     assert_equal (referencing + through_projects + [ "users" ]).sort, deleted.keys.sort,
                  "add a row for the new table to this test so its count is proven (every table that references users must show up)"

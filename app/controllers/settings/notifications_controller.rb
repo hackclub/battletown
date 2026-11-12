@@ -24,7 +24,7 @@ module Settings
       raw = params[:preferences]
       return {} unless raw.is_a?(ActionController::Parameters)
 
-      raw.permit(*Notification::KINDS).to_h
+      raw.permit(*Notifications::Preferences.visible_kinds).to_h
     end
 
     def no_store

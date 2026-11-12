@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_123018) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_130803) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -205,7 +205,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_123018) do
     t.string "channel", default: "slack_dm", null: false
     t.index ["user_id", "kind", "channel"], name: "index_notification_preferences_on_user_kind_channel", unique: true
     t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notification_preferences_channel_check"
-    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying]::text[])", name: "notification_preferences_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying, 'nps_prompt'::character varying]::text[])", name: "notification_preferences_kind_check"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -229,9 +229,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_123018) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
     t.check_constraint "attempts >= 0 AND attempts <= 10", name: "notifications_attempts_check"
     t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notifications_channel_check"
-    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying]::text[])", name: "notifications_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying, 'nps_prompt'::character varying]::text[])", name: "notifications_kind_check"
     t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "notifications_last_error_code_check"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying, 'skipped'::character varying]::text[])", name: "notifications_status_check"
+  end
+
+  create_table "nps_responses", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "score", null: false
+    t.string "comment", limit: 300
+    t.datetime "answered_at", null: false
+    t.date "prompt_window_date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["answered_at"], name: "index_nps_responses_on_answered_at"
+    t.index ["user_id", "prompt_window_date"], name: "index_nps_responses_on_user_id_and_prompt_window_date", unique: true
+    t.check_constraint "comment IS NULL OR char_length(comment::text) <= 300", name: "nps_responses_comment_length_check"
+    t.check_constraint "score >= 0 AND score <= 10", name: "nps_responses_score_check"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -418,6 +432,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_123018) do
     t.check_constraint "window_end_date >= window_start_date", name: "ships_window_dates_check"
   end
 
+  create_table "staff_access_logs", force: :cascade do |t|
+    t.bigint "actor_id"
+    t.string "action", limit: 60, null: false
+    t.string "subject_type", limit: 60, null: false
+    t.bigint "subject_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["actor_id"], name: "index_staff_access_logs_on_actor_id"
+    t.index ["created_at"], name: "index_staff_access_logs_on_created_at"
+    t.index ["subject_type", "subject_id"], name: "index_staff_access_logs_on_subject_type_and_subject_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "hca_uid", null: false
     t.string "email"
@@ -475,6 +500,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_123018) do
   add_foreign_key "merch_claims", "users", on_delete: :cascade
   add_foreign_key "notification_preferences", "users", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
+  add_foreign_key "nps_responses", "users", on_delete: :cascade
   add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "plinko_drops", "users", on_delete: :cascade
   add_foreign_key "plinko_players", "users", on_delete: :cascade
@@ -487,5 +513,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_123018) do
   add_foreign_key "ships", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
   add_foreign_key "ships", "users", column: "reviewer_id", on_delete: :nullify
   add_foreign_key "ships", "users", on_delete: :cascade
+  add_foreign_key "staff_access_logs", "users", column: "actor_id", on_delete: :nullify
   add_foreign_key "welcome_back_windows", "users", on_delete: :cascade
 end

@@ -59,6 +59,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
   end
 
   test "shows every kind with a plain label, all on by default, and a Save changes button" do
+    Flipper.enable(:nps) # a kind whose feature flag is off is hidden (next test)
     sign_in_as(@user)
     get settings_notifications_path
     assert_response :success
@@ -74,6 +75,23 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
     assert_select "input[type=submit][value='Save changes']"
     assert_select ".notification-settings__note", count: 0
     assert_equal "no-store", response.headers["Cache-Control"]
+  end
+
+  test "the survey switch is hidden and cannot be stored while the nps flag is off, and shown while it is on" do
+    sign_in_as(@user)
+    get settings_notifications_path
+    assert_select "input[name='preferences[nps_prompt]']", count: 0
+    assert_select "input[name='preferences[ship_approved]']"
+    patch settings_notifications_path, params: { preferences: { nps_prompt: "0", ship_approved: "0" } }
+    assert_equal [ "ship_approved" ], NotificationPreference.where(user_id: @user.id).pluck(:kind)
+
+    with_feature(:nps) do
+      get settings_notifications_path
+      assert_select "input[type=checkbox][name='preferences[nps_prompt]'][checked]"
+      assert_select "label[for=preferences_nps_prompt] .notification-settings__title", text: "Quick survey"
+      patch settings_notifications_path, params: { preferences: { nps_prompt: "0" } }
+      assert_not Notifications::Preferences.enabled?(@user, "nps_prompt")
+    end
   end
 
   test "the header links to it for onboarded people" do

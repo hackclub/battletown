@@ -42,6 +42,8 @@ shared:
     # Returning-user nudge (feature flag `returning`): one DM per idle period, no guilt and no day counts. {boost_days} is the
     # length of the welcome-back boost (game.yml returning.boost_days); {link} is the dashboard.
     returning_nudge: "Hey, Battletown misses you! The boss is still standing. Code for 15 minutes today and your streak bonus gets a welcome-back boost for {boost_days} days: {link} - the Hack Club Battletown team"
+    # nps_prompt (flag `nps`): {link} is a one-click page with a 0 to 10 rating and an optional comment, no login needed.
+    nps_prompt: "Quick question: how likely are you to recommend Battletown to a friend? It takes a few seconds and you don't need to log in: {link} - the Hack Club Battletown team"
     ship_rejected: "Thanks for shipping {project}. It needs one more touch before we can approve it: {reason} Fix it up and ship again whenever you're ready: {link} - the Hack Club Battletown team"
 
   # What each switch is called on /settings/notifications (plain words, the owner can edit these).
@@ -67,3 +69,6 @@ shared:
     returning_nudge:
       title: "Welcome-back nudge"
       hint: "One friendly note if you have been away a while, about the welcome-back boost."
+    nps_prompt:
+      title: "Quick survey"
+      hint: "A short question every few days about how likely you are to recommend Battletown. One click, comment optional."

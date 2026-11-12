@@ -9,7 +9,7 @@ module Notifications
     EMAIL = "email".freeze
 
     # Kinds that belong to a feature flag: while the flag is off the switch is not shown on /settings/notifications.
-    FEATURE_KINDS = { "returning_nudge" => :returning }.freeze
+    FEATURE_KINDS = { "returning_nudge" => :returning, "nps_prompt" => :nps }.freeze
 
     module_function
 
@@ -28,6 +28,11 @@ module Notifications
     def settings(user, channel: SLACK)
       off = NotificationPreference.where(user_id: user.id, channel: channel, enabled: false).pluck(:kind)
       kinds(channel: channel).index_with { |kind| off.exclude?(kind) }
+    end
+
+    # The kinds a person may change right now: every kind of the channel except those whose feature is switched off.
+    def visible_kinds(channel: SLACK)
+      kinds(channel: channel).reject { |kind| FEATURE_KINDS.key?(kind) && !Features.enabled?(FEATURE_KINDS.fetch(kind)) }
     end
 
     # `settings` without the kinds whose feature is switched off (what /settings/notifications lists).

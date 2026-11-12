@@ -147,3 +147,23 @@ shared:
     verification_max_age_days: 30
     # The neutral help sentence shown with the not-eligible note. A placeholder: set it to the real place to ask.
     help_line: Questions? Ask in Slack.
+
+  # The NPS survey ("how likely are you to recommend Battletown?"), behind the Flipper flag `nps`
+  # (app/services/nps/**, Notifications::NpsPrompts). Read through Nps::Config.
+  nps:
+    # Who is asked: someone who counted at least this many coded minutes on at least one of the last `active_days`
+    # local days (in their own time zone).
+    active_minutes: 15
+    active_days: 7
+    # At most one Slack message per person in this many days (one prompt window).
+    interval_days: 2
+    # After someone answers, leave them alone for this many days.
+    cooldown_days_after_answer: 14
+    # Stop asking after this many prompts in a row without an answer, until they answer or come back after
+    # `idle_days_reset` days with no coded day at all.
+    max_prompts_without_answer: 3
+    idle_days_reset: 14
+    # The link in the Slack message works for this many days and for one answer only.
+    token_ttl_days: 7
+    # Comments (free text from a teen) are emptied after this many days by `bin/rails nps:prune`; scores are kept.
+    comment_retention_days: 90
