@@ -9,7 +9,7 @@ class OrdersController < ApplicationController
   before_action :require_login, :require_onboarded
 
   def index
-    @orders = current_user.orders.newest_first.to_a
+    @orders = current_user.orders.includes(:address).newest_first.to_a
     @total = Coins::Balance.total(current_user)
   end
 

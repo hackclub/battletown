@@ -245,7 +245,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     assert_select ".flash--notice", /Order placed/
     assert_select "h1", /Battletown T-shirt/
     assert_select ".shop-status--requested", text: "Requested"
-    assert_select ".shop-note", /message you on Slack to arrange delivery/
+    assert_select ".shop-note", /The team will post it to the address you chose/
     get orders_path
     assert_select ".shop-order", 1
     assert_select ".shop-order__name", /Battletown T-shirt/

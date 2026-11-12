@@ -36,7 +36,7 @@
   </section>
 
   <% if @order.buyer_status == "requested" %>
-    <p class="shop-note">The team will message you on Slack to arrange delivery.</p>
+    <p class="shop-note"><%= @order.address ? "The team will post it to the address you chose." : "The team will message you on Slack to arrange delivery." %></p>
   <% end %>
   <p class="shop-note">Questions about this order? Message the team on Slack.</p>
 

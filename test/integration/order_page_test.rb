@@ -47,6 +47,16 @@ class OrderPageTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{orders_path}']", text: "Back to your orders"
   end
 
+  test "an order with an address says it will be posted there, not that the team will arrange delivery on Slack" do
+    order = order_for(address: true)
+    sign_in_as @buyer
+    get order_path(order)
+    assert_select ".shop-note", text: /The team will post it to the address you chose/
+    assert_select ".shop-note", text: /arrange delivery/, count: 0
+    get orders_path
+    assert_select ".shop-note", text: /The team will post it to the address you chose/
+  end
+
   test "the page that shows the buyer's address keeps itself out of Turbo's back/forward snapshots" do
     order = order_for(address: true)
     sign_in_as @buyer

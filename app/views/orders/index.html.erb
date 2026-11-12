@@ -32,7 +32,7 @@
               <% if order.refunded? %>&middot; refunded <%= order_date(order.refunded_at) %><%= " (coins refunded)" if order.coins.positive? %><% end %>
             </p>
             <% if order.buyer_status == "requested" %>
-              <p class="shop-note">The team will message you on Slack to arrange delivery.</p>
+              <p class="shop-note"><%= order.address ? "The team will post it to the address you chose." : "The team will message you on Slack to arrange delivery." %></p>
             <% end %>
             <div class="shop-order__actions">
               <%= link_to "See order", order_path(order), class: "btn btn--sm", "aria-label": "See order: #{order.display_name}" %>
