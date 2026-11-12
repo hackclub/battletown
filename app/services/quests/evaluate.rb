@@ -48,10 +48,14 @@ module Quests
       progress = Goals.check(user, quest)
       return unless progress.complete?
 
-      completion = QuestCompletion.create_or_find_by!(user_id: user.id, quest_id: quest.id) do |row|
-        row.completed_at = [ progress.completed_at, now ].min
-      end
-      completion if completion.previously_new_record?
+      completion = QuestCompletion.new(user_id: user.id, quest_id: quest.id, completed_at: [ progress.completed_at, now ].min)
+      return unless completion.valid? # another caller recorded it first
+
+      # A savepoint, so losing a race on the unique index (user, quest) cannot poison an enclosing transaction.
+      QuestCompletion.transaction(requires_new: true) { completion.save!(validate: false) }
+      completion
+    rescue ActiveRecord::RecordNotUnique
+      nil
     end
     private_class_method :open_quests, :record
   end

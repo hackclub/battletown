@@ -31,4 +31,13 @@ module QuestsHelper
     HourEntry.where(id: entry.id).update_all(recorded_at: recorded_at) if recorded_at
     entry
   end
+
+  # Replaces a module function for a block (minitest 6 has no `stub`), and puts the original back afterwards.
+  def with_replaced(object, name, replacement)
+    original = object.method(name)
+    object.define_singleton_method(name) { |*args, **opts, &block| replacement.call(*args, **opts, &block) }
+    yield
+  ensure
+    object.define_singleton_method(name, original)
+  end
 end

@@ -1,0 +1,26 @@
+<%# locals: (card:) -%>
+<%# This week's quest on the dashboard (only rendered while the `quests` flag is on). Built from Quests::Presenter: the
+    viewer's own progress only, no other person's name, hours or rank. Status is always words (the chip and the line), never
+    colour alone. One h2; the element ids are fixed, so render it once per page. Styles: quests.css. -%>
+<section class="card dash-panel quest-card quest-card--<%= card.state.to_s.dasherize %>" aria-labelledby="quest-card-title">
+  <div class="quest-card__head">
+    <p class="eyebrow quest-card__eyebrow">Weekly quest</p>
+    <span class="badge <%= card.chip_variant %> quest-card__chip"><%= card.chip_text %></span>
+  </div>
+  <h2 id="quest-card-title" class="dash-panel__title quest-card__title"><%= card.title %></h2>
+  <p class="quest-card__description"><%= card.description %></p>
+
+  <div class="progress progress--sm quest-card__progress">
+    <div class="progress__head">
+      <label for="quest-card-progress" class="progress__label">Your progress</label>
+      <span id="quest-card-progress-text" class="progress__text"><%= card.progress_text %></span>
+    </div>
+    <progress id="quest-card-progress" class="progress__bar" max="<%= card.target %>" value="<%= card.progress_value %>" aria-describedby="quest-card-progress-text"><%= card.progress_text %></progress>
+  </div>
+
+  <p class="quest-card__reward"><span class="badge badge--info quest-card__reward-pill">Reward: <%= card.reward_text %></span></p>
+  <p class="quest-card__message"><%= card.message %></p>
+  <% if card.days_left_text %>
+    <p class="quest-card__days small muted"><%= card.days_left_text %>.</p>
+  <% end %>
+</section>

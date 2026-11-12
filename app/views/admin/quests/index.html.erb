@@ -1,0 +1,56 @@
+<% content_for :title, "Admin quests" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>Weekly quests</h1>
+      <p class="admin-dashboard__note">One quest per boss week, chosen from a fixed menu of goals the app checks by itself. The reward is paid with each person's next approved ship, not when the quest is done. A quest can be changed until its week starts. Counts and coins only: no names.</p>
+    </header>
+
+    <p><%= link_to "Set a quest for a week", new_admin_quest_path, class: "btn btn--primary" %></p>
+
+    <%= table_region("Quests") do %>
+      <table class="table table--zebra admin-table">
+        <caption>Quests</caption>
+        <thead>
+          <tr>
+            <th scope="col">Week</th>
+            <th scope="col">Goal</th>
+            <th scope="col" class="num admin-table__num">Reward (coins)</th>
+            <th scope="col" class="num admin-table__num">Finished</th>
+            <th scope="col" class="num admin-table__num">Paid out</th>
+            <th scope="col" class="num admin-table__num">Coins paid</th>
+            <th scope="col">Status</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @quests.each do |quest| %>
+            <% stat = @stats[quest.id] %>
+            <tr>
+              <th scope="row"><%= quest.starts_on.strftime("%a %-d %b") %> to <%= quest.ends_on.strftime("%a %-d %b %Y") %></th>
+              <td><%= quest.title || quest.goal_key %></td>
+              <td class="num admin-table__num"><%= quest.reward_coins %></td>
+              <td class="num admin-table__num"><%= number_with_delimiter(stat[:completed]) %></td>
+              <td class="num admin-table__num"><%= number_with_delimiter(stat[:paid]) %></td>
+              <td class="num admin-table__num"><%= number_with_delimiter(stat[:coins]) %></td>
+              <td>
+                <% if quest.ends_on < @today %><%= admin_badge("Over", "badge--muted") %>
+                <% elsif quest.started? %><%= admin_badge("Running", "badge--info") %>
+                <% else %><%= admin_badge("Not started", "badge--warning") %><% end %>
+              </td>
+              <td>
+                <% unless quest.started? %>
+                  <%= link_to "Edit", edit_admin_quest_path(quest), class: "btn btn--sm", "aria-label": "Edit the quest for the week of #{quest.starts_on.strftime('%-d %B')}" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+    <% if @quests.empty? %>
+      <p class="alert">No quests yet. Pick a boss week and a goal to start the first one.</p>
+    <% end %>
+  <% end %>
+</div>

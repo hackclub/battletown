@@ -1,6 +1,4 @@
 module Quests
-  # Tunables and copy from config/game.yml under `quests:`. Read through `Quests::Config.current`; `reset!` and
-  # `from_hash` let tests build a variant. Numbers are converted to integers once, here.
   # The copy and limits of one goal. `target_range` is nil for a goal that is a single step.
   GoalCopy = Data.define(:key, :title, :description, :unit, :target_range, :default_target) do
     def targeted? = !target_range.nil?
@@ -15,6 +13,8 @@ module Quests
     def format_copy(text, target, minutes) = format(text, target: target, minutes: minutes)
   end
 
+  # Tunables and copy from config/game.yml under `quests:`. Read through `Quests::Config.current`; `reset!` and
+  # `from_hash` let tests build a variant. Numbers are converted to integers once, here.
   Config = Data.define(:default_reward_coins, :max_reward_coins, :allowed_goals, :grace_days, :goals) do
     def self.current
       @current ||= from_hash(Rails.application.config_for(:game).fetch(:quests))

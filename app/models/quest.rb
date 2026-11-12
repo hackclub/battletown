@@ -35,6 +35,20 @@ class Quest < ApplicationRecord
 
   def self.for_date(date) = covering(date).first
 
+  # Boss weeks that can still be given a quest: not over yet and without one. What the admin form offers.
+  def self.open_weeks
+    Boss.where(ends_on: Time.current.in_time_zone(LATEST_ZONE).to_date..).where.not(starts_on: select(:starts_on)).chronological
+  end
+
+  # { quest id => { completed:, paid:, coins: } } for the admin list: counts and a coin total over everyone, never who.
+  def self.stats(quests)
+    sums = QuestCompletion.where(quest_id: quests.map(&:id)).left_joins(:coin_transaction).group(:quest_id)
+                          .pluck(:quest_id, Arel.sql("COUNT(*)"), Arel.sql("COUNT(quest_completions.coin_transaction_id)"), Arel.sql("COALESCE(SUM(coin_transactions.amount), 0)"))
+    stats = Hash.new { { completed: 0, paid: 0, coins: 0 } }
+    sums.each { |id, completed, paid, coins| stats[id] = { completed: completed, paid: paid, coins: coins.to_i } }
+    stats
+  end
+
   def range = starts_on..ends_on
 
   def target = goal_params["target"]&.to_i || 1

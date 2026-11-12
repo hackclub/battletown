@@ -10,6 +10,8 @@
 
   <%= render "bosses/card", presenter: @dashboard.boss %>
 
+  <%= render "quests/card", card: @quest_card if @quest_card %>
+
   <%= render "dashboard/today", d: @dashboard %>
 
   <%= render "dashboard/project", project: @dashboard.project %>

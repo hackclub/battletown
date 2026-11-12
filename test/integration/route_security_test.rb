@@ -69,6 +69,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   test "every admin route is a 404 for signed-out visitors and non-admins, whatever the verb" do
     # Flagged routes only exist while their flag is on: switch on the flags that add admin routes so each one is covered.
     Flipper.enable(:nps)
+    Flipper.enable(:quests)
     boss = Bosses::Seed.call && Boss.chronological.last
     teen = users(:new_user)
     teen.update_columns(onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4, created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
@@ -191,6 +192,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
 
   test "every POST PATCH PUT and DELETE route rejects a request without a CSRF token, except /api/privacy" do
     Flipper.enable(:nps)
+    Flipper.enable(:quests)
     # An admin, so the /admin writes get past the admin check and reach the CSRF check too.
     ENV["ADMIN_HCA_UIDS"] = users(:onboarded).hca_uid
     sign_in_as users(:onboarded)

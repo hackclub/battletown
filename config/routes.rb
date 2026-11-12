@@ -94,6 +94,10 @@ Rails.application.routes.draw do
       get "nps", to: "nps#index", as: :nps
       post "nps/:id/reveal", to: "nps#reveal", as: :nps_reveal, constraints: { id: /\d+/ }
     end
+    # Flag `quests`: the routes do not exist while it is off (a plain 404); the controller checks the flag too.
+    constraints Features::Constraint.new(:quests) do
+      resources :quests, only: %i[index new create edit update]
+    end
     resources :orders, only: :index do
       member do
         patch :fulfill

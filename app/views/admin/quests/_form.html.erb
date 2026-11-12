@@ -1,0 +1,46 @@
+<%# locals: (quest:, url:, method:, weeks: nil) -%>
+<% config = Quests::Config.current %>
+<% if quest.errors.any? %>
+  <div class="alert alert--danger admin-form__errors" role="alert">
+    <p class="alert__title">That was not saved</p>
+    <ul>
+      <% quest.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="card admin-form-card">
+  <%= form_with model: quest, url: url, method: method, class: "admin-form stack" do |form| %>
+    <% if weeks %>
+      <div class="field">
+        <%= form.label :starts_on, "Boss week" %>
+        <%= form.select :starts_on, weeks.map { |boss| [ "#{boss.starts_on.strftime('%a %-d %b')} to #{boss.ends_on.strftime('%a %-d %b %Y')} (#{boss.name})", boss.starts_on ] }, { include_blank: "Choose a week" }, class: "select", required: true, "aria-describedby": "quest-week-hint" %>
+        <span id="quest-week-hint" class="field__hint admin-form__hint">Only boss weeks that are not over and have no quest yet. The week cannot be changed later.</span>
+      </div>
+    <% end %>
+    <div class="field">
+      <%= form.label :goal_key, "Goal" %>
+      <%= form.select :goal_key, config.menu.map { |goal| [ goal.title_for("N", config.quick_minutes), goal.key ] }, {}, class: "select", "aria-describedby": "quest-goal-hint" %>
+      <span id="quest-goal-hint" class="field__hint admin-form__hint">The words people see come from the goal and its number.</span>
+    </div>
+    <div class="field">
+      <%= form.label :target, "Number (for goals that count days)" %>
+      <%= form.number_field :target, value: quest.goal_params["target"], class: "input", min: 1, max: 7, step: 1, "aria-describedby": "quest-target-hint" %>
+      <span id="quest-target-hint" class="field__hint admin-form__hint">
+        <% ranges = config.menu.select(&:targeted?).map { |goal| "#{goal.key.humanize.downcase} #{goal.target_range.min} to #{goal.target_range.max}" } %>
+        Needed for <%= ranges.to_sentence %>. Leave it empty for the other goals.
+      </span>
+    </div>
+    <div class="field">
+      <%= form.label :reward_coins, "Reward (coins)" %>
+      <%= form.number_field :reward_coins, class: "input", min: 1, max: config.max_reward_coins, step: 1, required: true, "aria-describedby": "quest-reward-hint" %>
+      <span id="quest-reward-hint" class="field__hint admin-form__hint">Flat, paid with each finisher's next approved ship. Up to <%= config.max_reward_coins %> coins.</span>
+    </div>
+    <div class="cluster">
+      <%= form.submit "Save quest", class: "btn btn--primary" %>
+      <%= link_to "Cancel", admin_quests_path, class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+</div>

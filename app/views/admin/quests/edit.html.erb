@@ -1,0 +1,15 @@
+<% content_for :title, "Edit quest" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the weekly quests", admin_quests_path %></p>
+    <header class="page-header">
+      <h1>Edit the quest for <%= @quest.starts_on.strftime("%-d %B") %></h1>
+      <p class="admin-dashboard__note"><%= @quest.starts_on.strftime("%A %-d %B") %> to <%= @quest.ends_on.strftime("%A %-d %B %Y") %>. The week is fixed.</p>
+    </header>
+    <% if @quest.started? && !@quest.errors.any? %>
+      <p class="alert alert--warning" role="status">This quest's week has started, so it can no longer be changed: <%= @quest.title %>, <%= @quest.reward_coins %> coins.</p>
+    <% else %>
+      <%= render "form", quest: @quest, url: admin_quest_path(@quest), method: :patch %>
+    <% end %>
+  <% end %>
+</div>

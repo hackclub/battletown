@@ -45,6 +45,12 @@
           <h2 class="card__title"><%= link_to "Weekly bosses", admin_bosses_path %></h2>
           <p class="small">Names, art and health for each week's boss.</p>
         </li>
+        <% if feature?(:quests) %>
+          <li class="card card--tight admin-link">
+            <h2 class="card__title"><%= link_to "Weekly quests", admin_quests_path %></h2>
+            <p class="small">The goal and reward for each boss week.</p>
+          </li>
+        <% end %>
       </ul>
     </nav>
 

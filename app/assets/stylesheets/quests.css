@@ -1,0 +1,12 @@
+/* The weekly quest card on the dashboard (app/views/quests/_card.html.erb). Everything shared (card, badge, progress) comes
+   from components.css; this only writes the head row, the spacing and the page-grid placement. Tokens only. */
+.quest-card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
+.quest-card__eyebrow { margin: 0; }
+.quest-card__description { margin-bottom: var(--space-4); }
+.quest-card__progress { margin-bottom: var(--space-4); }
+.quest-card__reward { margin-bottom: var(--space-3); }
+.quest-card__message { margin-bottom: 0; font-weight: 700; }
+.quest-card__days { margin: var(--space-2) 0 0; }
+
+/* The dashboard grid (dashboard.css) is one column on a phone and two from 48rem: the quest sits under the boss, full width. */
+@media (min-width: 48rem) { .dashboard > .quest-card { grid-column: 1 / -1; } }
