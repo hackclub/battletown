@@ -75,8 +75,6 @@
 
 /* Forms */
 .onboarding .field { grid-template-columns: minmax(0, 1fr); }
-/* Rails wraps an invalid field and its label in div.field_with_errors; the inline error and aria-invalid say it better. */
-.onboarding .field_with_errors { display: contents; }
 .onboarding__fieldset { margin: 0 0 var(--space-6); padding: 0; border: 0; }
 .onboarding__legend { margin-bottom: var(--space-3); padding: 0; font-family: var(--font-display); font-size: var(--text-lg); }
 .onboarding__field { margin-bottom: var(--space-6); }
@@ -287,7 +285,9 @@
   width: 0.6rem;
   height: 1rem;
   background: var(--color-cta);
-  animation: confetti-fall 3s var(--delay) ease-in forwards;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .confetti__piece { animation: confetti-fall 3s var(--delay) ease-in forwards; }
 }
 .confetti__piece:nth-child(5n + 1) { background: var(--color-highlight); }
 .confetti__piece:nth-child(5n + 2) { background: var(--color-secondary); }

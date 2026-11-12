@@ -134,6 +134,15 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_equal 2, @user.projects.count
   end
 
+  test "an invalid project keeps the form markup bare: no field_with_errors wrapper, the control is aria-invalid" do
+    sign_in_as @user
+    post projects_path, params: project_params(name: "")
+    assert_response :unprocessable_entity
+    assert_select ".field_with_errors", 0
+    assert_select "input#project_name[aria-invalid=true]", 1
+    assert_select "label[for=project_name][aria-invalid]", 0
+  end
+
   test "status, active, guide_key and user_id cannot be set from the form" do
     sign_in_as @user
     post projects_path, params: project_params(status: "archived", active: "1", guide_key: "sd", user_id: users(:new_user).id)
