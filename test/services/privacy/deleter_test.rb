@@ -1,8 +1,10 @@
 require "test_helper"
 require_relative "../../support/privacy_helper"
+require_relative "../../support/hackatime_helper"
 
 class PrivacyDeleterTest < ActiveSupport::TestCase
   include PrivacyHelper
+  include HackatimeHelper
 
   def subject_for(**attrs) = Privacy::TokenVerifier::Subject.new(**{ emails: [], slack_id: nil, identity_id: nil }.merge(attrs))
 
@@ -45,6 +47,67 @@ class PrivacyDeleterTest < ActiveSupport::TestCase
       assert_raises(RuntimeError) { deleter.call(dry_run: false) }
     end
     assert User.exists?(user.id)
+  end
+
+  test "a real deletion asks Hackatime to revoke the person's tokens; a dry run never does" do
+    fake = start_fake_hackatime
+    fake.on("POST", "/oauth/revoke") { |_req| [ 200, {} ] }
+    user = users(:onboarded)
+    connect_hackatime(user, refresh_token: SECRET_REFRESH)
+    subject = subject_for(identity_id: user.hca_uid)
+
+    Privacy::Deleter.new(subject).call(dry_run: true)
+    assert_empty fake.requests_for("POST", "/oauth/revoke")
+
+    result = Privacy::Deleter.new(subject).call(dry_run: false)
+    assert_equal 1, result.deleted["hackatime_connections"]
+    assert_equal [ SECRET_REFRESH, SECRET_TOKEN ].sort, fake.requests_for("POST", "/oauth/revoke").map { |r| r.form["token"] }.sort
+  ensure
+    stop_fake_hackatime
+  end
+
+  test "Hackatime being unreachable never blocks a deletion" do
+    start_fake_hackatime.stop
+    user = users(:onboarded)
+    connect_hackatime(user)
+
+    result = Privacy::Deleter.new(subject_for(identity_id: user.hca_uid)).call(dry_run: false)
+
+    assert result.found
+    assert_not User.exists?(user.id)
+    assert_not HackatimeConnection.exists?(user_id: user.id)
+  ensure
+    stop_fake_hackatime
+  end
+
+  test "a connection whose tokens cannot be read never blocks a deletion" do
+    user = users(:onboarded)
+    connect_hackatime(user)
+    deleter = Privacy::Deleter.new(subject_for(identity_id: user.hca_uid))
+
+    stub_method(Hackatime::Client, :revoke, ->(*) { raise ActiveRecord::Encryption::Errors::Decryption }) do
+      assert deleter.call(dry_run: false).found
+    end
+    assert_not User.exists?(user.id)
+  end
+
+  test "revoking stays inside the yeeter's time limit: short timeouts and no new call once the budget is spent" do
+    user = users(:onboarded)
+    connect_hackatime(user, refresh_token: SECRET_REFRESH)
+    calls = []
+    slow = lambda do |token, timeout: nil, **|
+      calls << [ token, timeout ]
+      travel Privacy::Deleter::REVOKE_BUDGET.seconds + 1.second
+    end
+
+    stub_method(Hackatime::Client, :revoke, slow) do
+      assert Privacy::Deleter.new(subject_for(identity_id: user.hca_uid)).call(dry_run: false).found
+    end
+
+    assert_equal [ [ SECRET_TOKEN, Privacy::Deleter::REVOKE_TIMEOUT ] ], calls
+    assert_not User.exists?(user.id)
+  ensure
+    travel_back
   end
 
   private

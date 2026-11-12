@@ -34,13 +34,14 @@ module Hackatime
 
     def initialize(connection, base_url: Rails.configuration.x.hackatime.base_url, client_id: Hackatime::Client.default_client_id,
                    client_secret: Hackatime::Client.default_client_secret, max_response_bytes: MAX_RESPONSE_BYTES,
-                   read_timeout: READ_TIMEOUT)
+                   read_timeout: READ_TIMEOUT, open_timeout: OPEN_TIMEOUT)
       @connection = connection
       @base_url = base_url
       @client_id = client_id
       @client_secret = client_secret
       @max_response_bytes = max_response_bytes
       @read_timeout = read_timeout
+      @open_timeout = open_timeout
     end
 
     def self.default_client_id
@@ -68,10 +69,12 @@ module Hackatime
     end
 
     # Best-effort revoke at Hackatime (POST /oauth/revoke). Never raises: disconnecting must not depend on it.
-    def self.revoke(token, base_url: Rails.configuration.x.hackatime.base_url)
+    # `timeout` (seconds) shortens both the connect and the read timeout, for callers on a deadline.
+    def self.revoke(token, base_url: Rails.configuration.x.hackatime.base_url, timeout: nil)
       return if token.blank?
 
-      client = new(HackatimeConnection.new, base_url: base_url)
+      timeouts = timeout ? { open_timeout: timeout, read_timeout: timeout } : {}
+      client = new(HackatimeConnection.new, base_url: base_url, **timeouts)
       client.send(:request, :post, "/oauth/revoke", form: { token: token, client_id: client.send(:client_id), client_secret: client.send(:client_secret) })
       nil
     rescue StandardError
@@ -130,7 +133,7 @@ module Hackatime
       uri = build_uri(path, query)
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme == "https"
-      http.open_timeout = OPEN_TIMEOUT
+      http.open_timeout = @open_timeout
       http.read_timeout = @read_timeout
       req = verb == :post ? Net::HTTP::Post.new(uri) : Net::HTTP::Get.new(uri)
       req["Accept"] = "application/json"

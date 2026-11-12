@@ -14,6 +14,11 @@ module Privacy
     # { type:, count:, reason: }. A rule that keeps rows must also stop the cascade from deleting them.
     RETENTION_RULES = [].freeze
 
+    # The yeeter gives up after 15 seconds, so asking Hackatime to revoke tokens gets a short leash: each call times
+    # out after REVOKE_TIMEOUT seconds and no new call starts once REVOKE_BUDGET seconds have gone.
+    REVOKE_TIMEOUT = 2
+    REVOKE_BUDGET = 5
+
     def initialize(subject)
       @subject = subject
     end
@@ -22,6 +27,7 @@ module Privacy
       user_ids = SubjectFinder.new(@subject).user_ids
       return Result.new(found: false, deleted: {}, retained: []) if user_ids.empty?
 
+      revoke_hackatime_tokens(user_ids) unless dry_run
       result = nil
       # requires_new: a real transaction (or savepoint) so the dry-run rollback below is always honoured.
       ActiveRecord::Base.transaction(requires_new: true) do
@@ -39,6 +45,23 @@ module Privacy
     end
 
     private
+
+    # Best effort, before the delete (the tokens are gone after it) and outside its transaction. Hackatime being down
+    # or slow, or a token that cannot be read, never blocks the deletion. Never on a dry run (or an export).
+    def revoke_hackatime_tokens(user_ids)
+      deadline = Time.current + REVOKE_BUDGET
+      HackatimeConnection.where(user_id: user_ids).find_each do |connection|
+        [ connection.access_token, connection.refresh_token ].compact_blank.each do |token|
+          break if Time.current >= deadline
+
+          Hackatime::Client.revoke(token, timeout: REVOKE_TIMEOUT)
+        end
+      rescue StandardError
+        next
+      end
+    rescue StandardError
+      nil
+    end
 
     def delete_counters
       ActiveRecord::Base.connection.select_rows(

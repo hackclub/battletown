@@ -160,6 +160,16 @@ module Hackatime
       assert_nil Client.revoke(SECRET_TOKEN, base_url: @fake.url)
     end
 
+    test "revoke with a timeout gives up on a slow Hackatime" do
+      @fake.on("POST", "/oauth/revoke") do |_req|
+        sleep 1.5
+        [ 200, {} ]
+      end
+      started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      assert_nil Client.revoke(SECRET_TOKEN, base_url: @fake.url, timeout: 0.3)
+      assert_operator Process.clock_gettime(Process::CLOCK_MONOTONIC) - started, :<, 1.2
+    end
+
     test "production refuses a non-https Hackatime URL" do
       connection = connect_hackatime(@user)
       as_production do
