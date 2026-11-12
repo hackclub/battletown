@@ -158,6 +158,15 @@ Rails.application.routes.draw do
         patch :reject
       end
     end
+    # Staff project review: a queue, one project with its history, and four writes (all POST). No flag: it changes nothing for teens.
+    resources :projects, only: %i[index show], constraints: { id: /\d+/ } do
+      member do
+        post :ok
+        post :flag
+        post :clear
+        post :note
+      end
+    end
     # The weekly merch track queue (flag `merch_track`).
     constraints Features::Constraint.new(:merch_track) do
       get "merch", to: "merch_claims#index", as: :merch_claims

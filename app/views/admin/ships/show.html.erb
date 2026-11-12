@@ -7,6 +7,7 @@
     <header class="page-header">
       <h1>Review: <%= ship.project.name %></h1>
       <p class="admin-dashboard__note"><%= ship.user.display_name.presence || "No name" %> &middot; <%= ship.status_submitted? ? "Waiting for review" : ship.status.humanize %></p>
+      <%= render "admin/projects/flagged_chip", project: ship.project %>
     </header>
 
     <% if @unsettled.any? && ship.status_submitted? %>

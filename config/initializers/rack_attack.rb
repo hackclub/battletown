@@ -72,6 +72,12 @@ class Rack::Attack
     req.ip if ship_upload?(req)
   end
 
+  # Staff project reviews (POST /admin/projects/:id/ok|flag|clear|note): a person clicking a button, so a modest limit per
+  # address keeps a stuck script or a stolen session from writing history in bulk. Reading the queue is not limited here.
+  throttle("admin_project_reviews/ip", limit: 30, period: 1.minute) do |req|
+    req.ip if req.post? && req.path.match?(%r{\A/admin/projects/\d+/(?:ok|flag|clear|note)\z})
+  end
+
   # Email unsubscribe links (GET shows the page, POST acts): human-sized, and a small limit keeps token guessing and
   # scanner floods cheap. Its own bucket, so a flood here never uses up anything else.
   throttle("email_unsubscribe/ip", limit: 20, period: 1.minute) do |req|

@@ -122,36 +122,39 @@ class Projects::ReviewTest < ActiveSupport::TestCase
     assert @project.status_active?
   end
 
-  test "a failed review writes nothing: the row, the copy and the audit event go together" do
-    original = Projects::ReviewAudit.method(:record!)
-    Projects::ReviewAudit.define_singleton_method(:record!) { |**| raise "audit down" }
-    assert_raises(RuntimeError) { Review.flag(project: @project, reviewer: @staff, details: "x") }
+  test "a failed audit write rolls the whole review back: the row, the copy and the event go together" do
+    AdminAudit.stub(:record!, ->(**) { raise "audit down" }) do
+      assert_raises(RuntimeError) { Review.flag(project: @project, reviewer: @staff, details: "x") }
+    end
     assert_equal 0, ProjectReview.count
     assert_equal "unreviewed", @project.reload.review_status
-  ensure
-    Projects::ReviewAudit.define_singleton_method(:record!, original)
+    assert_equal 0, AdminAuditEvent.count
   end
 
-  test "each action writes its audit event when AdminAudit exists" do
-    events = []
-    stub = Module.new { define_singleton_method(:record!) { |**args| events << args } }
-    Object.const_set(:AdminAudit, stub) unless defined?(::AdminAudit)
-    skip "the real AdminAudit is loaded; its own tests cover the log" unless ::AdminAudit.equal?(stub)
-
-    Review.ok(project: @project, reviewer: @staff)
-    Review.flag(project: @project, reviewer: @staff, details: "x")
-    Review.add_note(project: @project, reviewer: @staff, note: "n")
+  test "each action writes one audit event with the project and the new status, and no note text or names" do
+    Review.ok(project: @project, reviewer: @staff, note: "Secret staff words")
+    Review.flag(project: @project, reviewer: @staff, details: "More secret words")
+    Review.add_note(project: @project, reviewer: @staff, note: "Even more")
     Review.clear(project: @project, reviewer: @staff)
-    assert_equal %w[project_reviewed project_flagged project_note_added project_cleared], events.map { |event| event[:action] }
-    assert(events.all? { |event| event[:actor] == @staff && event[:subject] == @project })
-    assert_equal [ "ok", "flagged", "flagged", "ok" ], events.map { |event| event.dig(:metadata, "status") }
-    assert_not_includes events.inspect, "Cow Game", "no project name or note text in the audit metadata"
-  ensure
-    Object.send(:remove_const, :AdminAudit) if defined?(::AdminAudit) && ::AdminAudit.equal?(stub)
+    events = AdminAuditEvent.where(subject_type: "Project").order(:id).to_a
+    assert_equal %w[project_reviewed project_flagged project_note_added project_cleared], events.map(&:action)
+    assert_equal [ @project.id ], events.map(&:subject_id).uniq
+    assert_equal [ @staff.id ], events.map(&:actor_id).uniq
+    assert_equal [ "ok", "flagged", "flagged", "ok" ], events.map { |event| event.metadata["status"] }
+    assert_equal [ [ "status" ] ] * 4, events.map { |event| event.metadata.keys }
+    dump = events.map { |event| [ event.metadata, event.subject_type ] }.inspect
+    [ "Secret staff words", "More secret words", "Cow Game", "Newbie" ].each { |text| assert_not_includes dump, text }
   end
 
-  test "without AdminAudit the adapter does nothing and reviews still work" do
-    skip "AdminAudit exists" if defined?(::AdminAudit)
-    assert_nothing_raised { Review.ok(project: @project, reviewer: @staff) }
+  test "a refused review (own project, bad input, wrong state) writes no audit event" do
+    assert_raises(Review::Invalid) { Review.flag(project: @project, reviewer: @staff) }
+    assert_raises(Review::Invalid) { Review.clear(project: @project, reviewer: @staff) }
+    assert_raises(Review::OwnProject) { Review.ok(project: Project.create!(user: @staff, name: "Mine", kind: "tool"), reviewer: @staff) }
+    assert_equal 0, AdminAuditEvent.count
+  end
+
+  test "the audit allowlist names the four review actions" do
+    assert_equal %w[project_reviewed project_flagged project_cleared project_note_added].sort, (AdminAudit::REVIEW_ACTIONS & Review::AUDIT_ACTIONS.values).sort
+    assert_equal Review::AUDIT_ACTIONS.values.sort, AdminAudit::REVIEW_ACTIONS.sort
   end
 end

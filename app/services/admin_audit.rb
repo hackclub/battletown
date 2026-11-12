@@ -31,6 +31,10 @@ module AdminAudit
   ].freeze
   # Project and ship review adds its actions here.
   REVIEW_ACTIONS = %w[
+    project_reviewed
+    project_flagged
+    project_cleared
+    project_note_added
   ].freeze
 
   ACTIONS = (USER_ACTIONS + NPS_ACTIONS + SHOP_ACTIONS + REVIEW_ACTIONS).freeze

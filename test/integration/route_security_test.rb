@@ -82,7 +82,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     verified!(teen)
     give_coins(teen, 100)
     order = buy(teen, "keychain")
-    ids = { "admin/bosses" => boss.id, "admin/ships" => ship.id, "admin/orders" => order.id, "admin/nps" => 1 }
+    ids = { "admin/bosses" => boss.id, "admin/ships" => ship.id, "admin/orders" => order.id, "admin/nps" => 1, "admin/projects" => project.id }
 
     routes = app_routes.select { |_verb, path, _controller, _route| path == "/admin" || path.start_with?("/admin/") }
     assert_operator routes.size, :>=, 10, "expected the admin routes to be found in the router"

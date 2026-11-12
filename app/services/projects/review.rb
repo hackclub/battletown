@@ -4,7 +4,7 @@ module Projects
   # and the teen is not told (making flags visible to the teen is an owner decision, not built).
   #
   # Each call appends one ProjectReview row and copies it onto the project (`review_status`, `reviewed_at`) in ONE
-  # transaction, under the project row lock, and writes the audit event inside the same transaction: either all three
+  # transaction, under the project row lock, and writes the audit event (AdminAudit: action, project id and new status; never the note) inside the same transaction: either all three
   # happen or none. The newest row is the current state, so two staff acting at once end with the later one winning and
   # both kept in the history. Staff can never review their own project.
   module Review
@@ -60,7 +60,7 @@ module Projects
         status = status_for(action, project)
         review = ProjectReview.create!(project: project, reviewer: reviewer, status: status, note: note, created_at: Time.current)
         project.update_columns(review_status: status, reviewed_at: review.created_at)
-        ReviewAudit.record!(actor: reviewer, action: AUDIT_ACTIONS.fetch(action), project: project, status: status)
+        AdminAudit.record!(actor: reviewer, action: AUDIT_ACTIONS.fetch(action), subject: project, metadata: { status: status })
       end
       review
     end

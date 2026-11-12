@@ -39,6 +39,17 @@
         </li>
       </ul>
 
+      <h2 class="admin-sections__title">Review</h2>
+      <ul class="grid admin-links">
+        <li class="card card--tight admin-link">
+          <h3 class="card__title"><%= link_to "Project review", admin_projects_path %></h3>
+          <% unreviewed = @project_reviews.fetch("unreviewed", 0) %>
+          <% flagged = @project_reviews.fetch("flagged", 0) %>
+          <p class="admin-link__count"><%= admin_badge("#{unreviewed} #{'project'.pluralize(unreviewed)} waiting for review", unreviewed.positive? ? "badge--warning" : "badge--muted") %> <%= admin_badge("#{flagged} flagged", flagged.positive? ? "badge--danger" : "badge--muted") %></p>
+          <p class="small">Look at projects, mark them OK or flag them. Staff only.</p>
+        </li>
+      </ul>
+
       <h2 class="admin-sections__title">Set up the game</h2>
       <ul class="grid admin-links">
         <li class="card card--tight admin-link">

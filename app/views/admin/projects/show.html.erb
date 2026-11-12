@@ -1,0 +1,169 @@
+<% content_for :title, "Review project" %>
+<% project = @project %>
+<% own = project.user_id == current_user.id %>
+<% form = @form || {} %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the project queue", admin_projects_path %></p>
+    <header class="page-header">
+      <h1>Project: <%= project.name %></h1>
+      <p class="admin-dashboard__note"><%= admin_review_badge(project) %> <%= admin_badge("Archived", "badge--muted") if project.status_archived? %></p>
+    </header>
+
+    <% if @error %>
+      <div class="alert alert--danger admin-warning" role="alert">
+        <p class="alert__title admin-warning__title">Nothing was changed</p>
+        <p><%= @error %></p>
+      </div>
+    <% end %>
+
+    <div class="admin-grid grid grid--2">
+      <section class="card admin-panel" aria-labelledby="project-about">
+        <h2 id="project-about" class="card__title">About the project</h2>
+        <dl class="admin-dl">
+          <dt>Owner</dt><dd><%= admin_owner_name(project.user) %></dd>
+          <dt>Type</dt><dd><%= project_kind_info(project.kind)[:name] %></dd>
+          <dt>Status</dt><dd><%= project.status.humanize %></dd>
+          <dt>Started</dt><dd><%= project.created_at.utc.strftime("%b %-d, %Y") %></dd>
+          <dt>GitHub</dt><dd><%= admin_external_link(project.repo_url) || "None" %></dd>
+          <dt>Demo</dt><dd><%= admin_external_link(project.demo_url) || "None" %></dd>
+          <dt>Hackatime</dt><dd><%= @links.any? ? safe_join(@links.map { |name| tag.span(name, class: "chip-name") }, " ") : "None linked now" %></dd>
+        </dl>
+        <h3>Idea (the teen's own words)</h3>
+        <p class="admin-text"><%= project.idea.presence || "No idea written." %></p>
+      </section>
+
+      <section class="card admin-panel" aria-labelledby="project-hours">
+        <h2 id="project-hours" class="card__title">Hours coded</h2>
+        <p>Total on the linked Hackatime projects (counted days only): <strong><%= ship_hours(@seconds_by_date.values.sum) %></strong>. Read-only.</p>
+        <% if @weeks.any? %>
+          <%= table_region("Hours coded by week") do %>
+            <table class="table table--zebra admin-table">
+              <caption>Hours coded by week (Friday to Thursday)</caption>
+              <thead><tr><th scope="col">Week starting</th><th scope="col" class="num admin-table__num">Coded</th></tr></thead>
+              <tbody>
+                <% @weeks.each do |week, seconds| %>
+                  <tr><th scope="row"><%= week.strftime("%a %b %-d, %Y") %></th><td class="num admin-table__num"><%= ship_hours(seconds) %></td></tr>
+                <% end %>
+              </tbody>
+            </table>
+          <% end %>
+        <% else %>
+          <p>No coded time on this project yet.</p>
+        <% end %>
+      </section>
+    </div>
+
+    <section class="card admin-panel" aria-labelledby="project-ships">
+      <h2 id="project-ships" class="card__title">Ships</h2>
+      <% if @ships.empty? %>
+        <p>No ships submitted yet.</p>
+      <% else %>
+        <%= table_region("Ships of this project") do %>
+          <table class="table table--zebra admin-table">
+            <caption>Ships of this project</caption>
+            <thead>
+              <tr><th scope="col">Submitted</th><th scope="col">Status</th><th scope="col" class="num admin-table__num">Coded</th><th scope="col">Window</th><th scope="col"><span class="visually-hidden">Open</span></th></tr>
+            </thead>
+            <tbody>
+              <% @ships.each do |ship| %>
+                <tr>
+                  <th scope="row"><%= ship.submitted_at.utc.strftime("%b %-d, %Y") %></th>
+                  <td><%= admin_ship_badge(ship) %></td>
+                  <td class="num admin-table__num"><%= ship_hours(ship.coded_seconds) %></td>
+                  <td><%= ship_dates_text(ship.window_start_date, ship.window_end_date) %></td>
+                  <td><%= link_to "Open", admin_ship_path(ship), class: "btn btn--sm", "aria-label": "Open the ship submitted #{ship.submitted_at.utc.strftime('%b %-d, %Y')}" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      <% end %>
+    </section>
+
+    <% if own %>
+      <div class="alert alert--warning admin-warning" role="note">
+        <p class="alert__title admin-warning__title">This is your own project</p>
+        <p><%= Projects::Review::OWN_PROJECT_MESSAGE %></p>
+      </div>
+    <% else %>
+      <section class="card admin-panel" aria-labelledby="project-review">
+        <h2 id="project-review" class="card__title">Review this project</h2>
+        <p class="admin-dashboard__note">Staff only. The teen is not told, and nothing about their hours, coins or shipping changes.</p>
+        <div class="admin-grid grid grid--2">
+          <% if project.review_flagged? %>
+            <%= form_with url: clear_admin_project_path(project), method: :post, class: "admin-form stack",
+                          data: { turbo_confirm: "Clear the flag on this project?" } do |f| %>
+              <h3>Clear the flag</h3>
+              <div class="field">
+                <%= f.label :note, "Note (optional)", for: "clear-note" %>
+                <%= f.text_area :note, id: "clear-note", class: "textarea", rows: 3, maxlength: ProjectReview::NOTE_MAX, value: (form[:note] if form[:action] == :clear) %>
+              </div>
+              <div><%= f.submit "Clear flag", class: "btn btn--primary" %></div>
+            <% end %>
+          <% else %>
+            <%= form_with url: ok_admin_project_path(project), method: :post, class: "admin-form stack" do |f| %>
+              <h3>Mark OK</h3>
+              <div class="field">
+                <%= f.label :note, "Note (optional)", for: "ok-note" %>
+                <%= f.text_area :note, id: "ok-note", class: "textarea", rows: 3, maxlength: ProjectReview::NOTE_MAX, value: (form[:note] if form[:action] == :ok) %>
+              </div>
+              <div><%= f.submit "Mark OK", class: "btn btn--primary" %></div>
+            <% end %>
+          <% end %>
+
+          <%= form_with url: flag_admin_project_path(project), method: :post, class: "admin-form stack",
+                        data: { turbo_confirm: "Flag this project? Only staff see the flag." } do |f| %>
+            <h3><%= project.review_flagged? ? "Flag again with a new reason" : "Flag for a closer look" %></h3>
+            <div class="field">
+              <%= f.label :reason_preset, "Reason" %>
+              <%= f.select :reason_preset, Projects::Review::REASONS, { include_blank: "Pick one (or write your own below)", selected: (form[:reason_preset] if form[:action] == :flag) }, class: "select" %>
+            </div>
+            <div class="field">
+              <%= f.label :details, "Details (needed for Other)" %>
+              <%= f.text_area :details, class: "textarea", rows: 3, maxlength: ProjectReview::NOTE_MAX, value: (form[:details] if form[:action] == :flag), "aria-describedby": "flag-hint" %>
+              <span id="flag-hint" class="field__hint admin-form__hint">Up to <%= ProjectReview::NOTE_MAX %> characters in all. For staff only.</span>
+            </div>
+            <div><%= f.submit "Flag project", class: "btn btn--danger" %></div>
+          <% end %>
+        </div>
+
+        <% unless project.review_unreviewed? %>
+          <%= form_with url: note_admin_project_path(project), method: :post, class: "admin-form stack" do |f| %>
+            <h3>Add a note</h3>
+            <div class="field">
+              <%= f.label :note, "Note (keeps the current state: #{project.review_flagged? ? 'flagged' : 'OK'})", for: "add-note" %>
+              <%= f.text_area :note, id: "add-note", class: "textarea", rows: 3, maxlength: ProjectReview::NOTE_MAX, value: (form[:note] if form[:action] == :note) %>
+            </div>
+            <div><%= f.submit "Add note", class: "btn" %></div>
+          <% end %>
+        <% end %>
+      </section>
+    <% end %>
+
+    <section class="card admin-panel" aria-labelledby="project-history">
+      <h2 id="project-history" class="card__title">Review history</h2>
+      <% if @reviews.empty? %>
+        <p>Nobody has reviewed this project yet.</p>
+      <% else %>
+        <%= table_region("Review history, newest first") do %>
+          <table class="table table--zebra admin-table">
+            <caption>Review history, newest first</caption>
+            <thead><tr><th scope="col">When</th><th scope="col">Decision</th><th scope="col">Note</th><th scope="col">By</th></tr></thead>
+            <tbody>
+              <% @reviews.each_with_index do |review, index| %>
+                <% before = @reviews[index + 1] %>
+                <tr>
+                  <th scope="row"><%= review.created_at.utc.strftime("%b %-d, %Y %H:%M UTC") %></th>
+                  <td><%= review.flagged? ? admin_badge("Flagged", "badge--danger") : admin_badge(before&.flagged? ? "Flag cleared" : "Reviewed OK", "badge--success") %></td>
+                  <td class="admin-text"><%= review.note.presence || "-" %></td>
+                  <td><%= review.reviewer&.display_name.presence || "A former staff member" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+</div>

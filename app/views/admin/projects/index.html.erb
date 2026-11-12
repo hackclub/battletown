@@ -1,0 +1,85 @@
+<% content_for :title, "Admin projects" %>
+<% filters = @filters %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>Project review</h1>
+      <p class="admin-dashboard__note">Every project, newest first. A review is a staff note only: it never changes a teen's hours, coins or ability to ship, and teens do not see it. Names are shown so you can follow up; there are no emails or ids here.</p>
+    </header>
+
+    <nav class="admin-filters" aria-label="Filter by review state">
+      <% states = [ [ nil, "All", @review_counts.values.sum ], [ "unreviewed", "Unreviewed", @review_counts.fetch("unreviewed", 0) ], [ "flagged", "Flagged", @review_counts.fetch("flagged", 0) ], [ "ok", "Reviewed OK", @review_counts.fetch("ok", 0) ] ] %>
+      <% states.each do |review, label, count| %>
+        <%= link_to "#{label} (#{count})", admin_projects_filter_path(filters, review: review, page: nil), class: class_names("btn btn--sm admin-filter", "btn--primary admin-filter--current": filters[:review] == review), "aria-current": (filters[:review] == review ? "page" : nil) %>
+      <% end %>
+    </nav>
+
+    <%= form_with url: admin_projects_path, method: :get, class: "admin-form admin-form--inline", id: "project-filters" do |form| %>
+      <div class="field">
+        <%= form.label :q, "Search name or repo link" %>
+        <%= form.search_field :q, value: filters[:q], class: "input", maxlength: Admin::ProjectsController::SEARCH_MAX, autocomplete: "off" %>
+      </div>
+      <%= form.hidden_field :review, value: filters[:review] if filters[:review] %>
+      <div class="field">
+        <%= form.label :status, "Project is" %>
+        <%= form.select :status, [ [ "Active or archived", "" ], [ "Active", "active" ], [ "Archived", "archived" ] ], { selected: filters[:status].to_s }, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :shipped, "Has shipped" %>
+        <%= form.select :shipped, [ [ "Any", "" ], [ "Yes", "yes" ], [ "No", "no" ] ], { selected: filters[:shipped].to_s }, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :linked, "Hackatime linked" %>
+        <%= form.select :linked, [ [ "Any", "" ], [ "Yes", "yes" ], [ "No", "no" ] ], { selected: filters[:linked].to_s }, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :sort, "Sort by" %>
+        <%= form.select :sort, [ [ "Newest", "newest" ], [ "Oldest", "oldest" ], [ "Most hours", "hours" ] ], { selected: filters[:sort] }, class: "select" %>
+      </div>
+      <%= form.submit "Apply", name: nil, class: "btn btn--primary" %>
+      <%= link_to "Reset", admin_projects_path, class: "btn btn--ghost" %>
+    <% end %>
+
+    <p class="admin-count" role="status"><strong><%= number_with_delimiter(@total) %></strong> <%= @total == 1 ? "project" : "projects" %> match<%= @total == 1 ? "es" : "" %></p>
+
+    <% if @projects.empty? %>
+      <p class="alert">No projects match these filters.</p>
+    <% else %>
+      <%= table_region("Projects") do %>
+        <table class="table table--zebra admin-table">
+          <caption>Projects</caption>
+          <thead>
+            <tr>
+              <th scope="col">Project</th>
+              <th scope="col">Owner</th>
+              <th scope="col">Links</th>
+              <th scope="col" class="num admin-table__num">Coded</th>
+              <th scope="col">Ships</th>
+              <th scope="col">Review</th>
+              <th scope="col"><span class="visually-hidden">Open</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @projects.each do |project| %>
+              <tr>
+                <th scope="row"><%= project.name %> <small><%= project_kind_info(project.kind)[:name] %><%= ", archived" if project.status_archived? %></small></th>
+                <td><%= project.user.display_name.presence || "No name" %></td>
+                <td>
+                  <%= admin_external_link(project.repo_url) || "No repo" %>
+                  <% if project.demo_url.present? %><br><%= admin_external_link(project.demo_url) %><% end %>
+                </td>
+                <td class="num admin-table__num"><%= ship_hours(project.coded_seconds.to_i) %></td>
+                <td><%= admin_ship_counts_text(@ship_counts[project.id]) %></td>
+                <td><%= admin_review_badge(project) %></td>
+                <td><%= link_to "Open", admin_project_path(project), class: "btn btn--sm", "aria-label": "Open #{project.name}" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+
+      <%= render "admin/shared/pager", pager: @pager %>
+    <% end %>
+  <% end %>
+</div>

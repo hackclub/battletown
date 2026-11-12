@@ -1,0 +1,4 @@
+<%# Staff-only warning on pages about a project's ships or owner; renders nothing unless the project is flagged. Reasons stay on the project page. %>
+<% if project.review_flagged? %>
+  <p class="admin-flagged-chip"><%= admin_badge("Flagged project", "badge--danger") %> <%= link_to "See the flag", admin_project_path(project) %></p>
+<% end %>
