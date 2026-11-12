@@ -34,13 +34,27 @@ Why not the obvious endpoints:
 
 `/authenticated/projects` is documented only with `include_archived`. The `start_date` / `end_date` window is read from the source (`ProjectStatsQuery#stats_start_time`: `start`/`start_date`, `end`/`end_date`, parsed with `to_datetime`, so a UTC offset is honoured; the filter is inclusive at both ends and ignores `rollup` caching once a window is given). Treat this as the one piece to confirm against the live service (see the checklist below). Projects with no project name are not counted by this endpoint.
 
-Time zones: `Hackatime::HttpSource` uses the player's `users.time_zone` (an ActiveSupport zone name, default from their Hack Club Auth address). For each local date it sends the local midnight and the next local midnight minus one millisecond, with the UTC offset, so a 23 or 25 hour day around DST is correct. "Today" is the player's today (future days are never requested).
+Time zones: `Hackatime::HttpSource` uses the player's `users.time_zone` (an ActiveSupport zone name, default from their Hack Club Auth address). For each local date it sends the start of the date's window and its end minus one millisecond, with the UTC offset, so a 23 or 25 hour day around DST is correct. Normally the window is local midnight to local midnight; see "Days and time zones" for when it is not. "Today" is the player's today (future days are never requested, except a date already frozen in an earlier zone, below).
+
+### Days and time zones
+
+Hours are credited per local date, and a player can change time zone at any time (`/onboarding/schedule`). If every sync re-cut the days in the current zone, the same coded hour would land on two dates (for example "International Date Line West" to "Nuku'alofa" moves midnight by 25 hours), and a lower total for a date is never taken back. So the window a date stands for is frozen the first time it is fetched (`Hackatime::DayWindows`, table `hackatime_day_windows`):
+
+- A date that already has a window keeps it forever, in the zone it was first fetched in. "Today" keeps collecting time in its original window after a zone change.
+- A new date runs from local midnight to the next local midnight in the player's current zone, but never starts before the end of an earlier date's window (a move east) and, when the day before has a window, starts exactly where it ended (a move west, so the hours in between are not lost). It never runs past the start of a later date's window. If nothing is left, the window is empty and is never fetched.
+- After a move west the old zone's dates run ahead of the new zone's today: a frozen window that has already started is fetched up to tomorrow (the latest date the ledger accepts), so time coded now still shows up.
+
+The rule: **every coded instant belongs to at most one date, and the dates of one player never overlap.** In practice a zone change costs no time at all; the date right after the switch is shorter or longer than 24 hours. Manual credits and adjustments have no window and are unaffected. Windows are written only by `HttpSource`; an operator CSV import (`Hackatime::CsvSource`) is dated by the operator.
+
+The same window also guards a Hackatime account moving between Battletown accounts: a new window never starts before the end of any window another Battletown account fetched from the same Hackatime user id, so disconnecting and linking the account to a second Battletown account does not bring the last few days again. The second account can lose the rest of the day the first one was still covering. A deleted account's windows (and hours) are deleted with it, so they no longer block anything.
 
 Rate limits: nothing is documented for OAuth callers. The Hackatime source configures a general throttle of 300 requests a minute per OAuth user on `/api/v1/authenticated/*` (currently disabled in the code). One day costs one request; the source refuses ranges over 62 days.
 
 ## What is stored
 
 Table `hackatime_connections` (one row per user, `ON DELETE CASCADE`, so deleting a user or a data-deletion request removes it): `hackatime_uid`, `access_token` and `refresh_token` (Active Record encryption, never logged), `scopes`, `expires_at`, `connected_at`, `last_synced_at`, `last_error_code` (a short code, never a message), `needs_reconnect`. Nothing else about the person is requested or kept.
+
+Table `hackatime_day_windows` (one row per user and fetched local date, `ON DELETE CASCADE`): `local_date`, `starts_at`, `ends_at` and the `hackatime_uid` it was fetched from. It outlives a disconnect on purpose (it is what stops the same time being credited twice, above) and goes with the account.
 
 ## Hours source seam
 
