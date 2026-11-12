@@ -32,6 +32,7 @@ module Notifications
       when "ship_approved" then ship_approved(row, user)
       when "ship_rejected" then ship_rejected(row, user)
       when "nps_prompt" then nps_prompt(row, user)
+      when "returning_nudge" then returning_nudge(row, user)
       end
     end
 
@@ -74,6 +75,18 @@ module Notifications
       return nil unless ship
 
       { project: short(ship.project.name), reason: sentence(ship.rejection_reason), link: Links.fix_ship(ship) }
+    end
+
+    # Only while the `returning` flag is on, only while the idle period it was queued for is still the current one, and
+    # not once the person has coded today (they are already back).
+    def returning_nudge(row, user)
+      return nil unless Features.enabled?(:returning)
+
+      last_on = ReturningNudges.last_active_on(user)
+      return nil unless last_on && ReturningNudges.subject_for(last_on) == row.subject_id
+      return nil if ReturningNudges.back_today?(user, Time.current)
+
+      { boost_days: Game::ReturningBoost.config.boost_days, link: Links.dashboard }
     end
 
     def unlock_note(user)

@@ -8,6 +8,8 @@ module Notifications
 
     def projects = absolute(routes.projects_path)
 
+    def dashboard = absolute(routes.dashboard_path)
+
     def ship_form(project_id) = absolute(routes.new_project_ship_path(project_id))
 
     # The ship form pre-filled from a rejected ship, so a fix is one click away.

@@ -18,6 +18,12 @@ namespace :notifications do
     puts "notifications:nps_prompts scanned=#{result.scanned} queued=#{result.queued}"
   end
 
+  desc "Queue the returning-user nudge for people idle for returning.idle_days (config/game.yml; needs the `returning` flag). Run daily from cron after game:settle; safe to repeat."
+  task returning_nudges: :environment do
+    result = Notifications::ReturningNudges.scan
+    puts "notifications:returning_nudges scanned=#{result.scanned} queued=#{result.queued}"
+  end
+
   desc "Queue the next daily reminder for every onboarded user with a Slack id (safe to repeat)"
   task schedule_all: :environment do
     count = 0
