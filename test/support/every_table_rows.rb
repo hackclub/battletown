@@ -39,6 +39,11 @@ module EveryTableRows
     TeamCooldown.create!(user: user, left_at: Time.current)
     TeamPayout.create!(user: user, ship: Ship.find_by!(user_id: user.id), team: crew, coins: 1, matched_days: 1)
     UserNote.create!(user: user, author: users(:new_user), body: "guard note", created_at: Time.current)
+    # The staff audit trail: a row about the person (Privacy::Deleter removes it), a row about one of their orders (kept, ids only)
+    # and a row where they are the staff member who acted (the actor is nulled, never deleted: other people's history).
+    AdminAudit.record!(actor: users(:new_user), action: "coins_adjusted", subject: user, metadata: { coins: 5, reason: "Jamie Doe asked on Slack" })
+    AdminAudit.record!(actor: users(:new_user), action: "order_held", subject: guard_order, metadata: { order_id: guard_order.id })
+    AdminAudit.record!(actor: user, action: "user_viewed", subject: users(:new_user))
     user
   end
 end

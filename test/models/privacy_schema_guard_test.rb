@@ -87,7 +87,8 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     through_projects = %w[link_suggestions project_reviews] # a crew with no members left is swept by Privacy::Deleter
     through_orders = %w[order_events] # the history of an order goes with the order (ON DELETE CASCADE); order_addresses also has its own user_id key
     swept = %w[teams]
-    assert_equal (referencing + through_projects + through_orders + swept + [ "users" ]).sort, deleted.keys.sort,
+    through_subject = %w[admin_audit_events] # no foreign key: Privacy::Deleter removes the audit rows whose subject is the person
+    assert_equal (referencing + through_projects + through_orders + swept + through_subject + [ "users" ]).sort, deleted.keys.sort,
                  "add a row for the new table to this test so its count is proven (every table that references users must show up)"
   end
 end

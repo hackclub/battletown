@@ -47,11 +47,32 @@ class PrivacyAllFlagsTest < ActionDispatch::IntegrationTest
 
     real = call_yeet(dry_run: false)
     assert_equal dry["deleted"], real["deleted"]
-    assert_equal [], real["retained"]
+    assert_equal dry["retained"], real["retained"]
     assert_not User.exists?(@user.id)
     tables_with_user_column.each { |table| assert_equal 0, rows_about(@user, table), "#{table} still holds the deleted person" }
     assert_not Team.exists?(crew.id), "a crew whose last member was deleted goes too"
     assert_equal before_other, rows_about(@bystander, "notifications"), "someone else's rows are untouched"
+  end
+
+  test "the staff audit trail: rows about the person go, rows about their orders stay and are reported, rows they made stay with no actor" do
+    order = Order.find_by!(user_id: @user.id)
+    about_person = AdminAuditEvent.about("User", @user.id).count
+    about_order = AdminAuditEvent.where(subject_type: %w[Order Project]).count # the held order and the flagged project
+    by_person = AdminAuditEvent.where(actor_id: @user.id).count
+    assert_operator [ about_person, about_order, by_person ].min, :>=, 1
+
+    dry = call_yeet(dry_run: true)
+    assert_equal about_person, dry["deleted"]["admin_audit_events"]
+    assert_equal [ { "type" => "admin_audit_events", "count" => about_order, "reason" => dry["retained"].first["reason"] } ], dry["retained"]
+    assert_match(/ids|amounts/, dry["retained"].first["reason"])
+
+    real = call_yeet(dry_run: false)
+    assert_equal dry["deleted"], real["deleted"]
+    assert_equal dry["retained"], real["retained"]
+    assert_equal 0, AdminAuditEvent.about("User", @user.id).count, "an audit row about the person (with a typed reason) must not outlive them"
+    assert_equal about_order, AdminAuditEvent.where(subject_type: %w[Order Project]).count
+    assert_equal by_person, AdminAuditEvent.where(actor_id: nil, action: "user_viewed").count
+    assert_not_includes AdminAuditEvent.pluck(:metadata).to_json, "Jamie Doe"
   end
 
   test "a deletion by Slack id alone finds the person and removes the same tables" do

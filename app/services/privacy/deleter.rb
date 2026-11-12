@@ -12,7 +12,14 @@ module Privacy
     # Records that are kept (detached from the person) because other people depend on them. None exist yet. A rule is
     # { type: "...", reason: "...", count: ->(user_ids) { Integer } }; the response lists each non-zero one as
     # { type:, count:, reason: }. A rule that keeps rows must also stop the cascade from deleting them.
-    RETENTION_RULES = [].freeze
+    RETENTION_RULES = [
+      {
+        type: "admin_audit_events",
+        reason: "Staff accountability trail about the person's orders, projects and similar records: action names, record ids, amounts and reason codes only. " \
+                "It holds no name or contact detail and nothing links the ids to a person once their account is gone.",
+        count: ->(user_ids) { AdminAudit::Retained.about_records_of(user_ids).count }
+      }
+    ].freeze
 
     # The yeeter gives up after 15 seconds, so asking Hackatime to revoke tokens gets a short leash: each call times
     # out after REVOKE_TIMEOUT seconds and no new call starts once REVOKE_BUDGET seconds have gone.
@@ -33,6 +40,10 @@ module Privacy
       ActiveRecord::Base.transaction(requires_new: true) do
         before = delete_counters
         retained = retained_records(user_ids)
+        # Audit rows ABOUT the person (a coin or hours adjustment with its typed reason, a profile view) are deleted with them.
+        # They have no foreign key (the subject is a type and an id), so the cascade cannot do it. Rows made BY the person (a
+        # staff member) stay with no actor, and rows about their orders and projects stay (see RETENTION_RULES).
+        AdminAudit::Retained.about_person(user_ids).delete_all
         removed = User.where(id: user_ids).delete_all
         Team.sweep_empty! # a crew whose last member was just deleted goes too (memberships cascaded)
         deleted = delete_counters.to_h { |table, count| [ table, count - before.fetch(table, 0) ] }.select { |_, count| count.positive? }
