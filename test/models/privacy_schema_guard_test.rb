@@ -75,6 +75,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     HourEntry.create!(user: user, local_date: Date.new(2026, 11, 9), seconds: 3600, source: "manual", note: "guard", hackatime_project: "guard-project", idempotency_key: "guard-ship-#{user.id}")
     Ship.create!(user: user, project: project, status: "submitted", description: "Guard ship", repo_url: "https://github.com/guard/ship", coded_seconds: 3600,
                  window_start_date: Date.new(2026, 11, 9), window_end_date: Date.new(2026, 11, 9), daily_seconds: { "2026-11-09" => 3600 }, submitted_at: Time.current)
+    ShipImage.create!(ship: Ship.find_by!(user: user), user: user, position: 1, content: "RIFFguard", byte_size: 9, width: 1, height: 1, sha256: "a" * 64)
     DailyResult.create!(user: user, local_date: Date.new(2026, 11, 1), raw_seconds: 0, quick_met: false, goal_met: false,
                         streak_15: 0, goal_streak: 0, freeze_available: true)
     HackatimeConnection.create!(user: user, hackatime_uid: "1", access_token: "guard-token", scopes: "profile read", connected_at: Time.current)

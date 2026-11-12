@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035010) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_051207) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -296,6 +296,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035010) do
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "projects_status_check"
   end
 
+  create_table "ship_images", force: :cascade do |t|
+    t.bigint "ship_id", null: false
+    t.bigint "user_id", null: false
+    t.integer "position", null: false
+    t.binary "content", null: false
+    t.integer "width", null: false
+    t.integer "height", null: false
+    t.integer "byte_size", null: false
+    t.string "sha256", limit: 64, null: false
+    t.string "alt", limit: 140
+    t.datetime "created_at", null: false
+    t.index ["ship_id", "position"], name: "index_ship_images_on_ship_id_and_position", unique: true
+    t.index ["ship_id", "sha256"], name: "index_ship_images_on_ship_id_and_sha256", unique: true
+    t.index ["user_id"], name: "index_ship_images_on_user_id"
+    t.check_constraint "\"position\" >= 1 AND \"position\" <= 3", name: "ship_images_position_check"
+    t.check_constraint "alt IS NULL OR char_length(alt::text) <= 140", name: "ship_images_alt_check"
+    t.check_constraint "byte_size >= 1 AND byte_size <= 5000000", name: "ship_images_byte_size_check"
+    t.check_constraint "octet_length(content) = byte_size", name: "ship_images_content_size_check"
+    t.check_constraint "sha256::text ~ '^[0-9a-f]{64}$'::text", name: "ship_images_sha256_check"
+    t.check_constraint "width > 0 AND height > 0", name: "ship_images_dimensions_check"
+  end
+
   create_table "ships", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "project_id", null: false
@@ -382,6 +404,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035010) do
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "projects", "users", on_delete: :cascade
+  add_foreign_key "ship_images", "ships", on_delete: :cascade
+  add_foreign_key "ship_images", "users", on_delete: :cascade
   add_foreign_key "ships", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
   add_foreign_key "ships", "users", column: "reviewer_id", on_delete: :nullify
   add_foreign_key "ships", "users", on_delete: :cascade
