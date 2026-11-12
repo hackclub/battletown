@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035007) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_035008) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -185,6 +185,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035007) do
     t.datetime "updated_at", null: false
     t.bigint "subject_id"
     t.index ["idempotency_key"], name: "index_notifications_on_idempotency_key", unique: true
+    t.index ["subject_id"], name: "index_notifications_on_pending_subject_id", where: "(((status)::text = 'pending'::text) AND (subject_id IS NOT NULL))"
     t.index ["status", "due_at"], name: "index_notifications_on_status_and_due_at"
     t.index ["user_id", "kind"], name: "index_notifications_one_pending_per_user_kind", unique: true, where: "(((status)::text = 'pending'::text) AND ((kind)::text = 'daily_reminder'::text))"
     t.index ["user_id"], name: "index_notifications_on_user_id"

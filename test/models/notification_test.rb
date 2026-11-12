@@ -119,4 +119,11 @@ class NotificationTest < ActiveSupport::TestCase
     Notification.update_all(status: "sent")
     assert_empty Notification.due(@due + 1.day)
   end
+
+  test "pending event rows are indexed by subject so a ship submit cancels its reminders without a scan" do
+    index = ActiveRecord::Base.connection.indexes(:notifications).find { |i| i.name == "index_notifications_on_pending_subject_id" }
+    assert index, "missing the partial subject index"
+    assert_equal [ "subject_id" ], index.columns
+    assert_match(/status\)::text = 'pending'/, index.where)
+  end
 end
