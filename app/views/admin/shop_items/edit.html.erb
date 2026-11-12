@@ -1,0 +1,45 @@
+<% content_for :title, "Edit #{@item.name_was}" %>
+<% requested = @orders.fetch("requested", 0) %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the shop items", admin_shop_items_path(view: (@item.active_was ? "active" : "archived")) %></p>
+    <header class="page-header">
+      <h1>Edit <%= @item.name_was %></h1>
+      <p class="admin-dashboard__note">
+        <%= @item.active_was ? admin_badge("In the shop", "badge--success") : admin_badge("Archived", "badge--muted") %>
+        Changes show up straight away.
+      </p>
+    </header>
+
+    <% if @picks.positive? %>
+      <p class="alert alert--warning admin-form__errors" role="status">
+        <strong><%= @picks %> <%= @picks == 1 ? "person is" : "people are" %> working toward this.</strong>
+        A new price changes what they need from now on, and the hours shown on the landing page and prize picker.
+        Orders already made keep the price they were made at.
+      </p>
+    <% end %>
+
+    <dl class="admin-stat grid admin-shop-facts" aria-label="Numbers for this item">
+      <div class="card card--tight admin-stat__item"><dt>Working toward</dt><dd><%= number_with_delimiter(@picks) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>Requested now</dt><dd><%= number_with_delimiter(requested) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>Fulfilled</dt><dd><%= number_with_delimiter(@orders.fetch("fulfilled", 0)) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>Cancelled</dt><dd><%= number_with_delimiter(@orders.fetch("cancelled", 0)) %></dd></div>
+    </dl>
+
+    <%= render "form", item: @item, url: admin_shop_item_path(@item.key), creating: false %>
+
+    <section class="card admin-form-card admin-shop-archive" aria-labelledby="archive-heading">
+      <% if @item.active_was %>
+        <h2 id="archive-heading">Take it out of the shop</h2>
+        <p>Archiving hides <%= @item.name_was %> from the shop, the landing page and the prize picker. <%= "#{@picks} #{@picks == 1 ? 'person has' : 'people have'} it as their prize pick; they keep it, and " if @picks.positive? %>Orders already made, including <%= requested %> waiting now, are not affected. You can restore it any time.</p>
+        <%= button_to "Archive this item", admin_archive_shop_item_path(@item.key), method: :patch, class: "btn",
+                      form: { data: { turbo_confirm: shop_archive_confirm(@item.name_was, @picks) } } %>
+      <% else %>
+        <h2 id="archive-heading">Put it back in the shop</h2>
+        <p><%= @item.name_was %> is archived, so people can't see or buy it. Restoring puts it back in the shop, on the landing page and in the prize picker.</p>
+        <%= button_to "Restore this item", admin_restore_shop_item_path(@item.key), method: :patch, class: "btn btn--primary",
+                      form: { data: { turbo_confirm: "Put #{@item.name_was} back in the shop, on the landing page and in the prize picker?" } } %>
+      <% end %>
+    </section>
+  <% end %>
+</div>

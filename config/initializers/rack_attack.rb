@@ -58,11 +58,32 @@ class Rack::Attack
     ship_upload?(req) && (req.content_length.nil? || req.content_length.to_i > ShipImages::Config.current.max_request_bytes)
   end
 
+  # Shop item pictures (/admin/shop, config/game.yml `shop_items:`): the same early size check for the admin form that carries a
+  # picture, so an oversized or chunked multipart body is refused before Rails parses it. Every non-GET under /admin/shop is
+  # also rate limited per address.
+  ADMIN_SHOP_PATH = %r{\A/{0,3}admin/shop(?:/[a-z0-9_]*)*/?\z}
+  SHOP_SIZE_RULE = "admin-shop/size".freeze
+
+  def self.shop_upload?(req)
+    (req.post? || req.patch? || req.put?) && req.path.match?(ADMIN_SHOP_PATH) && req.media_type == "multipart/form-data"
+  end
+
+  blocklist(SHOP_SIZE_RULE) do |req|
+    shop_upload?(req) && (req.content_length.nil? || req.content_length.to_i > ShopItems::Config.current.max_request_bytes)
+  end
+
+  throttle("admin-shop/ip", limit: 60, period: 1.minute) do |req|
+    req.ip if req.path.match?(ADMIN_SHOP_PATH) && !req.get? && !req.head?
+  end
+
   self.blocklisted_responder = lambda do |request|
     if request.env["rack.attack.matched"] == SIZE_RULE
       limits = ShipImages::Config.current
       [ 413, { "content-type" => "text/plain; charset=utf-8" },
         [ "That upload is too big. Each screenshot can be up to #{limits.max_upload_bytes / 1_000_000.0} MB and a ship can have #{limits.max_files}.\n" ] ]
+    elsif request.env["rack.attack.matched"] == SHOP_SIZE_RULE
+      [ 413, { "content-type" => "text/plain; charset=utf-8" },
+        [ "That picture is too big. The limit is #{ShopItems::Config.current.max_upload_bytes / 1_000_000.0} MB.\n" ] ]
     else
       [ 403, { "content-type" => "text/plain; charset=utf-8" }, [ "Forbidden\n" ] ]
     end

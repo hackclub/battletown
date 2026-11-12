@@ -1,0 +1,102 @@
+<%# locals: (item:, url:, creating: false) -%>
+<% picture = ShopItems::Config.current %>
+<% free = item.free_signup? %>
+<% if item.errors.any? %>
+  <div class="alert alert--danger admin-form__errors" role="alert">
+    <p class="alert__title">That was not saved</p>
+    <ul>
+      <% item.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="admin-shop-edit" data-controller="shop-item-preview" data-shop-item-preview-coins-per-hour-value="<%= Game::Config.current.coins_per_hour %>">
+  <div class="card admin-form-card">
+    <%= form_with model: item, scope: :shop_item, url: url, method: (creating ? :post : :patch), multipart: true, class: "admin-form stack" do |form| %>
+      <% unless creating %><%= form.hidden_field :lock_version %><% end %>
+
+      <% if creating %>
+        <div class="field">
+          <%= form.label :key, "Key" %>
+          <%= form.text_field :key, class: "input", maxlength: 60, required: true, pattern: "[a-z0-9_]{1,60}", autocapitalize: "none", autocomplete: "off", spellcheck: false, "aria-describedby": "item-key-hint" %>
+          <span id="item-key-hint" class="field__hint admin-form__hint">Lowercase letters, numbers and underscores, up to 60. It names the item in orders and in people's picks, so it can never be changed. Example: <code>pixel_pin</code>.</span>
+        </div>
+        <% unless ShopItem.exists?(kind: "free_signup") %>
+          <div class="field">
+            <%= form.label :kind, "Kind" %>
+            <%= form.select :kind, [ [ "Regular (bought with coins)", "regular" ], [ "Free signup item (one per person, no coins)", "free_signup" ] ], {}, class: "select", "aria-describedby": "item-kind-hint" %>
+            <span id="item-kind-hint" class="field__hint admin-form__hint">There can be only one free signup item, and the kind can't be changed later.</span>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="field">
+          <span class="field__label">Key</span>
+          <p class="admin-form__readonly"><code><%= item.key %></code> <%= admin_badge("Free signup", "badge--info") if free %></p>
+          <span class="field__hint admin-form__hint">The key and kind are fixed: orders and people's picks use them.</span>
+        </div>
+      <% end %>
+
+      <div class="field">
+        <%= form.label :name, "Name (up to #{ShopItem::NAME_MAX} characters)" %>
+        <%= form.text_field :name, class: "input", maxlength: ShopItem::NAME_MAX, required: true, data: { shop_item_preview_target: "nameInput", action: "input->shop-item-preview#update" } %>
+      </div>
+      <div class="field">
+        <%= form.label :description, "Description (up to #{ShopItem::DESCRIPTION_MAX} characters)" %>
+        <%= form.text_area :description, class: "textarea", rows: 3, maxlength: ShopItem::DESCRIPTION_MAX, data: { shop_item_preview_target: "descriptionInput", action: "input->shop-item-preview#update" } %>
+      </div>
+      <div class="field">
+        <%= form.label :emoji, "Emoji (shown when there is no picture)" %>
+        <%= form.text_field :emoji, class: "input", maxlength: ShopItem::EMOJI_MAX, autocomplete: "off", data: { shop_item_preview_target: "emojiInput", action: "input->shop-item-preview#update" } %>
+      </div>
+
+      <div class="field">
+        <% if free %>
+          <span class="field__label">Price</span>
+          <p class="admin-form__readonly">Free: the free signup item costs no coins.</p>
+        <% else %>
+          <%= form.label :coins, "Price (coins)" %>
+          <%= form.number_field :coins, class: "input", min: 1, max: ShopItem::COINS_MAX, step: 1, required: true, "aria-describedby": "item-coins-hint",
+                                data: { shop_item_preview_target: "coinsInput", action: "input->shop-item-preview#update" } %>
+          <span id="item-coins-hint" class="field__hint admin-form__hint">Coins only. That is about <strong data-shop-item-preview-target="hours"><%= shop_hours_text(item.coins.to_i) %></strong> of approved coding. Changing it never changes an order that was already made.</span>
+        <% end %>
+      </div>
+
+      <div class="field">
+        <%= form.label :tier, "Tier" %>
+        <%= form.select :tier, ShopItem::TIERS.map { |tier| [ tier.capitalize, tier ] }, {}, class: "select", "aria-describedby": "item-tier-hint",
+                        data: { shop_item_preview_target: "tierInput", action: "change->shop-item-preview#update" } %>
+        <span id="item-tier-hint" class="field__hint admin-form__hint">Shop is the ordinary kind and shows no label. Daily and weekly show a small label on the card.</span>
+      </div>
+
+      <div class="field">
+        <%= form.label :position, "Position (lower comes first)" %>
+        <%= form.number_field :position, class: "input", min: 0, step: 1, "aria-describedby": "item-position-hint" %>
+        <span id="item-position-hint" class="field__hint admin-form__hint">Or use the Up and Down buttons on the list. Items with the same position are shown in the order they were added.</span>
+      </div>
+
+      <div class="field">
+        <%= form.label :image, (item.image? && !creating ? "Replace the picture" : "Picture (optional)") %>
+        <%= form.file_field :image, accept: "image/png,image/jpeg,image/webp,image/gif", "aria-describedby": "item-image-hint", data: { shop_item_preview_target: "fileInput", action: "change->shop-item-preview#pick" } %>
+        <span id="item-image-hint" class="field__hint admin-form__hint">PNG, JPEG, WebP or GIF, up to <%= number_with_precision(picture.max_upload_bytes / 1_000_000.0, precision: 1, strip_insignificant_zeros: true) %> MB and <%= picture.max_megapixels %> megapixels. It is re-saved as a WebP at most <%= picture.max_edge_px %> pixels wide; location and camera details are removed. Without one, the emoji is shown.</span>
+      </div>
+      <% if item.image? && !creating %>
+        <label class="option"><%= check_box_tag "shop_item[remove_image]", "1", false, id: "shop_item_remove_image", data: { shop_item_preview_target: "removeInput", action: "change->shop-item-preview#update" } %> Remove the picture (show the emoji instead)</label>
+      <% end %>
+
+      <% if creating %>
+        <label class="option"><%= form.check_box :active %> Put it in the shop right away <span class="field__hint">(untick to add it archived and show it later)</span></label>
+      <% end %>
+
+      <div class="cluster">
+        <%= form.submit (creating ? "Add item" : "Save item"), class: "btn btn--primary" %>
+        <%= link_to "Cancel", admin_shop_items_path(view: (item.active ? "active" : "archived")), class: "btn btn--ghost" %>
+      </div>
+    <% end %>
+  </div>
+
+  <aside class="admin-shop-side" aria-label="Preview">
+    <%= render "admin/shop_items/preview", item: item %>
+  </aside>
+</div>

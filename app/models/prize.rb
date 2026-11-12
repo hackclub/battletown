@@ -38,15 +38,19 @@ Prize = Data.define(:key, :name, :description, :coins, :emoji, :image, :tier, :f
   # Still on offer (not archived).
   def active? = active == true
 
-  # Hours of approved coding this costs before any bonus: a whole number, or one decimal place (rounded half up).
-  def hours
+  # Hours of approved coding `coins` cost before any bonus: a whole number, or one decimal place (rounded half up).
+  def self.hours_for(coins)
     tenths = (coins * 10r / Game::Config.current.coins_per_hour).round
     (tenths % 10).zero? ? tenths / 10 : tenths / 10.0
   end
 
   # "2 hours", "1 hour", "1.5 hours".
-  def hours_text
-    value = hours
+  def self.hours_text_for(coins)
+    value = hours_for(coins)
     "#{value} #{value == 1 ? 'hour' : 'hours'}"
   end
+
+  def hours = self.class.hours_for(coins)
+
+  def hours_text = self.class.hours_text_for(coins)
 end

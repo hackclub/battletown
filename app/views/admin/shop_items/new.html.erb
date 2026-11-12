@@ -1,0 +1,11 @@
+<% content_for :title, "New shop item" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the shop items", admin_shop_items_path %></p>
+    <header class="page-header">
+      <h1>Add a shop item</h1>
+      <p class="admin-dashboard__note">Set the name, the price in coins and, if you have one, a picture. The key is chosen now and can never be changed.</p>
+    </header>
+    <%= render "form", item: @item, url: admin_shop_path, creating: true %>
+  <% end %>
+</div>

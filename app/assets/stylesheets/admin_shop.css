@@ -1,0 +1,18 @@
+/* /admin/shop: the shop catalogue editor. Staff-only (inside admin_tool), built from the shared admin and shop card styles. */
+.admin-shop-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.admin-shop-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.admin-shop-table .admin-actions { flex-wrap: nowrap; }
+.admin-shop-table .admin-actions .btn { white-space: nowrap; }
+.admin-shop-counts { display: flex; flex-wrap: wrap; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+.admin-form__readonly { margin: 0; }
+.admin-shop-facts { --grid-min: 9rem; margin: 0; }
+.admin-shop-edit { display: grid; gap: var(--space-6); align-items: start; }
+.admin-shop-edit > * { min-width: 0; }
+.admin-shop-edit .admin-form-card { max-width: none; }
+.admin-shop-preview { max-width: 20rem; }
+.admin-shop-preview .shop-item__image[hidden], .admin-shop-preview [hidden] { display: none; }
+.admin-shop-archive h2 { margin-top: 0; }
+@media (min-width: 64rem) {
+  .admin-shop-edit { grid-template-columns: minmax(0, 36rem) minmax(16rem, 20rem); }
+  .admin-shop-side { position: sticky; top: var(--space-4); }
+}

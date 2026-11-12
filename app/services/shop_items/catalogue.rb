@@ -4,20 +4,31 @@ module ShopItems
   # the catalogue ten times runs one query, a new request always sees what staff last saved, and a change made in this very
   # request (ShopItem after_commit) is visible straight away. No picture bytes are ever loaded here.
   #
+  # A change bumps a process-wide generation number that the remembered copy is stamped with, so a copy made before a change is
+  # never used after it, however the request state is scoped (the Rails executor, a test, a console). Other server processes
+  # simply start their next request from the table.
+  #
   # Falls back to config/prizes.yml (ShopItems::Seed.rows) when the table does not exist yet or has no rows, so boot,
   # `assets:precompile`, `db:prepare` and a fresh database nobody has seeded still have a catalogue.
   module Catalogue
     class Store < ActiveSupport::CurrentAttributes
-      attribute :items
+      attribute :items, :generation
     end
+
+    GENERATION = Concurrent::AtomicFixnum.new
 
     module_function
 
     def items
-      Store.items ||= load_items.freeze
+      if Store.items.nil? || Store.generation != GENERATION.value
+        Store.generation = GENERATION.value
+        Store.items = load_items.freeze
+      end
+      Store.items
     end
 
     def reset
+      GENERATION.increment
       Store.reset
     end
 

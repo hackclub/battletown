@@ -60,4 +60,14 @@ module AdminHelper
   def admin_projects_filter_path(filters, **changes)
     admin_projects_path(filters.merge(changes).compact_blank)
   end
+
+  # "5 hours" for a price in coins (10 coins is an hour of approved coding, from config/game.yml).
+  def shop_hours_text(coins) = Prize.hours_text_for(coins.to_i)
+
+  # The question asked before archiving an item; says how many people have it picked.
+  def shop_archive_confirm(name, picks)
+    sentence = "Archive #{name}? It will disappear from the shop, the landing page and the prize picker."
+    sentence += " #{picks} #{picks == 1 ? 'person is' : 'people are'} working toward it: their pick and any orders already made keep working." if picks.positive?
+    sentence
+  end
 end

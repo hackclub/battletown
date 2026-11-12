@@ -1,0 +1,99 @@
+<% content_for :title, "Admin shop" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>Shop items</h1>
+      <p class="admin-dashboard__note">What people can spend coins on. Changes show up straight away: no deploy. Prices are in coins only. An archived item is hidden from the shop, the landing page and the prize picker, but people who picked it and orders already made keep working. Items are never deleted. Counts only: no names.</p>
+    </header>
+
+    <% if @empty %>
+      <p class="alert alert--warning" role="status">The catalogue has not been loaded into the database yet, so the site is showing the defaults from <code>config/prizes.yml</code>. Run <code>bin/rails shop_items:import</code> (or <code>db:seed</code>) once, then come back to edit them.</p>
+    <% end %>
+
+    <div class="admin-shop-bar">
+      <nav aria-label="Which items" class="admin-shop-tabs">
+        <% { "active" => "In the shop", "archived" => "Archived" }.each do |view, label| %>
+          <%= link_to "#{label} (#{@counts[view]})", admin_shop_items_path(view: view), class: class_names("btn", "btn--sm", "btn--primary": @view == view), "aria-current": (@view == view ? "page" : nil) %>
+        <% end %>
+      </nav>
+      <%= link_to "Add an item", admin_new_shop_item_path, class: "btn btn--primary" %>
+    </div>
+
+    <% if @items.empty? %>
+      <p class="alert"><%= @view == "archived" ? "Nothing is archived." : "No items are in the shop." %></p>
+    <% else %>
+      <%= table_region("Shop items") do %>
+        <table class="table table--zebra admin-table admin-shop-table">
+          <caption><%= @view == "archived" ? "Archived items" : "Items in the shop, in the order people see them" %></caption>
+          <thead>
+            <tr>
+              <th scope="col">Order</th>
+              <th scope="col">Item</th>
+              <th scope="col" class="num admin-table__num">Price (coins)</th>
+              <th scope="col">Tier</th>
+              <th scope="col" class="num admin-table__num">Working toward</th>
+              <th scope="col">Orders</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @items.each_with_index do |item, index| %>
+              <% picks = @picks.fetch(item.key, 0) %>
+              <tr id="item-<%= item.key %>">
+                <td>
+                  <div class="admin-actions">
+                    <%= button_to "Up", admin_move_shop_item_path(item.key, direction: "up"), method: :patch, class: "btn btn--sm", disabled: index.zero?,
+                                  "aria-label": "Move #{item.name} up" %>
+                    <%= button_to "Down", admin_move_shop_item_path(item.key, direction: "down"), method: :patch, class: "btn btn--sm", disabled: index == @items.size - 1,
+                                  "aria-label": "Move #{item.name} down" %>
+                  </div>
+                </td>
+                <th scope="row">
+                  <span aria-hidden="true"><%= item.emoji %></span> <%= item.name %>
+                  <% if item.free_signup? %><%= admin_badge("Free signup", "badge--info") %><% end %>
+                  <% if item.image? %><%= admin_badge("Picture", "badge--muted") %><% end %><br>
+                  <small><code><%= item.key %></code></small>
+                </th>
+                <td class="num admin-table__num">
+                  <% if item.free_signup? %>
+                    Free
+                  <% else %>
+                    <%= number_with_delimiter(item.coins) %><br><small><%= shop_hours_text(item.coins) %></small>
+                  <% end %>
+                </td>
+                <td><%= item.tier.capitalize %></td>
+                <td class="num admin-table__num"><%= number_with_delimiter(picks) %></td>
+                <td>
+                  <% counts = Order::STATUSES.to_h { |status| [ status, @orders.fetch([ item.key, status ], 0) ] } %>
+                  <% if counts.values.sum.zero? %>
+                    <small>None yet</small>
+                  <% else %>
+                    <ul class="admin-shop-counts" role="list">
+                      <% counts.each do |status, count| %>
+                        <% next if count.zero? %>
+                        <li><%= admin_badge("#{count} #{status}", AdminHelper::ORDER_BADGES.fetch(status)) %></li>
+                      <% end %>
+                    </ul>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="admin-actions">
+                    <%= link_to "Edit", admin_edit_shop_item_path(item.key), class: "btn btn--sm", "aria-label": "Edit #{item.name}" %>
+                    <% if item.active %>
+                      <%= button_to "Archive", admin_archive_shop_item_path(item.key), method: :patch, class: "btn btn--sm", "aria-label": "Archive #{item.name}",
+                                    form: { data: { turbo_confirm: shop_archive_confirm(item.name, picks) } } %>
+                    <% else %>
+                      <%= button_to "Restore", admin_restore_shop_item_path(item.key), method: :patch, class: "btn btn--sm btn--primary", "aria-label": "Restore #{item.name}",
+                                    form: { data: { turbo_confirm: "Put #{item.name} back in the shop, on the landing page and in the prize picker?" } } %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

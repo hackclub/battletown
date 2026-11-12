@@ -1,0 +1,23 @@
+<%# locals: (item:) -%>
+<%# How the item looks in the shop grid: the same markup and classes as shop/index (the Get this button is a stand-in). A
+    Stimulus controller (shop-item-preview) keeps it in step with the form as staff type. -%>
+<div class="admin-shop-preview" data-shop-item-preview-target="card">
+  <p class="eyebrow">Preview (as in the shop)</p>
+  <div class="card card--chunky shop-item">
+    <div class="shop-item__art">
+      <% if item.image? && item.persisted? %>
+        <%= image_tag item.image_path, alt: "", class: "shop-item__image", data: { shop_item_preview_target: "image" } %>
+      <% else %>
+        <img alt="" class="shop-item__image" hidden data-shop-item-preview-target="image">
+      <% end %>
+      <span class="shop-item__emoji" aria-hidden="true" data-shop-item-preview-target="emoji" <%= "hidden" if item.image? && item.persisted? %>><%= item.emoji %></span>
+    </div>
+    <h3 class="card__title shop-item__name" data-shop-item-preview-target="name"><%= item.name.presence || "Item name" %></h3>
+    <p class="shop-item__description" data-shop-item-preview-target="description"><%= item.description.presence || "A line about the item." %></p>
+    <p class="shop-item__meta">
+      <span class="shop-item__price" data-shop-item-preview-target="price"><%= coins_text(item.coins.to_i) %></span>
+      <span class="badge badge--warning shop-tier" data-shop-item-preview-target="tier" <%= "hidden" if item.tier == "shop" %>><%= item.tier.to_s.capitalize %></span>
+    </p>
+    <button type="button" class="btn btn--primary btn--block" disabled>Get this</button>
+  </div>
+</div>

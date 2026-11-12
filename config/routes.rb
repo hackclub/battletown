@@ -31,6 +31,8 @@ Rails.application.routes.draw do
   get "shop", to: "shop#index"
   get "shop/items/:key", to: "shop#show", as: :shop_item, constraints: { key: /[a-z0-9_]{1,60}/ }
   post "shop/sticker", to: "sticker_claims#create", as: :shop_sticker
+  # An item's picture. Public (the landing page shows it too), same-origin, cached privately and revalidated by ETag.
+  get "shop/items/:key/image", to: "shop_item_images#show", as: :shop_item_image, format: false, constraints: { key: /[a-z0-9_]{1,60}/ }
   scope "shop" do
     resources :orders, only: %i[index create] do
       member { patch :cancel }
@@ -166,6 +168,18 @@ Rails.application.routes.draw do
         post :clear
         post :note
       end
+    end
+    # The shop catalogue (Prize / ShopItem): list, add, edit, archive and restore, reorder. Items are found by their key and
+    # never deleted. Orange admin pages like the rest of /admin.
+    get "shop", to: "shop_items#index", as: :shop_items, format: false
+    post "shop", to: "shop_items#create", format: false
+    get "shop/new", to: "shop_items#new", as: :new_shop_item, format: false
+    scope "shop/:key", constraints: { key: /[a-z0-9_]{1,60}/ }, format: false do
+      get "edit", to: "shop_items#edit", as: :edit_shop_item
+      patch "", to: "shop_items#update", as: :shop_item
+      patch "archive", to: "shop_items#archive", as: :archive_shop_item
+      patch "restore", to: "shop_items#restore", as: :restore_shop_item
+      patch "move", to: "shop_items#move", as: :move_shop_item
     end
     # The weekly merch track queue (flag `merch_track`).
     constraints Features::Constraint.new(:merch_track) do
