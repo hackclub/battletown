@@ -162,6 +162,45 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
     assert_nil connection.last_error_code
   end
 
+  test "reconnecting to a different Hackatime account revokes the old account's tokens, best effort" do
+    user = users(:onboarded)
+    connect_hackatime(user, uid: "4242", access_token: "old-account-token", refresh_token: "old-account-refresh")
+    sign_in_as user
+    mock_hackatime(uid: "99", token: SECRET_TOKEN)
+
+    get "/auth/hackatime/callback"
+
+    connection = user.reload.hackatime_connection
+    assert_equal [ "99", SECRET_TOKEN ], [ connection.hackatime_uid, connection.access_token ]
+    revoked = @fake.requests_for("POST", "/oauth/revoke").map { |r| r.form["token"] }
+    assert_equal %w[old-account-refresh old-account-token], revoked.sort
+  end
+
+  test "reconnecting the same Hackatime account never revokes the token Hackatime handed back again" do
+    user = users(:onboarded)
+    connect_hackatime(user, uid: "4242", access_token: SECRET_TOKEN, needs_reconnect: true)
+    sign_in_as user
+    mock_hackatime(uid: "4242", token: SECRET_TOKEN)
+
+    get "/auth/hackatime/callback"
+
+    assert_not user.reload.hackatime_connection.needs_reconnect?
+    assert_empty @fake.requests_for("POST", "/oauth/revoke")
+  end
+
+  test "reconnecting to a different Hackatime account still works when Hackatime is unreachable for the revoke" do
+    user = users(:onboarded)
+    connect_hackatime(user, uid: "4242", access_token: "old-account-token")
+    sign_in_as user
+    mock_hackatime(uid: "99", token: SECRET_TOKEN)
+    @fake.stop
+
+    get "/auth/hackatime/callback"
+
+    assert_redirected_to hackatime_path
+    assert_equal "99", user.reload.hackatime_connection.hackatime_uid
+  end
+
   test "a token without the read permission is not accepted" do
     @granted_scope = "profile"
     sign_in_as users(:onboarded)

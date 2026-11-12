@@ -30,8 +30,12 @@ class HackatimeConnectionsController < ApplicationController
     return redirect_to hackatime_path, alert: ALREADY_LINKED if taken_by_someone_else?(uid)
 
     connection = current_user.hackatime_connection || current_user.build_hackatime_connection
+    # Tokens this replaces (a reconnect, maybe to another Hackatime account). One Hackatime handed back again is kept.
+    replaced = [ connection.access_token, connection.refresh_token ].compact_blank - [ token, attributes[:refresh_token] ]
     connection.assign_attributes(attributes.merge(hackatime_uid: uid, connected_at: Time.current, needs_reconnect: false, last_error_code: nil))
     connection.save!
+    # After the save, as when disconnecting: they are no longer kept here, so Hackatime should drop them too. Never raises.
+    replaced.each { |old_token| Hackatime::Client.revoke(old_token) }
     redirect_to hackatime_path, notice: "Hackatime connected."
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
     # Two accounts racing for the same Hackatime uid: the unique index decides, and nobody is told who the other is.
