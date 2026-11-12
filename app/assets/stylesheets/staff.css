@@ -53,13 +53,15 @@
 .dev-only--unlabelled, .admin-only--unlabelled { display: inline-flex; padding: var(--space-1); border-radius: var(--radius-full); }
 .dev-only--unlabelled::before, .admin-only--unlabelled::before { content: none; }
 
-/* A .btn inside a staff block takes the tint instead of its own colours (doubled classes beat page-specific .btn rules). */
-.dev-only.dev-only .btn.btn, .admin-only.admin-only .btn.btn {
+/* A .btn inside a small staff chip (the header's "Dev login") takes the tint instead of its own colours (doubled classes
+   beat page-specific .btn rules). Buttons inside a whole staff page or panel keep their normal look, so Approve, Reject,
+   Fulfil and Save still read as buttons. */
+.dev-only--unlabelled.dev-only--unlabelled .btn.btn, .admin-only--unlabelled.admin-only--unlabelled .btn.btn {
   border-color: transparent;
   background: transparent;
   color: var(--staff-ink);
 }
-.dev-only.dev-only .btn.btn:hover, .admin-only.admin-only .btn.btn:hover { border-color: var(--staff-border); }
+.dev-only--unlabelled.dev-only--unlabelled .btn.btn:hover, .admin-only--unlabelled.admin-only--unlabelled .btn.btn:hover { border-color: var(--staff-border); }
 .dev-only form, .admin-only form { margin: 0; }
 
 /* A .btn that is itself the staff element (class on the button): keep it a pill. */

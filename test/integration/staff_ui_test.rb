@@ -48,4 +48,11 @@ class StaffUiTest < ActionDispatch::IntegrationTest
     get "/"
     assert_select ".admin-only", 0
   end
+
+  test "the staff stylesheet only strips button chrome from small staff chips, never from whole staff pages" do
+    css = Rails.root.join("app/assets/stylesheets/staff.css").read
+    assert_no_match(/\.(dev|admin)-only\.(dev|admin)-only \.btn/, css)
+    assert_match(/\.dev-only--unlabelled\.dev-only--unlabelled \.btn\.btn/, css)
+    assert_match(/\.admin-only--unlabelled\.admin-only--unlabelled \.btn\.btn/, css)
+  end
 end
