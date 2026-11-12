@@ -3,6 +3,7 @@ module Admin
   class MetricsController < BaseController
     def show
       @metrics = AdminMetrics.call
+      @returning = ReturningMetrics.call if Features.enabled?(:returning)
     end
   end
 end

@@ -133,5 +133,41 @@
     </table>
     <% end %>
   </section>
+  <% if @returning %>
+  <section class="admin-metrics__section" aria-labelledby="metrics-returning">
+    <h2 id="metrics-returning">Returning users</h2>
+    <p class="admin-metrics__definition">
+      Welcome-back windows started (someone coded their first 15 minutes after <%= pluralize(Game::ReturningBoost.config.idle_days, "idle day") %>) and
+      welcome-back nudges sent, per week (Friday to Thursday, newest first). All time: <%= number_with_delimiter(@returning.windows_total) %> windows,
+      <%= number_with_delimiter(@returning.nudges_total) %> nudges. Sent nudges are pruned with the other finished notifications, so old weeks may undercount them.
+    </p>
+    <% top_returning = [ @returning.weeks.flat_map { |week| [ week.windows_started, week.nudges_sent ] }.max.to_i, 1 ].max %>
+    <%= table_region("Welcome-back windows and nudges per week (last #{ReturningMetrics::WEEKS} weeks)") do %>
+    <table class="table table--zebra admin-table admin-metrics__table">
+      <caption>Welcome-back windows and nudges per week (last <%= ReturningMetrics::WEEKS %> weeks)</caption>
+      <thead>
+        <tr>
+          <th scope="col">Week</th>
+          <th scope="col" class="num admin-table__num">Windows started</th>
+          <th scope="col" class="admin-metrics__bar-cell"><span class="visually-hidden">Windows started, as a bar</span></th>
+          <th scope="col" class="num admin-table__num">Nudges sent</th>
+          <th scope="col" class="admin-metrics__bar-cell"><span class="visually-hidden">Nudges sent, as a bar</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @returning.weeks.reverse_each do |week| %>
+          <tr>
+            <th scope="row"><%= day_label.call(week.starts_on) %> to <%= day_label.call(week.ends_on) %><%= " (so far)" if week.partial %></th>
+            <td class="num admin-table__num"><%= number_with_delimiter(week.windows_started) %></td>
+            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_returning %>" value="<%= week.windows_started %>" aria-hidden="true"></progress></td>
+            <td class="num admin-table__num"><%= number_with_delimiter(week.nudges_sent) %></td>
+            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_returning %>" value="<%= week.nudges_sent %>" aria-hidden="true"></progress></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <% end %>
+  </section>
+  <% end %>
 <% end %>
 </div>
