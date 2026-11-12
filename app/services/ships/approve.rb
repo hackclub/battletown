@@ -1,7 +1,7 @@
 module Ships
-  # Staff approval of a submitted ship, in ONE transaction under `ship.with_lock`: the status is checked again,
-  # the ship becomes approved and Coins::ApproveShip credits the user (base coins plus streak bonus coins). The
-  # credit is idempotent by the ship reference, and a second approver (or a double click) finds the ship already
+  # Staff approval of a submitted ship, in ONE transaction under the user's and then the ship's row lock: the status is
+  # checked again, the ship becomes approved and Coins::ApproveShip credits the user (base coins plus streak bonus
+  # coins). The credit is idempotent by the ship reference, and a second approver (or a double click) finds the ship already
   # approved and does nothing, so one ship never pays twice. If anything fails, the status change and the credit
   # roll back together.
   #
@@ -9,7 +9,7 @@ module Ships
   # unless it is exactly the coded time. Streak days still inside the settling grace period earn no bonus yet:
   # `unsettled_dates` lists them (before approving, with `.unsettled_dates(ship)`, and afterwards in the Result) and
   # a note is kept on the ship (`payout_note`). Settling happens first, with the real hours source, outside the
-  # ship lock; the payout itself is spread over the ship's own snapshot (Ships::SnapshotSource).
+  # locks; the payout itself is spread over the ship's own snapshot (Ships::SnapshotSource).
   #
   # Staff can never approve their own ship (`OwnShip`, a kind of Invalid, so the friendly message reaches the admin).
   #
@@ -37,7 +37,10 @@ module Ships
       Game::Settle.call(ship.user, through: now)
 
       result = nil
-      ship.with_lock do
+      # Lock order: the user's row, then the ship's. Ships::Submit and Project#discard! hold the user and then write
+      # ship rows, so taking the ship first here could deadlock with them (docs/CONTRACT.md, "Row lock order").
+      ship.user.with_lock do
+        ship.lock!
         next result = Result.new(status: :unavailable, ship: ship, unsettled_dates: [], credit: nil) unless ship.status_submitted?
 
         credit = Coins::ApproveShip.call(user: ship.user, ship_reference: ship, approved_seconds: seconds, window_dates: ship.window_dates,

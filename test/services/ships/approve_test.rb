@@ -139,6 +139,21 @@ class Ships::ApproveTest < ActiveSupport::TestCase
     assert_equal 2, result.credit.bonus_coins
   end
 
+  # Ships::Submit and Project#discard! hold the user's row and then write ship rows; taking the ship first here could deadlock.
+  test "approval locks the user's row before the ship's" do
+    ship = three_hour_ship
+    Game::Settle.call(@user, through: NOW)
+    locks = []
+    subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+      locks << payload[:sql][/FROM "(\w+)"/, 1] if payload[:sql].include?("FOR UPDATE")
+    end
+    approve(ship)
+    ActiveSupport::Notifications.unsubscribe(subscriber)
+
+    assert_equal "users", locks.first
+    assert_includes locks, "ships"
+  end
+
   test "the payout follows the ship's snapshot, not the live ledger or the current links" do
     ship = three_hour_ship
     @project.hackatime_links.destroy_all

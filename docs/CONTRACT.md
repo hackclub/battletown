@@ -238,6 +238,10 @@ A ship asks staff to turn the time coded on one project since its last ship into
 - A ship's submitted date is shown in the teen's local time zone (`ship_submitted_on`), so it lines up with the window's local dates.
 - Not built yet: screenshot uploads (needs storage and CSP decisions).
 
+## Row lock order
+
+Every service that holds more than one row lock takes the user's row first, then that user's project, ship or order rows (`Ships::Submit`: user, project; `Ships::Approve`: user, ship; `Project#discard!`: user, then its project and ship rows; `#archive!` / `#make_active!`: user, then projects; `Shop::Fulfill` / `Shop::Cancel`: user, order). `Coins::Ledger`, `Coins::ApproveShip`, `Game::Settle`, `Hours::Credit`, `Hours::Sync`, `Hackatime::DayWindows`, `Shop::Purchase` and `Shop::ClaimSticker` lock only the user (nested calls re-lock the same row). `Ships::Reject` and `Ships::Withdraw` lock only the ship; `Bosses::CheckDefeat` only the boss (after the hours entry commits); `Projects::LinkSuggestions` only the suggestion; the Hackatime client only the connection. New code that locks a user's row and another row must keep this order.
+
 ## Notifications (`app/services/notifications`, `app/models/notification.rb`, `Settings::NotificationsController`)
 
 Slack DMs only (no email or SMS, no buttons: the Slack app has `chat:write` and nothing else, so every message that needs an answer links to the web page that handles it). Coding is never blocked and the copy never shames. A message is an outbox row (`notifications`: `kind`, `subject_id`, `idempotency_key`, status); no text and no address is stored, the dispatcher builds the text from `config/notifications.yml` and reads `users.slack_id` when it sends.
