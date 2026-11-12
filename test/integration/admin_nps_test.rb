@@ -48,7 +48,7 @@ class AdminNpsTest < ActionDispatch::IntegrationTest
       post admin_nps_reveal_path(comment)
       assert_response :not_found
     end
-    assert_equal 0, StaffAccessLog.count, "a refused request logs nothing"
+    assert_equal 0, AdminAuditEvent.count, "a refused request logs nothing"
   end
 
   test "with the flag off even an admin gets a 404, and the dashboard shows no link" do
@@ -61,7 +61,7 @@ class AdminNpsTest < ActionDispatch::IntegrationTest
       get admin_root_path
       assert_select "a[href=?]", "/admin/nps", count: 0
     end
-    assert_equal 0, StaffAccessLog.count
+    assert_equal 0, AdminAuditEvent.count
   end
 
   test "an admin sees the dashboard link while the flag is on" do
@@ -112,7 +112,7 @@ class AdminNpsTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, @teen.hca_uid
     assert_not_includes response.body, @teen.slack_id.to_s if @teen.slack_id.present?
     assert_select "form[action=?] button", admin_nps_reveal_path(NpsResponse.find_by(comment: "newer words")), text: "Show who wrote this"
-    assert_equal 0, StaffAccessLog.count, "just looking at the page logs nothing"
+    assert_equal 0, AdminAuditEvent.count, "just looking at the page logs nothing"
   end
 
   # --- show who wrote this ---
@@ -121,7 +121,7 @@ class AdminNpsTest < ActionDispatch::IntegrationTest
     wanted = answer(@teen, 2, "I am confused about coins")
     other = answer(@admin, 8, "a different comment", at: 1.hour.ago, window: Date.current - 3)
     sign_in_admin
-    assert_difference -> { StaffAccessLog.count }, 1 do
+    assert_difference -> { AdminAuditEvent.count }, 1 do
       post admin_nps_reveal_path(wanted)
     end
     assert_response :success
@@ -132,7 +132,7 @@ class AdminNpsTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "a different comment"
     assert_not_includes response.body, @teen.email.to_s if @teen.email.present?
 
-    log = StaffAccessLog.sole
+    log = AdminAuditEvent.sole
     assert_equal [ @admin.id, "nps_comment_author_viewed", "NpsResponse", wanted.id ], [ log.actor_id, log.action, log.subject_type, log.subject_id ]
     dumped = log.attributes.values.join(" ")
     assert_no_match(/Zed|confused|coins/, dumped)
@@ -143,7 +143,7 @@ class AdminNpsTest < ActionDispatch::IntegrationTest
     wanted = answer(@teen, 2, "words")
     sign_in_admin
     2.times { post admin_nps_reveal_path(wanted) }
-    assert_equal 2, StaffAccessLog.where(subject_id: wanted.id).count
+    assert_equal 2, AdminAuditEvent.where(subject_id: wanted.id).count
   end
 
   test "revealing a missing row or one without a comment is a 404 and logs nothing" do
@@ -152,7 +152,7 @@ class AdminNpsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     post admin_nps_reveal_path(answer(@teen, 5))
     assert_response :not_found
-    assert_equal 0, StaffAccessLog.count
+    assert_equal 0, AdminAuditEvent.count
   end
 
   test "a person with no display name shows a plain note" do
@@ -170,7 +170,7 @@ class AdminNpsTest < ActionDispatch::IntegrationTest
     begin
       post admin_nps_reveal_path(wanted)
       assert_response :unprocessable_content
-      assert_equal 0, StaffAccessLog.count
+      assert_equal 0, AdminAuditEvent.count
     ensure
       ActionController::Base.allow_forgery_protection = original
     end

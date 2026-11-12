@@ -39,7 +39,7 @@ class FlagsOffTest < ActionDispatch::IntegrationTest
 
   # Tables only a flagged feature reads or writes. A flags-off page must never query one (so costs nothing and exposes nothing).
   FLAGGED_TABLES = %w[merch_claims plinko_drops plinko_players quests quest_completions teams team_memberships team_payouts team_cooldowns
-                      welcome_back_windows ship_images nps_responses staff_access_logs].freeze
+                      welcome_back_windows ship_images nps_responses].freeze
 
   setup do
     OmniAuth.config.test_mode = true

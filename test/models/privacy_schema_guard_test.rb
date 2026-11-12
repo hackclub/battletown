@@ -19,7 +19,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
   # of the row is reached through a cascading key), and the key is nulled so the staff member is forgotten.
   NULLIFY_ALLOWED = {
     "ships.reviewer_id" => "the staff member who reviewed a ship; the ship belongs to the teen",
-    "staff_access_logs.actor_id" => "the staff member who looked at something sensitive; the log holds no one else's identity"
+    "admin_audit_events.actor_id" => "the staff member who did it; the trail holds ids and amounts, never another person's identity"
   }.freeze
 
   # Tables that are not about a person: the Rails bookkeeping tables and the token ids of this very feature.

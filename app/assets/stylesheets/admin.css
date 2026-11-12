@@ -86,3 +86,8 @@
 .admin-form--inline .field { flex: 1 1 12rem; }
 .admin-form--inline .btn { flex: none; }
 .admin-dl a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
+
+/* Previous / next under a long list. The disabled end is plain muted text in the same size, not a dead link. */
+.admin-pager { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.admin-pager__where { font-weight: 700; }
+.admin-pager__off { background: transparent; border-color: var(--color-border); color: var(--color-text-muted); cursor: default; }

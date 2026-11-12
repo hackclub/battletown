@@ -1,0 +1,17 @@
+<%# Previous / next links that keep the current filters. Needs `pager` (AdminPager). Only the path and query of this request are used. %>
+<% if pager.pages > 1 %>
+  <nav class="admin-pager" aria-label="Pages">
+    <% base = request.query_parameters.except("page") %>
+    <% if pager.first? %>
+      <span class="btn btn--sm admin-pager__off" aria-disabled="true">Previous</span>
+    <% else %>
+      <%= link_to "Previous", "#{request.path}?#{base.merge('page' => pager.page - 1).to_query}", class: "btn btn--sm", rel: "prev" %>
+    <% end %>
+    <span class="admin-pager__where">Page <%= pager.page %> of <%= pager.pages %></span>
+    <% if pager.last? %>
+      <span class="btn btn--sm admin-pager__off" aria-disabled="true">Next</span>
+    <% else %>
+      <%= link_to "Next", "#{request.path}?#{base.merge('page' => pager.page + 1).to_query}", class: "btn btn--sm", rel: "next" %>
+    <% end %>
+  </nav>
+<% end %>

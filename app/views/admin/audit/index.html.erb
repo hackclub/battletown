@@ -1,0 +1,69 @@
+<% content_for :title, "Admin audit trail" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>Audit trail</h1>
+      <p class="admin-dashboard__note">What staff changed or opened, newest first. Each row holds who, what, which record and a few ids, amounts and the short reason that was typed: no names, emails or messages. Times are UTC. Rows cannot be changed or removed.</p>
+    </header>
+
+    <%= form_with url: admin_audit_path, method: :get, class: "card card--tight admin-form admin-form--inline" do %>
+      <div class="field">
+        <%= label_tag :event, "What happened" %>
+        <%= select_tag :event, options_for_select([ [ "Anything", "" ] ] + AdminAudit::ACTIONS.map { |name| [ name.tr("_", " ").capitalize, name ] }, @action), class: "select" %>
+      </div>
+      <div class="field">
+        <%= label_tag :actor_id, "Staff member" %>
+        <%= select_tag :actor_id, options_for_select([ [ "Anyone", "" ] ] + @staff.map { |staff| [ staff.display_name.presence || "Staff ##{staff.id}", staff.id ] }, @actor_id), class: "select" %>
+      </div>
+      <div class="field">
+        <%= label_tag :from, "From (UTC date)" %>
+        <%= date_field_tag :from, @from&.to_date, class: "input" %>
+      </div>
+      <div class="field">
+        <%= label_tag :to, "To (UTC date)" %>
+        <%= date_field_tag :to, @to&.to_date, class: "input" %>
+      </div>
+      <%= button_tag "Filter", type: "submit", name: nil, class: "btn btn--primary" %>
+    <% end %>
+
+    <p class="admin-count"><strong id="audit-count"><%= number_with_delimiter(@pager.total) %></strong> <%= @pager.total == 1 ? "event" : "events" %>. Showing <%= @pager.range_text %>.</p>
+
+    <% if @events.empty? %>
+      <p class="alert">No events match.</p>
+    <% else %>
+      <%= table_region("Audit events") do %>
+        <table class="table table--zebra admin-table">
+          <caption>Audit events</caption>
+          <thead>
+            <tr>
+              <th scope="col">When (UTC)</th>
+              <th scope="col">Who</th>
+              <th scope="col">What</th>
+              <th scope="col">Record</th>
+              <th scope="col">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @events.each do |event| %>
+              <tr id="event-<%= event.id %>">
+                <td><%= event.created_at.utc.strftime("%-d %b %Y %H:%M:%S") %></td>
+                <td><%= event.actor ? (event.actor.display_name.presence || "Staff ##{event.actor_id}") : "Former staff member" %></td>
+                <th scope="row"><%= event.action.tr("_", " ").capitalize %></th>
+                <td>
+                  <% if event.subject_type == "User" && @linkable_users.include?(event.subject_id) %>
+                    <%= link_to "User ##{event.subject_id}", "/admin/users/#{event.subject_id}" %>
+                  <% else %>
+                    <%= event.subject_type %> #<%= event.subject_id %>
+                  <% end %>
+                </td>
+                <td><%= event.metadata.map { |key, value| "#{key.tr('_', ' ')}: #{value.nil? ? 'none' : value}" }.join(", ") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+      <%= render "admin/shared/pager", pager: @pager %>
+    <% end %>
+  <% end %>
+</div>

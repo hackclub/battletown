@@ -130,6 +130,8 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#show"
     resource :metrics, only: :show
+    # The audit trail (read-only) and user management. Writes live under users/:user_id and are throttled (rack_attack.rb).
+    get "audit", to: "audit#index", as: :audit
     constraints(Features::Constraint.new(:plinko)) { resource :plinko, only: :show, controller: "plinko" }
     # Email row counts per week (flag `email`: the route does not exist while it is off).
     constraints Features::Constraint.new(:email) do

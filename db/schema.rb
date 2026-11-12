@@ -10,9 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_130803) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_130804) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "admin_audit_events", force: :cascade do |t|
+    t.bigint "actor_id"
+    t.string "action", limit: 60, null: false
+    t.string "subject_type", limit: 60, null: false
+    t.bigint "subject_id", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.index ["action", "created_at"], name: "index_admin_audit_events_on_action_and_created_at"
+    t.index ["actor_id", "created_at"], name: "index_admin_audit_events_on_actor_id_and_created_at"
+    t.index ["actor_id"], name: "index_admin_audit_events_on_actor_id"
+    t.index ["created_at"], name: "index_admin_audit_events_on_created_at"
+    t.index ["subject_type", "subject_id"], name: "index_admin_audit_events_on_subject_type_and_subject_id"
+    t.check_constraint "jsonb_typeof(metadata) = 'object'::text", name: "admin_audit_events_metadata_object_check"
+  end
 
   create_table "bosses", force: :cascade do |t|
     t.string "name", limit: 60, null: false
@@ -432,17 +447,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130803) do
     t.check_constraint "window_end_date >= window_start_date", name: "ships_window_dates_check"
   end
 
-  create_table "staff_access_logs", force: :cascade do |t|
-    t.bigint "actor_id"
-    t.string "action", limit: 60, null: false
-    t.string "subject_type", limit: 60, null: false
-    t.bigint "subject_id", null: false
-    t.datetime "created_at", null: false
-    t.index ["actor_id"], name: "index_staff_access_logs_on_actor_id"
-    t.index ["created_at"], name: "index_staff_access_logs_on_created_at"
-    t.index ["subject_type", "subject_id"], name: "index_staff_access_logs_on_subject_type_and_subject_id"
-  end
-
   create_table "team_cooldowns", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.datetime "left_at", null: false
@@ -528,6 +532,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130803) do
     t.check_constraint "idle_days >= 1", name: "welcome_back_windows_idle_days_check"
   end
 
+  add_foreign_key "admin_audit_events", "users", column: "actor_id", on_delete: :nullify
   add_foreign_key "coin_transactions", "users", on_delete: :cascade
   add_foreign_key "daily_results", "users", on_delete: :cascade
   add_foreign_key "hackatime_connections", "users", on_delete: :cascade
@@ -559,6 +564,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130803) do
   add_foreign_key "team_payouts", "ships", on_delete: :cascade
   add_foreign_key "team_payouts", "teams", on_delete: :nullify
   add_foreign_key "team_payouts", "users", on_delete: :cascade
-  add_foreign_key "staff_access_logs", "users", column: "actor_id", on_delete: :nullify
   add_foreign_key "welcome_back_windows", "users", on_delete: :cascade
 end
