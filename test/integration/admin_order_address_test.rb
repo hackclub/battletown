@@ -62,6 +62,7 @@ class AdminOrderAddressTest < ActionDispatch::IntegrationTest
     end
     assert_response :success
     assert_equal "no-store", response.headers["Cache-Control"]
+    assert_select "meta[name=turbo-cache-control][content=no-cache]", 1, "Turbo must not keep a snapshot of the revealed address"
     assert_select "#revealed-address", /Pat Example/
     assert_select "#revealed-address", /#{STREET}/
     assert_select "#revealed-address", /Flat 2/

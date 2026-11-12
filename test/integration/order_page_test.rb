@@ -47,6 +47,15 @@ class OrderPageTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{orders_path}']", text: "Back to your orders"
   end
 
+  test "the page that shows the buyer's address keeps itself out of Turbo's back/forward snapshots" do
+    order = order_for(address: true)
+    sign_in_as @buyer
+    get order_path(order)
+    assert_response :success
+    assert_equal "no-store", response.headers["Cache-Control"]
+    assert_select "meta[name=turbo-cache-control][content=no-cache]", 1
+  end
+
   test "each status has a word, a plain explanation and a mark class, and only requested can be cancelled" do
     sign_in_as @buyer
     expected = {

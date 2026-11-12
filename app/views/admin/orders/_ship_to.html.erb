@@ -5,6 +5,8 @@
 <section class="card admin-panel" aria-labelledby="order-address" id="order-address-panel">
   <h2 id="order-address" class="card__title">Ship to</h2>
   <% if revealed %>
+    <%# Turbo ignores Cache-Control: no-store for its own back/forward snapshots: the revealed address must not come back from there without a new audited reveal. -%>
+    <% content_for :head do %><meta name="turbo-cache-control" content="no-cache"><% end %>
     <p class="alert alert--warning" role="status">Full address, shown on this page only. Opening it was recorded in the audit trail. Don't copy it into Slack, notes or a spreadsheet.</p>
     <address class="admin-address" id="revealed-address">
       <% revealed.lines.each do |line| %><%= line %><br><% end %>

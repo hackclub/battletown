@@ -2,6 +2,8 @@
 <%# The buyer's own order page only (current_user.orders), sent with Cache-Control: no-store. The full address, with the phone masked,
     is shown to its owner; staff see only the country and city until they reveal it (Admin::OrdersController#reveal_address). -%>
 <% address = order.address %>
+<%# Turbo ignores Cache-Control: no-store for its own back/forward snapshots, so a page that shows an address opts out of them. -%>
+<% content_for :head do %><meta name="turbo-cache-control" content="no-cache"><% end %>
 <section class="card shop-ship-to stack" aria-labelledby="ship-to-title">
   <h2 id="ship-to-title" class="card__title">Ship to</h2>
   <% if address %>
