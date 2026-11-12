@@ -8,11 +8,13 @@ module Teams
   # Under the earner's row lock: the ship must be approved; the earner must be in a crew now (leaving before the payout means
   # nothing to pay, the rule is "in for the whole date"); the crewmates' counted seconds for the ship's dates are read with
   # Hours::Totals; only dates that are SETTLED for the earner (the same grace rule the streak bonus uses, so a crewmate's late
-  # Hackatime sync has landed) can match. Staff approval is not affected by anything here: a failure is logged by class name
-  # only and `team:pay_pending` tries again.
+  # Hackatime sync has landed) can match. A ship approved while one of its counted dates is still inside that grace period
+  # (the day of approval, or the morning after) WAITS: no marker and no coins yet, status :waiting, and `team:pay_pending`
+  # pays the whole ship once every date has settled. (Paying the settled dates now and writing the marker would lose the
+  # newest day's bonus for good.) Staff approval is not affected by anything here: a failure is logged by class name only and
+  # `team:pay_pending` tries again.
   #
-  # Returns a symbol: :disabled, :not_approved, :no_crew, :already_paid or :paid (with `last_result`-style details in the
-  # return of `call` as a Result when paid).
+  # Returns a Result whose status is :disabled, :not_approved, :no_crew, :already_paid, :waiting or :paid.
   module PayShip
     Result = Data.define(:status, :coins, :matched_days) do
       def paid? = status == :paid
@@ -31,6 +33,7 @@ module Teams
 
         membership = TeamMembership.find_by(user_id: user.id)
         next skipped(:no_crew) unless membership
+        next skipped(:waiting) if unsettled_dates(fresh, user, now).any?
 
         outcome = bonus_for(fresh, user, membership, now, game_config, config)
         coins = outcome.bonus_coins
@@ -43,6 +46,13 @@ module Teams
     end
 
     def key(ship) = "team_bonus:ship:#{ship.id}"
+
+    # The ship's counted dates whose streak day is not final yet for the earner (still inside the settling grace period).
+    def unsettled_dates(ship, user, now)
+      zone = Hours::Days.zone(user.time_zone)
+      first_counted = Hours::Days.first_counted_date(user)
+      ship.daily_seconds_by_date.keys.select { |date| date >= first_counted && !Game::Days.settled?(date, zone, now) }
+    end
 
     def bonus_for(ship, user, membership, now, game_config, config)
       by_date = ship.daily_seconds_by_date
@@ -61,6 +71,6 @@ module Teams
     end
 
     def skipped(status) = Result.new(status: status, coins: 0, matched_days: 0)
-    private_class_method :bonus_for, :skipped
+    private_class_method :bonus_for, :unsettled_dates, :skipped
   end
 end
