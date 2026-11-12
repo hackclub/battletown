@@ -2,124 +2,175 @@
   <meta name="description" content="Battletown is a Hack Club You Ship We Ship program. Build projects, take down a weekly boss with the community and earn prizes.">
 <% end %>
 
-<div class="landing">
-  <%# Hero (Figma 136:75 / 134:1151). The stage is a 1440x1024 composition that scales with the viewport on wide
-      screens and restacks on narrow ones; the swoosh image is the pink-edged top of the cream panel below. -%>
-  <section class="landing-hero" aria-labelledby="landing-title">
-    <div class="landing-hero__stage">
+<%# The page below the hero is one map you scroll down (Armand's design, 2026-11-11; see docs/FIGMA_GAPS.md). The scenery
+    props are placed by classes in landing.css, because the CSP forbids style attributes. The landing_map controller draws
+    the path between the places. -%>
+<div class="landing" data-controller="landing-map">
+  <%= render "landing/sprite" %>
+
+  <section class="hero" aria-labelledby="landing-title">
+    <div class="hero__stage">
       <%= image_tag "landing/hero-art.webp",
             alt: "Painted scene of a colourful town. A large armoured warrior in a cat-ear helmet holds a scythe, and a small caped fighter in front of them holds a sword.",
-            class: "landing-hero__art", width: 1024, height: 659, fetchpriority: "high", decoding: "async" %>
-      <%= image_tag "landing/hero-wash.svg", alt: "", class: "landing-hero__wash", width: 1440, height: 1024 %>
+            class: "hero__art", width: 1920, height: 1236, fetchpriority: "high", decoding: "async",
+            srcset: hero_art_srcset, sizes: "100vw" %>
+      <%= image_tag "landing/hero-wash.svg", alt: "", class: "hero__wash", width: 1440, height: 1024 %>
 
       <% if @referral %>
         <p class="landing-referral" role="status">Welcome from <%= @referral.name %>! Join the fight.</p>
       <% end %>
 
-      <div class="landing-hero__content">
-        <h1 id="landing-title" class="landing-hero__logo">
-          <%= image_tag "landing/logo.svg", alt: "Battletown", width: 579, height: 329 %>
-        </h1>
-        <p class="landing-hero__tagline">Build projects, <span class="landing-hero__tagline-accent">get gear</span></p>
-        <div class="landing-hero__cta">
-          <%= render "landing/cta" %>
-        </div>
+      <div class="hero__content">
+        <h1 id="landing-title" class="hero__logo"><%= image_tag "landing/logo.svg", alt: "Battletown", width: 579, height: 329 %></h1>
+        <p class="hero__tagline">Build projects, <span>get gear</span></p>
+        <%= render "landing/cta" %>
       </div>
     </div>
-    <%= image_tag "landing/hero-swoosh.svg", alt: "", class: "landing-hero__swoosh", width: 1440, height: 350 %>
+    <%= image_tag "landing/hero-swoosh-sky.svg", alt: "", class: "hero__swoosh", width: 1440, height: 350 %>
   </section>
 
-  <div class="landing-panel">
-    <section class="container landing-intro" aria-label="About Battletown">
-      <p class="landing-eyebrow">A Hack Club You Ship We Ship program</p>
-      <p class="landing-intro__lead">Code with the community, take down a weekly boss, and earn prizes for the time you put in.</p>
-      <p class="landing-intro__sticker"><span aria-hidden="true">🎁</span> Free sticker when you sign up</p>
-    </section>
-
-    <section class="container landing-section" aria-labelledby="how-title">
-      <h2 id="how-title">How it works</h2>
-      <ol class="landing-steps">
-        <li class="landing-step">
-          <h3>Pick your prize</h3>
-          <p>Choose something to work toward. You can see it the whole way through.</p>
+  <section class="how" aria-labelledby="how-title">
+    <div class="how__inner">
+      <h2 id="how-title" class="how__title">How it works</h2>
+      <ol class="signpost">
+        <li class="signpost__board signpost__board--1">
+          <div class="signpost__text"><span class="signpost__num" aria-hidden="true">1</span><h3>build</h3><p>build your project, and count your hours</p></div>
         </li>
-        <li class="landing-step">
-          <h3>Code with Hackatime</h3>
-          <p>Build the project you want to make. Your coding time is tracked automatically.</p>
+        <li class="signpost__board signpost__board--2">
+          <div class="signpost__text"><span class="signpost__num" aria-hidden="true">2</span><h3>Ship</h3><p>ship your project to deal damage to the boss, and get coins</p></div>
         </li>
-        <li class="landing-step">
-          <h3>Take down the boss</h3>
-          <p>Every hour you code chips away at the weekly boss alongside everyone else. Keep a daily streak for bonuses.</p>
-        </li>
-        <li class="landing-step">
-          <h3>Ship it</h3>
-          <p>Submit your project and claim your prize.</p>
+        <li class="signpost__board signpost__board--3">
+          <div class="signpost__text"><span class="signpost__num" aria-hidden="true">3</span><h3>Get your prize</h3><p>When the boss is defeated, collect your winnings, and claim a prize from the shop</p></div>
         </li>
       </ol>
-    </section>
+    </div>
+    <svg class="prop d prop--how-1 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+    <svg class="prop d prop--how-2 k-house" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+    <svg class="prop d prop--how-3 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+    <svg class="prop d prop--how-4 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+    <svg class="prop d prop--how-5 k-tower" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+    <svg class="prop d prop--how-6 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+    <svg class="prop m prop--how-7 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+    <svg class="prop m prop--how-8 k-bush" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+  </section>
 
-    <section class="container" aria-labelledby="boss-title">
-      <div class="landing-boss">
-        <%= image_tag "landing/hero-art.webp", alt: "", class: "landing-boss__art", width: 1024, height: 659, loading: "lazy", decoding: "async" %>
-        <div class="landing-boss__inner">
-          <h2 id="boss-title">Fight together</h2>
-          <p>Each boss has a health bar measured in hours of real coding. Everyone who is locked in chips away at it, and every hour you put in counts toward your own prize too.</p>
-        </div>
+  <section class="blk fight" aria-labelledby="boss-title">
+    <svg class="edge edge--a" viewBox="0 0 1440 240" preserveAspectRatio="none" aria-hidden="true">
+      <path class="edge__fill" d="M-20,70 C380,36 900,96 1460,196 L1460,241 L-20,241 Z"/>
+    </svg>
+    <div class="slab"><div class="in">
+      <svg class="prop m prop--fight-1 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop m prop--fight-2 k-house" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+      <svg class="prop m prop--fight-3 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-4 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-5 k-house" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+      <svg class="prop d prop--fight-6 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-7 k-bush" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-8 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-9 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-10 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-11 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-12 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-13 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--fight-14 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <div class="fight__text">
+        <h2 id="boss-title">Fight together</h2>
+        <p>Each boss has a health bar measured in hours of coding. Everyone who participates contributes hours to defeat the boss</p>
       </div>
-    </section>
+      <div class="arena">
+        <svg class="prop d prop--arena-1 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+        <svg class="prop d prop--arena-2 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+        <svg class="prop d prop--arena-3 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+        <svg class="prop d prop--arena-4 k-bush" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+        <svg class="fight__shadow" viewBox="0 0 1000 606" aria-hidden="true"><ellipse cx="520" cy="345" rx="350" ry="105"/></svg>
+        <%# The numbers are Armand's example from his mockup (2026-11-11), not live data. -%>
+        <p class="fight__health"><span>150/300 hours</span></p>
+        <%= image_tag "landing/boss.webp", alt: "", class: "fight__boss", width: 1500, height: 1453 %>
+      </div>
+    </div></div>
+  </section>
 
-    <section id="prizes" class="container landing-section" aria-labelledby="prizes-title">
-      <h2 id="prizes-title">Pick a prize to work toward</h2>
-      <p class="landing-note">The prize lineup is still being finalised. Prices are in hours of coding.</p>
-      <ul class="landing-prizes">
-        <% @prizes.each do |prize| %>
-          <li class="landing-prize">
-            <span class="landing-prize__emoji" aria-hidden="true"><%= prize.emoji %></span>
-            <h3 class="landing-prize__name"><%= prize.name %></h3>
-            <p class="landing-prize__description"><%= prize.description %></p>
-            <p class="landing-prize__price"><%= pluralize(prize.hours, "hour") %></p>
-          </li>
+  <section id="prizes" class="blk prizes" aria-labelledby="prizes-title">
+    <svg class="edge edge--hp" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+      <path class="edge__fill" d="M-30,110 C240,230 560,250 860,215 C1100,186 1300,150 1470,90 L1470,321 L-30,321 Z"/>
+    </svg>
+    <div class="slab"><div class="in">
+      <svg class="prop d prop--prizes-1 k-tower" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+      <svg class="prop d prop--prizes-2 k-house" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+      <svg class="prop d prop--prizes-3 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--prizes-4 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop prop--prizes-5 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--prizes-6 k-house" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+      <svg class="prop d prop--prizes-7 k-bush" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--prizes-8 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <div class="wrap">
+        <h2 id="prizes-title">Pick a prize<br>to work toward</h2>
+      </div>
+      <%# TODO: replace the stand-in prizes (LandingHelper::LANDING_PRIZES) with the real lineup, and add real social proof
+          (who's locked in, shout-outs) once the program has launched. No made-up numbers. -%>
+      <ul class="shelf">
+        <% LandingHelper::LANDING_PRIZES.each do |prize| %>
+          <li class="prize"><%= image_tag prize[:image], alt: "" %><div class="prize__label"><h3><%= prize[:name] %></h3><span class="prize__hours"><%= prize[:hours] %></span></div></li>
         <% end %>
       </ul>
-    </section>
+    </div></div>
+  </section>
 
-    <%# TODO: replace with real social proof (who's locked in, shout-outs) once the program has launched. No made-up numbers. %>
-    <section class="container landing-section" aria-labelledby="proof-title">
-      <h2 id="proof-title">Who's locked in</h2>
-      <div class="landing-proof">
-        <p>Teens from across Hack Club will show up here once Battletown launches.</p>
+  <section class="blk faq" aria-labelledby="faq-title">
+    <svg class="edge edge--c" viewBox="0 0 1440 200" preserveAspectRatio="none" aria-hidden="true">
+      <path class="edge__fill" d="M-20,150 C300,172 600,46 900,62 C1150,76 1300,150 1460,118 L1460,201 L-20,201 Z"/>
+      <path class="bank__face" d="M-20,150 C300,172 600,46 900,62 C1150,76 1300,150 1460,118 L1460,144 C1300,176 1150,102 900,88 C600,72 300,198 -20,176 Z"/>
+      <path class="bank__foam" d="M-20,180 C300,202 600,76 900,92 C1150,106 1300,180 1460,148"/>
+    </svg>
+    <div class="slab"><div class="in">
+      <div class="wrap faq__grid">
+        <div class="faq__head"><h2 id="faq-title">FAQ</h2></div>
+        <div class="faq__list">
+          <span class="hop hop--1" aria-hidden="true"></span><span class="hop hop--2" aria-hidden="true"></span><span class="hop hop--3" aria-hidden="true"></span><span class="hop hop--4" aria-hidden="true"></span><span class="hop hop--5" aria-hidden="true"></span>
+          <details open>
+            <summary>Who can join?</summary>
+            <p>Any teen. You sign in with your Hack Club account, and you'll need to verify your identity before you ship a project.</p>
+          </details>
+          <details>
+            <summary>What counts as coding time?</summary>
+            <p>Time tracked with Hackatime while you build your project. Please don't inflate your hours. Reading docs or watching videos doesn't count until you build something with what you learned, and art is usually capped at about a third of your project time. Time can't be counted in more than one You Ship We Ship program, and time logged before the program started doesn't count.</p>
+          </details>
+          <details>
+            <summary>How do I earn prizes?</summary>
+            <p>Your hours go toward the prize you picked and toward the weekly boss. Keeping a daily streak earns you bonuses.</p>
+          </details>
+          <details>
+            <summary>Is it free?</summary>
+            <p>Yes. Battletown is free for teens, run by Hack Club.</p>
+          </details>
+          <details>
+            <summary>How long does it run?</summary>
+            <p>It launches this week and runs for at least a month, with the option to extend it if it goes well.</p>
+          </details>
+        </div>
       </div>
-    </section>
+    </div></div>
+  </section>
 
-    <section class="container landing-section" aria-labelledby="faq-title">
-      <h2 id="faq-title">FAQ</h2>
-      <div class="landing-faq">
-        <details>
-          <summary>Who can join?</summary>
-          <p>Any teen. You sign in with your Hack Club account, and you'll need to verify your identity before you ship a project.</p>
-        </details>
-        <details>
-          <summary>What counts as coding time?</summary>
-          <p>Time tracked with Hackatime while you build your project. Please don't inflate your hours. Reading docs or watching videos doesn't count until you build something with what you learned, and art is usually capped at about a third of your project time. Time can't be counted in more than one You Ship We Ship program, and time logged before the program started doesn't count.</p>
-        </details>
-        <details>
-          <summary>How do I earn prizes?</summary>
-          <p>Your hours go toward the prize you picked and toward the weekly boss. Keeping a daily streak earns you bonuses.</p>
-        </details>
-        <details>
-          <summary>Is it free?</summary>
-          <p>Yes. Battletown is free for teens, run by Hack Club.</p>
-        </details>
-        <details>
-          <summary>How long does it run?</summary>
-          <p>It launches this week and runs for at least a month, with the option to extend it if it goes well.</p>
-        </details>
+  <section id="join" class="blk final" aria-labelledby="final-title">
+    <svg class="edge edge--d" viewBox="0 0 1440 180" preserveAspectRatio="none" aria-hidden="true">
+      <path class="bank__foam" d="M-20,50 C250,142 600,142 900,84 C1100,44 1300,36 1460,76"/>
+      <path class="edge__fill" d="M-20,58 C250,150 600,150 900,92 C1100,52 1300,44 1460,84 L1460,181 L-20,181 Z"/>
+    </svg>
+    <div class="slab"><div class="in">
+      <svg class="prop m prop--final-1 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--final-2 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--final-3 k-bush" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--final-4 k-house" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+      <svg class="prop d prop--final-5 k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop d prop--final-6 k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <div class="wrap">
+        <h2 id="final-title">Ready to join<br>the fight?</h2>
+        <%= render "landing/cta", extra_class: "cta--big" %>
       </div>
-    </section>
+      <%= image_tag "landing/orpheus.webp", alt: "", class: "final__orpheus", width: 1300, height: 1093 %>
+    </div></div>
+  </section>
 
-    <section class="container landing-final" aria-labelledby="final-title">
-      <h2 id="final-title">Ready to lock in?</h2>
-      <%= render "landing/cta" %>
-    </section>
-  </div>
+  <svg class="trail" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="trail-land"><polygon/></clipPath><clipPath id="trail-far-bank"><polygon/></clipPath></defs><path clip-path="url(#trail-land)"/><path clip-path="url(#trail-far-bank)"/></svg>
 </div>

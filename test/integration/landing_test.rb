@@ -24,14 +24,14 @@ class LandingTest < ActionDispatch::IntegrationTest
     get "/"
     assert_response :success
     assert_select "h1 img[alt='Battletown']", 1
-    assert_select ".landing-hero__tagline", /Build projects,\s+get gear/
+    assert_select ".hero__tagline", /Build projects,\s+get gear/
   end
 
   test "the sign up button posts to Hack Club Auth with a CSRF token and without Turbo" do
     original = ActionController::Base.allow_forgery_protection
     ActionController::Base.allow_forgery_protection = true
     get "/"
-    assert_select ".landing-hero form[action='/auth/hack_club'][method='post'][data-turbo='false']", 1 do
+    assert_select ".hero form[action='/auth/hack_club'][method='post'][data-turbo='false']", 1 do
       assert_select "input[name='authenticity_token'][type='hidden']", 1 do |tokens|
         assert tokens.first["value"].present?
       end
@@ -64,10 +64,10 @@ class LandingTest < ActionDispatch::IntegrationTest
     images = css_select("img")
     assert_operator images.size, :>=, 4
     images.each { |img| assert img.key?("alt"), "img #{img['src']} has no alt attribute" }
-    assert_equal "Battletown", css_select(".landing-hero__logo img").first["alt"]
-    assert css_select(".landing-hero__art").first["alt"].present?, "the hero painting should have a description"
-    assert_equal "", css_select(".landing-hero__swoosh").first["alt"]
-    assert_equal "", css_select(".landing-hero__wash").first["alt"]
+    assert_equal "Battletown", css_select(".hero__logo img").first["alt"]
+    assert css_select(".hero__art").first["alt"].present?, "the hero painting should have a description"
+    assert_equal "", css_select(".hero__swoosh").first["alt"]
+    assert_equal "", css_select(".hero__wash").first["alt"]
   end
 
   test "landing assets resolve to same-origin digested files" do
@@ -78,16 +78,35 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select "link[rel=stylesheet][href^='/assets/fonts-']", 1
   end
 
-  test "lists every prize priced in hours" do
+  test "shows the nine landing prize cards with their hours and names" do
     get "/"
-    assert_select ".landing-prize", Prize.all.size
-    assert_select ".landing-prize__price", text: "2 hours"
-    assert_select ".landing-prize__name", text: "Battletown T-shirt"
+    cards = LandingHelper::LANDING_PRIZES
+    assert_equal 9, cards.size
+    assert_select ".prize", 9
+    cards.each_with_index do |card, i|
+      assert_select ".prize:nth-child(#{i + 1}) h3", text: card[:name]
+      assert_select ".prize:nth-child(#{i + 1}) .prize__hours", text: card[:hours]
+    end
+    assert_select ".prize__hours", text: "5 hours"
+    assert_select ".prize h3", text: "Aula F75"
   end
 
   test "pages carry no inline style attributes" do
     get "/"
     assert_select "[style]", 0
+  end
+
+  test "the only inline scripts are the importmap and the page has no script of its own" do
+    get "/"
+    inline = css_select("script").reject { |script| script["src"].present? }
+    assert inline.all? { |script| script["type"] == "importmap" || script["type"] == "module" }, "unexpected inline script"
+    assert_select "script[type=importmap]", 1
+    assert_includes css_select("script[type=importmap]").first.text, "controllers/landing_map_controller"
+  end
+
+  test "the landing element carries the landing map controller" do
+    get "/"
+    assert_select ".landing[data-controller~='landing-map']", 1
   end
 
   test "shows a referral banner only for a known slug" do
@@ -110,7 +129,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     get "/"
     assert_response :success
     assert_select "a.cta[href='#{onboarding_path}'] .cta__label", text: "Continue setup", minimum: 1
-    assert_select ".landing-hero form[action='/auth/hack_club']", 0
+    assert_select ".hero form[action='/auth/hack_club']", 0
   end
 
   test "onboarded users are redirected to the dashboard" do

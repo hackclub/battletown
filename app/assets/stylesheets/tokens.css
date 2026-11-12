@@ -27,6 +27,11 @@
   --color-sky: #b1dcfe; /* Figma: hero sky radial gradient stop (134:1152) */
   --color-sky-soft: #aacaf9; /* Figma: checkerboard blue (13:10) */
   --color-ink-brown: #423624; /* Figma: boss progress marker on the dashboard concept (1:264) */
+  /* Signpost on the landing page, from Armand's mockup of 2026-11-11 (not in Figma). Navy on the #ffd000 board is 9.7:1;
+     cream on the #187be0 board is 4.2:1 and on the #ff4797 board 3.1:1, so text on the pink board must stay large (24px or more). */
+  --color-signpost-navy: #10285a; /* text on the yellow board */
+  --color-signpost-pole: #ddd0cc; /* pole fill */
+  --color-signpost-pole-shade: #b9aba7; /* pole right and bottom extrusion */
   --color-cta-edge: #ffeada; /* Figma: cream bottom edge of the chunky CTA (136:65); same value as --color-surface-raised */
 
   /* Staff-only UI (see docs/CONTRACT.md "Staff-only UI"). Green = development-only, orange = admin-only, like Hack Club Bank.
