@@ -26,6 +26,24 @@ class Notifications::ShipRemindersTest < ActiveSupport::TestCase
     assert_equal [ 5 * HOUR, 10 * HOUR ], Ships::Config.current.reminder_seconds
   end
 
+  test "the scan loads owners and links per batch, not once per project" do
+    reads = lambda do
+      tables = Hash.new(0)
+      counter = ->(*, payload) { payload[:sql].scan(/\ASELECT .*? FROM "(users|hackatime_links)"/) { tables[$1] += 1 } }
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { scan }
+      tables
+    end
+    one = reads.call
+    2.times do |index|
+      other = create_user
+      make_project(other, name: "Farm #{index}", hackatime: "farm-#{index}")
+      code(other, D[7], HOUR, hackatime: "farm-#{index}")
+    end
+
+    assert_equal 3, Notifications::ShipReminders.candidates.count
+    assert_equal one, reads.call
+  end
+
   test "below the first threshold nothing is queued" do
     code(@user, D[7], 5 * HOUR - 1)
     result = scan

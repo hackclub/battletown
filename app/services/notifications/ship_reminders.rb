@@ -36,9 +36,10 @@ module Notifications
       Result.new(scanned: scanned, queued: queued)
     end
 
+    # Owners and links are preloaded per batch: Ships::Window and Outbox read both for every project.
     def candidates
       Project.live.joins(:user).merge(User.where.not(onboarded_at: nil).where.not(slack_id: [ nil, "" ]))
-             .where(id: HackatimeLink.select(:project_id))
+             .where(id: HackatimeLink.select(:project_id)).includes(:user, :hackatime_links)
     end
 
     # Queues the reminder for the highest threshold the project's window has reached. True when a new row was made.
