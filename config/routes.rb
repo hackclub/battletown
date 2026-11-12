@@ -18,6 +18,7 @@ Rails.application.routes.draw do
       patch :unarchive
     end
     resources :hackatime_links, only: %i[create destroy]
+    resources :ships, only: %i[new create]
     resources :link_suggestions, only: [] do
       member do
         patch :accept
@@ -34,6 +35,11 @@ Rails.application.routes.draw do
     resources :orders, only: %i[index create] do
       member { patch :cancel }
     end
+  end
+
+  # Ships (signed in and onboarded only): a user sees and changes only their own; others' ids are a 404.
+  resources :ships, only: %i[index show edit update] do
+    member { patch :withdraw }
   end
 
   get "privacy", to: "pages#privacy"
@@ -62,6 +68,12 @@ Rails.application.routes.draw do
       member do
         patch :fulfill
         patch :cancel
+      end
+    end
+    resources :ships, only: %i[index show] do
+      member do
+        patch :approve
+        patch :reject
       end
     end
   end

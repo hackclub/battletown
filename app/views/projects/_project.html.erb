@@ -25,6 +25,7 @@
   </p>
 
   <div class="project__actions">
+    <%= link_to "Ship", new_project_ship_path(project), class: "btn btn--primary" if project.status_active? %>
     <%= link_to "Edit", edit_project_path(project), class: "btn btn--ghost" %>
     <% if project.status_active? && !project.active? %>
       <%= button_to "Make active", activate_project_path(project), method: :patch, class: "btn btn--primary" %>

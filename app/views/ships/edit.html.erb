@@ -1,0 +1,8 @@
+<% content_for :title, "Ship #{@project.name}" %>
+<section class="container projects projects--narrow">
+  <p class="projects-back"><%= link_to "Back to your ships", ships_path %></p>
+  <h1>Ship <%= @project.name %></h1>
+  <p class="projects-lead">This ship is a draft. The hours below are counted again when you submit it.</p>
+  <%= render "ships/form", ship: @ship, project: @project, readiness: @readiness, window: @window, previous_ship: @previous_ship, min_seconds: @min_seconds %>
+  <%= button_to "Discard draft", withdraw_ship_path(@ship), method: :patch, class: "btn btn--ghost" %>
+</section>

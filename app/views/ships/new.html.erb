@@ -1,0 +1,7 @@
+<% content_for :title, "Ship #{@project.name}" %>
+<section class="container projects projects--narrow">
+  <p class="projects-back"><%= link_to "Back to your projects", projects_path %></p>
+  <h1>Ship <%= @project.name %></h1>
+  <p class="projects-lead">Shipping turns the time you've coded into approved hours and coins.</p>
+  <%= render "ships/form", ship: @ship, project: @project, readiness: @readiness, window: @window, previous_ship: @previous_ship, min_seconds: @min_seconds %>
+</section>

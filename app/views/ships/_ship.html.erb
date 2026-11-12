@@ -1,0 +1,22 @@
+<li class="card ship">
+  <div class="ship__head">
+    <h2 class="ship__name"><%= link_to ship.project.name, ship_path(ship) %></h2>
+    <%= ship_status_badge(ship) %>
+  </div>
+  <p class="ship__meta">
+    <%= ship_hours(ship.coded_seconds) %> coded, <%= ship_dates_text(ship.window_start_date, ship.window_end_date) %>
+    <% if ship.submitted_at %>, submitted <%= ship.submitted_at.strftime("%b %-d") %><% end %>
+  </p>
+  <% case ship.status %>
+  <% when "approved" %>
+    <% breakdown = ship.coin_breakdown %>
+    <p class="ship__result"><%= ship_hours(ship.approved_seconds) %> approved: <%= breakdown[:total] %> coins (<%= breakdown[:base] %> + <%= breakdown[:bonus] %> streak bonus)</p>
+  <% when "rejected" %>
+    <p class="ship__result ship__result--rejected">Reviewer note: <%= ship.rejection_reason %></p>
+  <% end %>
+  <div class="ship__actions">
+    <%= link_to "Details", ship_path(ship), class: "btn btn--ghost" %>
+    <% if ship.status_draft? %><%= link_to "Continue draft", edit_ship_path(ship), class: "btn btn--primary" %><% end %>
+    <% if ship.status_rejected? %><%= link_to "Fix and ship again", new_project_ship_path(ship.project, from: ship.id), class: "btn btn--primary" %><% end %>
+  </div>
+</li>

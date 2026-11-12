@@ -5,6 +5,7 @@
 
   <p><%= link_to "Weekly bosses", admin_bosses_path %></p>
   <p><%= link_to "Shop orders", admin_orders_path %> (<%= Order.where(status: "requested").count %> requested)</p>
+  <p><%= link_to "Ship review queue", admin_ships_path %> (<%= @pending_ships %> waiting)</p>
 
   <dl class="admin-stat">
     <div class="admin-stat__item">

@@ -18,7 +18,7 @@ module Dev
       return redirect_to(dev_hours_path, alert: "Pick a date and a whole number of minutes.") unless date && minutes.match?(/\A\d{1,4}\z/)
 
       result = Hours::Credit.call(user: current_user, seconds: minutes.to_i * 60, source: "manual", local_date: date,
-                                  note: "Dev page", created_by: "dev:hours", idempotency_key: "manual:dev:#{SecureRandom.hex(8)}")
+                                  hackatime_project: params[:hackatime_project].to_s.strip.presence, note: "Dev page", created_by: "dev:hours", idempotency_key: "manual:dev:#{SecureRandom.hex(8)}")
       redirect_to dev_hours_path, notice: result.capped? ? "That day is already at the daily cap." : "Added #{result.credited_seconds / 60} minutes."
     rescue Hours::Credit::Rejected => error
       redirect_to dev_hours_path, alert: "Not added: #{error.message}."

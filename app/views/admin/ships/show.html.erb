@@ -1,0 +1,117 @@
+<% content_for :title, "Review ship" %>
+<% ship = @ship %>
+<% config = Ships::Config.current %>
+<%= admin_tool(:div, class: "admin-dashboard container") do %>
+  <h1>Review: <%= ship.project.name %></h1>
+  <p class="admin-dashboard__note"><%= ship.user.display_name.presence || "No name" %> &middot; <%= ship.status_submitted? ? "Waiting for review" : ship.status.humanize %></p>
+
+  <% if @unsettled.any? && ship.status_submitted? %>
+    <div class="admin-warning" role="note">
+      <p class="admin-warning__title">Some streak days are not final yet</p>
+      <p>Bonus coins for <%= @unsettled.map { |date| date.strftime("%b %-d") }.to_sentence %> will not be included if you approve now (those days settle a few hours after midnight). You can approve anyway, or come back later to include them. The ship notes which days were left out.</p>
+    </div>
+  <% end %>
+
+  <div class="admin-grid">
+    <section class="admin-panel" aria-labelledby="ship-who">
+      <h2 id="ship-who">Teen and project</h2>
+      <dl class="admin-dl">
+        <dt>Name</dt><dd><%= ship.user.display_name.presence || "No name" %></dd>
+        <dt>Identity</dt><dd><%= ship.user.verification_status.humanize %><%= " (coins stay locked until verified)" unless ship.user.verification_verified? %></dd>
+        <dt>Project</dt><dd><%= ship.project.name %> (<%= project_kind_info(ship.project.kind)[:name] %>)</dd>
+        <dt>Hackatime</dt><dd><%= @links.any? ? safe_join(@links.map { |name| tag.span(name, class: "chip-name") }, " ") : "None linked now" %></dd>
+        <dt>GitHub</dt><dd><%= project_external_link ship.repo_url.to_s.delete_prefix("https://"), ship.repo_url %></dd>
+        <dt>Demo</dt><dd><%= ship.demo_url.present? ? project_external_link(ship.demo_url.delete_prefix("https://"), ship.demo_url) : "None" %></dd>
+      </dl>
+      <h3>Description</h3>
+      <p class="admin-text"><%= ship.description %></p>
+    </section>
+
+    <section class="admin-panel" aria-labelledby="ship-hours">
+      <h2 id="ship-hours">Hours</h2>
+      <dl class="admin-dl">
+        <dt>Coded</dt><dd><%= ship_hours(ship.coded_seconds) %></dd>
+        <dt>Window (local dates)</dt><dd><%= ship_dates_text(ship.window_start_date, ship.window_end_date) %></dd>
+        <dt>Submitted</dt><dd><%= ship.submitted_at.utc.strftime("%b %-d, %Y %H:%M UTC") %></dd>
+        <% if ship.status_approved? %>
+          <dt>Approved</dt><dd><%= ship_hours(ship.approved_seconds) %> by <%= ship.reviewer&.display_name.presence || "a former reviewer" %></dd>
+          <dt>Credited</dt><dd><%= @breakdown[:base] %> base + <%= @breakdown[:bonus] %> streak bonus = <%= @breakdown[:total] %> coins</dd>
+          <% if ship.payout_note.present? %><dt>Payout note</dt><dd><%= ship.payout_note %></dd><% end %>
+        <% elsif ship.status_rejected? %>
+          <dt>Rejected</dt><dd><%= ship.rejection_reason %></dd>
+        <% end %>
+      </dl>
+      <table class="admin-table">
+        <caption>Coded time by local date</caption>
+        <thead><tr><th scope="col">Date</th><th scope="col" class="admin-table__num">Coded</th></tr></thead>
+        <tbody>
+          <% ship.daily_seconds_by_date.each do |date, seconds| %>
+            <tr><th scope="row"><%= date.strftime("%a %b %-d") %></th><td class="admin-table__num"><%= ship_hours(seconds) %></td></tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <h3>Streak context (read-only)</h3>
+      <% if @streak %>
+        <p>As of <%= @streak.local_date.strftime("%b %-d") %>: <%= @streak.streak_15 %>-day streak, <%= number_with_precision(@streak.bonus_bps / 100.0, precision: 1, strip_insignificant_zeros: true) %>% bonus, freeze <%= @streak.freeze_available ? "available" : "used" %>.</p>
+      <% else %>
+        <p>No settled days yet.</p>
+      <% end %>
+    </section>
+  </div>
+
+  <% if ship.status_submitted? %>
+    <div class="admin-grid">
+      <section class="admin-panel" aria-labelledby="ship-approve">
+        <h2 id="ship-approve">Approve</h2>
+        <%= form_with url: approve_admin_ship_path(ship), method: :patch, class: "admin-form" do |form| %>
+          <p>
+            <%= form.label :approved_hours, "Approved hours (leave empty to approve all #{ship_hours(ship.coded_seconds)})" %>
+            <%= form.number_field :approved_hours, min: config.step_seconds / 3600.0, max: (ship.coded_seconds / 3600.0).floor(2), step: config.step_seconds / 3600.0, placeholder: (ship.coded_seconds / 3600.0).round(2), "aria-describedby": "approve-hint" %>
+            <span id="approve-hint" class="admin-form__hint">Can only be lowered, in steps of <%= format("%g", config.step_seconds / 3600.0) %> hours. Approving credits coins once, however many times it is pressed.</span>
+          </p>
+          <%= form.submit(@unsettled.any? ? "Approve anyway" : "Approve", class: "btn btn--primary") %>
+        <% end %>
+      </section>
+
+      <section class="admin-panel" aria-labelledby="ship-reject">
+        <h2 id="ship-reject">Reject</h2>
+        <%= form_with url: reject_admin_ship_path(ship), method: :patch, class: "admin-form" do |form| %>
+          <p>
+            <%= form.label :reason_preset, "Quick reason" %>
+            <%= form.select :reason_preset, config.rejection_reasons, include_blank: "Pick one (or write your own below)" %>
+          </p>
+          <p>
+            <%= form.label :reason_note, "Your own words (optional if you picked one)" %>
+            <%= form.text_area :reason_note, rows: 3, maxlength: Ship::REASON_MAX, "aria-describedby": "reject-hint" %>
+            <span id="reject-hint" class="admin-form__hint">The teen sees this. Up to <%= Ship::REASON_MAX %> characters in all.</span>
+          </p>
+          <%= form.submit "Reject", class: "btn btn--ghost" %>
+        <% end %>
+      </section>
+    </div>
+  <% end %>
+
+  <% if @previous.any? %>
+    <table class="admin-table">
+      <caption>This teen's other ships</caption>
+      <thead>
+        <tr><th scope="col">Project</th><th scope="col">Status</th><th scope="col" class="admin-table__num">Coded</th><th scope="col" class="admin-table__num">Approved</th><th scope="col">Window</th><th scope="col"><span class="visually-hidden">Open</span></th></tr>
+      </thead>
+      <tbody>
+        <% @previous.each do |other| %>
+          <tr>
+            <th scope="row"><%= other.project.name %></th>
+            <td><%= other.status.humanize %></td>
+            <td class="admin-table__num"><%= ship_hours(other.coded_seconds) %></td>
+            <td class="admin-table__num"><%= other.approved_seconds ? ship_hours(other.approved_seconds) : "-" %></td>
+            <td><%= ship_dates_text(other.window_start_date, other.window_end_date) %></td>
+            <td><%= link_to "Open", admin_ship_path(other), "aria-label": "Open #{other.project.name} ship from #{ship_dates_text(other.window_start_date, other.window_end_date)}" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <p><%= link_to "Back to the queue", admin_ships_path %></p>
+<% end %>

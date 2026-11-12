@@ -40,6 +40,10 @@ class ProjectsController < ApplicationController
   end
 
   def destroy
+    unless @project.deletable?
+      return redirect_to(projects_path, alert: "#{@project.name} has a ship waiting or approved, so it can't be deleted. Archive it instead.", status: :see_other)
+    end
+
     @project.discard!
     redirect_to projects_path, notice: "#{@project.name} deleted.", status: :see_other
   end

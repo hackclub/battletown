@@ -1,0 +1,88 @@
+<%# Locals: ship, project, readiness, window, previous_ship (nil for a first ship), min_seconds %>
+<% config = Game::Config.current %>
+<section class="card ship-window" aria-labelledby="ship-window-heading">
+  <h2 id="ship-window-heading">
+    <% if readiness == :ready || readiness == :too_few %>
+      You've coded <%= ship_hours(window.seconds) %> on this project <%= previous_ship ? "since your last ship" : "so far" %>
+    <% else %>
+      Your hours on this project
+    <% end %>
+  </h2>
+
+  <% case readiness %>
+  <% when :no_link %>
+    <p>To ship <strong><%= project.name %></strong> we need to know which Hackatime project it is. Link one and the time you've logged on it shows up here.</p>
+    <p><%= link_to "Link a Hackatime project", edit_project_path(project), class: "btn btn--primary" %></p>
+  <% when :no_hours %>
+    <p>No coded time on <strong><%= project.name %></strong> <%= previous_ship ? "since your last ship" : "yet" %>. Keep coding, then come back and ship it.</p>
+  <% when :too_few %>
+    <p>That's <%= ship_dates_text(window.start_date, window.end_date) %>. You can ship once you have at least <%= ship_hours(min_seconds) %>, so a little more to go.</p>
+  <% else %>
+    <p><%= ship_dates_text(window.start_date, window.end_date) %>, from the Hackatime projects linked to <strong><%= project.name %></strong>.</p>
+  <% end %>
+
+  <details class="ship-rules">
+    <summary>How does a ship count my time?</summary>
+    <ul>
+      <li>A ship covers the time Hackatime logged on the projects linked to this project since your last ship. A ship that was rejected or withdrawn doesn't count as a ship, so its hours are still yours to ship.</li>
+      <li>A staff member reviews it and approves up to the hours you coded. Approved hours turn into coins.</li>
+      <li>Time you log after you submit goes into your next ship. Whole days count together, so submit when you're done coding for the day.</li>
+      <% if window.seconds > config.deflation_after_seconds %>
+        <li>Hours past <%= config.deflation_after_seconds / 3600 %> in one ship earn <%= ship_deflated_rate(config) %> coins an hour instead of <%= config.coins_per_hour %>, so shipping a bit more often pays better.</li>
+      <% end %>
+    </ul>
+  </details>
+</section>
+
+<% if readiness == :ready || (readiness == :too_few && ship.persisted?) %>
+  <% if readiness == :too_few %>
+    <p class="ship-hint">Your draft is saved. You can submit it once you have at least <%= ship_hours(min_seconds) %>.</p>
+  <% end %>
+  <%= form_with model: ship, scope: :ship, url: (ship.persisted? ? ship_path(ship) : project_ships_path(project)), method: (ship.persisted? ? :patch : :post), class: "projects-form ship-form" do |f| %>
+    <% if ship.errors.any? %>
+      <div class="projects-errors" role="alert">
+        <p>This ship was not sent yet:</p>
+        <ul>
+          <% ship_error_messages(ship).each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="projects-field">
+      <%= f.label :description, "What did you build? (required)" %>
+      <%= f.text_area :description, rows: 5, maxlength: Ship::DESCRIPTION_MAX, required: true, placeholder: "A few sentences: what it does and what you did since your last ship." %>
+      <p class="projects-hint">Up to <%= Ship::DESCRIPTION_MAX %> characters. The reviewer reads this.</p>
+    </div>
+
+    <div class="projects-field">
+      <%= f.label :repo_url, "GitHub link (required)" %>
+      <%= f.url_field :repo_url, maxlength: Ship::URL_MAX, required: true, placeholder: "https://github.com/you/your-repo", autocomplete: "off" %>
+      <p class="projects-hint">The repository's main page. It must be public so the reviewer can open it.</p>
+    </div>
+
+    <div class="projects-field">
+      <%= f.label :demo_url, "Demo link (optional)" %>
+      <%= f.url_field :demo_url, maxlength: Ship::URL_MAX, placeholder: "https://", autocomplete: "off" %>
+      <p class="projects-hint">Where the reviewer can try it. Must start with https://</p>
+    </div>
+
+    <% unless current_user.verification_verified? %>
+      <div class="ship-note" role="note">
+        <p class="ship-note__title">You can ship before you verify.</p>
+        <p>Your coins unlock when you verify your identity with Hack Club. <%= ship_verify_link %> (opens in a new tab) whenever you like; the coins wait for you.</p>
+      </div>
+    <% end %>
+
+    <div class="projects-actions">
+      <% if readiness == :ready %>
+        <%= f.button "Submit ship", name: "ship_action", value: "submit", class: "btn btn--primary btn--lg" %>
+      <% end %>
+      <%= f.button "Save draft", name: "ship_action", value: "draft", formnovalidate: true, class: "btn btn--ghost" %>
+      <%= link_to "Cancel", projects_path, class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+<% else %>
+  <p><%= link_to "Back to your projects", projects_path, class: "btn btn--ghost" %></p>
+<% end %>

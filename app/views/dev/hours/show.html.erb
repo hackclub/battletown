@@ -12,6 +12,10 @@
       <%= form.label :minutes, "Minutes coded" %>
       <%= form.number_field :minutes, value: 30, min: 1, max: 1440, step: 1, required: true %>
     </p>
+    <p>
+      <%= form.label :hackatime_project, "Hackatime project (optional)" %>
+      <%= form.text_field :hackatime_project, maxlength: 120, placeholder: "Needed for a ship: the name you linked to a project" %>
+    </p>
     <%= form.submit "Add time", class: "btn btn--primary" %>
   <% end %>
 

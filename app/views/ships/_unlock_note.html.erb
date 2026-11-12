@@ -1,0 +1,13 @@
+<%# Shown wherever approved coins are shown to someone who has not verified yet: the coins are theirs, spending unlocks later. %>
+<% unless current_user.verification_verified? %>
+  <div class="ship-note" role="note">
+    <p class="ship-note__title">Your coins unlock when you verify your identity with Hack Club.</p>
+    <% if current_user.verification_ineligible? %>
+      <p>Your Hack Club account can't be verified for this program right now. Reach out in the Hack Club Slack and we'll help.</p>
+    <% elsif current_user.verification_pending? %>
+      <p>Your verification is being checked. The coins are saved for you and unlock as soon as it goes through.</p>
+    <% else %>
+      <p>The coins are saved for you. <%= ship_verify_link %> (opens in a new tab) and you can spend them in the shop.</p>
+    <% end %>
+  </div>
+<% end %>
