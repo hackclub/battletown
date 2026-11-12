@@ -5,6 +5,7 @@ class SessionsController < ApplicationController
     return failure unless claims
 
     user = User.from_hca_claims!(claims, referral_source: session[:referral_source])
+    Notifications::Scheduler.refresh(user) if user.saved_change_to_slack_id?
     sign_in(user)
     redirect_after_sign_in(user)
   rescue ActiveRecord::RecordInvalid => e

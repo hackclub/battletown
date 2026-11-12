@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_035003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -147,6 +147,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035001) do
     t.check_constraint "state::text = ANY (ARRAY['pending'::character varying, 'accepted'::character varying, 'declined'::character varying]::text[])", name: "link_suggestions_state_check"
   end
 
+  create_table "notification_preferences", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "kind", null: false
+    t.boolean "enabled", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "kind"], name: "index_notification_preferences_on_user_id_and_kind", unique: true
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying]::text[])", name: "notification_preferences_kind_check"
+  end
+
   create_table "notifications", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "kind", null: false
@@ -160,13 +170,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035001) do
     t.string "idempotency_key", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "subject_id"
     t.index ["idempotency_key"], name: "index_notifications_on_idempotency_key", unique: true
     t.index ["status", "due_at"], name: "index_notifications_on_status_and_due_at"
-    t.index ["user_id", "kind"], name: "index_notifications_one_pending_per_user_kind", unique: true, where: "((status)::text = 'pending'::text)"
+    t.index ["user_id", "kind"], name: "index_notifications_one_pending_per_user_kind", unique: true, where: "(((status)::text = 'pending'::text) AND ((kind)::text = 'daily_reminder'::text))"
     t.index ["user_id"], name: "index_notifications_on_user_id"
     t.check_constraint "attempts >= 0 AND attempts <= 10", name: "notifications_attempts_check"
     t.check_constraint "channel::text = 'slack_dm'::text", name: "notifications_channel_check"
-    t.check_constraint "kind::text = 'daily_reminder'::text", name: "notifications_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying]::text[])", name: "notifications_kind_check"
     t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "notifications_last_error_code_check"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying]::text[])", name: "notifications_status_check"
   end
@@ -312,6 +323,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035001) do
   add_foreign_key "hackatime_links", "users", on_delete: :cascade
   add_foreign_key "hour_entries", "users", on_delete: :cascade
   add_foreign_key "link_suggestions", "projects", on_delete: :cascade
+  add_foreign_key "notification_preferences", "users", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "projects", "users", on_delete: :cascade

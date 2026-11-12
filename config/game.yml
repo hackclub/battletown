@@ -57,6 +57,9 @@ shared:
     min_hours: 1.0
     # Staff can lower the approved hours (never raise them) in steps of this many hours.
     approval_step_hours: 0.25
+    # Hours coded on a project since its last ship at which Slack nudges it (app/services/notifications/ship_reminders.rb):
+    # the first is the ship reminder, the second the MVP nudge. One DM per project per threshold per ship window.
+    reminder_hours: [ 5, 10 ]
     # Quick reasons offered to a reviewer when rejecting; free text (up to 300 characters in all) can be added.
     rejection_reasons:
       - The GitHub link does not open, or the repository is private

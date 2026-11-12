@@ -66,6 +66,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     user = users(:onboarded)
     Notification.create!(user: user, kind: "daily_reminder", status: "sent", scheduled_for: Time.current, due_at: Time.current, idempotency_key: "guard-#{user.id}")
     HourEntry.create!(user: user, local_date: Date.new(2026, 11, 10), seconds: 600, source: "manual", note: "guard", idempotency_key: "guard-#{user.id}")
+    NotificationPreference.create!(user: user, kind: "ship_reminder", enabled: false)
     project = Project.create!(user: user, name: "Guard project", kind: "game")
     project.hackatime_links.create!(user_id: user.id, hackatime_project: "guard-project", link_method: "manual")
     project.link_suggestions.create!(hackatime_project: "guard-other")

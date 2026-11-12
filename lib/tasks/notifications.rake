@@ -6,6 +6,12 @@ namespace :notifications do
          "retried=#{summary.retried} cancelled=#{summary.cancelled} deferred=#{summary.deferred} halted=#{summary.halted}"
   end
 
+  desc "Queue ship reminders for projects whose unshipped hours crossed a threshold (ships.reminder_hours in config/game.yml). Run every 15 minutes or so from cron; safe to repeat."
+  task ship_reminders: :environment do
+    result = Notifications::ShipReminders.scan
+    puts "notifications:ship_reminders scanned=#{result.scanned} queued=#{result.queued}"
+  end
+
   desc "Queue the next daily reminder for every onboarded user with a Slack id (safe to repeat)"
   task schedule_all: :environment do
     count = 0

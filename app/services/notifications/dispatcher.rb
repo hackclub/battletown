@@ -16,7 +16,12 @@ module Notifications
   #    reminder is queued (a bad Slack id would only fail again; it is re-queued when the user next calls
   #    Scheduler.schedule_next); systemic failure (bad token and so on) -> the row is released untouched and the
   #    whole run stops.
-  # At most one reminder per user is handled per run.
+  # Event kinds (link question, ship reminders and decisions) go through the same steps, with these differences: they
+  # are cancelled when the person has switched that kind off ("opted_out", checked again here so an opt-out after
+  # queueing wins), when the thing they are about is gone or no longer true ("subject_gone", see Message), and when
+  # they are older than `event_max_lateness` ("stale"). Every kind is checked against the preferences, the daily
+  # reminder included.
+  # At most one message per user is handled per run.
   class Dispatcher
     Summary = Struct.new(:enabled, :sent, :failed, :retried, :cancelled, :deferred, :halted, keyword_init: true)
 
@@ -52,11 +57,11 @@ module Notifications
         break if count.zero?
 
         examined += count
-        claimed.each_with_index do |(row, user), index|
-          handle(row, user)
+        claimed.each_with_index do |(row, user, text), index|
+          handle(row, user, text)
           next unless @summary.halted
 
-          claimed.drop(index + 1).each { |(unsent, _user)| release(unsent) }
+          claimed.drop(index + 1).each { |(unsent, _user, _text)| release(unsent) }
           break
         end
         reschedule_users
@@ -67,7 +72,7 @@ module Notifications
 
     private
 
-    # Returns [[[row, user], ...rows to send], examined row count].
+    # Returns [[[row, user, text], ...rows to send], examined row count].
     def claim(size)
       Notification.transaction do
         rows = Notification.due(@now).where.not(user_id: @seen_user_ids.to_a).order(:due_at, :id)
@@ -83,23 +88,34 @@ module Notifications
 
     def triage(row, user)
       return cancel(row, "user_gone") unless user
-      return cancel(row, "schedule_changed", user) unless valid_schedule?(row, user)
-      return cancel(row, "stale", user) if @now - row.due_at > @config.max_lateness
+      return cancel(row, "schedule_changed", user) unless valid_recipient?(row, user)
+      return cancel(row, "opted_out", user) unless Preferences.enabled?(user, row.kind)
+      return cancel(row, "stale", user) if @now - row.due_at > lateness_limit(row)
+
+      text = Message.build(row, user, config: @config)
+      return cancel(row, "subject_gone", user) unless text
 
       deferral = QuietHours.deferral(@now, ActiveSupport::TimeZone[user.time_zone], config: @config)
       return defer(row, deferral) if deferral
 
       row.update!(attempts: row.attempts + 1, due_at: @now + @config.lease)
-      [ row, user ]
+      [ row, user, text ]
     end
 
-    def valid_schedule?(row, user)
-      user.onboarded? && user.slack_id.present? && Reminders.scheduled?(user, row.scheduled_for)
+    # A daily reminder must still match the schedule it was queued for; an event only needs a recipient.
+    def valid_recipient?(row, user)
+      return false unless user.onboarded? && user.slack_id.present?
+
+      daily?(row) ? Reminders.scheduled?(user, row.scheduled_for) : true
     end
+
+    def lateness_limit(row) = daily?(row) ? @config.max_lateness : @config.event_max_lateness
+
+    def daily?(row) = row.kind == Scheduler::KIND
 
     def cancel(row, code, user = nil)
       row.update!(status: "cancelled", last_error_code: code)
-      @reschedule << user if user
+      @reschedule << user if user && daily?(row)
       @summary.cancelled += 1
       nil
     end
@@ -110,12 +126,12 @@ module Notifications
       nil
     end
 
-    def handle(row, user)
-      result = deliver(row, user)
+    def handle(row, user, text)
+      result = deliver(user, text)
       if result.ok?
         row.update!(status: "sent", sent_at: @now, last_error_code: nil)
         @summary.sent += 1
-        @reschedule << user
+        @reschedule << user if daily?(row)
       elsif result.systemic
         row.update!(attempts: [ row.attempts - 1, 0 ].max, due_at: @now + @config.backoff_seconds(1),
                     last_error_code: safe_code(result.error_code))
@@ -128,13 +144,13 @@ module Notifications
       else
         row.update!(status: "failed", last_error_code: safe_code(result.error_code))
         @summary.failed += 1
-        @reschedule << user if result.retryable
+        @reschedule << user if result.retryable && daily?(row)
         Rails.logger.info("notifications.dispatch failed notification_id=#{row.id} code=#{safe_code(result.error_code)}")
       end
     end
 
-    def deliver(row, user)
-      @adapter.deliver_dm(slack_id: user.slack_id, text: @config.template(row.kind))
+    def deliver(user, text)
+      @adapter.deliver_dm(slack_id: user.slack_id, text: text)
     rescue StandardError => e
       # Never log e.message: it could carry the recipient or text.
       Rails.logger.warn("notifications.dispatch adapter_error class=#{e.class.name}")

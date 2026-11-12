@@ -3,12 +3,21 @@ module Notifications
   #
   # Call `Notifications::Scheduler.schedule_next(user)` when onboarding finishes and whenever the user changes their
   # coding days, coding time, time zone or Slack id. It is idempotent: calling it twice (or concurrently) never makes
-  # a second row. If the user is no longer eligible (not onboarded, no Slack id, no schedule) pending rows are
-  # cancelled. The dispatcher calls it after each send to queue the following day.
+  # a second row. If the user is no longer eligible (not onboarded, no Slack id, no schedule, or the daily reminder
+  # switched off in their preferences) pending rows are cancelled. The dispatcher calls it after each send to queue the following day.
   module Scheduler
     KIND = "daily_reminder"
 
     module_function
+
+    # What controllers call after a schedule, time zone, Slack id or onboarding change: the same as schedule_next, but
+    # a failure is logged (class name only) and swallowed, so a problem here can never break the request.
+    def refresh(user)
+      schedule_next(user)
+    rescue StandardError => e
+      Rails.logger.warn("notifications.schedule_failed error=#{e.class.name}")
+      nil
+    end
 
     # Returns the pending Notification, or nil when the user is not eligible for reminders.
     def schedule_next(user, now: Time.current)
@@ -20,7 +29,7 @@ module Notifications
     end
 
     def next_instant(user, now)
-      return nil unless user.onboarded? && user.slack_id.present?
+      return nil unless user.onboarded? && user.slack_id.present? && Preferences.enabled?(user, KIND)
 
       Reminders.due_at(user, after: now)
     end

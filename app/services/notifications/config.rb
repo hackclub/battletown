@@ -1,7 +1,7 @@
 module Notifications
   # Typed view of config/notifications.yml. `Config.current` is memoised; build a variant with `current.with(...)`.
   Config = Data.define(:quiet_start, :quiet_end, :max_attempts, :backoff_base, :backoff_max, :max_lateness,
-                       :lease, :batch_size, :retention_days, :templates) do
+                       :lease, :batch_size, :retention_days, :templates, :event_max_lateness, :labels) do
     def self.current
       @current ||= from_hash(Rails.application.config_for(:notifications))
     end
@@ -21,7 +21,9 @@ module Notifications
         lease: hash.fetch(:lease_seconds).to_i.clamp(30, 3600),
         batch_size: hash.fetch(:batch_size).to_i.clamp(1, 500),
         retention_days: hash.fetch(:retention_days).to_i.clamp(1, 3650),
-        templates: hash.fetch(:templates).to_h.transform_keys(&:to_s).freeze
+        templates: hash.fetch(:templates).to_h.transform_keys(&:to_s).freeze,
+        event_max_lateness: hash.fetch(:event_max_lateness_seconds, 172_800).to_i.clamp(0, 30 * 86_400),
+        labels: hash.fetch(:preference_labels, {}).to_h { |kind, label| [ kind.to_s, label.to_h.transform_keys(&:to_s).freeze ] }.freeze
       )
     end
 
@@ -37,6 +39,11 @@ module Notifications
 
     def template(kind)
       templates.fetch(kind.to_s)
+    end
+
+    # { "title" => ..., "hint" => ... } for the preferences screen (falls back to the kind's own name).
+    def label(kind)
+      labels.fetch(kind.to_s) { { "title" => kind.to_s.humanize, "hint" => "" } }
     end
   end
 end

@@ -1,7 +1,10 @@
 # Outbox row for an outbound notification. Holds no message text and no recipient address (see the migration):
 # the text is built from `kind` at send time and the recipient is the user's Slack id at send time.
 class Notification < ApplicationRecord
-  KINDS = %w[daily_reminder].freeze
+  # daily_reminder is scheduled from the user's coding days (Notifications::Scheduler); the others are about one thing
+  # (`subject_id`): link_question a LinkSuggestion, ship_reminder / ship_mvp a Project, ship_approved / ship_rejected a Ship.
+  KINDS = %w[daily_reminder link_question ship_reminder ship_mvp ship_approved ship_rejected].freeze
+  EVENT_KINDS = (KINDS - %w[daily_reminder]).freeze
   CHANNELS = %w[slack_dm].freeze
   STATUSES = %w[pending sent failed cancelled].freeze
   MAX_ATTEMPTS = 10 # mirrors the notifications_attempts_check constraint
@@ -13,6 +16,7 @@ class Notification < ApplicationRecord
   validates :channel, inclusion: { in: CHANNELS }
   validates :status, inclusion: { in: STATUSES }
   validates :scheduled_for, :due_at, presence: true
+  validates :subject_id, presence: true, if: -> { EVENT_KINDS.include?(kind) }
   validates :attempts, numericality: { only_integer: true, in: 0..MAX_ATTEMPTS }
   validates :last_error_code, format: { with: ERROR_CODE_FORMAT }, allow_nil: true
   validates :idempotency_key, presence: true, uniqueness: true, length: { maximum: 100 }

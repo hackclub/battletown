@@ -30,6 +30,7 @@ class OnboardingsController < ApplicationController
     return complete if @step == "celebrate"
 
     if save_step
+      Notifications::Scheduler.refresh(current_user) if @step == "schedule"
       redirect_to after_save_path, notice: (current_user.onboarded? ? "Saved." : nil)
     else
       render @step, status: :unprocessable_content
@@ -88,6 +89,7 @@ class OnboardingsController < ApplicationController
   # Idempotent: the lock makes a double submit set onboarded_at only once.
   def complete
     current_user.with_lock { current_user.update!(onboarded_at: Time.current) unless current_user.onboarded? }
+    Notifications::Scheduler.refresh(current_user)
     redirect_to dashboard_path
   end
 end

@@ -15,6 +15,10 @@ shared:
   # A reminder this far past its due time (for example the worker was down) is dropped rather than sent late.
   max_lateness_seconds: 10800
 
+  # Event messages (link question, ship reminders, ship decisions) are dropped, not sent, when they are this far past
+  # their due time (default two days), so switching notifications on never sends a pile of old news.
+  event_max_lateness_seconds: 172800
+
   # How long a row stays reserved for a dispatcher while it is being sent (protects against double sends).
   lease_seconds: 300
 
@@ -28,3 +32,32 @@ shared:
   # Keep it short and friendly, no prize promises.
   templates:
     daily_reminder: "Hey, it's your Battletown coding time. Open your project and get some time in today. Happy hacking! - the Hack Club Battletown team"
+    # Event copy. Placeholders in {braces}: {project} (their project name), {hackatime_project}, {hours}, {coins},
+    # {reason} (the reviewer's note, shortened), {unlock_note} (empty, or a sentence for people who have not verified
+    # yet) and {link} (a page on APP_URL that handles the answer: there are no Slack buttons, the app only has chat:write).
+    link_question: "Quick question: is your Hackatime project '{hackatime_project}' part of '{project}'? You can say yes or no on your projects page. If it's a no, we won't ask again: {link} - the Hack Club Battletown team"
+    ship_reminder: "Nice work! You've coded {hours} hours on {project} that you haven't shipped yet. Ready to ship it? Whenever you like: {link} - the Hack Club Battletown team"
+    ship_mvp: "You're at {hours} hours on {project}. That's a great point to ship a first version and turn those hours into coins. Ship it here when you're ready: {link} - the Hack Club Battletown team"
+    ship_approved: "Good news: your ship of {project} was approved for {hours} hours and you earned {coins} coins!{unlock_note} See it here: {link} - the Hack Club Battletown team"
+    ship_rejected: "Thanks for shipping {project}. It needs one more touch before we can approve it: {reason} Fix it up and ship again whenever you're ready: {link} - the Hack Club Battletown team"
+
+  # What each switch is called on /settings/notifications (plain words, the owner can edit these).
+  preference_labels:
+    daily_reminder:
+      title: "Daily coding reminder"
+      hint: "A nudge at the time you picked, on the days you picked."
+    link_question:
+      title: "Is this Hackatime project yours?"
+      hint: "A question when a Hackatime project looks like one of your projects."
+    ship_reminder:
+      title: "Ship reminder"
+      hint: "A friendly note when a project has some hours you could ship."
+    ship_mvp:
+      title: "First version nudge"
+      hint: "A note when a project has enough hours for a first version."
+    ship_approved:
+      title: "Ship approved"
+      hint: "The hours and coins you earned when a ship is approved."
+    ship_rejected:
+      title: "Ship needs changes"
+      hint: "What to fix when a ship needs a little more work."
