@@ -28,7 +28,7 @@
             <dt>Tracking</dt><dd><%= tracking_summary(order) %></dd>
           <% end %>
         </dl>
-        <p class="small">Contact the person on Slack to arrange delivery. No address is stored in this app.</p>
+        <p class="small">Message the person on Slack about anything to do with this order.</p>
       </section>
 
       <section class="card admin-panel" aria-labelledby="order-history">
@@ -50,6 +50,8 @@
         </ol>
       </section>
     </div>
+
+    <%= render "admin/orders/ship_to", order: order, revealed: @revealed %>
 
     <% if @actions.empty? %>
       <p class="alert">This order is <%= staff_order_status_text(order).downcase %>, so no status change is possible. You can still add a note.</p>
@@ -87,7 +89,10 @@
       <% if @actions.include?("ship") %>
         <section class="card admin-panel" aria-labelledby="order-ship">
           <h2 id="order-ship" class="card__title">Mark shipped</h2>
-          <p class="small">The buyer is told it is on its way (the message never includes the tracking number). Tracking is optional.</p>
+          <p class="small">The buyer is told it is on its way (the message never includes the tracking number). Tracking is optional. Shipping starts the <%= config.address_retention_days %>-day clock on deleting the address.</p>
+          <% if order.address_needed? %>
+            <p class="alert alert--warning" role="status" id="ship-needs-address"><strong>Needs an address.</strong> The buyer has not chosen where to send this. Ask them to pick one on their order page, or use the override below with a reason.</p>
+          <% end %>
           <%= form_with url: ship_admin_order_path(order), method: :patch, class: "admin-form stack" do %>
             <div class="field">
               <%= label_tag :ship_carrier, "Carrier" %>
@@ -106,6 +111,15 @@
               <%= label_tag :ship_note, "Note (optional, staff only)" %>
               <%= text_field_tag :note, nil, id: "ship_note", class: "input", maxlength: config.note_max %>
             </div>
+            <% if order.address_needed? %>
+              <fieldset class="field">
+                <legend>Override: ship without an address</legend>
+                <label class="option"><%= check_box_tag :address_override, "1", false, id: "ship_override" %> I am shipping this without an address on file</label>
+                <%= label_tag :ship_override_reason, "Why (staff and the audit trail see this)" %>
+                <%= text_field_tag :address_override_reason, nil, id: "ship_override_reason", class: "input", maxlength: Orders::Ship::OVERRIDE_MAX, autocomplete: "off" %>
+                <span class="field__hint admin-form__hint">For orders placed before addresses existed, or an address you already have. No personal details.</span>
+              </fieldset>
+            <% end %>
             <div><%= button_tag "Mark shipped", type: "submit", name: nil, class: "btn btn--primary" %></div>
           <% end %>
         </section>

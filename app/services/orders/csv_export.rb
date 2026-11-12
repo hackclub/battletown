@@ -1,13 +1,14 @@
 module Orders
   # The staff CSV of orders (Admin::OrdersController#export). One row per order, newest-queue order, at most `export_max_rows` rows.
   # Columns: order id, created_at (UTC), status, item name, coins, kind, tracking carrier, age in days. The person's display name and
-  # Slack id are added only when `include_contact` is true, and never an email, address or tracking number. Every cell is quoted,
+  # Slack id (and the ship-to COUNTRY, the one plain-text part of a shipping address) are added only when `include_contact` is true,
+  # and never an email, a street, a city, a phone, any other part of an address, or a tracking number. Every cell is quoted,
   # line breaks inside a cell become spaces, and a cell that starts with = + - @ (or a tab or carriage return, even after spaces) gets a
   # leading apostrophe so a spreadsheet cannot run it as a formula. The rows are read in slices of ids, so a large export never holds
   # them all in memory; `each_line` is an Enumerator the controller streams.
   class CsvExport
     BASE_COLUMNS = %w[order_id created_at status item_name coins kind tracking_carrier age_days].freeze
-    CONTACT_COLUMNS = %w[display_name slack_id].freeze
+    CONTACT_COLUMNS = %w[display_name slack_id ship_country].freeze
     SLICE = 500
     FORMULA_START = /\A[[:space:]]*[=+\-@\t\r]/
 
@@ -48,7 +49,7 @@ module Orders
       Enumerator.new do |lines|
         lines << line(columns)
         ids.first(@max).each_slice(SLICE) do |slice|
-          orders = Order.includes(:user).where(id: slice).index_by(&:id)
+          orders = Order.includes(:user, :address).where(id: slice).index_by(&:id)
           slice.each { |id| lines << line(values(orders.fetch(id))) if orders.key?(id) }
         end
       end
@@ -61,7 +62,7 @@ module Orders
     def values(order)
       row = [ order.id, order.created_at.utc.iso8601, order.status, order.prize_name, order.coins, order.kind, order.tracking_carrier,
               order.age_days(@now) ]
-      include_contact ? row + [ order.user.display_name, order.user.slack_id ] : row
+      include_contact ? row + [ order.user.display_name, order.user.slack_id, order.address&.country ] : row
     end
 
     # A search term goes in the audit row only when it looks like an item name or order number (never an email or a long string).

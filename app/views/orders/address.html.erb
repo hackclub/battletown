@@ -1,0 +1,20 @@
+<% content_for :title, "Change address: #{@order.display_name}" %>
+<section class="container shop shop--narrow stack">
+  <p class="shop-back"><%= link_to "Back to your order", order_path(@order), class: "btn btn--ghost btn--sm" %></p>
+  <header class="page-header">
+    <p class="eyebrow">Order #<%= @order.id %></p>
+    <h1>Where should we send <%= @order.display_name %>?</h1>
+    <p class="lead">You can change this until the team sends the order.</p>
+  </header>
+
+  <div data-controller="ship-to-picker" class="stack">
+    <%= render "shop/address_step", lookup: @lookup, offer: @address_offer, expired: @address_offer_expired, select_form: "address-form",
+               heading: "Pick a new address", again: "Load my addresses again" %>
+
+    <%= form_with url: update_address_order_path(@order), method: :patch, id: "address-form", class: "shop-confirm__form" do %>
+      <%= button_tag "Use this address", type: "submit", class: "btn btn--primary btn--lg",
+                     disabled: @address_offer.nil? || @address_offer.addresses.empty?, data: { ship_to_picker_target: "submit", turbo_submits_with: "Saving..." } %>
+      <%= link_to "Keep the current one", order_path(@order), class: "btn" %>
+    <% end %>
+  </div>
+</section>

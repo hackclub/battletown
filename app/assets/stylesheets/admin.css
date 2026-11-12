@@ -111,3 +111,6 @@
 .admin-notes__item { padding: var(--space-3) var(--space-4); border-inline-start: 4px solid var(--color-admin); background: var(--color-admin-bg); color: var(--color-admin-ink); }
 .admin-notes__item p { margin: 0; }
 .admin-notes__item .small { color: var(--color-admin-ink); }
+
+/* A revealed shipping address (staff, one response only). */
+.admin-address { margin: 0 0 var(--space-4); font-style: normal; overflow-wrap: anywhere; }

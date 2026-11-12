@@ -28,8 +28,8 @@ class Orders::CsvExportTest < ActiveSupport::TestCase
   test "contact columns are added only on request" do
     order_in("requested")
     table = parse(export(include_contact: true))
-    assert_equal %w[display_name slack_id], table.headers.last(2)
-    assert_equal [ "Pat Buyer", "U0EXPORT01" ], table.first.values_at("display_name", "slack_id")
+    assert_equal %w[display_name slack_id ship_country], table.headers.last(3)
+    assert_equal [ "Pat Buyer", "U0EXPORT01", "" ], table.first.values_at("display_name", "slack_id", "ship_country")
   end
 
   test "every cell is quoted, lines end with CRLF, and line breaks inside a cell become spaces" do

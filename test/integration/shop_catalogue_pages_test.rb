@@ -183,7 +183,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     get shop_path
     assert_select ".shop-sticker", /A pin, on us/
-    post shop_sticker_path
+    claim_sticker_as @user
     order = Order.find_by!(user: @user, kind: "signup_sticker")
     assert_equal [ "signup_sticker", "Welcome pin", 0 ], [ order.prize_key, order.prize_name, order.coins ]
   end
@@ -205,7 +205,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
 
   test "someone who claimed the sticker keeps the order when it is archived" do
     sign_in_as @user
-    post shop_sticker_path
+    claim_sticker_as @user
     archive("signup_sticker")
     get orders_path
     assert_response :success

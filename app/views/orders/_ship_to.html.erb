@@ -1,0 +1,26 @@
+<%# locals: (order:) -%>
+<%# The buyer's own order page only (current_user.orders), sent with Cache-Control: no-store. The full address, with the phone masked,
+    is shown to its owner; staff see only the country and city until they reveal it (Admin::OrdersController#reveal_address). -%>
+<% address = order.address %>
+<section class="card shop-ship-to stack" aria-labelledby="ship-to-title">
+  <h2 id="ship-to-title" class="card__title">Ship to</h2>
+  <% if address %>
+    <address class="address-preview__lines">
+      <% address.lines.each do |line| %><%= line %><br><% end %>
+      <% if address.masked_phone %><span class="address-preview__phone">Phone <%= address.masked_phone %></span><% end %>
+    </address>
+    <% if order.address_changeable? %>
+      <p class="small">You can change this until the team sends the order. <%= Orders::Config.current.address_notice_text %></p>
+    <% elsif order.shipped? || order.fulfilled? %>
+      <p class="small">The order has been sent, so the address can't be changed. We delete it <%= Orders::Config.current.address_retention_days %> days after it ships.</p>
+    <% end %>
+  <% else %>
+    <p>No address yet. Pick one of the addresses saved in Hack Club Auth so the team knows where to post it.</p>
+  <% end %>
+  <% if order.address_changeable? %>
+    <div>
+      <%= button_to (address ? "Change address" : "Add an address"), "/auth/hack_club_address", params: { purpose: "change", order_id: order.id },
+                    class: "btn", form: { data: { turbo: false } } %>
+    </div>
+  <% end %>
+</section>

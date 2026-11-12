@@ -56,7 +56,8 @@
             <% @orders.each do |order| %>
               <% person = order.user.display_name.presence || "this person" %>
               <tr id="order-<%= order.id %>">
-                <th scope="row"><%= order.display_name %><br><small>#<%= order.id %> &middot; <%= order.kind.tr("_", " ") %></small></th>
+                <th scope="row"><%= order.display_name %><br><small>#<%= order.id %> &middot; <%= order.kind.tr("_", " ") %><% if order.address %> &middot; ships to <%= order.address.country %><% end %></small>
+                  <% if order.address_needed? %><br><span class="badge badge--warning" title="This order is posted but has no shipping address yet">Address needed</span><% end %></th>
                 <td>
                   <%= order.user.display_name.presence || "No name" %><br>
                   <small>Slack: <%= order.user.slack_id.presence || "not set" %></small><br>
@@ -91,7 +92,7 @@
         <%= hidden_field_tag :kind, filters[:kind], id: nil if filters[:kind] %>
         <%= hidden_field_tag :q, filters[:q], id: nil if filters[:q] %>
         <div class="field">
-          <label class="option"><%= check_box_tag :include_contact, "1", false, "aria-describedby": "include-contact-hint" %> Include contact columns (display name and Slack id)</label>
+          <label class="option"><%= check_box_tag :include_contact, "1", false, "aria-describedby": "include-contact-hint" %> Include contact columns (display name, Slack id and ship-to country)</label>
           <span id="include-contact-hint" class="field__hint admin-form__hint">Personal data. Only tick this if you need it to deliver orders; the export is logged either way.</span>
         </div>
         <%= button_tag "Download CSV", type: "submit", name: nil, class: "btn" %>

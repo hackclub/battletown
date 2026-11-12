@@ -88,7 +88,7 @@ class OrderPageTest < ActionDispatch::IntegrationTest
   end
 
   test "the timeline lists only plain status changes with dates, never a note, a reason or a tracking edit" do
-    order = order_for
+    order = order_for(address: true)
     Orders::Ship.call(order: order, by: @staff, as: :staff, tracking: { carrier: "ups", number: "1Z999AA10123456784" }, note: "Packed in blue box")
     Orders::UpdateTracking.call(order: order, by: @staff, tracking: { carrier: "ups", number: "1Z999AA10123456785" })
     Orders::Fulfil.call(order: order, by: @staff, as: :staff, note: "Left at the door")
@@ -166,10 +166,12 @@ class OrderPageTest < ActionDispatch::IntegrationTest
     sign_in_as @buyer
     cap = Orders::Config.current.max_open_requested
     cap.times do |i|
-      post orders_path, params: { prize_key: "custom_sticker", idempotency_key: "page-cap-#{i}-aaaaaaaa" }
-      assert_redirected_to order_path(Order.find_by!(user: @buyer, idempotency_key: "page-cap-#{i}-aaaaaaaa"))
+      key = SecureRandom.hex(16)
+      post orders_path, params: { prize_key: "custom_sticker", idempotency_key: key, address_id: offer_addresses!(@buyer, key).first }
+      assert_redirected_to order_path(Order.find_by!(user: @buyer, idempotency_key: key))
     end
-    post orders_path, params: { prize_key: "custom_sticker", idempotency_key: "page-cap-extra-aaaa" }
+    extra = SecureRandom.hex(16)
+    post orders_path, params: { prize_key: "custom_sticker", idempotency_key: extra, address_id: offer_addresses!(@buyer, extra).first }
     assert_redirected_to shop_path
     follow_redirect!
     assert_select ".flash--alert", /#{cap} orders waiting/

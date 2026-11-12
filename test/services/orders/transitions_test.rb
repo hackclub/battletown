@@ -21,10 +21,11 @@ class Orders::TransitionsTest < ActiveSupport::TestCase
           order = order_in(status)
           legal = Orders::StateMachine.allowed?(action, status, actor)
           already = Orders::StateMachine.already?(action, status)
-          before = [ order.status, OrderEvent.where(order: order).count, refunds_for.count ]
+          before = [ order.status, OrderEvent.where(order: order).where.not(action: "address_purged").count, refunds_for.count ]
           who = actor == "staff" ? @staff : @buyer
           options = { order: order, by: who, as: actor.to_sym }
           options[:reason_code] = "other" if actor == "staff" && %w[cancel refund].include?(action)
+          give_address!(order) if action == "ship" && !order.address # these are about the table, not addresses
           call = -> { "Orders::#{SERVICES.fetch(action)}".constantize.call(**options) }
           label = "#{actor} #{action} from #{status}"
 
@@ -32,14 +33,14 @@ class Orders::TransitionsTest < ActiveSupport::TestCase
             result = call.call
             assert_predicate result, :changed?, label
             assert_equal Orders::StateMachine.target(action), order.reload.status, label
-            assert_equal before[1] + 1, OrderEvent.where(order: order).count, label
+            assert_equal before[1] + 1, OrderEvent.where(order: order).where.not(action: "address_purged").count, label
           elsif already && Orders::StateMachine.actor_may?(action, actor)
             result = call.call
             assert_predicate result, :unchanged?, label
-            assert_equal before, [ order.reload.status, OrderEvent.where(order: order).count, refunds_for.count ], label
+            assert_equal before, [ order.reload.status, OrderEvent.where(order: order).where.not(action: "address_purged").count, refunds_for.count ], label
           else
             assert_raises(Orders::NotAllowed, label) { call.call }
-            assert_equal before, [ order.reload.status, OrderEvent.where(order: order).count, refunds_for.count ], label
+            assert_equal before, [ order.reload.status, OrderEvent.where(order: order).where.not(action: "address_purged").count, refunds_for.count ], label
           end
         end
       end
@@ -56,7 +57,7 @@ class Orders::TransitionsTest < ActiveSupport::TestCase
     staff_do("Fulfil", order)
     staff_do("Refund", order, reason_code: "out_of_stock", note: "Lost in the post")
 
-    events = order.events.order(:id).to_a
+    events = order.events.where.not(action: "address_purged").order(:id).to_a # refunding also deletes the address, and says so
     assert_equal %w[held released shipped fulfilled refunded], events.map(&:action)
     assert_equal %w[requested on_hold requested shipped fulfilled], events.map(&:from_status)
     assert_equal %w[on_hold requested shipped fulfilled refunded], events.map(&:to_status)
@@ -64,7 +65,7 @@ class Orders::TransitionsTest < ActiveSupport::TestCase
     assert_equal [ "Waiting on stock", nil, nil, nil, "Lost in the post" ], events.map(&:note)
     assert_equal [ nil, nil, nil, nil, "out_of_stock" ], events.map(&:reason_code)
 
-    audit = AdminAuditEvent.where(subject_type: "Order", subject_id: order.id).order(:id)
+    audit = AdminAuditEvent.where(subject_type: "Order", subject_id: order.id).where.not(action: "order_address_purged").order(:id)
     assert_equal %w[order_held order_released order_shipped order_fulfilled order_refunded], audit.map(&:action)
     assert audit.all? { |row| row.actor_id == @staff.id }
     assert_equal({ "order_id" => order.id, "from_status" => "fulfilled", "to_status" => "refunded", "reason_code" => "out_of_stock", "coins" => 50 }, audit.last.metadata)

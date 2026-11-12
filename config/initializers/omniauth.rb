@@ -34,6 +34,15 @@ end
 SWD.cache = HcaDiscoveryCache.new
 
 require Rails.root.join("lib/omniauth/strategies/hackatime")
+require Rails.root.join("lib/omniauth/strategies/hack_club_address")
+
+# Hack Club Auth must be reached over https in production (the one-time address token travels to it). A local fake provider (tests,
+# the manual browser walk) may use http; the OpenID discovery client then needs to be told so.
+if Rails.configuration.x.hca.issuer.start_with?("http://")
+  raise "HCA_ISSUER must be an https URL in production" if Rails.env.production?
+
+  SWD.url_builder = URI::HTTP
+end
 
 # Hackatime must be reached over https in production (the tokens travel to it); a local fake provider may use http.
 hackatime_base_url = Rails.configuration.x.hackatime.base_url
@@ -67,5 +76,27 @@ Rails.application.config.middleware.use OmniAuth::Builder do
       identifier: ENV["HCA_CLIENT_ID"] || Rails.application.credentials.dig(:hca, :client_id),
       secret: ENV["HCA_CLIENT_SECRET"] || Rails.application.credentials.dig(:hca, :client_secret),
       redirect_uri: Rails.configuration.x.hca.redirect_uri
+    }
+
+  # The shipping-address lookup at checkout (docs/CONTRACT.md, "Shipping addresses"): the same Hack Club Auth app, but only the
+  # scopes `openid address`, its own callback (register `#{APP_URL}/auth/hack_club_address/callback` on the app too), and only
+  # ever for someone who is already signed in. The issuer and credentials are read at request time, like Hackatime's URL.
+  provider OmniAuth::Strategies::HackClubAddress,
+    issuer: Rails.configuration.x.hca.issuer,
+    discovery: true,
+    scope: Rails.configuration.x.hca.address_scopes,
+    response_type: :code,
+    pkce: true,
+    client_auth_method: :post,
+    client_options: {
+      identifier: Rails.configuration.x.hca.client_id || Rails.application.credentials.dig(:hca, :client_id),
+      secret: Rails.configuration.x.hca.client_secret || Rails.application.credentials.dig(:hca, :client_secret),
+      redirect_uri: Rails.configuration.x.hca.address_redirect_uri
+    },
+    setup: lambda { |env|
+      options = env["omniauth.strategy"].options
+      options.issuer = Rails.configuration.x.hca.issuer
+      options.client_options.identifier = Rails.configuration.x.hca.client_id || Rails.application.credentials.dig(:hca, :client_id)
+      options.client_options.secret = Rails.configuration.x.hca.client_secret || Rails.application.credentials.dig(:hca, :client_secret)
     }
 end

@@ -97,7 +97,7 @@ class Orders::ConcurrencyTest < ActiveSupport::TestCase
   end
 
   test "two staff members shipping the same order at once: one shipment, one event, the first tracking wins" do
-    order = order_for
+    order = order_for(address: true)
     outcomes = race(staff_call("Ship", order, tracking: { carrier: "ups", number: "1Z999AA10123456784" }),
                     staff_call("Ship", order, by: @staff_two, tracking: { carrier: "dhl", number: "JD0146000000" }))
     assert_equal [ :ok, :ok ], outcomes.map(&:first)

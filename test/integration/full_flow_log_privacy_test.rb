@@ -1,12 +1,14 @@
 require "test_helper"
 require_relative "../support/ships_test_support"
 require_relative "../support/hackatime_helper"
+require_relative "../support/shop_helper"
 
 # One teen goes through every feature while the application logger is captured at the production level (info),
 # plus the request logger and the database logger at debug (more than production writes). Nothing personal may appear.
 class FullFlowLogPrivacyTest < ActionDispatch::IntegrationTest
   include ShipsTestSupport
   include HackatimeHelper
+  include ShopTestHelper
 
   EMAIL = "probe.teen@example.com".freeze
   NAME = "Probe Teenager".freeze
@@ -90,7 +92,7 @@ class FullFlowLogPrivacyTest < ActionDispatch::IntegrationTest
       delete logout_path
 
       sign_in_with(teen, claims)
-      post orders_path, params: { prize_key: "custom_sticker", idempotency_key: SecureRandom.hex(8) }
+      post_order_as teen, prize_key: "custom_sticker"
       get orders_path
       connect_hackatime(teen)
       get hackatime_path

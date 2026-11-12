@@ -149,7 +149,7 @@ class OrderLifecycleTest < ActiveSupport::TestCase
   end
 
   test "a data-deletion request deletes the order history with the person and the counts include it" do
-    order = order_for
+    order = order_for(address: true)
     Orders::Ship.call(order: order, by: @staff, as: :staff, tracking: { carrier: "ups", number: "1Z999AA10123456784" })
     Orders::AddNote.call(order: order, by: @staff, note: "Staff note")
     Orders::Cancel.call(order: order_for, by: @buyer, as: :buyer)

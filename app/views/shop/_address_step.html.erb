@@ -1,0 +1,63 @@
+<%# locals: (lookup:, offer:, expired:, select_form:, heading: "Where should we send it?", again: "Load my addresses again") -%>
+<%# The address step: a button that asks Hack Club Auth for the person's saved addresses (a round trip, then back to this page), and
+    once they are loaded a labelled dropdown plus a preview of the chosen one. The addresses are only ever on pages that are sent with
+    Cache-Control: no-store and kept out of Turbo's page cache. The browser posts back an address id only, never address text. -%>
+<% content_for :head do %><meta name="turbo-cache-control" content="no-cache"><% end %>
+<% portal_url = "#{Rails.configuration.x.hca.address_portal_url}?#{{ return_to: Orders::AddressLookup.return_url(lookup) }.to_query}" %>
+<section class="card address-step stack" aria-labelledby="address-heading" id="address-step">
+  <h2 id="address-heading" class="card__title"><%= heading %></h2>
+  <p class="small address-step__notice"><%= Orders::Config.current.address_notice_text %></p>
+
+  <% if offer.nil? %>
+    <% if expired %>
+      <p class="alert" role="status">That took a while, so we forgot your addresses to keep them safe. Press the button to load them again.</p>
+    <% end %>
+    <p>Battletown doesn't keep your address on your account. We'll ask Hack Club Auth for the addresses you saved there, once, and keep only the one you choose for this order.</p>
+    <div>
+      <%= button_to "Get my addresses from Hack Club Auth", "/auth/hack_club_address", params: lookup, class: "btn btn--primary", form: { data: { turbo: false } } %>
+    </div>
+  <% elsif offer.addresses.empty? %>
+    <div class="alert alert--warning" role="status" id="address-empty">
+      <p class="alert__title">No usable address yet</p>
+      <p>
+        <% if offer.skipped.positive? %>
+          <%= pluralize(offer.skipped, "address") %> in Hack Club Auth can't be used for a parcel (it needs a name, a street, a city and a country). Fix <%= offer.skipped == 1 ? "it" : "them" %> there, then come back.
+        <% else %>
+          You have no address in Hack Club Auth yet. Add one there, then come back and load your addresses again.
+        <% end %>
+      </p>
+    </div>
+    <div class="cluster">
+      <%= link_to "Add or edit addresses in Hack Club Auth", portal_url, class: "btn", rel: "noopener", data: { turbo: false } %>
+      <%= button_to again, "/auth/hack_club_address", params: lookup, class: "btn btn--primary", form: { data: { turbo: false } } %>
+    </div>
+  <% else %>
+    <div class="field">
+      <label for="address-choice">Ship to</label>
+      <select id="address-choice" name="address_id" form="<%= select_form %>" class="select" required
+              data-ship-to-picker-target="select" data-action="ship-to-picker#choose">
+        <option value="">Choose an address</option>
+        <% offer.addresses.each do |address| %>
+          <option value="<%= address.id %>"><%= address.option_text %></option>
+        <% end %>
+      </select>
+      <p class="field__hint">These are the addresses saved in your Hack Club Auth account.</p>
+    </div>
+    <% offer.addresses.each do |address| %>
+      <div class="address-preview" data-ship-to-picker-target="preview" data-address-id="<%= address.id %>" hidden>
+        <p class="address-preview__title">We'll post it to</p>
+        <address class="address-preview__lines">
+          <% address.lines.each do |line| %><%= line %><br><% end %>
+          <% if address.masked_phone %><span class="address-preview__phone">Phone <%= address.masked_phone %></span><% end %>
+        </address>
+      </div>
+    <% end %>
+    <% if offer.skipped.positive? %>
+      <p class="small"><%= pluralize(offer.skipped, "address") %> in Hack Club Auth can't be used for a parcel and isn't listed.</p>
+    <% end %>
+    <div class="cluster">
+      <%= link_to "Add or edit addresses in Hack Club Auth", portal_url, class: "btn btn--ghost btn--sm", rel: "noopener", data: { turbo: false } %>
+      <%= button_to again, "/auth/hack_club_address", params: lookup, class: "btn btn--ghost btn--sm", form: { data: { turbo: false } } %>
+    </div>
+  <% end %>
+</section>

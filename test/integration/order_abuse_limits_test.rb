@@ -31,7 +31,7 @@ class OrderAbuseLimitsTest < ActionDispatch::IntegrationTest
     travel_to(WINDOW_START) { yield }
   end
 
-  def place(key) = post(orders_path, params: { prize_key: "custom_sticker", idempotency_key: key })
+  def place(key, as: @buyer) = post_order_as(as, prize_key: "custom_sticker", key: key)
 
   test "placing orders is limited per person per hour (default 10); a bad request counts too, another person is unaffected" do
     assert_equal 10, Orders::Config.current.orders_per_hour
@@ -47,7 +47,7 @@ class OrderAbuseLimitsTest < ActionDispatch::IntegrationTest
 
         delete logout_path
         sign_in_as @other
-        place("other-1-aaaaaaaaaaa")
+        place("other-1-aaaaaaaaaaa", as: @other)
         assert_not_equal 429, response.status
         assert_equal 1, Order.where(user: @other).count
       end
@@ -110,14 +110,15 @@ class OrderAbuseLimitsTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select ".flash--alert", /orders waiting for the team/
     # once the team sends one, there is room again
-    Orders::Ship.call(order: Order.where(user: @buyer).first, by: @staff, as: :staff)
+    shipping = Order.where(user: @buyer).first
+    Orders::Ship.call(order: shipping, by: @staff, as: :staff)
     place("cap-after-aaaaaaaaaaaaa")
     assert_equal Orders::Config.current.max_open_requested + 1, Order.where(user: @buyer).count
   end
 
   test "tracking numbers, notes and reasons stay out of the request log" do
     ENV["ADMIN_HCA_UIDS"] = @staff.hca_uid
-    order = order_for
+    order = order_for(address: true)
     sign_in_as @staff
     logs = capture_logs do
       patch ship_admin_order_path(order), params: { tracking: { carrier: "other", number: "1Z999AA10123456784", label: "Secret courier" }, note: "Private staff words" }

@@ -13,6 +13,8 @@ class OrderAddress < ApplicationRecord
   ENCRYPTED = %i[recipient_name line_1 line_2 city state postal_code phone_number].freeze
   LIMITS = Hca::Address::LIMITS
 
+  include Hca::AddressLines
+
   belongs_to :order, inverse_of: :address
   belongs_to :user
 
@@ -24,23 +26,6 @@ class OrderAddress < ApplicationRecord
   LIMITS.each { |field, max| validates field, length: { maximum: max } }
   validate :country_is_real
   validate :belongs_to_the_orders_owner
-
-  # What the buyer and the label need, in postal order (no phone: ask for it with `phone_number`).
-  def lines
-    [ recipient_name, line_1, line_2, [ city, state, postal_code ].compact_blank.join(", ").presence, country ].compact_blank
-  end
-
-  # "ends in 1234": enough for the buyer to recognise the number, not enough to dial it.
-  def masked_phone
-    digits = phone_number.to_s.gsub(/\D/, "")
-    digits.length >= 4 ? "ends in #{digits.last(4)}" : nil
-  end
-
-  # The shortest useful line for staff and lists: city and country only.
-  def city_and_country = [ city, country ].compact_blank.join(", ")
-
-  # The buyer's masked view: the street line, the city and the country.
-  def masked_lines = [ line_1, city, country ].compact_blank
 
   # Copies a chosen Hack Club Auth address (Hca::Address) into a new or existing row. Returns the unsaved/updated record.
   def copy_from(hca_address)

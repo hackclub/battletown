@@ -112,3 +112,15 @@
 .shop-timeline__when { color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
 .shop-tracking__number { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .shop-tracking__link { margin-inline-start: var(--space-2); }
+
+/* The address step (physical items): the notice, the dropdown, the preview of the chosen address. Nothing here is colour-only. */
+.address-step { gap: var(--space-3); }
+.address-step__notice { margin: 0; color: var(--color-text-muted); }
+.address-step form { margin: 0; }
+.address-step select { max-width: 100%; }
+.address-preview { padding: var(--space-3) var(--space-4); border: 2px dashed var(--color-border); border-radius: var(--radius-lg); background: var(--color-card-blue-light); }
+.address-preview__title { margin: 0 0 var(--space-1); font-weight: 700; }
+.address-preview__lines { margin: 0; font-style: normal; overflow-wrap: anywhere; }
+.address-preview__phone { color: var(--color-text-muted); }
+.shop-ship-to { gap: var(--space-3); }
+.shop-ship-to form { margin: 0; }

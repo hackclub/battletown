@@ -4,8 +4,9 @@ module Admin
   # and only the actions that are legal for its status (hold, release, ship, fulfil, cancel, refund, tracking, note); each is an
   # Orders::* service call under the row locks, so a double click or a second admin changes nothing twice. Cancel and refund ask
   # for a reason code and a typed confirmation. The CSV export is a POST (Orders::CsvExport), audited, capped and streamed.
-  # Shows the person's display name, Slack id and verification status (staff need them to arrange delivery over Slack); no
-  # address exists anywhere in this app.
+  # Shows the person's display name, Slack id and verification status (staff need them to arrange delivery over Slack). A physical
+  # order's shipping address is shown as country and city only; the full address opens through `reveal_address` (a POST that
+  # writes the audit trail first, shows it on that one response, and is never in a list, the CSV, a message or a log).
   class OrdersController < BaseController
     LIMIT = 200
     SEARCH_MAX = 60
@@ -14,19 +15,18 @@ module Admin
     NOTICES = { hold: "Put on hold. The buyer still sees Requested.", release: "Taken off hold.", ship: "Marked shipped.", fulfil: "Marked fulfilled.",
                 cancel: "Cancelled.", refund: "Refunded.", note: "Note added.", tracking: "Tracking saved." }.freeze
 
-    before_action :set_order, only: %i[show hold release ship fulfil cancel refund tracking note]
+    before_action :set_order, only: %i[show hold release ship fulfil cancel refund tracking note reveal_address]
 
     def index
       @filters = filters
       @counts = Order.group(:status).count
-      @orders = filtered(Order.all).includes(:user).queue_order.limit(LIMIT).to_a
+      @orders = filtered(Order.all).includes(:user, :address).queue_order.limit(LIMIT).to_a
       @waiting_count = @counts.fetch("requested", 0)
       @on_hold_count = @counts.fetch("on_hold", 0)
     end
 
     def show
-      @events = @order.events.includes(:actor).newest_first.to_a
-      @actions = Orders::StateMachine.actions_for(@order.status, "staff")
+      load_show
     end
 
     def hold = act(:hold) { |order| Orders::Hold.call(**args(order)) }
@@ -35,7 +35,7 @@ module Admin
 
     def fulfil = act(:fulfil) { |order| Orders::Fulfil.call(**args(order)) }
 
-    def ship = act(:ship) { |order| Orders::Ship.call(**args(order), tracking: tracking_params) }
+    def ship = act(:ship) { |order| Orders::Ship.call(**args(order), tracking: tracking_params, address_override_reason: override_reason) }
 
     def cancel = act(:cancel, confirm: true) { |order| Orders::Cancel.call(**args(order)) }
 
@@ -44,6 +44,22 @@ module Admin
     def tracking = act(:tracking) { |order| Orders::UpdateTracking.call(order: order, by: current_user, tracking: tracking_params) }
 
     def note = act(:note) { |order| Orders::AddNote.call(order: order, by: current_user, note: text(:note)) }
+
+    # POST, not GET: opening a person's full address is a read of personal data, so it needs the CSRF token, is limited per staff
+    # member (rack_attack.rb) and writes the audit row and the order's history entry (ids only, never the address) BEFORE the page
+    # with the address is built. The address is on this one response (Cache-Control: no-store from the base controller) and nowhere else.
+    def reveal_address
+      address = OrderAddress.find_by(order_id: @order.id)
+      return redirect_to(admin_order_path(@order), alert: "There is no address on file for this order.", status: :see_other) unless address
+
+      Order.transaction do
+        AdminAudit.record!(actor: current_user, action: "order_address_revealed", subject: @order, metadata: { order_id: @order.id })
+        OrderEvent.create!(order: @order, actor: current_user, actor_kind: "staff", action: "address_revealed", from_status: @order.status, to_status: @order.status)
+      end
+      @revealed = address
+      load_show
+      render :show
+    end
 
     # POST, not GET: an export is a bulk read of personal-adjacent data, so it needs the CSRF token, and the audit row is written
     # before the first byte is sent.
@@ -60,7 +76,14 @@ module Admin
 
     private
 
-    def set_order = @order = Order.includes(:user).find(params[:id])
+    def set_order = @order = Order.includes(:user, :address).find(params[:id])
+
+    def load_show
+      @events = @order.events.includes(:actor).newest_first.to_a
+      @actions = Orders::StateMachine.actions_for(@order.status, "staff")
+    end
+
+    def override_reason = params[:address_override] == "1" ? text(:address_override_reason) : nil
 
     def args(order) = { order: order, by: current_user, as: :staff, reason_code: text(:reason_code), note: text(:note) }
 

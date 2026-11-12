@@ -35,9 +35,9 @@
       <span class="shop-sticker__art" aria-hidden="true"><%= @sticker.emoji %></span>
       <div class="shop-sticker__body">
         <h2 id="sticker-heading">Claim your free sticker</h2>
-        <p><%= @sticker.description %> No coins needed<%= ", and you don't have to be verified yet" if @spend_state == :unverified %>. The team will message you on Slack to arrange delivery.</p>
+        <p><%= @sticker.description %> No coins needed<%= ", and you don't have to be verified yet" if @spend_state == :unverified %>. <%= @sticker.requires_shipping? ? "You'll choose where to send it next." : "The team will message you on Slack to arrange delivery." %></p>
       </div>
-      <%= button_to "Claim your free sticker", shop_sticker_path, class: "btn btn--primary" %>
+      <%= link_to "Claim your free sticker", new_shop_sticker_path, class: "btn btn--primary" %>
     </section>
   <% end %>
 

@@ -24,7 +24,7 @@ class ShopTest < ActionDispatch::IntegrationTest
   end
 
   def place_order(prize_key: "tshirt", key: SecureRandom.hex(8))
-    post orders_path, params: { prize_key: prize_key, idempotency_key: key }
+    post_order_as @user, prize_key: prize_key, key: key
   end
 
   # --- access ---
@@ -136,7 +136,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     assert_select ".shop-balance--locked"
     assert_select "#shop-verify-note .badge", text: /Locked for now/
     assert_select ".shop-item a.btn", 0
-    assert_select ".shop-sticker button", text: "Claim your free sticker"
+    assert_select ".shop-sticker a.btn", text: "Claim your free sticker"
   end
 
   test "the shop pages never show a dollar amount" do
@@ -177,7 +177,8 @@ class ShopTest < ActionDispatch::IntegrationTest
     assert_select "h1", /Battletown T-shirt/
     assert_select "#confirm-price", text: "50 coins"
     assert_select "#confirm-after", text: "30 coins"
-    assert_select ".shop-note", /team will message you on Slack to arrange delivery/
+    assert_select ".address-step", /Where should we send it/
+    assert_select ".shop-note", /cancel the order from your orders page/
     assert_select "form[action='#{orders_path}'] input[name=idempotency_key][type=hidden]", 1
     assert_select "form[action='#{orders_path}'] input[name=prize_key][value=tshirt]", 1
     assert_select "form[action='#{orders_path}'] button[type=submit]", text: /Place order for 50 coins/
@@ -213,7 +214,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     get shop_item_path("tshirt")
     key = css_select("input[name=idempotency_key]").first["value"]
-    post orders_path, params: { prize_key: "tshirt", idempotency_key: key }
+    post_order_as @user, key: key
     assert_redirected_to order_path(Order.last)
     follow_redirect!
     assert_select ".flash--notice", /Order placed/
@@ -258,7 +259,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     verified!(@user)
     give_coins(@user, 100)
     sign_in_as @user
-    post orders_path, params: { prize_key: "tshirt", idempotency_key: "price-test-123", coins: 1 }
+    post_order_as @user, key: "price-test-123", coins: 1
     assert_equal 50, Order.last.coins
     assert_equal 50, Coins::Balance.total(@user)
   end
@@ -321,7 +322,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     get shop_path
     assert_select ".shop-sticker h2", text: "Claim your free sticker"
-    post shop_sticker_path
+    claim_sticker_as @user
     assert_redirected_to orders_path
     follow_redirect!
     assert_select ".shop-order__name", /sticker/i

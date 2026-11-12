@@ -15,6 +15,7 @@ class SessionsController < ApplicationController
 
   def failure
     return hackatime_failure if params[:strategy].to_s == "hackatime"
+    return address_failure if params[:strategy].to_s == "hack_club_address"
 
     Rails.logger.warn("Auth failure: #{params[:message].to_s.truncate(60).inspect}")
     if params[:message].to_s == "access_denied"
@@ -53,6 +54,22 @@ class SessionsController < ApplicationController
       redirect_to hackatime_path, notice: "No problem, Hackatime wasn't connected. You can connect whenever you're ready."
     else
       redirect_to hackatime_path, alert: "We couldn't connect to Hackatime. Please try again."
+    end
+  end
+
+  # A failed or refused address lookup (bad state, denied consent, no one signed in ...) is not a sign-in failure either: send them back
+  # to the page they started from (or the shop), and keep nothing. Pressing Deny is a choice, not an error.
+  def address_failure
+    message = params[:message].to_s
+    Rails.logger.warn("Address lookup failure: #{message.truncate(40).inspect}")
+    return redirect_to root_path, alert: "Sign in to order from the shop." unless signed_in?
+
+    context = Orders::AddressLookup.consume(session)
+    target = context ? Orders::AddressLookup.return_path(context) : shop_path
+    if message == "access_denied"
+      redirect_to target, notice: "No problem, nothing was loaded. We need an address from Hack Club Auth to post your prize; you can do this whenever you're ready."
+    else
+      redirect_to target, alert: "We couldn't load your addresses from Hack Club Auth, so nothing was saved. Please try again."
     end
   end
 

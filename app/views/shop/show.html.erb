@@ -27,12 +27,29 @@
     </dl>
   </div>
 
-  <p class="alert shop-note">This sends an order request. The team will message you on Slack to arrange delivery. Changed your mind? You can cancel the order from your orders page until it's fulfilled, and your coins come straight back.</p>
+  <% if @prize.requires_shipping? %>
+    <div data-controller="ship-to-picker" class="stack">
+      <%= render "shop/address_step", lookup: @lookup, offer: @address_offer, expired: @address_offer_expired, select_form: "order-form" %>
 
-  <%= form_with url: orders_path, method: :post, class: "shop-confirm__form" do %>
-    <%= hidden_field_tag :prize_key, @prize.key, id: nil %>
-    <%= hidden_field_tag :idempotency_key, @idempotency_key, id: nil %>
-    <%= button_tag "Place order for #{coins_text(@prize.coins)}", type: "submit", class: "btn btn--primary btn--lg", data: { turbo_submits_with: "Placing order..." } %>
-    <%= link_to "Not now", shop_path, class: "btn" %>
+      <p class="alert shop-note">This sends an order request. Changed your mind? You can cancel the order from your orders page until the team sends it, and your coins come straight back.</p>
+
+      <%= form_with url: orders_path, method: :post, id: "order-form", class: "shop-confirm__form" do %>
+        <%= hidden_field_tag :prize_key, @prize.key, id: nil %>
+        <%= hidden_field_tag :idempotency_key, @idempotency_key, id: nil %>
+        <%= button_tag "Place order for #{coins_text(@prize.coins)}", type: "submit", class: "btn btn--primary btn--lg",
+                       disabled: @address_offer.nil? || @address_offer.addresses.empty?,
+                       data: { ship_to_picker_target: "submit", turbo_submits_with: "Placing order..." } %>
+        <%= link_to "Not now", shop_path, class: "btn" %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="alert shop-note">This sends an order request. The team will message you on Slack to arrange delivery. Changed your mind? You can cancel the order from your orders page until it's fulfilled, and your coins come straight back.</p>
+
+    <%= form_with url: orders_path, method: :post, class: "shop-confirm__form" do %>
+      <%= hidden_field_tag :prize_key, @prize.key, id: nil %>
+      <%= hidden_field_tag :idempotency_key, @idempotency_key, id: nil %>
+      <%= button_tag "Place order for #{coins_text(@prize.coins)}", type: "submit", class: "btn btn--primary btn--lg", data: { turbo_submits_with: "Placing order..." } %>
+      <%= link_to "Not now", shop_path, class: "btn" %>
+    <% end %>
   <% end %>
 </section>

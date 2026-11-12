@@ -143,6 +143,20 @@ class Rack::Attack
     req.ip if req.post? && req.path.match?(ORDER_EXPORT_PATH)
   end
 
+  # Shipping addresses (config/orders.yml). Starting the Hack Club Auth address round trip is a person clicking a button: a small
+  # limit per person (the session's user id; no session, no throttle here, and the strategy refuses anyone not signed in). The way
+  # back (the callback) costs a token exchange and an API call, so it is limited per address too. Opening a full address as staff
+  # is limited per staff member per hour, on top of the general staff limit per address.
+  throttle("address_lookup/user", limit: ->(_req) { Orders::Config.current.address_lookups_per_10_minutes }, period: 10.minutes) do |req|
+    req.session["user_id"].to_s.presence if req.post? && req.path.match?(%r{\A/{1,3}auth/hack_club_address/?\z})
+  end
+  throttle("address_callback/ip", limit: 20, period: 1.minute) do |req|
+    req.ip if req.path.match?(%r{\A/{1,3}auth/hack_club_address/callback/?\z})
+  end
+  throttle("admin_address_reveals/user", limit: ->(_req) { Orders::Config.current.address_reveals_per_hour }, period: 1.hour) do |req|
+    req.session["user_id"].to_s.presence if req.post? && req.path.match?(%r{\A/{1,3}admin/orders/\d+/address/reveal(?:\.\w+)?/?\z})
+  end
+
   throttle("req/ip", limit: 300, period: 5.minutes) do |req|
     req.ip unless req.path.start_with?("/assets/", "/up", "/api/privacy/")
   end

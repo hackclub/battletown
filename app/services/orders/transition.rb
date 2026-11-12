@@ -1,12 +1,4 @@
 module Orders
-  # What a transition returns. `outcome` is :done (something changed, `event` is the history row) or :unchanged (the order was
-  # already where the action leads, so nothing was written and nobody was refunded twice).
-  Result = Data.define(:order, :event, :outcome) do
-    def changed? = outcome == :done
-
-    def unchanged? = outcome == :unchanged
-  end
-
   # The shared shape of every status change: check who is asking, take the owner's row lock and then the order's (CONTRACT, "Row
   # lock order"), repeat harmlessly when the order is already there, check the table in StateMachine, change the order, write
   # the history row, give the coins back when the move refunds, and write the staff audit row, all in one transaction. After it
@@ -39,6 +31,7 @@ module Orders
         result = already? ? Result.new(order: @order, event: nil, outcome: :unchanged) : perform
       end
       announce(result)
+      PurgeAddresses.sweep_quietly if result.changed?
       result
     end
 
@@ -48,6 +41,9 @@ module Orders
     def action = raise(NotImplementedError)
 
     def refusal = "That can't be done to this order."
+
+    # A subclass refuses the move here (before anything changes) by raising a friendly Shop::Error.
+    def guard!; end
 
     # Anything extra a subclass sets on the order for this move (the tracking for a shipment).
     def extra_attributes = {}
@@ -70,12 +66,14 @@ module Orders
       raise NotAllowed, refusal unless StateMachine.allowed?(action, from, @actor)
       raise NotAllowed, refusal if @actor == "buyer" && @order.signup_sticker?
 
+      guard!
       reason = checked_reason
       note = checked_note
       change!(**extra_attributes)
       event = OrderEvent.create!(order: @order, actor: (@by if staff?), actor_kind: @actor, action: StateMachine.event_action(action), from_status: from,
                                  to_status: @order.status, reason_code: reason, note: note)
       refund_coins if StateMachine.refunds?(action)
+      PurgeAddresses.after_transition(@order, by: (@by if staff?))
       audit(event)
       Result.new(order: @order, event: event, outcome: :done)
     end
@@ -124,8 +122,11 @@ module Orders
 
       AdminAudit.record!(actor: @by, action: "order_#{event.action}", subject: @order,
                          metadata: { order_id: @order.id, from_status: event.from_status, to_status: event.to_status, reason_code: event.reason_code,
-                                     coins: @order.coins }.compact)
+                                     coins: @order.coins }.merge(audit_extra).compact)
     end
+
+    # More audit metadata for a move (flat ids, codes and booleans only; see AdminAudit::Metadata).
+    def audit_extra = {}
 
     def announce(result)
       return unless result.changed? && ANNOUNCED.include?(result.event.action)

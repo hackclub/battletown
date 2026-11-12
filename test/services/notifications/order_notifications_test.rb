@@ -25,6 +25,9 @@ class Notifications::OrderNotificationsTest < ActiveSupport::TestCase
     travel_back
   end
 
+  # These tests are about messages, not addresses: every order comes with the address checkout would have copied in, so it can ship.
+  def order_for(user = @buyer, prize: "tshirt", address: true) = super
+
   def rows(kind = nil, channel: "slack_dm")
     scope = Notification.where(user_id: @buyer.id, channel: channel)
     kind ? scope.where(kind: kind) : scope

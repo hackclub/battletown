@@ -1,0 +1,39 @@
+<% content_for :title, "Claim your free sticker" %>
+<section class="container shop shop--narrow stack">
+  <p class="shop-back"><%= link_to "Back to the shop", shop_path, class: "btn btn--ghost btn--sm" %></p>
+  <header class="page-header">
+    <p class="eyebrow">Free, no coins</p>
+    <h1>Claim your <%= @sticker.name.downcase %>?</h1>
+  </header>
+
+  <div class="card card--chunky shop-confirm">
+    <div class="shop-item__art shop-confirm__art">
+      <% if @sticker.image.present? %>
+        <%= image_tag @sticker.image, alt: "", class: "shop-item__image" %>
+      <% else %>
+        <span class="shop-item__emoji" aria-hidden="true"><%= @sticker.emoji %></span>
+      <% end %>
+    </div>
+    <h2 class="card__title"><%= @sticker.name %></h2>
+    <p class="shop-confirm__description"><%= @sticker.description %></p>
+  </div>
+
+  <% if @sticker.requires_shipping? %>
+    <div data-controller="ship-to-picker" class="stack">
+      <%= render "shop/address_step", lookup: @lookup, offer: @address_offer, expired: @address_offer_expired, select_form: "sticker-form" %>
+
+      <%= form_with url: shop_sticker_path, method: :post, id: "sticker-form", class: "shop-confirm__form" do %>
+        <%= button_tag "Claim your free sticker", type: "submit", class: "btn btn--primary btn--lg",
+                       disabled: @address_offer.nil? || @address_offer.addresses.empty?,
+                       data: { ship_to_picker_target: "submit", turbo_submits_with: "Claiming..." } %>
+        <%= link_to "Not now", shop_path, class: "btn" %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="alert shop-note">The team will message you on Slack to arrange delivery.</p>
+    <%= form_with url: shop_sticker_path, method: :post, class: "shop-confirm__form" do %>
+      <%= button_tag "Claim your free sticker", type: "submit", class: "btn btn--primary btn--lg", data: { turbo_submits_with: "Claiming..." } %>
+      <%= link_to "Not now", shop_path, class: "btn" %>
+    <% end %>
+  <% end %>
+</section>

@@ -21,11 +21,15 @@ module OrdersTestHelper
     @original_admin_uids.nil? ? ENV.delete("ADMIN_HCA_UIDS") : ENV["ADMIN_HCA_UIDS"] = @original_admin_uids
   end
 
-  def order_for(user = @buyer, prize: "tshirt")
-    buy(user, prize)
+  # `address: true` gives a posted item the shipping address checkout would have copied in (needed before staff can ship it).
+  def order_for(user = @buyer, prize: "tshirt", address: false)
+    buy(user, prize, address: address)
   end
 
+  # `Ship` gives a posted order the address checkout would have copied in first (the lifecycle tests are not about addresses; the
+  # address tests build their own orders and pass `address_override_reason:` or leave the address off on purpose).
   def staff_do(service, order, **options)
+    give_address!(order) if service == "Ship" && !options.key?(:address_override_reason) && order.requires_shipping? && !OrderAddress.exists?(order_id: order.id)
     "Orders::#{service}".constantize.call(order: order, by: @staff, as: :staff, **options)
   end
 

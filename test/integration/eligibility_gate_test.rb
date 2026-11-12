@@ -51,7 +51,7 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def place_order(prize_key: "tshirt", key: SecureRandom.hex(8)) = post(orders_path, params: { prize_key: prize_key, idempotency_key: key })
+  def place_order(prize_key: "tshirt", key: SecureRandom.hex(8)) = post_order_as(@user, prize_key: prize_key, key: key)
 
   def approved_ship
     (7..9).each { |day| code(@user, D[day], HOUR) }
@@ -190,7 +190,7 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
       assert_select ".shop-sticker", text: /No coins needed\./
       assert_select ".shop-sticker", text: /don't have to be verified/, count: 0
       assert_difference "Order.where(kind: 'signup_sticker').count", 1 do
-        post shop_sticker_path
+        claim_sticker_as @user
       end
     end
   end

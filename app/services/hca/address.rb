@@ -6,10 +6,12 @@ module Hca
   Address = Data.define(:id, :recipient_name, :line_1, :line_2, :city, :state, :postal_code, :country, :phone_number, :primary)
 
   class Address
+    include AddressLines
+
     LIMITS = { recipient_name: 200, line_1: 200, line_2: 200, city: 100, state: 100, postal_code: 30, phone_number: 40 }.freeze
     ID_FORMAT = /\A[A-Za-z0-9_!:.-]{1,80}\z/
     # Control characters, bidi overrides and isolates, zero-width characters and the byte order mark: never part of an address.
-    HIDDEN = /[[:cntrl:]​-‏‪-‮⁠-⁩﻿]/
+    HIDDEN = /[[:cntrl:]\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/
 
     # Plain text for one field: NFC, hidden characters removed, white space squeezed, cut to the field's limit (or nil when empty).
     def self.clean(value, limit)

@@ -11,7 +11,7 @@ class AdminOrdersTest < ActionDispatch::IntegrationTest
   setup do
     setup_orders_world(coins: 1000)
     @buyer.update_columns(created_at: Time.utc(2026, 11, 1, 12))
-    @waiting = order_for(@buyer, prize: "tshirt")
+    @waiting = order_for(@buyer, prize: "tshirt", address: true)
     @sticker = Shop::ClaimSticker.call(user: @other)
     @done = order_for(@buyer, prize: "custom_sticker")
     Orders::Fulfil.call(order: @done, by: @staff, as: :staff)
@@ -60,7 +60,7 @@ class AdminOrdersTest < ActionDispatch::IntegrationTest
     assert_select "#order-#{@sticker.id}", text: /Identity: /
     assert_select "#order-#{@waiting.id} a", text: "Open"
     assert_select "tbody button", 0, "cancelling needs a reason, so it lives on the order page"
-    assert_no_match(/address|@example/i, css_select("tbody").text)
+    assert_no_match(/address|@example/i, css_select("tbody").text.gsub("Address needed", ""))
   end
 
   test "queue order is requested, on hold, shipped, then finished" do
@@ -259,7 +259,7 @@ class AdminOrdersTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "section[aria-labelledby=order-facts] a[href='https://www.ups.com/track?tracknum=1Z999AA10123456784'][rel='noopener noreferrer nofollow']"
 
-    bad = order_for(@buyer, prize: "custom_sticker")
+    bad = order_for(@buyer, prize: "custom_sticker", address: true)
     patch ship_admin_order_path(bad), params: { tracking: { carrier: "ups", number: "<script>" } }
     assert_redirected_to admin_order_path(bad)
     follow_redirect!
@@ -305,7 +305,7 @@ class AdminOrdersTest < ActionDispatch::IntegrationTest
     patch cancel_admin_order_path(@waiting), params: { reason_code: "buyer_request", confirm: "cancel" }
     assert_equal before + 50, Coins::Balance.total(@buyer)
     assert_equal 1, refunds_for.count
-    assert_equal [ "cancelled", "buyer_request", "They asked", "staff" ], @waiting.events.last.then { |e| [ e.to_status, e.reason_code, e.note, e.actor_kind ] }
+    assert_equal [ "cancelled", "buyer_request", "They asked", "staff" ], @waiting.events.where.not(action: "address_purged").last.then { |e| [ e.to_status, e.reason_code, e.note, e.actor_kind ] }
   end
 
   test "refund after shipping or fulfilment needs a reason and the typed word, and refunds once" do
@@ -429,8 +429,8 @@ class AdminOrdersTest < ActionDispatch::IntegrationTest
     as_staff
     body = export(include_contact: "1", status: "requested", kind: "purchase", q: "shirt")
     table = CSV.parse(body, headers: true)
-    assert_equal %w[display_name slack_id], table.headers.last(2)
-    assert_equal [ [ "Pat Buyer", "U0ORDERBUY" ] ], table.map { |row| row.values_at("display_name", "slack_id") }
+    assert_equal %w[display_name slack_id ship_country], table.headers.last(3)
+    assert_equal [ [ "Pat Buyer", "U0ORDERBUY", "US" ] ], table.map { |row| row.values_at("display_name", "slack_id", "ship_country") }
     audit = AdminAuditEvent.where(action: "order_exported").last
     assert_equal({ "filter_status" => "requested", "filter_kind" => "purchase", "filter_query" => "shirt", "include_contact" => true, "row_count" => 1, "truncated" => false },
                  audit.metadata)

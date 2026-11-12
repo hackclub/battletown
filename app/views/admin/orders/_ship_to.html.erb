@@ -1,0 +1,31 @@
+<%# locals: (order:, revealed: nil) -%>
+<%# Staff see the country and the city by default. The full address (and the phone) appears only on the response to the "Reveal" POST,
+    after the audit row is written; staff cannot edit it, and it is never in the list, the CSV, a message or a log. -%>
+<% address = order.address %>
+<section class="card admin-panel" aria-labelledby="order-address" id="order-address-panel">
+  <h2 id="order-address" class="card__title">Ship to</h2>
+  <% if revealed %>
+    <p class="alert alert--warning" role="status">Full address, shown on this page only. Opening it was recorded in the audit trail. Don't copy it into Slack, notes or a spreadsheet.</p>
+    <address class="admin-address" id="revealed-address">
+      <% revealed.lines.each do |line| %><%= line %><br><% end %>
+      <% if revealed.phone_number.present? %>Phone <%= revealed.phone_number %><br><% end %>
+    </address>
+  <% elsif address %>
+    <dl class="admin-dl">
+      <dt>Country</dt><dd><%= address.country %></dd>
+      <dt>City</dt><dd><%= address.city %></dd>
+      <% if address.purge_after %><dt>Deleted on</dt><dd><%= address.purge_after.utc.strftime("%-d %b %Y") %></dd><% end %>
+    </dl>
+    <%= form_with url: reveal_address_admin_order_path(order), method: :post, class: "admin-form", data: { turbo: false, controller: "confirm",
+                  confirm_message_value: "Open this person's full address? This is personal data about a teenager and your opening it is recorded.", action: "submit->confirm#ask" } do %>
+      <%= button_tag "Reveal full address", type: "submit", name: nil, class: "btn" %>
+      <span class="field__hint admin-form__hint">Recorded in the audit trail. You can't edit the address; the buyer can change it until the order ships.</span>
+    <% end %>
+  <% elsif !order.requires_shipping? %>
+    <p>This item is not posted, so there is no address.</p>
+  <% elsif order.address_needed? %>
+    <p><span class="badge badge--warning" id="address-needed-chip">Address needed</span> The buyer has not chosen an address yet.</p>
+  <% else %>
+    <p>No address on file<%= order.shipped? || order.fulfilled? ? " (it was deleted, or the order was placed before addresses were collected)" : "" %>.</p>
+  <% end %>
+</section>

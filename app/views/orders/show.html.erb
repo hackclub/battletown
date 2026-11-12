@@ -21,6 +21,10 @@
     </dl>
   </div>
 
+  <% if @order.requires_shipping? && (@order.address || @order.address_changeable?) %>
+    <%= render "orders/ship_to", order: @order %>
+  <% end %>
+
   <section class="card shop-timeline-card" aria-labelledby="order-timeline">
     <h2 id="order-timeline" class="card__title">What happened</h2>
     <ol class="shop-timeline" role="list">

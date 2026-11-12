@@ -30,12 +30,18 @@ Rails.application.routes.draw do
   # The shop (signed in and onboarded). Orders are always looked up through current_user (others' ids are a 404).
   get "shop", to: "shop#index"
   get "shop/items/:key", to: "shop#show", as: :shop_item, constraints: { key: /[a-z0-9_]{1,60}/ }
+  get "shop/sticker", to: "sticker_claims#new", as: :new_shop_sticker
   post "shop/sticker", to: "sticker_claims#create", as: :shop_sticker
   # An item's picture. Public (the landing page shows it too), same-origin, cached privately and revalidated by ETag.
   get "shop/items/:key/image", to: "shop_item_images#show", as: :shop_item_image, format: false, constraints: { key: /[a-z0-9_]{1,60}/ }
   scope "shop" do
     resources :orders, only: %i[index show create] do
-      member { patch :cancel }
+      member do
+        patch :cancel
+        # The delivery address of a physical order: pick one of the Hack Club Auth addresses just loaded (GET), and save it (PATCH).
+        get :address
+        patch "address", action: :update_address, as: :update_address
+      end
     end
   end
 
@@ -110,6 +116,8 @@ Rails.application.routes.draw do
   get "auth/:provider/callback", to: "sessions#create", constraints: { provider: "hack_club" }
   # Hackatime account linking, additive to sign-in: the callback never signs anyone in (HackatimeConnectionsController).
   get "auth/hackatime/callback", to: "hackatime_connections#create"
+  # The shipping-address lookup at checkout, also additive to sign-in: the callback never signs anyone in (AddressCallbacksController).
+  get "auth/hack_club_address/callback", to: "address_callbacks#create"
   get "auth/failure", to: "sessions#failure"
   resource :hackatime, only: [ :show, :destroy ], controller: "hackatime_connections"
   delete "logout", to: "sessions#destroy"
@@ -171,6 +179,8 @@ Rails.application.routes.draw do
         patch :refund
         patch :tracking
         post :note
+        # Opens the full shipping address for this one response, after writing it to the audit trail. A POST, never a GET.
+        post "address/reveal", action: :reveal_address, as: :reveal_address
       end
     end
     resources :ships, only: %i[index show] do
