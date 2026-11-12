@@ -1,0 +1,30 @@
+<%# The screenshot slots of the ship form (flag `ship_screenshots`). Locals: ship, carry (the rejected ship whose screenshots are offered again for a new one, or nil) %>
+<% config = ShipImages::Config.current %>
+<% source = ship.persisted? ? ship : carry %>
+<% existing = source ? source.images.index_by(&:position) : {} %>
+<%= hidden_field_tag :from, carry.id, id: nil if carry %>
+<fieldset class="field ship-images">
+  <legend>Screenshots (optional)</legend>
+  <p class="field__hint" id="ship-images-hint">Add up to <%= config.max_files %> screenshots so reviewers can see what you made (optional). Please leave out your face, address, passwords and anyone else's personal info. Only you and the Battletown review team can see these.</p>
+  <p class="field__hint" id="ship-images-types">PNG, JPEG, WebP or GIF, up to <%= number_with_precision(config.max_upload_bytes / 1_000_000.0, precision: 1, strip_insignificant_zeros: true) %> MB each. We shrink each one and remove hidden details such as where it was taken. If this page shows an error, choose your files again.</p>
+  <ol class="ship-images__slots">
+    <% (1..config.max_files).each do |position| %>
+      <% image = existing[position] %>
+      <li class="ship-images__slot">
+        <p class="ship-images__label"><strong>Screenshot <%= position %></strong></p>
+        <% if image %>
+          <%= image_tag ship_image_path(source, position), alt: image.alt_text, width: image.width, height: image.height, class: "ship-images__thumb", loading: "lazy" %>
+          <label class="option ship-images__remove"><%= check_box_tag "images[#{position}][remove]", "1", false, id: "ship-image-#{position}-remove" %> Remove this screenshot</label>
+        <% end %>
+        <div class="field">
+          <%= label_tag "ship-image-#{position}-file", (image ? "Replace it with another picture" : "Choose a picture") %>
+          <%= file_field_tag "images[#{position}][file]", id: "ship-image-#{position}-file", accept: "image/png,image/jpeg,image/webp,image/gif", "aria-describedby": "ship-images-hint ship-images-types" %>
+        </div>
+        <div class="field">
+          <%= label_tag "ship-image-#{position}-alt", "Describe it for people who can't see it (optional)" %>
+          <%= text_field_tag "images[#{position}][alt]", image&.alt, id: "ship-image-#{position}-alt", class: "input", maxlength: ShipImage::ALT_MAX, autocomplete: "off" %>
+        </div>
+      </li>
+    <% end %>
+  </ol>
+</fieldset>

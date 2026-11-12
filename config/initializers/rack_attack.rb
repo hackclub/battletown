@@ -41,6 +41,35 @@ class Rack::Attack
     req.ip if req.path.start_with?("/plinko") && !req.get?
   end
 
+  # Ship screenshots (flag `ship_screenshots`, config/game.yml `ship_screenshots:`): a ship form post that carries files.
+  # The size check runs here, on the Content-Length header, BEFORE Rails reads or parses the body, so an oversized upload
+  # costs nothing but the 413 (a request without the header carries no file the app will accept; the per-file limit is
+  # checked again on the temp file in ShipImages::Processor). Uploads are also limited per address.
+  SHIP_FORM_PATH = %r{\A(?:/projects/\d+/ships|/ships/\d+)/?\z}
+  SIZE_RULE = "ship-images/size".freeze
+
+  def self.ship_upload?(req)
+    (req.post? || req.patch? || req.put?) && req.path.match?(SHIP_FORM_PATH) && req.media_type == "multipart/form-data"
+  end
+
+  blocklist(SIZE_RULE) do |req|
+    ship_upload?(req) && req.content_length.to_i > ShipImages::Config.current.max_request_bytes
+  end
+
+  self.blocklisted_responder = lambda do |request|
+    if request.env["rack.attack.matched"] == SIZE_RULE
+      limits = ShipImages::Config.current
+      [ 413, { "content-type" => "text/plain; charset=utf-8" },
+        [ "That upload is too big. Each screenshot can be up to #{limits.max_upload_bytes / 1_000_000.0} MB and a ship can have #{limits.max_files}.\n" ] ]
+    else
+      [ 403, { "content-type" => "text/plain; charset=utf-8" }, [ "Forbidden\n" ] ]
+    end
+  end
+
+  throttle("ship-images/ip", limit: ->(_req) { ShipImages::Config.current.uploads_per_10_minutes }, period: 10.minutes) do |req|
+    req.ip if ship_upload?(req)
+  end
+
   # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept
   # out of the general throttle below so a burst of requests there can never block it.
   throttle("privacy/ip", limit: 120, period: 1.minute) do |req|

@@ -6,5 +6,5 @@
     <h1>Ship <%= @project.name %></h1>
     <p class="lead">Shipping turns the time you've coded into approved hours and coins.</p>
   </header>
-  <%= render "ships/form", ship: @ship, project: @project, readiness: @readiness, window: @window, previous_ship: @previous_ship, min_seconds: @min_seconds %>
+  <%= render "ships/form", ship: @ship, project: @project, readiness: @readiness, window: @window, previous_ship: @previous_ship, min_seconds: @min_seconds, carry: @carry_ship %>
 </div>

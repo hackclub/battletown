@@ -66,6 +66,8 @@
       </section>
     </div>
 
+    <%= render "ships/screenshots", ship: ship, staff: true if feature?(:ship_screenshots) %>
+
     <% if ship.status_submitted? && ship.user_id == current_user.id %>
       <div class="alert alert--warning admin-warning" role="note">
         <p class="alert__title admin-warning__title">This is your own ship</p>

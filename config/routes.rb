@@ -42,6 +42,12 @@ Rails.application.routes.draw do
     member { patch :withdraw }
   end
 
+  # Ship screenshots (flag `ship_screenshots`: the routes do not exist while it is off). The owner and staff only; others get a 404.
+  constraints Features::Constraint.new(:ship_screenshots) do
+    get "ships/:ship_id/images/:position", to: "ship_images#show", as: :ship_image, format: false,
+                                           constraints: { ship_id: /\d+/, position: /[1-3]/ }
+  end
+
   # Which Slack messages to receive (signed in and onboarded; only the current user's own switches).
   namespace :settings do
     resource :notifications, only: %i[show update]
@@ -140,6 +146,10 @@ Rails.application.routes.draw do
       get "merch", to: "merch_claims#index", as: :merch_claims
       patch "merch/:id/fulfill", to: "merch_claims#fulfill", as: :fulfill_merch_claim, constraints: { id: /\d+/ }
       patch "merch/:id/cancel", to: "merch_claims#cancel", as: :cancel_merch_claim, constraints: { id: /\d+/ }
+    end
+    constraints Features::Constraint.new(:ship_screenshots) do
+      delete "ships/:ship_id/images/:position", to: "ship_images#destroy", as: :ship_image, format: false,
+                                                constraints: { ship_id: /\d+/, position: /[1-3]/ }
     end
   end
 

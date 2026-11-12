@@ -49,6 +49,8 @@
     </dl>
   </section>
 
+  <%= render "ships/screenshots", ship: @ship if feature?(:ship_screenshots) %>
+
   <div class="projects-actions">
     <% if @ship.status_draft? %><%= link_to "Continue draft", edit_ship_path(@ship), class: "btn btn--primary" %><% end %>
     <% if @ship.open? %>

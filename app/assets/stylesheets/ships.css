@@ -45,3 +45,16 @@
 }
 
 .ship__name a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
+
+/* Screenshots (flag ship_screenshots): the form slots and the thumbnails on a ship. Thumbnails are the owner's own and staff-only
+   pictures served by the app itself (same origin); they are cropped to a fixed shape here, the link opens the whole picture. */
+.ship-images__slots { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.ship-images__slot { display: grid; gap: var(--space-3); min-width: 0; padding: var(--space-4); border: 2px solid var(--color-border); border-radius: var(--radius-md); }
+.ship-images__label { margin: 0; }
+.ship-images__remove { min-height: var(--tap-size); }
+.ship-images__thumb { display: block; width: 100%; max-width: 16rem; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: top; border: 2px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface-raised); }
+.ship-shots__list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr)); gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.ship-shots__item { display: grid; gap: var(--space-2); align-content: start; min-width: 0; }
+.ship-shots__item .ship-images__thumb { max-width: none; }
+.ship-shots__link { display: block; }
+.ship-shots__link:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; border-radius: var(--radius-sm); }

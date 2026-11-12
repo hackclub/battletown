@@ -221,6 +221,8 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     Flipper.enable(:team)
     # An admin, so the /admin writes get past the admin check and reach the CSRF check too.
     ENV["ADMIN_HCA_UIDS"] = users(:onboarded).hca_uid
+    # Routes of a flagged feature exist only while its flag is on, so switch them on to check them too.
+    Flipper.enable(:ship_screenshots)
     sign_in_as users(:onboarded)
     assert_equal users(:onboarded).id, session[:user_id]
     with_forgery_protection do

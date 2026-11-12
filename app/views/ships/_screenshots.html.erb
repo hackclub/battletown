@@ -1,0 +1,23 @@
+<%# The screenshots on a ship (flag `ship_screenshots`). Only the owner's ship page and the staff review page render this; nothing else embeds them.
+    Locals: ship, staff (true on the review page: adds the remove button) %>
+<% images = ship.images.to_a %>
+<% if images.any? %>
+  <section class="<%= local_assigns[:staff] ? 'card admin-panel' : 'card' %> ship-shots stack" aria-labelledby="ship-shots-heading-<%= ship.id %>">
+    <h2 id="ship-shots-heading-<%= ship.id %>" class="card__title">Screenshots</h2>
+    <p class="field__hint"><%= local_assigns[:staff] ? "Only the teen and staff can see these. Remove one if it shows personal details or anything inappropriate." : "Only you and the Battletown review team can see these." %></p>
+    <ul class="ship-shots__list">
+      <% images.each do |image| %>
+        <li class="ship-shots__item">
+          <%= link_to ship_image_path(ship, image.position), target: "_blank", rel: "noopener", class: "ship-shots__link" do %>
+            <%= image_tag ship_image_path(ship, image.position), alt: image.alt_text, width: image.width, height: image.height, class: "ship-images__thumb", loading: "lazy" %>
+            <span class="visually-hidden">(full size, opens in a new tab)</span>
+          <% end %>
+          <% if local_assigns[:staff] %>
+            <%= button_to "Remove screenshot #{image.position}", admin_ship_image_path(ship_id: ship.id, position: image.position), method: :delete, class: "btn btn--sm btn--danger",
+                          form: { data: { turbo_confirm: "Remove this screenshot? This cannot be undone." } } %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

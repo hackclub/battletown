@@ -29,7 +29,10 @@ module Ships
 
     def self.call(**args) = new(**args).call
 
-    def initialize(project:, attributes:, submit:, ship: nil, config: Config.current, now: Time.current)
+    # `after_save` (optional) is called with the ship inside the same transaction once it has been saved (the screenshots
+    # of the flagged `ship_screenshots` feature use it, so the ship and its images are saved together or not at all).
+    def initialize(project:, attributes:, submit:, ship: nil, config: Config.current, now: Time.current, after_save: nil)
+      @after_save = after_save
       @project = project
       @attributes = attributes
       @submit = submit
@@ -50,6 +53,7 @@ module Ships
         check_window!(window)
         apply(ship, window)
         saved = ship.save
+        @after_save&.call(ship) if saved
         @ship = ship
       end
       instrument if saved && @submit

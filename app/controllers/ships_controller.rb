@@ -16,6 +16,7 @@ class ShipsController < ApplicationController
   end
 
   def new
+    @carry_ship = carry_source
     open = @project.ships.open_now.first
     return redirect_to(open_ship_path(open), notice: "This project already has a ship in progress.") if open
 
@@ -68,7 +69,12 @@ class ShipsController < ApplicationController
 
   def submit_and_respond(ship)
     submitting = submitting?
-    saved = Ships::Submit.call(project: @project, ship: ship, attributes: ship_params, submit: submitting)
+    @carry_ship = carry_source
+    plan = image_plan(ship)
+    return render_image_errors(ship, plan) if plan&.errors?
+
+    after_save = plan&.changes? ? ->(saved_ship) { plan.commit!(saved_ship) } : nil
+    saved = Ships::Submit.call(project: @project, ship: ship, attributes: ship_params, submit: submitting, after_save: after_save)
     if saved.persisted? && saved.errors.empty?
       notice = submitting ? "Ship submitted. A staff member will review it." : "Draft saved."
       redirect_to ship_path(saved), notice: notice, status: :see_other
@@ -81,6 +87,29 @@ class ShipsController < ApplicationController
     redirect_to open_ship_path(error.ship), notice: "This project already has a ship in progress.", status: :see_other
   rescue Ships::Submit::Refused
     @ship = ship || @project.ships.build(user: current_user, **ship_params.to_h.symbolize_keys)
+    load_window
+    render(ship ? :edit : :new, status: :unprocessable_content)
+  end
+
+  # Screenshots (flag `ship_screenshots`; with it off the upload fields are never read, so nothing is stored).
+  # Every file is checked and re-encoded before the ship is saved: a bad one shows its message and saves nothing.
+  def image_plan(ship)
+    return unless feature?(:ship_screenshots)
+
+    ShipImages::Plan.build(params: params[:images], ship: ship, carry_from: @carry_ship)
+  end
+
+  # "Fix and ship again": the rejected ship (the teen's own, in this project) whose screenshots are offered again.
+  def carry_source
+    return unless feature?(:ship_screenshots) && params[:from].present? && %w[new create].include?(action_name)
+
+    @project.ships.find_by(id: params[:from], status: "rejected")
+  end
+
+  def render_image_errors(ship, plan)
+    @ship = ship || @project.ships.build(user: current_user)
+    @ship.assign_attributes(ship_params)
+    plan.errors.each { |message| @ship.errors.add(:base, message) }
     load_window
     render(ship ? :edit : :new, status: :unprocessable_content)
   end

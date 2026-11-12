@@ -230,3 +230,21 @@ shared:
     # No nudge for someone who has been idle longer than this many days (so switching the flag on never messages people
     # who left long ago, and a nudge row pruned after notifications.retention_days can never be sent a second time).
     nudge_max_idle_days: 30
+
+  # Ship screenshots (app/services/ship_images/**), read through ShipImages::Config. Behind the Flipper flag `ship_screenshots`.
+  ship_screenshots:
+    # How many screenshots one ship can carry (1 to 3: the database allows positions 1 to 3 only).
+    max_files: 3
+    # The biggest single upload accepted, in bytes (5 MB). Checked before the file is read; at most 5,000,000, the
+    # database's own ceiling for a stored image. A whole request is capped at max_files x this plus a small allowance.
+    max_upload_bytes: 5000000
+    # Decompression-bomb guard: the most megapixels an image may have, read from its header before any pixel is decoded.
+    max_megapixels: 24
+    # Re-encoded images are scaled down (never up) so their long side is at most this many pixels.
+    max_edge_px: 1600
+    # WebP quality of the stored copy (1 to 100).
+    webp_quality: 82
+    # ship_images:prune deletes the screenshots of a withdrawn ship this many days after it was withdrawn.
+    withdrawn_retention_days: 30
+    # Uploads (ship form posts that carry files) one address can make in ten minutes.
+    uploads_per_10_minutes: 12

@@ -6,6 +6,6 @@
     <h1>Ship <%= @project.name %></h1>
     <p class="lead">This ship is a draft. The hours below are counted again when you submit it.</p>
   </header>
-  <%= render "ships/form", ship: @ship, project: @project, readiness: @readiness, window: @window, previous_ship: @previous_ship, min_seconds: @min_seconds %>
+  <%= render "ships/form", ship: @ship, project: @project, readiness: @readiness, window: @window, previous_ship: @previous_ship, min_seconds: @min_seconds, carry: @carry_ship %>
   <div><%= button_to "Discard draft", withdraw_ship_path(@ship), method: :patch, class: "btn btn--ghost" %></div>
 </div>

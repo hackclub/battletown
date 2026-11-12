@@ -1,4 +1,4 @@
-<%# Locals: ship, project, readiness, window, previous_ship (nil for a first ship), min_seconds %>
+<%# Locals: ship, project, readiness, window, previous_ship (nil for a first ship), min_seconds, carry (optional: the rejected ship whose screenshots are offered again) %>
 <% config = Game::Config.current %>
 <% form_shown = readiness == :ready || (readiness == :too_few && ship.persisted?) %>
 <section class="card ship-window stack" aria-labelledby="ship-window-heading">
@@ -73,7 +73,7 @@
   <% end %>
   <section class="card" aria-labelledby="ship-form-heading">
     <h2 id="ship-form-heading" class="card__title">Tell the reviewer</h2>
-    <%= form_with model: ship, scope: :ship, url: (ship.persisted? ? ship_path(ship) : project_ships_path(project)), method: (ship.persisted? ? :patch : :post), class: "projects-form ship-form stack" do |f| %>
+    <%= form_with model: ship, scope: :ship, url: (ship.persisted? ? ship_path(ship) : project_ships_path(project)), method: (ship.persisted? ? :patch : :post), multipart: feature?(:ship_screenshots), class: "projects-form ship-form stack" do |f| %>
       <%= render "projects/errors", record: ship, messages: ship_error_messages(ship), title: "This ship was not sent yet" %>
 
       <div class="field">
@@ -93,6 +93,8 @@
         <%= f.url_field :demo_url, class: "input", maxlength: Ship::URL_MAX, placeholder: "https://", autocomplete: "off", "aria-describedby": "ship-demo-hint" %>
         <p class="field__hint" id="ship-demo-hint">Where the reviewer can try it. Must start with https://</p>
       </div>
+
+      <%= render "ships/image_fields", ship: ship, carry: local_assigns[:carry] if feature?(:ship_screenshots) %>
 
       <% spend_state = current_user.spend_state %>
       <% if spend_state == :unverified %>
