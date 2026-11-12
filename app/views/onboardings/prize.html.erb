@@ -5,13 +5,13 @@
       <legend class="visually-hidden">Prize</legend>
       <div class="choice-grid choice-grid--prizes">
         <% selected = onboarding_prize_selection %>
-        <% Prize.all.each do |prize| %>
+        <% Prize.paid.each do |prize| %>
           <label class="choice">
             <%= f.radio_button :prize_key, prize.key, checked: prize.key == selected, class: "choice__input" %>
             <span class="choice__body">
               <span class="choice__emoji" aria-hidden="true"><%= prize.emoji %></span>
               <span class="choice__name"><%= prize.name %></span>
-              <span class="choice__meta"><%= pluralize(prize.hours, "hour") %></span>
+              <span class="choice__meta"><%= prize.hours_text %></span>
               <span class="choice__desc"><%= prize.description %></span>
             </span>
           </label>

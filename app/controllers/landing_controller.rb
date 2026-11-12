@@ -3,6 +3,6 @@ class LandingController < ApplicationController
     return redirect_to dashboard_path if signed_in? && current_user.onboarded?
 
     @referral = Referral.find(session[:referral_source])
-    @prizes = Prize.all.sort_by(&:hours)
+    @prizes = Prize.paid.sort_by(&:coins)
   end
 end

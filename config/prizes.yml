@@ -1,81 +1,83 @@
-# PLACEHOLDER prize catalog. Amber owns the final shop items (Village lock-in, 2026-11-09).
-# Budget assumption: ~$5/hr of coding. Upper bound ~$1,500 (about 50 hours at the top end).
-# Landing page shows `hours`; the shop will show currency. `image` is a slot for artwork.
-# tier: daily | weekly | shop
+# PLACEHOLDER shop catalogue: the designer will replace these items (names, art, prices) later. Keep the shape.
+# The only price is `coins` (integer >= 0). The landing page and onboarding show hours, which are DERIVED in
+# app/models/prize.rb as coins / coins.per_approved_hour (config/game.yml); never store hours or any other price here.
+# `image` is a slot for artwork. tier: daily | weekly | shop.
+# `free_signup: true` marks the free signup sticker: it is claimed once per user, never bought, and is left out of
+# the paid list (landing, onboarding picker, shop grid). Its key is still part of Prize.keys.
+# Keys are stored on users (prize_key) and orders (prize_key): do not rename or reuse one.
 default: &default
   prizes:
     - key: sticker_pack
       name: Sticker pack
-      description: A pack of Hack Club stickers, mailed to you.
-      hours: 2
-      price_usd: 10
+      description: A pack of Hack Club stickers.
+      coins: 20
       emoji: "🏷️"
       image: null
       tier: shop
     - key: custom_sticker
       name: Custom Battletown sticker
       description: Limited-run sticker, designed for this program.
-      hours: 1
-      price_usd: 5
+      coins: 10
       emoji: "✨"
       image: null
       tier: shop
     - key: tshirt
       name: Battletown T-shirt
-      description: Printed T-shirt with free shipping.
-      hours: 5
-      price_usd: 25
+      description: Printed T-shirt.
+      coins: 50
       emoji: "👕"
       image: null
       tier: shop
     - key: enamel_pin
       name: Enamel pin
       description: Hard enamel pin.
-      hours: 4
-      price_usd: 20
+      coins: 40
       emoji: "📍"
       image: null
       tier: shop
     - key: keychain
       name: Keychain
       description: Acrylic keychain.
-      hours: 3
-      price_usd: 15
+      coins: 30
       emoji: "🔑"
       image: null
       tier: shop
     - key: poster
       name: Poster
       description: Boss art poster.
-      hours: 4
-      price_usd: 20
+      coins: 40
       emoji: "🖼️"
       image: null
       tier: shop
     - key: orpheus_plushie
       name: Orpheus plushie
       description: Reserved for high-quality projects.
-      hours: 6
-      price_usd: 30
+      coins: 60
       emoji: "🦖"
       image: null
       tier: shop
     - key: mechanical_keyboard
       name: Mechanical keyboard
       description: Placeholder big prize.
-      hours: 30
-      price_usd: 150
+      coins: 300
       emoji: "⌨️"
       image: null
       tier: shop
     - key: headphones
       name: Headphones
       description: Placeholder big prize.
-      hours: 50
-      price_usd: 250
+      coins: 500
       emoji: "🎧"
       image: null
       tier: shop
+    - key: signup_sticker
+      name: Free Battletown sticker
+      description: A welcome sticker, on us. One per person.
+      coins: 0
+      emoji: "🎁"
+      image: null
+      tier: daily
+      free_signup: true
 
 development: *default
 test: *default

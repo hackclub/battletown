@@ -65,7 +65,7 @@ class AdminStats
 
   def prizes
     counts = User.group(:prize_key).count
-    rows = Prize.all.map { |prize| Row.new(label: prize.name, count: counts.fetch(prize.key, 0)) }
+    rows = Prize.paid.map { |prize| Row.new(label: prize.name, count: counts.fetch(prize.key, 0)) }
     rows << Row.new(label: "No pick yet", count: counts.fetch(nil, 0))
     retired = counts.sum { |key, count| key.nil? || Prize.find(key) ? 0 : count }
     rows << Row.new(label: "Prize no longer offered", count: retired) if retired.positive?

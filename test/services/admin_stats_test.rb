@@ -62,7 +62,7 @@ class AdminStatsTest < ActiveSupport::TestCase
     prizes = counts(stats.prizes)
     assert_equal 1, prizes[Prize.find("tshirt").name]
     assert_equal 1, prizes["No pick yet"]
-    assert_equal Prize.all.size + 1, prizes.size
+    assert_equal Prize.paid.size + 1, prizes.size
 
     kinds = counts(stats.project_kinds)
     assert_equal 1, kinds["Game"]

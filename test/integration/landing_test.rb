@@ -80,7 +80,7 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "lists every prize priced in hours" do
     get "/"
-    assert_select ".landing-prize", Prize.all.size
+    assert_select ".landing-prize", Prize.paid.size
     assert_select ".landing-prize__price", text: "2 hours"
     assert_select ".landing-prize__name", text: "Battletown T-shirt"
   end

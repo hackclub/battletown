@@ -26,7 +26,7 @@
     <p class="onboarding-prize" aria-label="Your chosen prize">
       <span class="onboarding-prize__label">Working toward</span>
       <strong><%= prize.emoji %> <%= prize.name %></strong>
-      <span class="onboarding-prize__hours"><%= pluralize(prize.hours, "hour") %></span>
+      <span class="onboarding-prize__hours"><%= prize.hours_text %></span>
     </p>
   <% end %>
 

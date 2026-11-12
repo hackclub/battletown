@@ -77,7 +77,7 @@
             <span class="landing-prize__emoji" aria-hidden="true"><%= prize.emoji %></span>
             <h3 class="landing-prize__name"><%= prize.name %></h3>
             <p class="landing-prize__description"><%= prize.description %></p>
-            <p class="landing-prize__price"><%= pluralize(prize.hours, "hour") %></p>
+            <p class="landing-prize__price"><%= prize.hours_text %></p>
           </li>
         <% end %>
       </ul>
