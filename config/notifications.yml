@@ -44,6 +44,13 @@ shared:
     returning_nudge: "Hey, Battletown misses you! The boss is still standing. Code for 15 minutes today and your streak bonus gets a welcome-back boost for {boost_days} days: {link} - the Hack Club Battletown team"
     # nps_prompt (flag `nps`): {link} is a one-click page with a 0 to 10 rating and an optional comment, no login needed.
     nps_prompt: "Quick question: how likely are you to recommend Battletown to a friend? It takes a few seconds and you don't need to log in: {link} - the Hack Club Battletown team"
+    # Order status copy (order_shipped, order_fulfilled, order_cancelled, order_refunded): {item} is the item name, {link} the
+    # buyer's own order page in the app, {refund_note} is empty or " Your N coins are back." Deliberately NO tracking number or
+    # reason: the order page shows what the buyer may see. A hold and a release send nothing.
+    order_shipped: "Good news: your order of {item} has shipped! You can see it here: {link} - the Hack Club Battletown team"
+    order_fulfilled: "Your order of {item} was handed over. Enjoy it! You can see it here: {link} - the Hack Club Battletown team"
+    order_cancelled: "Your order of {item} was cancelled.{refund_note} You can see it here: {link} - the Hack Club Battletown team"
+    order_refunded: "Your order of {item} was refunded.{refund_note} You can see it here: {link} - the Hack Club Battletown team"
     ship_rejected: "Thanks for shipping {project}. It needs one more touch before we can approve it: {reason} Fix it up and ship again whenever you're ready: {link} - the Hack Club Battletown team"
 
   # Email (the second channel; everything here is behind the Flipper flag `email`, and nothing is sent unless
@@ -54,6 +61,7 @@ shared:
     subjects:
       ship_approved: "Your {project} ship was approved"
       ship_rejected: "Your {project} ship needs one more touch"
+      order_shipped: "Your {item} order has shipped"
       returning_nudge: "The boss is still standing."
     # At most this many emails of the kinds in `capped_kinds` per person in any 7 days (a nudge is cancelled, not
     # delayed, when the person is at the cap). Ship decisions are transactional: they are not capped.
@@ -71,6 +79,9 @@ shared:
       returning_nudge:
         title: "Email me if I've been away for a while"
         hint: "One friendly note, not a stream of them."
+      order_shipped:
+        title: "Email me when an order ships"
+        hint: "A short note with a link to your order."
 
   # What each switch is called on /settings/notifications (plain words, the owner can edit these).
   preference_labels:
@@ -98,3 +109,15 @@ shared:
     nps_prompt:
       title: "Quick survey"
       hint: "A short question every few days about how likely you are to recommend Battletown. One click, comment optional."
+    order_shipped:
+      title: "Order shipped"
+      hint: "A note when the team sends your order. The link shows the details."
+    order_fulfilled:
+      title: "Order handed over"
+      hint: "A note when the team marks your order fulfilled."
+    order_cancelled:
+      title: "Order cancelled by the team"
+      hint: "A note if the team cancels an order for you and your coins come back."
+    order_refunded:
+      title: "Order refunded"
+      hint: "A note if the team refunds an order and your coins come back."

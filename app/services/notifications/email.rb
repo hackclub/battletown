@@ -8,8 +8,10 @@ module Notifications
   #
   #   ship_approved / ship_rejected  the decision on a ship ("ship decision"); transactional
   #   returning_nudge                "welcome back", queued alongside the Slack nudge (Email::Triggers)
+  #   order_shipped                  "your order shipped", queued next to the Slack DM when staff ship an order (Email::Triggers);
+  #                                  a link to the order page, never the tracking number
   module Email
-    KINDS = (%w[ship_approved ship_rejected returning_nudge] & Notification::KINDS).freeze
+    KINDS = (%w[ship_approved ship_rejected returning_nudge order_shipped] & Notification::KINDS).freeze
     # Kinds that start from a Slack notification row being created, not from a game event of their own.
     FOLLOWS_SLACK_ROW = %w[returning_nudge].freeze
     CHANNEL = "email".freeze

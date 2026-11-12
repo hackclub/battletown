@@ -28,6 +28,15 @@ module Notifications
         end
       end
 
+      # The "your order shipped" email, queued next to the Slack DM. One per order (the key carries the channel).
+      def order_shipped(order)
+        return nil unless Email.enabled? && Email::KINDS.include?("order_shipped")
+
+        guard("order_shipped") do
+          Outbox.enqueue(user: order.user, kind: "order_shipped", subject_id: order.id, key: "email:order:#{order.id}:order_shipped", channel: Preferences::EMAIL)
+        end
+      end
+
       # A Slack outbox row was created. If its kind is one that also goes by email, queue the email.
       def slack_row_created(notification)
         return nil unless notification.channel == Preferences::SLACK && Email::FOLLOWS_SLACK_ROW.include?(notification.kind)

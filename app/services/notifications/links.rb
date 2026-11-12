@@ -17,6 +17,9 @@ module Notifications
 
     def ship(ship) = absolute(routes.ship_path(ship))
 
+    # The buyer's own order page (the only place a tracking number is shown; it never goes in a message).
+    def order(order) = absolute(routes.order_path(order))
+
     # The one-click survey page (no login). The token is made by Nps::Token at send time.
     def feedback(token) = absolute(routes.feedback_path(token: token))
 

@@ -7,6 +7,10 @@ module Notifications
   #   ship_approved.battletown / ship_rejected.battletown (ship_id) -> ship_approved / ship_rejected, one decision per ship
   #                                                      (and, with the `email` flag on, one email row, Email::Triggers)
   #   ship_submitted.battletown (ship_id)                -> no message; pending ship reminders for that project are cancelled
+  #   order_shipped / order_fulfilled / order_cancelled / order_refunded.battletown (order_id, actor_kind)
+  #                                                      -> the same kind, one per order and kind (a cancel the buyer made
+  #                                                      themselves sends nothing: they know). order_shipped also goes by email
+  #                                                      with the `email` flag on. A hold and a release send nothing.
   #
   # Handlers only create or cancel outbox rows. They run inside the request that fired the event, so each one runs in
   # a savepoint and swallows any error, logging the class name only (never a message, id or recipient): a problem
@@ -17,7 +21,11 @@ module Notifications
       "project_link_suggested.battletown" => :link_suggested,
       "ship_submitted.battletown" => :ship_submitted,
       "ship_approved.battletown" => :ship_approved,
-      "ship_rejected.battletown" => :ship_rejected
+      "ship_rejected.battletown" => :ship_rejected,
+      "order_shipped.battletown" => :order_shipped,
+      "order_fulfilled.battletown" => :order_fulfilled,
+      "order_cancelled.battletown" => :order_cancelled,
+      "order_refunded.battletown" => :order_refunded
     }.freeze
 
     module_function
@@ -46,12 +54,31 @@ module Notifications
 
     def ship_rejected(payload) = decided(payload, "ship_rejected", "rejected")
 
+    def order_shipped(payload) = order_status(payload, "order_shipped")
+
+    def order_fulfilled(payload) = order_status(payload, "order_fulfilled")
+
+    def order_cancelled(payload) = order_status(payload, "order_cancelled")
+
+    def order_refunded(payload) = order_status(payload, "order_refunded")
+
     def ship_submitted(payload)
       guard("ship_submitted") do
         ship = Ship.find_by(id: payload[:ship_id])
         ShipReminders.cancel_pending_for(ship.project_id) if ship
       end
     end
+
+    def order_status(payload, kind)
+      guard(kind) do
+        order = Order.includes(:user).find_by(id: payload[:order_id])
+        next unless order && payload[:actor_kind] != "buyer"
+
+        Outbox.enqueue(user: order.user, kind: kind, subject_id: order.id, key: "order:#{order.id}:#{kind}")
+        Email::Triggers.order_shipped(order) if kind == "order_shipped"
+      end
+    end
+    private_class_method :order_status
 
     def decided(payload, kind, status)
       guard(kind) do

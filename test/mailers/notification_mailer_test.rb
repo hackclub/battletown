@@ -11,7 +11,8 @@ class NotificationMailerTest < ActionMailer::TestCase
     @values = {
       "ship_approved" => { project: "Space Farm", hours: "3", coins: 42, locked: true, verify_url: "https://example.test/verify", link: "#{APP}/ships/1" },
       "ship_rejected" => { project: "Space Farm", reason: "The demo link does not open.", link: "#{APP}/projects/1/ships/new?from=1" },
-      "returning_nudge" => { boost_days: 3, link: "#{APP}/dashboard" }
+      "returning_nudge" => { boost_days: 3, link: "#{APP}/dashboard" },
+      "order_shipped" => { item: "Sticker pack", link: "#{APP}/shop/orders/1" }
     }
   end
 
@@ -25,7 +26,7 @@ class NotificationMailerTest < ActionMailer::TestCase
   def mail_for(kind) = with_feature(:email) { build(kind).message }
 
   test "there is one mailer action and one template pair per emailed kind" do
-    assert_equal %w[returning_nudge ship_approved ship_rejected], Notifications::Email::KINDS.sort
+    assert_equal %w[order_shipped returning_nudge ship_approved ship_rejected], Notifications::Email::KINDS.sort
     Notifications::Email::KINDS.each do |kind|
       assert_includes NotificationMailer.action_methods, kind
       assert Rails.root.join("app/views/notification_mailer/#{kind}.text.erb").exist?
@@ -54,6 +55,7 @@ class NotificationMailerTest < ActionMailer::TestCase
     assert_equal "Your Space Farm ship was approved", mail_for("ship_approved").subject
     assert_equal "Your Space Farm ship needs one more touch", mail_for("ship_rejected").subject
     assert_equal "The boss is still standing.", mail_for("returning_nudge").subject
+    assert_equal "Your Sticker pack order has shipped", mail_for("order_shipped").subject
   end
 
   test "a project name with a line break can never break the subject header" do

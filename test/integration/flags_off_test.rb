@@ -180,13 +180,13 @@ class FlagsOffTest < ActionDispatch::IntegrationTest
     assert_select "nav a[href='/plinko'], nav a[href='/team'], nav a[href='/merch']", 0
   end
 
-  test "with every flag off the notification settings page lists only the original Slack switches and no email section" do
+  test "with every flag off the notification settings page lists only the unflagged Slack switches (orders included) and no email section" do
     fill_world
     sign_in_as @teen
     get settings_notifications_path
     assert_response :success
     kinds = css_select("input[type=checkbox][name^='preferences[']").map { |box| box["name"][/\[(.+)\]/, 1] }
-    assert_equal %w[daily_reminder link_question ship_reminder ship_mvp ship_approved ship_rejected], kinds
+    assert_equal %w[daily_reminder link_question ship_reminder ship_mvp ship_approved ship_rejected order_shipped order_fulfilled order_cancelled order_refunded], kinds
     assert_select "#email-settings", 0
     assert_select "input[name=email_enabled]", 0
 

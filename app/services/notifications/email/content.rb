@@ -11,6 +11,7 @@ module Notifications
         when "ship_approved" then ship_approved(row, user)
         when "ship_rejected" then ship_rejected(row, user)
         when "returning_nudge" then returning_nudge(row, user)
+        when "order_shipped" then order_shipped(row, user)
         end
       end
 
@@ -19,6 +20,12 @@ module Notifications
       # are the Slack message's own.
       def returning_nudge(row, user)
         Message.values_for(row, user)&.slice(:boost_days, :link)
+      end
+
+      # Same test as the Slack message (Message): only while the order is still shipped (or already handed over). A link to the
+      # order page and the item name; the tracking number is never emailed.
+      def order_shipped(row, user)
+        Message.values_for(row, user)&.slice(:item, :link)
       end
 
       def ship_approved(row, user)

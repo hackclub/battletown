@@ -31,10 +31,27 @@ module Notifications
       when "ship_reminder", "ship_mvp" then ship_reminder(row, user)
       when "ship_approved" then ship_approved(row, user)
       when "ship_rejected" then ship_rejected(row, user)
+      when "order_shipped" then order_status(row, user, %w[shipped fulfilled])
+      when "order_fulfilled" then order_status(row, user, %w[fulfilled])
+      when "order_cancelled" then order_status(row, user, %w[cancelled])
+      when "order_refunded" then order_status(row, user, %w[refunded])
       when "nps_prompt" then nps_prompt(row, user)
       when "returning_nudge" then returning_nudge(row, user)
       end
     end
+
+    # An order message: the item name, a link to the in-app order page and (for a cancel or refund) the coins that came back. Only
+    # while the order is still in a status the message is true for. NEVER the tracking number, a reason code or a staff note: the
+    # page behind the link shows the buyer what they may see.
+    def order_status(row, user, statuses)
+      order = user.orders.find_by(id: row.subject_id, status: statuses)
+      return nil unless order
+
+      refund_note = order.coins.positive? && %w[cancelled refunded].include?(order.status) ? " Your #{coins_text(order.coins)} are back." : ""
+      { item: short(order.display_name), refund_note: refund_note, link: Links.order(order) }
+    end
+
+    def coins_text(amount) = "#{amount} #{amount == 1 ? 'coin' : 'coins'}"
 
     # The survey link: a fresh signed token (so it lasts `nps.token_ttl_days` from now). Nothing is sent when the flag is
     # off, or when the person already answered for this window or since.
