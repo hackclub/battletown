@@ -439,6 +439,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_123018) do
     t.date "signed_up_on", null: false
     t.datetime "email_opted_out_at"
     t.string "email_unsubscribe_nonce", default: -> { "(gen_random_uuid())::text" }, null: false
+    t.datetime "verification_checked_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["hca_uid"], name: "index_users_on_hca_uid", unique: true
     t.index ["slack_id"], name: "index_users_on_slack_id"
     t.check_constraint "char_length(project_idea) <= 500", name: "users_project_idea_length_check"

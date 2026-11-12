@@ -1,12 +1,22 @@
+<%# locals: (state: :unverified) -%>
 <%# Why spending is locked, and the way out. The same Hack Club verify link as the onboarding account step. %>
 <div class="card card--cream card--tight shop-lock" id="shop-verify-note">
-  <p class="shop-lock__head"><span class="badge badge--warning"><svg class="shop-lock__icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 7V5a4 4 0 1 1 8 0v2h1v7H3V7h1Zm2 0h4V5a2 2 0 1 0-4 0v2Z"/></svg>Locked for now</span></p>
-  <p>
-    Your coins unlock when you verify your identity with Hack Club. You keep earning them in the meantime, and coding is never blocked.
-    <% if current_user.verification_pending? %>
-      Your verification is being reviewed.
-    <% elsif current_user.verification_needs_submission? %>
-      <%= link_to "Verify with Hack Club", ShopHelper::VERIFY_URL, target: "_blank", rel: "noopener noreferrer" %> (opens in a new tab)
+  <% if state == :not_eligible || state == :stale %>
+    <%# Verified, but the eligibility gate (flag) says not yet. Never says why; coins keep accruing. %>
+    <p class="shop-lock__head"><span class="badge badge--warning"><svg class="shop-lock__icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 7V5a4 4 0 1 1 8 0v2h1v7H3V7h1Zm2 0h4V5a2 2 0 1 0-4 0v2Z"/></svg>Locked for now</span></p>
+    <p><%= eligibility_text(state) %> Your coins are saved and you keep earning them, and coding is never blocked.</p>
+    <% if state == :stale %>
+      <div><%= render "shared/signup_button", label: "Sign in again", css: "btn btn--sm" %></div>
     <% end %>
-  </p>
+  <% else %>
+    <p class="shop-lock__head"><span class="badge badge--warning"><svg class="shop-lock__icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 7V5a4 4 0 1 1 8 0v2h1v7H3V7h1Zm2 0h4V5a2 2 0 1 0-4 0v2Z"/></svg>Locked for now</span></p>
+    <p>
+      Your coins unlock when you verify your identity with Hack Club. You keep earning them in the meantime, and coding is never blocked.
+      <% if current_user.verification_pending? %>
+        Your verification is being reviewed.
+      <% elsif current_user.verification_needs_submission? %>
+        <%= link_to "Verify with Hack Club", ShopHelper::VERIFY_URL, target: "_blank", rel: "noopener noreferrer" %> (opens in a new tab)
+      <% end %>
+    </p>
+  <% end %>
 </div>

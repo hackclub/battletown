@@ -5,7 +5,8 @@ module Shop
   #
   #   order = Shop::Purchase.call(user: user, prize_key: "tshirt", idempotency_key: key)
   #
-  # Raises Shop::UnknownPrize, FreeItem, NotVerified, InsufficientCoins or KeyConflict (all friendly Shop::Error).
+  # Raises Shop::UnknownPrize, FreeItem, NotVerified, NotEligible, NeedsRecheck (the last two only while the
+  # `eligibility_gate` flag is on), InsufficientCoins or KeyConflict (all friendly Shop::Error).
   class Purchase
     def self.call(...) = new(...).call
 
@@ -24,7 +25,7 @@ module Shop
 
         prize = Prize.find(@prize_key) or raise UnknownPrize
         raise FreeItem if prize.free_signup? || prize.coins.zero?
-        raise NotVerified unless Spendable.unlocked?(@user)
+        Spendable.check!(@user)
         raise InsufficientCoins if Spendable.balance(@user) < prize.coins
 
         order = Order.create!(user: @user, prize_key: prize.key, prize_name: prize.name, coins: prize.coins, kind: "purchase",

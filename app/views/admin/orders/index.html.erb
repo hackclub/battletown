@@ -46,7 +46,7 @@
                 <td>
                   <%= order.user.display_name.presence || "No name" %><br>
                   <small>Slack: <%= order.user.slack_id.presence || "not set" %></small><br>
-                  <small>Identity: <%= verification_label(order.user) %></small>
+                  <small>Identity: <%= staff_identity_text(order.user) %></small>
                 </td>
                 <td class="num admin-table__num"><%= order.coins %></td>
                 <td>

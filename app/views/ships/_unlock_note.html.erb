@@ -1,5 +1,15 @@
-<%# Shown wherever approved coins are shown to someone who has not verified yet: the coins are theirs, spending unlocks later. %>
-<% unless current_user.verification_verified? %>
+<%# Shown wherever approved coins are shown to someone who cannot spend yet: the coins are theirs, spending unlocks later. %>
+<% state = current_user.spend_state %>
+<% if state == :not_eligible || state == :stale %>
+  <%# Verified, but the eligibility gate (flag `eligibility_gate`) says not yet. Never says why. %>
+  <div class="alert alert--warning ship-note" role="note">
+    <p class="alert__title ship-note__title"><%= eligibility_text(state) %></p>
+    <p>The coins are saved for you and you keep earning them. Coding and shipping are never blocked.</p>
+    <% if state == :stale %>
+      <div><%= render "shared/signup_button", label: "Sign in again", css: "btn btn--sm" %></div>
+    <% end %>
+  </div>
+<% elsif state == :unverified %>
   <div class="alert alert--warning ship-note" role="note">
     <p class="alert__title ship-note__title">Your coins unlock when you verify your identity with Hack Club.</p>
     <% if current_user.verification_ineligible? %>

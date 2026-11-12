@@ -66,9 +66,12 @@ module Notifications
     end
 
     def unlock_note(user)
-      return "" if user.verification_verified?
-
-      " Your coins unlock when you verify your identity with Hack Club (#{ShopHelper::VERIFY_URL}). You keep earning in the meantime."
+      case user.spend_state
+      when :ready then ""
+      when :not_eligible then " Your coins are saved, but prizes are only available to people who qualify for Hack Club YSWS programs. #{Eligibility::Config.current.help_line}"
+      when :stale then " #{Shop::NeedsRecheck::TEXT} Your coins are saved and you keep earning."
+      else " Your coins unlock when you verify your identity with Hack Club (#{ShopHelper::VERIFY_URL}). You keep earning in the meantime."
+      end
     end
 
     # 5, 2.5 (never 5.0).

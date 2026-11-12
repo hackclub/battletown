@@ -6,6 +6,20 @@ module Shop
     def initialize(msg = "Coins unlock when you verify your identity with Hack Club.") = super
   end
 
+  # Verified but not eligible for Hack Club YSWS programs (flag `eligibility_gate`). Kind, and never says why.
+  class NotEligible < Error
+    TEXT = "Prizes are only available to people who qualify for Hack Club YSWS programs. Your account does not qualify yet.".freeze
+
+    def initialize(msg = "#{TEXT} #{Eligibility::Config.current.help_line}") = super
+  end
+
+  # Verified, but the sign-in copy of the verification is older than the maximum age (flag `eligibility_gate`).
+  class NeedsRecheck < Error
+    TEXT = "Sign in again to refresh your verification.".freeze
+
+    def initialize(msg = TEXT) = super
+  end
+
   class InsufficientCoins < Error
     def initialize(msg = "You don't have enough coins for that yet.") = super
   end

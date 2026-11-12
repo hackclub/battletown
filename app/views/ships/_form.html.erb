@@ -94,10 +94,17 @@
         <p class="field__hint" id="ship-demo-hint">Where the reviewer can try it. Must start with https://</p>
       </div>
 
-      <% unless current_user.verification_verified? %>
+      <% spend_state = current_user.spend_state %>
+      <% if spend_state == :unverified %>
         <div class="alert ship-note" role="note">
           <p class="alert__title ship-note__title">You can ship before you verify.</p>
           <p>Approved coins are saved for you and unlock when you verify your identity with Hack Club. <%= ship_verify_link %> (opens in a new tab) whenever you like.</p>
+        </div>
+      <% elsif spend_state != :ready %>
+        <%# Verified, but the eligibility gate (flag) says not yet: shipping is still always open. %>
+        <div class="alert ship-note" role="note">
+          <p class="alert__title ship-note__title">You can ship any time.</p>
+          <p>Approved coins are saved for you. <%= eligibility_text(spend_state) %></p>
         </div>
       <% end %>
 

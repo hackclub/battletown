@@ -10,6 +10,12 @@ module ShopTestHelper
     user
   end
 
+  # Verified AND eligible for Hack Club YSWS programs, with a fresh sign-in copy: can spend even with `eligibility_gate` on.
+  def eligible!(user, checked_at: Time.current)
+    user.update_columns(verification_status: "verified", ysws_eligible: true, verification_checked_at: checked_at)
+    user
+  end
+
   def give_coins(user, amount, key: "seed-#{SecureRandom.hex(4)}")
     Coins::Ledger.credit(user: user, amount: amount, kind: "adjustment", idempotency_key: key)
   end

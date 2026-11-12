@@ -137,3 +137,13 @@ shared:
         name: Week 4 reward
         description: Placeholder for the week 4 reward.
         emoji: "\U0001F3C6"
+
+  # The spending eligibility gate (app/services/eligibility/**), read through Eligibility::Config. Only used while the
+  # Flipper flag `eligibility_gate` is on; with it off, spending needs verification only, exactly as before.
+  eligibility:
+    # How old the copy of the Hack Club Auth verification (users.verification_checked_at, refreshed at every sign-in)
+    # may be before spending asks the person to sign in again. Hack Club Auth is never called in between: a real
+    # periodic refresh needs an API call that is not built (see docs/CONTRACT.md, "Eligibility gate").
+    verification_max_age_days: 30
+    # The neutral help sentence shown with the not-eligible note. A placeholder: set it to the real place to ask.
+    help_line: Questions? Ask in Slack.

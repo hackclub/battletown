@@ -21,7 +21,7 @@
       </div>
     </dl>
     <% if @locked %>
-      <%= render "shop/verify_note" %>
+      <%= render "shop/verify_note", state: @spend_state %>
     <% else %>
       <p class="shop-note"><span class="badge badge--success">Verified</span> You're verified, so all of your coins are ready to spend.</p>
     <% end %>
@@ -35,7 +35,7 @@
       <span class="shop-sticker__art" aria-hidden="true"><%= @sticker.emoji %></span>
       <div class="shop-sticker__body">
         <h2 id="sticker-heading">Claim your free sticker</h2>
-        <p><%= @sticker.description %> No coins needed<%= ", and you don't have to be verified yet" if @locked %>. The team will message you on Slack to arrange delivery.</p>
+        <p><%= @sticker.description %> No coins needed<%= ", and you don't have to be verified yet" if @spend_state == :unverified %>. The team will message you on Slack to arrange delivery.</p>
       </div>
       <%= button_to "Claim your free sticker", shop_sticker_path, class: "btn btn--primary" %>
     </section>
@@ -63,7 +63,7 @@
             <% unless prize.tier == "shop" %><span class="badge badge--warning shop-tier"><%= prize.tier.capitalize %></span><% end %>
           </p>
           <% if @locked %>
-            <button type="button" class="btn btn--block" disabled aria-describedby="shop-verify-note" aria-label="<%= prize.name %>: locked until you verify">Locked until you verify</button>
+            <button type="button" class="btn btn--block" disabled aria-describedby="shop-verify-note" aria-label="<%= prize.name %>: <%= shop_locked_aria(@spend_state) %>"><%= shop_locked_label(@spend_state) %></button>
           <% elsif @spendable < prize.coins %>
             <button type="button" class="btn btn--block" disabled aria-label="<%= prize.name %>: <%= coins_text(prize.coins - @spendable) %> short">Need <%= coins_text(prize.coins - @spendable) %> more</button>
           <% else %>

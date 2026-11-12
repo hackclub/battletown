@@ -33,8 +33,8 @@ shared:
   templates:
     daily_reminder: "Hey, it's your Battletown coding time. Open your project and get some time in today. Happy hacking! - the Hack Club Battletown team"
     # Event copy. Placeholders in {braces}: {project} (their project name), {hackatime_project}, {hours}, {coins},
-    # {reason} (the reviewer's note, shortened), {unlock_note} (empty, or a sentence for people who have not verified
-    # yet) and {link} (a page on APP_URL that handles the answer: there are no Slack buttons, the app only has chat:write).
+    # {reason} (the reviewer's note, shortened), {unlock_note} (empty, or a sentence for people who cannot spend
+    # coins yet: not verified, or not eligible while the eligibility gate is on) and {link} (a page on APP_URL that handles the answer: there are no Slack buttons, the app only has chat:write).
     link_question: "Quick question: is your Hackatime project '{hackatime_project}' part of '{project}'? You can say yes or no on your projects page. If it's a no, we won't ask again: {link} - the Hack Club Battletown team"
     ship_reminder: "Nice work! You've coded {hours} hours on {project} that you haven't shipped yet. Ready to ship it? Whenever you like: {link} - the Hack Club Battletown team"
     ship_mvp: "You're at {hours} hours on {project}. That's a great point to ship a first version and turn those hours into coins. Ship it here when you're ready: {link} - the Hack Club Battletown team"

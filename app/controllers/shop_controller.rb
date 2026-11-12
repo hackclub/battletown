@@ -1,5 +1,5 @@
-# The shop grid and the confirmation page for one item. Spending is locked until identity is verified with Hack Club
-# (Shop::Spendable); the free signup sticker is separate (StickerClaimsController). Nothing here blocks coding.
+# The shop grid and the confirmation page for one item. Spending is locked until `User#can_spend_coins?` (identity
+# verified with Hack Club, plus eligibility while the `eligibility_gate` flag is on; Shop::Spendable); the free signup sticker is separate (StickerClaimsController). Nothing here blocks coding.
 class ShopController < ApplicationController
   before_action :require_login, :require_onboarded
 
@@ -7,7 +7,8 @@ class ShopController < ApplicationController
     @prizes = Prize.paid.sort_by { |prize| [ prize.coins, prize.name ] }
     @total = Coins::Balance.total(current_user)
     @spendable = Shop::Spendable.balance(current_user)
-    @locked = Shop::Spendable.locked?(current_user)
+    @spend_state = current_user.spend_state
+    @locked = @spend_state != :ready
     @sticker = Prize.free_signup
     @sticker_order = current_user.orders.find_by(kind: "signup_sticker")
   end
@@ -17,10 +18,12 @@ class ShopController < ApplicationController
   def show
     @prize = Prize.paid.find { |prize| prize.key == params[:key] } or raise ActionController::RoutingError, "Not Found"
     @spendable = Shop::Spendable.balance(current_user)
-    return redirect_to(shop_path, alert: Shop::NotVerified.new.message) if Shop::Spendable.locked?(current_user)
+    Shop::Spendable.check!(current_user)
     return redirect_to(shop_path, alert: Shop::InsufficientCoins.new.message) if @spendable < @prize.coins
 
     @balance_after = @spendable - @prize.coins
     @idempotency_key = SecureRandom.hex(16)
+  rescue Shop::NotVerified, Shop::NotEligible, Shop::NeedsRecheck => error
+    redirect_to shop_path, alert: error.message
   end
 end

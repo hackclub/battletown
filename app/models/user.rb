@@ -65,6 +65,7 @@ class User < ApplicationRecord
     status = claims["verification_status"].to_s
     self.verification_status = status if self.class.verification_statuses.key?(status)
     self.ysws_eligible = claims["ysws_eligible"] == true
+    self.verification_checked_at = Time.current
     self.time_zone = AddressTimeZone.zone_name(claims) if time_zone.blank?
   end
 
@@ -73,6 +74,28 @@ class User < ApplicationRecord
   # The "no email at all" switch (Notifications::Email, behind the `email` flag): set by the settings page and by the
   # one-click unsubscribe link in every email.
   def email_opted_out? = email_opted_out_at.present?
+
+  # Where this person stands on spending coins, the one place that decides it (Shop::Spendable and every note, banner
+  # and staff page read it; nothing else looks at verification_status or ysws_eligible for this). One of:
+  #   :ready        can spend
+  #   :unverified   not verified with Hack Club yet (the verify note)
+  #   :stale        verified, but the sign-in copy is older than the maximum age (asks them to sign in again)
+  #   :not_eligible verified, but not eligible for Hack Club YSWS programs (never says why)
+  # With the `eligibility_gate` flag OFF only the first two exist: verified spends, exactly as before the gate.
+  def spend_state
+    return :unverified unless verification_verified?
+    return :ready unless Features.enabled?(:eligibility_gate, self)
+    return :stale if verification_stale?
+
+    ysws_eligible? ? :ready : :not_eligible
+  end
+
+  def can_spend_coins? = spend_state == :ready
+
+  # No stored check time (never signed in since the column existed) counts as old.
+  def verification_stale?
+    verification_checked_at.nil? || verification_checked_at < Eligibility::Config.current.max_age.ago
+  end
 
   # The one project hours should count toward right now (nil until they have one). Other features read this.
   def active_project = projects.find_by(active: true)

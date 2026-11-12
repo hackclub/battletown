@@ -21,7 +21,7 @@
         <h2 id="ship-who" class="card__title">Teen and project</h2>
         <dl class="admin-dl">
           <dt>Name</dt><dd><%= ship.user.display_name.presence || "No name" %></dd>
-          <dt>Identity</dt><dd><%= ship.user.verification_status.humanize %><%= " (coins stay locked until verified)" unless ship.user.verification_verified? %></dd>
+          <dt>Identity</dt><dd><%= ship.user.verification_status.humanize %><%= " (coins stay locked until verified)" unless ship.user.verification_verified? %><% if feature?(:eligibility_gate, ship.user) %> <span class="admin-eligibility">YSWS eligible: <%= ship.user.ysws_eligible? ? "yes" : "no" %><%= ", verification needs a re-check" if ship.user.verification_verified? && ship.user.verification_stale? %><%= " (coins stay locked)" if ship.user.spend_state == :not_eligible %></span><% end %></dd>
           <dt>Project</dt><dd><%= ship.project.name %> (<%= project_kind_info(ship.project.kind)[:name] %>)</dd>
           <dt>Hackatime</dt><dd><%= @links.any? ? safe_join(@links.map { |name| tag.span(name, class: "chip-name") }, " ") : "None linked now" %></dd>
           <dt>GitHub</dt><dd><%= project_external_link ship.repo_url.to_s.delete_prefix("https://"), ship.repo_url %></dd>
