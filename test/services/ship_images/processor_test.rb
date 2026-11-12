@@ -71,6 +71,22 @@ class ShipImages::ProcessorTest < ActiveSupport::TestCase
     assert_not_includes result.content, "Exif"
   end
 
+  # libvips before 8.15 (Debian bookworm's 8.14, which the Docker image is built on) ignores `strip` for WebP and writes EXIF.
+  test "metadata chunks the encoder wrote anyway are cut out of the WebP, flags and sizes included" do
+    vp8x = "VP8X".b + [ 10 ].pack("V") + [ 0x2C ].pack("C") + "\0".b * 9
+    exif = "EXIF".b + [ 5 ].pack("V") + "GPS!!".b + "\0".b
+    xmp = "XMP ".b + [ 2 ].pack("V") + "ab".b
+    image = "VP8 ".b + [ 3 ].pack("V") + "xyz".b + "\0".b
+    body = vp8x + exif + xmp + image
+    dirty = "RIFF".b + [ body.bytesize + 4 ].pack("V") + "WEBP".b + body
+
+    clean = ShipImages::Processor.strip_metadata_chunks(dirty)
+    assert_equal [ "VP8X", "VP8 " ], webp_chunks(clean)
+    assert_equal 0, clean.getbyte(20) & 0x2C, "the ICC, EXIF and XMP flags are cleared"
+    assert_equal clean.bytesize - 8, clean.byteslice(4, 4).unpack1("V")
+    assert_not_includes clean, "GPS"
+  end
+
   test "a picture is turned upright from its EXIF orientation before the metadata is dropped" do
     result = process(jpeg_with_gps_exif(40, 20, orientation: 6), name: "phone.jpg", type: "image/jpeg")
     assert_equal [ 20, 40 ], [ result.width, result.height ]

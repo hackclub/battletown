@@ -63,11 +63,44 @@ module ShipImages
       # or corrupt file an error instead of a half-grey picture. A GIF or WebP loads its first frame only.
       image = Vips::Image.public_send(loader, path, access: :sequential, fail_on: :error)
       too_big!(image, config)
-      scaled = image.thumbnail_image(config.max_edge_px, height: config.max_edge_px, size: :down)
-      buffer = scaled.webpsave_buffer(Q: config.webp_quality, strip: true)
+      scaled = without_metadata(image.thumbnail_image(config.max_edge_px, height: config.max_edge_px, size: :down))
+      buffer = strip_metadata_chunks(scaled.webpsave_buffer(Q: config.webp_quality, strip: true))
       raise Rejected, "That picture is still too big after shrinking it. Try a smaller one." if buffer.bytesize > config.max_upload_bytes
 
       describe(buffer)
+    end
+
+    # The fields libvips must keep to describe the pixels; every other field (EXIF, GPS, XMP, ICC, orientation, ...) goes.
+    PIXEL_FIELDS = %w[width height bands format coding interpretation xoffset yoffset xres yres].freeze
+
+    # `strip: true` is not enough on its own: libvips older than 8.15 (Debian bookworm, which the production image is
+    # built on, ships 8.14) ignores it for WebP and writes the source EXIF block, GPS tags included. So the metadata
+    # is removed from the image before it is encoded, and any chunk the encoder still writes is cut out afterwards.
+    def without_metadata(image)
+      image.mutate do |mutable|
+        (mutable.get_fields - PIXEL_FIELDS).each { |field| mutable.remove!(field) }
+      end
+    end
+
+    # WebP is a RIFF file: "RIFF" size "WEBP" then chunks (fourcc, little-endian size, data padded to an even length).
+    # EXIF, XMP and ICCP chunks are dropped, their flags are cleared in the VP8X header, and the RIFF size is rewritten.
+    DROPPED_CHUNKS = [ "EXIF", "XMP ", "ICCP" ].freeze
+    VP8X_METADATA_FLAGS = 0x20 | 0x08 | 0x04 # ICC profile, EXIF, XMP
+
+    def strip_metadata_chunks(webp)
+      webp = webp.b
+      body = "".b
+      offset = 12
+      while offset + 8 <= webp.bytesize
+        name = webp.byteslice(offset, 4)
+        size = webp.byteslice(offset + 4, 4).unpack1("V")
+        length = 8 + size + (size.odd? ? 1 : 0)
+        chunk = webp.byteslice(offset, length)
+        chunk.setbyte(8, chunk.getbyte(8) & ~VP8X_METADATA_FLAGS) if name == "VP8X"
+        body << chunk unless DROPPED_CHUNKS.include?(name)
+        offset += length
+      end
+      "RIFF".b + [ body.bytesize + 4 ].pack("V") + "WEBP".b + body
     end
 
     def too_big!(image, config)
