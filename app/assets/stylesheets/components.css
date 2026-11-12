@@ -1,0 +1,508 @@
+/*
+ * Shared components for every page: buttons, form controls and fields, cards and panels, bands, badges, progress bars,
+ * tables and lists, alerts and flashes, empty states, headings and layout helpers. Tokens only (tokens.css).
+ * Everything is in cascade layers (see the top of application.css): page stylesheets and staff.css are not layered and
+ * always win, so a page only writes what differs from these defaults.
+ * Class reference with usage snippets: docs/CONTRACT.md ("Design system"). Live preview: /dev/styleguide (development).
+ * Interactive states: hover = slight brightness lift, press = the chunky edge shrinks and the control drops, focus-visible
+ * = the 3px --color-focus ring, disabled = 55% opacity. Motion only under prefers-reduced-motion: no-preference.
+ */
+@layer reset, base, layout, components, utilities;
+
+/* ------------------------------------------------------------------ Buttons */
+@layer components {
+  .btn {
+    --btn-bg: var(--color-bg);
+    --btn-fg: var(--color-ink-blue);
+    --btn-border: var(--color-ink-blue);
+    --btn-edge: var(--color-cta-edge);
+    --btn-edge-size: 0.2em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    min-width: var(--tap-size);
+    min-height: var(--tap-size);
+    padding: 0.4em 1.25em 0.5em;
+    border: 2px solid var(--btn-border);
+    border-radius: var(--radius-md);
+    background: var(--btn-bg);
+    box-shadow: inset 0 calc(var(--btn-edge-size) * -1) 0 var(--btn-edge);
+    color: var(--btn-fg);
+    font: inherit;
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 400;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:hover { color: var(--btn-fg); filter: brightness(1.06); }
+  .btn:active { --btn-edge-size: 0.1em; transform: translateY(0.08em); }
+
+  /* Primary: raspberry fill (AA at any size). Use for the one main action of a form or card. */
+  .btn--primary {
+    --btn-bg: var(--color-primary);
+    --btn-fg: var(--color-primary-contrast);
+    --btn-border: var(--color-primary);
+    --btn-edge: rgb(0 0 0 / 0.28);
+  }
+
+  /* Large / CTA: the Figma pink CTA (151:271). 24px display type is "large text", the only size where cream on this
+     pink passes (3.1:1). Do not use the pink face for smaller labels. */
+  .btn--lg, .btn--cta {
+    --btn-edge-size: 0.1667em;
+    min-height: 3.5rem;
+    padding: 0.3em 1.1em 0.4em;
+    border-radius: var(--radius-lg);
+    font-size: var(--text-md);
+    letter-spacing: var(--tracking-display);
+  }
+  .btn--primary.btn--lg, .btn--cta {
+    --btn-bg: var(--color-cta);
+    --btn-fg: var(--color-primary-contrast);
+    --btn-border: var(--color-cta);
+    --btn-edge: var(--color-cta-press);
+  }
+  .btn--lg:active, .btn--cta:active { --btn-edge-size: 0.08em; }
+
+  .btn--sm { padding: 0.25em 1em 0.35em; font-size: var(--text-sm); }
+  .btn--block { display: flex; width: 100%; }
+
+  .btn--danger {
+    --btn-bg: var(--color-danger);
+    --btn-fg: var(--color-primary-contrast);
+    --btn-border: var(--color-danger);
+    --btn-edge: rgb(0 0 0 / 0.28);
+  }
+
+  /* Ghost: no fill, no edge; underline on hover. For header buttons, "Cancel" and other quiet actions. */
+  .btn--ghost {
+    --btn-bg: transparent;
+    --btn-border: transparent;
+    --btn-edge: transparent;
+    --btn-fg: var(--color-ink-blue);
+    filter: none;
+  }
+  .btn--ghost:hover { --btn-bg: var(--color-bg); text-decoration: underline; text-underline-offset: 0.2em; filter: none; }
+  .btn--ghost:active { transform: none; }
+
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; filter: none; transform: none; }
+
+  .btn__arrow, .btn .icon { flex: none; width: 1em; height: 1em; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .btn { transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease; }
+  }
+}
+
+/* ------------------------------------------------------------ Form controls */
+@layer base {
+  /* Element defaults, so unstyled forms already look right. Zero specificity (:where): page CSS and the classes
+     below override them. Width is NOT set here (inline forms keep their own); .input/.field make it full width. */
+  :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"], [type="file"], [type="color"]), textarea, select) {
+    max-width: 100%;
+    min-height: var(--tap-size);
+    padding: 0.5em 0.85em;
+    border: 2px solid var(--color-field-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: inset 0 -0.2rem 0 var(--color-surface-raised);
+    color: var(--color-text);
+    font: inherit;
+    line-height: 1.4;
+  }
+  :where(textarea) { min-height: 7rem; line-height: var(--leading-body); resize: vertical; }
+  :where(input, textarea)::placeholder { color: var(--color-text-muted); opacity: 1; }
+  :where(input, textarea, select):disabled { background: var(--color-surface-raised); color: var(--color-text-muted); cursor: not-allowed; }
+  :where(input:not([type="checkbox"], [type="radio"]), textarea, select)[aria-invalid="true"] {
+    border-color: var(--color-danger);
+    box-shadow: inset 0 -0.2rem 0 var(--color-danger-bg);
+  }
+  :where(input[type="checkbox"], input[type="radio"]) {
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+  :where(label) { font-weight: 700; }
+}
+
+@layer components {
+  .input, .textarea, .select { width: 100%; }
+
+  /* A labelled field: label, optional hint, control, optional error. Wire the hint/error with aria-describedby. */
+  .field { display: grid; gap: var(--space-2); min-width: 0; }
+  .field > label, .field__label { font-weight: 700; }
+  .field__hint { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 500; }
+  .field__error {
+    display: flex;
+    gap: var(--space-2);
+    align-items: baseline;
+    margin: 0;
+    color: var(--color-danger-ink);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+  .field__error::before {
+    content: "!" / "";
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 1.25em;
+    height: 1.25em;
+    border-radius: var(--radius-full);
+    background: var(--color-danger);
+    color: var(--color-primary-contrast);
+    font-size: 0.85em;
+    line-height: 1;
+  }
+  .field :is(input, textarea, select):not([type="checkbox"], [type="radio"]) { width: 100%; }
+  .field--invalid :is(input, textarea, select) { border-color: var(--color-danger); }
+  fieldset.field { padding: 0; border: 0; margin: 0; }
+  fieldset.field > legend { padding: 0; margin-bottom: var(--space-2); font-weight: 700; }
+
+  /* Checkbox or radio with its label: the whole row is the tap target (44px). */
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    min-height: var(--tap-size);
+    padding-block: var(--space-2);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .option > input { margin-top: 0.1rem; }
+
+  /* Pill toggle (the day picker): a checkbox or radio inside a label; the pill is the visible control. When checked it
+     fills and shows a tick, so state is never colour alone. */
+  .toggle-group { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .toggle { position: relative; display: inline-flex; }
+  .toggle__input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .toggle__label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    min-width: var(--tap-size);
+    min-height: var(--tap-size);
+    padding: 0.3em 1em 0.4em;
+    border: 2px solid var(--color-ink-blue);
+    border-radius: var(--radius-full);
+    background: var(--color-bg);
+    box-shadow: inset 0 -0.2em 0 var(--color-cta-edge);
+    color: var(--color-ink-blue);
+    font-family: var(--font-display);
+    line-height: 1.2;
+  }
+  .toggle__input:hover + .toggle__label { background: var(--color-surface); }
+  .toggle__input:checked + .toggle__label {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    box-shadow: inset 0 -0.2em 0 rgb(0 0 0 / 0.28);
+    color: var(--color-primary-contrast);
+  }
+  .toggle__input:checked + .toggle__label::before { content: "\2713" / ""; }
+  .toggle__input:focus-visible + .toggle__label { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+  .toggle__input:disabled + .toggle__label { opacity: 0.55; cursor: not-allowed; }
+  .toggle__input:disabled { cursor: not-allowed; }
+}
+
+/* --------------------------------------------------------- Cards and panels */
+@layer components {
+  /* Light surfaces inside a dark band put the light-surface colours back. */
+  .card, .panel, .empty, .table-wrap, .alert, .flash, .on-light {
+    --color-link: var(--color-link-on-light);
+    --color-link-hover: var(--color-link-hover-on-light);
+    --color-text-muted: var(--color-muted-on-light);
+    --color-focus: var(--color-focus-on-light);
+  }
+
+  /* Standard card: white, 28px radius and the 6px cream bottom edge of the Figma CTA wrapper. */
+  .card {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    border-bottom: var(--border-chunky) solid var(--color-cta-edge);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-text);
+  }
+  .card > :first-child { margin-top: 0; }
+  .card > :last-child { margin-bottom: 0; }
+  .card--cream { background: var(--color-bg); }
+  .card--flat { border-bottom-width: 0; box-shadow: none; }
+  .card--sky { background: var(--color-sky); border-bottom-color: var(--color-sky-soft); }
+  .card--tight { padding: var(--space-4); }
+  .card__title { margin-bottom: var(--space-2); font-family: var(--font-display); font-size: var(--text-lg); }
+  .card__media { display: block; width: 100%; height: auto; margin-bottom: var(--space-4); border-radius: var(--radius-md); }
+
+  /* Chunky blue card (the shop / prize card, 156:665): face, extruded base, product image and a pale-blue title. */
+  .card--chunky {
+    margin-bottom: 0.6rem;
+    border-bottom-width: 0;
+    border-radius: var(--radius-card);
+    background: var(--color-card-blue);
+    box-shadow: var(--shadow-card-edge);
+    --color-focus: var(--color-bg);
+    --color-link: var(--color-card-title);
+    --color-text-muted: var(--color-card-title);
+    color: var(--color-bg);
+  }
+  .card--chunky .card__title { color: var(--color-card-title); font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
+  .card--chunky a { color: var(--color-card-title); }
+  .card--chunky .card__media { background: var(--color-card-blue-light); }
+
+  /* Large cream sheet for a whole page section or a form: Figma's CTA wrapper at page scale (48px radius). */
+  .panel {
+    padding: clamp(var(--space-6), 4vw, var(--space-12));
+    border-radius: var(--radius-xl);
+    border-bottom: var(--border-chunky) solid var(--color-cta-edge);
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  .panel > :first-child { margin-top: 0; }
+  .panel > :last-child { margin-bottom: 0; }
+  .panel--white { background: var(--color-surface); }
+  .panel--narrow { max-width: 42rem; margin-inline: auto; }
+
+  /* Full-bleed band for a landing or section background. Dark bands (map, ink) swap link and focus colours so
+     everything inside still passes AA. Variants: band--cream, band--map, band--ink. Default is the sky page. */
+  .band {
+    --band-bg: var(--color-page);
+    position: relative;
+    padding-block: var(--space-12);
+    background: var(--band-bg);
+    color: var(--color-text);
+  }
+  .band--cream { --band-bg: var(--color-bg); }
+  .band--map, .band--ink, .on-map, .on-ink {
+    --color-focus: var(--color-bg);
+    --color-link: var(--color-bg);
+    --color-link-hover: #fff;
+    --color-text-muted: var(--color-bg);
+    color: var(--color-bg);
+  }
+  .band--map { --band-bg: var(--color-map); }
+  .band--ink { --band-bg: var(--color-ink-blue); }
+
+  /* Sky swoosh edge (Figma 151:268/151:269): a wavy cap above the band, painted in --swoosh-color via a mask of
+     design/swoosh-sky.svg. Put it on the band that follows a hero. */
+  .band--swoosh { margin-top: clamp(2rem, 8vw, 7rem); }
+  .band--swoosh::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(100% - 1px);
+    aspect-ratio: 1529 / 339;
+    max-height: clamp(2rem, 8vw, 7rem);
+    width: 100%;
+    background: var(--band-bg);
+    -webkit-mask: url("design/swoosh-sky.svg") center bottom / 100% 100% no-repeat;
+    mask: url("design/swoosh-sky.svg") center bottom / 100% 100% no-repeat;
+    pointer-events: none;
+  }
+}
+
+/* --------------------------------------------------------- Badges and pills */
+@layer components {
+  .badge {
+    --badge-bg: var(--color-surface-raised);
+    --badge-fg: var(--color-ink-brown);
+    --badge-border: var(--color-ink-brown);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0 var(--space-3);
+    border: 2px solid var(--badge-border);
+    border-radius: var(--radius-full);
+    background: var(--badge-bg);
+    color: var(--badge-fg);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+  .badge--primary, .badge--active { --badge-bg: var(--color-primary); --badge-fg: var(--color-primary-contrast); --badge-border: var(--color-primary); }
+  .badge--info { --badge-bg: var(--color-ink-blue); --badge-fg: var(--color-bg); --badge-border: var(--color-ink-blue); }
+  .badge--success { --badge-bg: var(--color-success-bg); --badge-fg: var(--color-success-ink); --badge-border: var(--color-success); }
+  .badge--danger { --badge-bg: var(--color-danger-bg); --badge-fg: var(--color-danger-ink); --badge-border: var(--color-danger); }
+  .badge--warning { --badge-bg: var(--color-warning-bg); --badge-fg: var(--color-warning-ink); --badge-border: var(--color-warning-ink); }
+  .badge--muted { --badge-bg: var(--color-surface); --badge-fg: var(--color-text-muted); --badge-border: var(--color-border); }
+}
+
+/* ------------------------------------------------------------ Progress bars */
+@layer components {
+  /* One component over a native <progress> (value and max carry the numbers, so it works without JavaScript and
+     screen readers read it). The label and the numbers are text outside the bar, never only colour.
+       <div class="progress progress--goal">
+         <div class="progress__head"><span class="progress__label" id="g">Daily goal</span>
+                                     <span class="progress__text">10 of 15 minutes</span></div>
+         <progress class="progress__bar" max="15" value="10" aria-labelledby="g">10 of 15 minutes</progress>
+       </div>
+     Variants: (none) pink, --goal green stripes, --prize blue, --boss parallelogram health bar, --sm thin. */
+  .progress { --progress-fill: var(--color-primary); --progress-track: var(--color-progress-track); display: grid; gap: var(--space-1); min-width: 0; }
+  .progress__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-3); }
+  .progress__label { font-weight: 700; }
+  .progress__text { color: var(--color-text-muted); font-variant-numeric: tabular-nums; font-weight: 700; }
+  .progress__bar {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 1.5rem;
+    border: 3px solid var(--color-ink-brown);
+    border-radius: var(--radius-full);
+    background: var(--progress-track);
+    overflow: hidden;
+  }
+  .progress__bar::-webkit-progress-bar { background: var(--progress-track); }
+  .progress__bar::-webkit-progress-value { background: var(--progress-fill); border-radius: var(--radius-full); }
+  .progress__bar::-moz-progress-bar { background: var(--progress-fill); border-radius: var(--radius-full); }
+
+  .progress--sm .progress__bar { height: 0.875rem; border-width: 2px; }
+
+  /* Goal: the green striped bar of the dashboard concept (13:11). */
+  .progress--goal { --progress-fill: repeating-linear-gradient(135deg, var(--color-progress) 0 0.75rem, var(--color-progress-stripe) 0 1.5rem); }
+  .progress--goal .progress__bar { height: 2rem; }
+
+  /* Prize: blue on cream. */
+  .progress--prize { --progress-fill: var(--color-secondary); --progress-track: var(--color-bg); }
+
+  /* Boss health (152:545): a parallelogram skewed -15deg, pink fill = health left, dark = health lost, 4px white outline.
+     The label sits above the bar (its own row), unskewed. */
+  .progress--boss { --progress-fill: var(--color-hp-fill); --progress-track: var(--color-hp-empty); }
+  .progress--boss .progress__bar {
+    height: 2.25rem;
+    border: 4px solid var(--color-hp-outline);
+    border-radius: 0;
+    transform: skewX(-15deg);
+  }
+  .progress--boss .progress__bar::-webkit-progress-value { border-radius: 0; }
+  .progress--boss .progress__bar::-moz-progress-bar { border-radius: 0; }
+  .progress--boss .progress__label { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
+  .progress--boss.progress--sm .progress__bar { height: 1.5rem; border-width: 3px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .progress__bar::-webkit-progress-value { transition: inline-size 400ms ease-out; }
+  }
+}
+
+/* ----------------------------------------------------------- Tables, lists */
+@layer components {
+  /* Wrap a wide table in .table-wrap: it scrolls sideways inside the card instead of the page. Give the wrapper
+     tabindex="0" and an aria-label when the table can overflow, so keyboard users can scroll it. */
+  .table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border-bottom: var(--border-chunky) solid var(--color-cta-edge);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .table { width: 100%; border-collapse: collapse; }
+  .table caption { padding: var(--space-3) var(--space-4); font-family: var(--font-display); font-size: var(--text-lg); text-align: start; }
+  .table th, .table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); text-align: start; vertical-align: top; }
+  .table thead th {
+    background: var(--color-surface-raised);
+    color: var(--color-ink-brown);
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  .table tbody tr:last-child > * { border-bottom: 0; }
+  .table--zebra tbody tr:nth-child(even) > * { background: var(--color-bg); }
+  .table .num { text-align: end; font-variant-numeric: tabular-nums; }
+
+  /* Simple list: rows divided by a line, inside a .card or on its own. */
+  .list { margin: 0; padding: 0; list-style: none; }
+  .list > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); padding-block: var(--space-3); border-bottom: 1px solid var(--color-border); }
+  .list > li:last-child { border-bottom: 0; }
+}
+
+/* --------------------------------------------------- Alerts and flash messages */
+@layer components {
+  /* .alert is an inline message; .flash is the same thing as a full-width band under the header (the layout renders one
+     per Rails flash with role="status"). Meaning is carried by words and the heavy bottom edge, not colour alone. */
+  .alert, .flash {
+    --alert-bg: var(--color-info-bg);
+    --alert-ink: var(--color-info-ink);
+    --alert-edge: var(--color-secondary);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 0.25rem solid var(--alert-edge);
+    background: var(--alert-bg);
+    color: var(--alert-ink);
+    font-weight: 700;
+  }
+  .alert { margin-bottom: var(--space-4); border-radius: var(--radius-md); }
+  .alert > :last-child { margin-bottom: 0; }
+  .flash { margin: 0; text-align: center; }
+  .alert a, .flash a { color: inherit; }
+  .alert__title { margin: 0 0 var(--space-1); font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
+  .alert--success, .flash--notice, .flash--success { --alert-bg: var(--color-success-bg); --alert-ink: var(--color-success-ink); --alert-edge: var(--color-success); }
+  .alert--danger, .flash--alert, .flash--error { --alert-bg: var(--color-danger-bg); --alert-ink: var(--color-danger-ink); --alert-edge: var(--color-danger); }
+  .alert--warning, .flash--warning { --alert-bg: var(--color-warning-bg); --alert-ink: var(--color-warning-ink); --alert-edge: var(--color-warning-ink); }
+}
+
+/* -------------------------------------------- Empty state and section headings */
+@layer components {
+  .empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    padding: var(--space-12) var(--space-6);
+    border: 3px dashed var(--color-ink-blue);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    text-align: center;
+  }
+  .empty > * { margin: 0; }
+  .empty__art { width: 6rem; height: auto; }
+  .empty__title { font-family: var(--font-display); font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
+  .empty__text { max-width: 32rem; color: var(--color-text-muted); }
+  .empty__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
+
+  .section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-4); }
+  .section-head > :is(h1, h2, h3) { margin-bottom: 0; }
+  .page-header { display: grid; gap: var(--space-2); margin-bottom: var(--space-8); }
+  .page-header > * { margin: 0; }
+  .eyebrow { color: var(--color-ink-blue); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+}
+
+/* ------------------------------------- Layout and text helpers (low priority) */
+@layer utilities {
+  .stack { display: grid; gap: var(--stack-gap, var(--space-4)); align-content: start; }
+  .stack > * { min-width: 0; margin-block: 0; }
+  .stack--sm { --stack-gap: var(--space-2); }
+  .stack--lg { --stack-gap: var(--space-8); }
+  .cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cluster-gap, var(--space-3)); }
+  .cluster--between { justify-content: space-between; }
+  .cluster--end { justify-content: flex-end; }
+  .grid { display: grid; gap: var(--grid-gap, var(--space-6)); grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--grid-min, 16rem)), 1fr)); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 48rem) {
+    .grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  .center { text-align: center; }
+  .muted { color: var(--color-text-muted); }
+  .small { font-size: var(--text-sm); }
+  .lead { font-size: var(--text-lg); line-height: 1.5; }
+  .display { font-family: var(--font-display); font-weight: 400; letter-spacing: var(--tracking-display); line-height: var(--leading-tight); }
+  .numeric { font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+  .mt-0 { margin-top: 0; }
+  .mb-0 { margin-bottom: 0; }
+}

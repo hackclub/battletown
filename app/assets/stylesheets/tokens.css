@@ -1,33 +1,82 @@
 /*
  * Design tokens. Values marked "Figma" come from the Battletown Figma file (fileKey Qi9ARDNu8fxsTT1C43DDgL):
- * the landing hero and button frames (nodes 134:1152, 71:1000), the colour-block frame (13:10) and the
- * dashboard concept (1:4). The file has no Figma variables or published styles yet, so every value was read
- * from node fills. Values marked "derived" are not in Figma: they were chosen to pass WCAG AA on the Figma
- * cream background. See docs/FIGMA_GAPS.md for the full old -> new list and what is still missing
- * (final style guide, fonts, art). Only custom properties live here.
+ * the latest landing frames (151:266 hero and signposts, 152:469 "Fight together" map), the CTA (71:1000, 138:172,
+ * 138:177), the colour-block frame (13:10), the shop-card experiments (156:662-157:668) and the dashboard concept
+ * (1:4). The file has no Figma variables or published styles, so every value was read from node fills. Values marked
+ * "derived" are not in Figma: they were chosen to pass WCAG AA. The app page is sky (--color-page); content sits on
+ * cream or white surfaces. Contrast table and usage: docs/CONTRACT.md "Design system"; live preview: /dev/styleguide
+ * (development only). Only custom properties live here.
  */
 :root {
-  /* Color (light theme: Figma shows a sky/cream UI, not the old dark placeholder) */
-  --color-bg: #fffef5; /* Figma: cream panel and button face (134:1152, 71:1000) */
+  /* Surfaces. The page behind everything is sky; content lives on cream (--color-bg) or white (--color-surface). */
+  --color-page: #b1dcfe; /* Figma: sky page behind the landing (151:266, 152:469) */
+  --color-bg: #fffef5; /* Figma: cream panel and button face (134:1152, 71:1000); the base surface for panels, header and fields */
   --color-surface: #ffffff; /* derived: card surface that lifts off the cream bg */
   --color-surface-raised: #ffeada; /* Figma: cream button edge (71:1000) */
-  --color-border: #dcc7a1; /* derived: decorative card/header borders; form fields use --color-text-muted */
+  --color-border: #dcc7a1; /* derived: decorative card/header borders; form fields use --color-field-border */
   --color-text: #000000; /* Figma: body text on the dashboard concept (1:263) */
-  --color-text-muted: #6b6150; /* derived: 6.0:1 on --color-bg, 5.2:1 on --color-surface-raised */
-  --color-primary: #cc0052; /* derived from Figma pink #ff4797: darkened so pink links/labels pass AA (5.6:1 on --color-bg) */
+  --color-text-muted: var(--color-muted-on-light); /* derived: #4a4234, 6.9:1 on --color-page (sky), 9.8:1 on --color-bg (was #6b6150, which failed AA on sky) */
+  --color-primary: #cc0052; /* derived from Figma pink #ff4797: darkened so small pink fills pass AA (cream label 5.6:1) */
   --color-primary-contrast: #fffef5; /* Figma: cream label on the pink button; 5.6:1 on --color-primary */
   --color-secondary: #0563de; /* Figma: blue block (13:10) */
   --color-success: #067a46; /* derived: not in Figma */
   --color-danger: #c4143c; /* derived: not in Figma */
-  --color-focus: #0563de; /* Figma blue; focus ring needs 3:1 on cream, Figma yellow is only 1.35:1 */
+  --color-focus: var(--color-focus-on-light); /* Figma blue #0563de; 3.8:1 on sky, 5.4:1 on cream. Dark bands (.band--map, .band--ink) swap it to cream */
 
-  /* Figma brand colours with no existing slot (new tokens; use for fills and large display text, not small text) */
-  --color-cta: #ff4797; /* Figma: pink CTA fill (71:1001); cream text on it is only 3.1:1, so large type only */
-  --color-highlight: #ffda37; /* Figma: yellow "get gear" highlight and yellow block (13:10, 134:1153) */
-  --color-sky: #b1dcfe; /* Figma: hero sky radial gradient stop (134:1152) */
+  /* Text links and small pink text. Darker than --color-primary so they pass AA on sky as well as cream. */
+  --color-link: var(--color-link-on-light);
+  --color-link-hover: var(--color-link-hover-on-light);
+  /* The light-surface values of the four colours that dark bands override. Cards, panels and alerts re-apply them,
+     so a card inside a dark band still reads. Use the plain names (--color-link ...) in components, not these. */
+  --color-link-on-light: #a60040; /* derived: 5.4:1 on sky, 7.7:1 on cream (the brief's "primary on sky") */
+  --color-link-hover-on-light: #7a002f; /* derived: 7.8:1 on sky */
+  --color-muted-on-light: #4a4234;
+  --color-focus-on-light: #0563de;
+  --color-field-border: #4a4234; /* derived: 2px form field border, 9.8:1 on cream (non-text needs 3:1) */
+
+  /* Figma brand colours with no existing slot (use for fills and large display text, not small text) */
+  --color-cta: #ff4797; /* Figma: pink CTA fill (151:271); cream or white text on it is only 3.1-3.2:1, so 24px+ type only */
+  --color-cta-press: #ff2d84; /* Figma: the colour Figma renders for the CTA's inset edge (rgba(0,0,0,0.41)) */
+  --color-highlight: #ffda37; /* Figma: yellow "get gear" highlight and yellow block (13:10, 151:267) */
+  --color-sky: #b1dcfe; /* Figma: sky (same value as --color-page); use --color-page for the page, --color-sky for sky-coloured fills */
   --color-sky-soft: #aacaf9; /* Figma: checkerboard blue (13:10) */
   --color-ink-brown: #423624; /* Figma: boss progress marker on the dashboard concept (1:264) */
-  --color-cta-edge: #ffeada; /* Figma: cream bottom edge of the chunky CTA (136:65); same value as --color-surface-raised */
+  --color-cta-edge: #ffeada; /* Figma: cream bottom edge of the chunky CTA wrapper (138:172); same value as --color-surface-raised */
+  --color-ink-blue: #0044b2; /* Figma: sign text and notes (151:354, 151:386); 5.9:1 on sky, 8.4:1 on cream. The text colour for blue-ish UI */
+  --color-map: #1472d5; /* Figma: map band behind "Fight together" (152:526); cream/white text on it passes (4.7:1) */
+  --color-pole: #466c8a; /* Figma: signpost pole (152:534) */
+
+  /* Signposts (151:349, 151:358, 151:368): face and extruded edge */
+  --color-sign-yellow: #ffd000;
+  --color-sign-yellow-edge: #cc8400;
+  --color-sign-blue: #187be0; /* white on it is 4.2:1: 24px+ only. Use #1776d8 (4.6:1) for smaller text */
+  --color-sign-blue-edge: #114fab;
+  --color-sign-pink: #ff4797;
+  --color-sign-pink-edge: #d2276e;
+
+  /* Boss health bar (152:545, 156:667) and goal progress */
+  --color-hp-fill: #ff4797; /* Figma: pink = health remaining (INFERRED, the designer has not confirmed) */
+  --color-hp-empty: #860d41; /* Figma: dark = health lost; white on it is 9.8:1 */
+  --color-hp-outline: #ffffff; /* Figma: 10px white stroke */
+  --color-progress: #00c400; /* Figma: green of the daily-goal bar (13:11, read from the screenshot) */
+  --color-progress-stripe: #00a800; /* derived: the darker stripe of the same bar */
+  --color-progress-track: #e6e2cd; /* Figma: empty track of the daily-goal bar (13:11, read from the screenshot) */
+
+  /* Shop-style chunky card (156:662-157:668) */
+  --color-card-blue: #0e3f91;
+  --color-card-blue-edge: #000062;
+  --color-card-blue-light: #295cb2;
+  --color-card-title: #aae5ff; /* 7.2:1 on --color-card-blue */
+
+  /* Status tints for alerts, flashes and badges (derived; ink on tint passes AA, see docs/CONTRACT.md) */
+  --color-success-bg: #def5e8;
+  --color-success-ink: #05562f;
+  --color-danger-bg: #fde7ec;
+  --color-danger-ink: #8c0a2a;
+  --color-warning-bg: #fff1b8;
+  --color-warning-ink: #5c4300;
+  --color-info-bg: #fffef5;
+  --color-info-ink: #0044b2;
 
   /* Staff-only UI (see docs/CONTRACT.md "Staff-only UI"). Green = development-only, orange = admin-only, like Hack Club Bank.
      Ratios: dev ink 7.4:1 and border 4.5:1 on its bg, cream label text 5.0:1 on the border colour;
@@ -41,7 +90,9 @@
   --color-admin-border: #b45000; /* derived: outline, 4.6:1 on --color-admin-bg, 5.1:1 on --color-bg */
   --color-admin-ink: #8a3a00; /* derived: text, 7.0:1 on --color-admin-bg */
 
-  /* Type (both families are self-hosted in app/assets/fonts, see fonts.css; the rest is the fallback stack) */
+  /* Type (both families are self-hosted in app/assets/fonts, see fonts.css; the rest is the fallback stack).
+     Poetsen One (--font-display) for headings, buttons, signs and big numbers; M PLUS Rounded 1c (--font-body) for
+     paragraphs, labels, inputs and tables. Do not apply --tracking-display below about 24px. */
   --font-body: "M PLUS Rounded 1c", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* Figma: Rounded Mplus 1c Medium (1:263) */
   --font-display: "Poetsen One", "Arial Rounded MT Bold", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* Figma: Poetsen One (134:1153, 71:1002) */
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
@@ -49,11 +100,17 @@
   --text-sm: 0.875rem;
   --text-base: 1rem;
   --text-lg: 1.25rem;
+  --text-md: 1.5rem; /* Figma: 24px HP label (152:547); the smallest "large text" size */
   --text-xl: 1.75rem;
-  --text-2xl: 2.5rem;
+  --text-2xl: 2.5rem; /* Figma: 40px paragraph copy (152:546) */
   --text-3xl: 3.5rem;
   --text-display: 3rem; /* Figma: 48px display and CTA type (134:1153, 71:1002) */
+  --text-sign-title: 4rem; /* Figma: 64px sign title (151:355) and shop item title (156:662) */
+  --text-sign-body: 2.25rem; /* Figma: 36px sign body (151:356) */
+  --text-hero-title: 6rem; /* Figma: 96px "Fight together" (152:535) */
+  --text-sign-number: 8rem; /* Figma: 128px sign numbers (151:354) */
   --tracking-display: -0.06em; /* Figma: -2.88px at 48px */
+  --tracking-heading: -0.03em; /* derived: gentler tracking for h2 and display text under 40px */
   --leading-tight: 1.2;
   --leading-body: 1.6;
 
@@ -66,19 +123,25 @@
   --space-8: 2rem;
   --space-12: 3rem;
   --space-16: 4rem;
+  --space-24: 6rem; /* large section gaps on the landing */
+  --space-32: 8rem;
 
   /* Shape */
   --radius-sm: 0.375rem;
   --radius-md: 0.75rem;
   --radius-lg: 1.75rem; /* Figma: inner pink button radius 28px (71:1001) */
   --radius-xl: 3rem; /* Figma: outer cream button radius 48px (71:1000) */
+  --radius-card: 3.125rem; /* Figma: 50px shop card (156:665); chunky shop cards only */
   --radius-full: 999px;
   --shadow-sm: 0 1px 2px rgb(66 54 36 / 0.18); /* derived: warm shadow for the light theme */
   --shadow-md: 0 8px 24px rgb(66 54 36 / 0.16); /* derived */
   --shadow-button-edge: inset 0 -8px 0 rgb(0 0 0 / 0.41); /* Figma: pressed edge on the pink button (71:1001) */
-  --border-chunky: 0.375rem; /* Figma: 6px cream button bottom edge (71:1000) */
+  --border-chunky: 0.375rem; /* Figma: 6px cream button bottom edge (71:1000); the bottom edge of cards and panels */
   --shadow-cta-edge: inset 0 -0.1667em 0 #ff2d84; /* Figma pressed edge (8px at 48px type) in em so the CTA scales with its font-size; #ff2d84 is the colour Figma actually renders for the rgba(0,0,0,0.41) inset shadow in --shadow-button-edge */
+  --shadow-card-edge: 0 0.6rem 0 var(--color-card-blue-edge); /* Figma: extruded base of the shop card (156:666) */
 
   /* Layout */
   --container-width: 72rem;
+  --container-wide: 90rem; /* landing sections: full-bleed bands with content centred in ~1440px */
+  --tap-size: 2.75rem; /* minimum height and width of anything you tap (44px) */
 }

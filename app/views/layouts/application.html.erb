@@ -23,29 +23,19 @@
 
     <header class="site-header">
       <div class="container site-header__inner">
-        <%= link_to "Battletown", root_path, class: "site-header__brand" %>
+        <%# The logo is decorative (alt=""); the link's name is the visually hidden word, so it is announced once. %>
+        <%= link_to root_path, class: "site-header__brand" do %>
+          <%= image_tag "design/logo.svg", alt: "", class: "site-header__logo", width: 77, height: 44 %><span class="visually-hidden">Battletown</span>
+        <% end %>
         <% if signed_in? && current_user.onboarded? %>
-          <nav class="site-header__nav" aria-label="Main">
-            <%= nav_link "Dashboard", dashboard_path %>
-            <%= nav_link "Projects", projects_path %>
-            <%= nav_link "Ships", ships_path %>
-            <%= nav_link "Shop", shop_path %>
-            <%# Settings is a native disclosure (no JavaScript): Hackatime and Notifications live inside it. %>
-            <details class="site-menu">
-              <summary class="<%= "is-current" if settings_menu_current? %>">Settings</summary>
-              <div class="site-menu__panel">
-                <%= nav_link "Hackatime", hackatime_path %>
-                <%= nav_link "Notifications", settings_notifications_path %>
-              </div>
-            </details>
-          </nav>
+          <%= render "layouts/main_nav" %>
         <% end %>
         <div class="site-header__account">
           <% if signed_in? %>
             <%= admin_tool(:div, label: false) { link_to "Admin", admin_root_path, "aria-current": ("page" if request.path.start_with?("/admin")) } %>
             <%= button_to "Sign out", logout_path, method: :delete, class: "btn btn--ghost" %>
           <% else %>
-            <%= render "shared/signup_button", label: "Sign in", css: "btn btn--ghost" %>
+            <%= render "shared/signup_button", label: "Sign in", css: "btn btn--primary btn--sm" %>
             <%= dev_tool(:div, label: false) { button_to "Dev login", dev_login_path, class: "btn btn--ghost", form: { data: { turbo: false } } } %>
           <% end %>
         </div>

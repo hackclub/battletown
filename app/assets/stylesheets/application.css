@@ -1,197 +1,255 @@
-/* Base styles. Pages add their own stylesheets alongside this file (propshaft includes all of them). */
+/*
+ * Base styles, page layout and the site chrome (header, nav, footer). Components (buttons, forms, cards, badges,
+ * progress, tables, alerts) are in components.css; tokens in tokens.css. Everything here and in components.css lives in
+ * cascade layers, so any page stylesheet (landing.css, dashboard.css, ...) and staff.css, which are not layered, win
+ * over the foundation whatever order the files load in. Pages only need to write what differs.
+ * Documented in docs/CONTRACT.md ("Design system"); preview at /dev/styleguide in development.
+ */
+@layer reset, base, layout, components, utilities;
 
-*, *::before, *::after { box-sizing: border-box; }
-
-html { -webkit-text-size-adjust: 100%; }
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font: var(--text-base) / var(--leading-body) var(--font-body);
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  img, svg, video { max-width: 100%; height: auto; }
 }
 
-/* Names and other user-supplied text can be one very long unbroken word; wrap it instead of scrolling sideways. */
-h1, h2, h3, p, dd { overflow-wrap: anywhere; }
+@layer base {
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-page);
+    color: var(--color-text);
+    font: 500 var(--text-base) / var(--leading-body) var(--font-body);
+  }
 
-h1, h2, h3 {
-  margin: 0 0 var(--space-4);
-  font-family: var(--font-display);
-  line-height: var(--leading-tight);
-}
-h1 { font-size: var(--text-2xl); }
-h2 { font-size: var(--text-xl); }
-h3 { font-size: var(--text-lg); }
-p { margin: 0 0 var(--space-4); }
-img, svg, video { max-width: 100%; height: auto; }
+  /* Names and other user-supplied text can be one very long unbroken word; wrap it instead of scrolling sideways. */
+  h1, h2, h3, h4, p, dd, li { overflow-wrap: anywhere; }
 
-a { color: var(--color-primary); }
+  /* Typography scale. Poetsen One has one weight (fonts.css stops browsers faking bold). Tracking is tightest on the
+     biggest type only: Figma's -0.06em is unreadable below about 24px. */
+  h1, h2, h3, h4 {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
+  h1 { font-size: clamp(2rem, 1.2rem + 3.6vw, 3rem); letter-spacing: var(--tracking-display); }
+  h2 { font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
+  h3 { font-size: var(--text-lg); }
+  h4 { font-size: var(--text-base); }
+  p { margin: 0 0 var(--space-4); }
+  small { font-size: var(--text-sm); }
+  strong, b { font-weight: 700; }
+  code, kbd, samp { font-family: var(--font-mono); font-size: 0.9em; }
+  hr { height: 0; margin-block: var(--space-6); border: 0; border-top: 2px solid var(--color-border); }
 
-:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 2px;
-}
+  /* Links: dark raspberry (AA on sky and cream), underlined so they never rely on colour alone. */
+  a {
+    color: var(--color-link);
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.2em;
+  }
+  a:hover { color: var(--color-link-hover); text-decoration-thickness: 0.2em; }
 
-.container {
-  width: 100%;
-  max-width: var(--container-width);
-  margin-inline: auto;
-  padding-inline: var(--space-4);
-}
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
 
-.page { flex: 1; padding-block: var(--space-8); }
+  /* The main landmark is only focused by the skip link, so it needs no ring of its own. */
+  main:focus { outline: none; }
 
-.prose { max-width: 42rem; }
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Skip link: off-screen until it gets keyboard focus, then a solid, high-contrast chip in the top-left corner. */
-.skip-link {
-  position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
-  z-index: 100;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  background: var(--color-text);
-  color: var(--color-bg);
-  font-weight: 700;
-  text-decoration: none;
-  transform: translateY(-200%);
-}
-.skip-link:focus-visible {
-  transform: translateY(0);
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 3px var(--color-bg);
+  ::selection { background: var(--color-highlight); color: var(--color-text); }
 }
 
-/* The main landmark is only focused by the skip link, so it needs no ring of its own. */
-main:focus { outline: none; }
+@layer layout {
+  .container {
+    width: 100%;
+    max-width: var(--container-width);
+    margin-inline: auto;
+    padding-inline: var(--space-4);
+  }
+  .container--wide { max-width: var(--container-wide); }
 
-/* Header and footer */
-.site-header, .site-footer { border-color: var(--color-border); }
-.site-header { border-bottom: 1px solid var(--color-border); }
-.site-footer { border-top: 1px solid var(--color-border); color: var(--color-text-muted); font-size: var(--text-sm); }
+  .page { flex: 1; padding-block: var(--space-8); }
+  @media (min-width: 48rem) { .page { padding-block: var(--space-12); } }
 
-.site-header__inner, .site-footer__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding-block: var(--space-3);
+  .prose { max-width: 42rem; }
+  .prose > :last-child { margin-bottom: 0; }
+  .prose h2 { margin-top: var(--space-8); }
+  .prose :is(ul, ol) { margin: 0 0 var(--space-4); padding-inline-start: var(--space-6); }
+  .prose li + li { margin-top: var(--space-2); }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Skip link: off-screen until it gets keyboard focus, then a solid, high-contrast chip in the top-left corner. */
+  .skip-link {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-weight: 700;
+    text-decoration: none;
+    transform: translateY(-200%);
+  }
+  .skip-link:focus-visible {
+    transform: translateY(0);
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px var(--color-bg);
+  }
 }
 
-.site-header__brand {
-  color: var(--color-text);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.site-footer nav { display: flex; align-items: center; gap: var(--space-4); }
-
-/* Header: brand and account buttons on the first row, the main links on a second row of their own on phones; one row
+/* Site chrome. The header is a cream bar with the chunky cream edge of the Figma CTA; the footer is an ink-blue band.
+   Header: brand and account buttons on the first row, the main links on a second row of their own on phones; one row
    from 48rem up. No JavaScript: Settings is a native <details>. */
-.site-header__inner { flex-wrap: wrap; row-gap: var(--space-2); }
-.site-header__brand { order: 1; }
-.site-header__account { order: 2; display: flex; align-items: center; gap: var(--space-2); margin-inline-start: auto; }
-.site-header__account form { margin: 0; }
-.site-header__account .btn { padding-inline: var(--space-3); white-space: nowrap; }
-.site-header__nav { order: 3; flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
-.site-header__nav a, .site-menu summary { padding-block: var(--space-1); }
-.site-header__nav a.is-current, .site-menu summary.is-current { color: var(--color-text); font-weight: 800; text-decoration-thickness: 3px; }
+@layer components {
+  .site-header {
+    background: var(--color-bg);
+    border-bottom: var(--border-chunky) solid var(--color-cta-edge);
+  }
 
-.site-menu { position: relative; }
-.site-menu summary { color: var(--color-primary); cursor: pointer; text-decoration: underline; list-style: none; }
-.site-menu summary::-webkit-details-marker { display: none; }
-.site-menu summary::after { content: ""; display: inline-block; margin-inline-start: var(--space-1); border: 0.3em solid transparent; border-top-color: currentColor; vertical-align: -0.1em; }
-.site-menu[open] summary::after { border-top-color: transparent; border-bottom-color: currentColor; vertical-align: 0.1em; }
-.site-menu__panel {
-  position: absolute;
-  z-index: 10;
-  inset-inline-start: 0;
-  top: 100%;
-  display: grid;
-  gap: var(--space-2);
-  min-width: 10rem;
-  padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+  .site-header__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-4);
+    padding-block: var(--space-2);
+  }
+
+  .site-header__brand {
+    order: 1;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-size);
+    color: var(--color-ink-blue);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    text-decoration: none;
+  }
+  .site-header__logo { display: block; width: auto; height: 2.75rem; }
+
+  .site-header__account {
+    order: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-inline-start: auto;
+  }
+  .site-header__account form { margin: 0; }
+  .site-header__account .btn { white-space: nowrap; }
+  .site-header__account > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-size);
+    padding-inline: var(--space-3);
+    font-weight: 700;
+  }
+
+  .site-header__nav {
+    order: 3;
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  /* One pill shape for every header link and the Settings summary. The current page is solid ink blue (and carries
+     aria-current), so it is never marked by colour alone: it is also bold on a filled pill. */
+  .site-header__nav a, .site-menu summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-size);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-full);
+    color: var(--color-ink-blue);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .site-header__nav a:hover, .site-menu summary:hover { background: var(--color-surface-raised); color: var(--color-ink-blue); }
+  .site-header__nav a[aria-current="page"], .site-header__nav a.is-current, .site-menu summary.is-current {
+    background: var(--color-ink-blue);
+    color: var(--color-bg);
+  }
+
+  .site-menu { position: relative; }
+  .site-menu summary { cursor: pointer; list-style: none; }
+  .site-menu summary::-webkit-details-marker { display: none; }
+  .site-menu summary::after {
+    content: "";
+    display: inline-block;
+    margin-inline-start: var(--space-2);
+    border: 0.3em solid transparent;
+    border-top-color: currentcolor;
+    vertical-align: -0.1em;
+  }
+  .site-menu[open] summary::after { border-top-color: transparent; border-bottom-color: currentcolor; vertical-align: 0.1em; }
+  .site-menu__panel {
+    position: absolute;
+    z-index: 10;
+    inset-inline-start: 0;
+    top: 100%;
+    display: grid;
+    gap: var(--space-1);
+    min-width: 12rem;
+    padding: var(--space-2);
+    border: 2px solid var(--color-ink-blue);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-md);
+  }
+  .site-menu__panel a { justify-content: flex-start; border-radius: var(--radius-sm); }
+
+  @media (min-width: 48rem) {
+    .site-header__inner { flex-wrap: nowrap; }
+    .site-header__nav { order: 2; flex-basis: auto; margin-inline-start: auto; justify-content: flex-end; }
+    .site-header__account { order: 3; margin-inline-start: 0; }
+    .site-menu__panel { inset-inline-start: auto; inset-inline-end: 0; }
+  }
+
+  .site-footer {
+    background: var(--color-ink-blue);
+    color: var(--color-bg);
+    font-size: var(--text-sm);
+  }
+  .site-footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-6);
+    padding-block: var(--space-6);
+  }
+  .site-footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-size);
+    color: var(--color-bg);
+    font-weight: 700;
+  }
+  .site-footer a:hover { color: #fff; }
+  .site-footer nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-4); }
+  .site-footer :focus-visible { outline-color: var(--color-bg); }
 }
-
-@media (min-width: 48rem) {
-  .site-header__inner { flex-wrap: nowrap; }
-  .site-header__brand { order: 1; }
-  .site-header__nav { order: 2; flex-basis: auto; margin-inline-start: auto; justify-content: flex-end; column-gap: var(--space-4); }
-  .site-header__account { order: 3; margin-inline-start: 0; }
-  .site-menu__panel { inset-inline-start: auto; inset-inline-end: 0; }
-}
-.site-footer a { color: var(--color-text-muted); }
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-full);
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  font: inherit;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-}
-.btn:hover { border-color: var(--color-text-muted); }
-.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
-
-.btn--primary {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
-}
-.btn--primary:hover { border-color: var(--color-primary); filter: brightness(1.1); }
-
-.btn--ghost { background: transparent; }
-.btn--lg { padding: var(--space-3) var(--space-8); font-size: var(--text-lg); }
-
-/* Cards */
-.card {
-  padding: var(--space-6);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Flash */
-.flash {
-  margin: 0;
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-  text-align: center;
-}
-.flash--notice { background: color-mix(in srgb, var(--color-success) 20%, var(--color-surface)); }
-.flash--alert { background: color-mix(in srgb, var(--color-danger) 25%, var(--color-surface)); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
