@@ -11,8 +11,13 @@ class Rack::Attack
   # in the TRUSTED_PROXIES env var, otherwise all visitors share the proxy's address.
   # The address lookup at checkout (POST /auth/hack_club_address) has its own per-person limit below: counting it here too would let
   # a classroom behind one address block each other from ordering.
+  # The path as the router and OmniAuth will read it: lower case (OmniAuth matches its paths case-insensitively), repeated slashes
+  # squeezed. A throttle that matches the raw path is walked around by changing the case or adding a slash.
+  def self.path_of(req) = req.path.downcase.squeeze("/")
+
   throttle("auth/ip", limit: 10, period: 1.minute) do |req|
-    req.ip if req.post? && ((req.path.start_with?("/auth/") && !req.path.match?(%r{\A/{1,3}auth/hack_club_address/?\z})) || req.path == "/dev_login")
+    path = path_of(req)
+    req.ip if req.post? && ((path.start_with?("/auth/") && !path.match?(%r{\A/auth/hack_club_address(?:\.\w+)?/?\z})) || path == "/dev_login")
   end
 
   # Hackatime linking: the callback is a GET (the POST that starts it is covered by auth/ip above), and connect /
@@ -109,7 +114,14 @@ class Rack::Attack
   # Staff project reviews (POST /admin/projects/:id/ok|flag|clear|note): a person clicking a button, so a modest limit per
   # address keeps a stuck script or a stolen session from writing history in bulk. Reading the queue is not limited here.
   throttle("admin_project_reviews/ip", limit: 30, period: 1.minute) do |req|
-    req.ip if req.post? && req.path.match?(%r{\A/admin/projects/\d+/(?:ok|flag|clear|note)\z})
+    req.ip if req.post? && path_of(req).match?(%r{\A/admin/projects/\d+/(?:ok|flag|clear|note)(?:\.\w+)?/?\z})
+  end
+
+  # Every other staff write (ship decisions that pay coins, reveal of a survey writer, dissolving a crew, merch claims, flags,
+  # quests, bosses ...): a person clicking buttons. The specific limits above are stricter for their own paths; this one is the
+  # floor for all of /admin, so a stolen session or a stuck script cannot change things in bulk.
+  throttle("admin_writes/ip", limit: 120, period: 1.minute) do |req|
+    req.ip if !req.get? && !req.head? && path_of(req).start_with?("/admin/")
   end
 
   # Email unsubscribe links (GET shows the page, POST acts): human-sized, and a small limit keeps token guessing and
@@ -150,10 +162,10 @@ class Rack::Attack
   # back (the callback) costs a token exchange and an API call, so it is limited per address too. Opening a full address as staff
   # is limited per staff member per hour, on top of the general staff limit per address.
   throttle("address_lookup/user", limit: ->(_req) { Orders::Config.current.address_lookups_per_10_minutes }, period: 10.minutes) do |req|
-    req.session["user_id"].to_s.presence if req.post? && req.path.match?(%r{\A/{1,3}auth/hack_club_address/?\z})
+    req.session["user_id"].to_s.presence if req.post? && path_of(req).match?(%r{\A/auth/hack_club_address(?:\.\w+)?/?\z})
   end
   throttle("address_callback/ip", limit: 20, period: 1.minute) do |req|
-    req.ip if req.path.match?(%r{\A/{1,3}auth/hack_club_address/callback/?\z})
+    req.ip if path_of(req).match?(%r{\A/auth/hack_club_address/callback(?:\.\w+)?/?\z})
   end
   throttle("admin_address_reveals/user", limit: ->(_req) { Orders::Config.current.address_reveals_per_hour }, period: 1.hour) do |req|
     req.session["user_id"].to_s.presence if req.post? && req.path.match?(%r{\A/{1,3}admin/orders/\d+/address/reveal(?:\.\w+)?/?\z})

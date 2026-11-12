@@ -30,6 +30,33 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_not_equal 429, response.status
   end
 
+  # Z2 review: Rails (and OmniAuth) answer to a format suffix, a repeated slash and, for OmniAuth, a different letter case, so a
+  # throttle that matches the exact path is walked around by changing the URL. Every spelling shares one bucket.
+  test "a format suffix, extra slashes or other letter case do not get around a throttle" do
+    ip = { "REMOTE_ADDR" => "203.0.113.60" }
+    30.times { |i| post(i.even? ? "/admin/projects/5/ok.json" : "//admin/projects/5/ok/", headers: ip) }
+    post "/admin/projects/5/ok", headers: ip
+    assert_response :too_many_requests, "30 review POSTs in any spelling use up the minute"
+
+    limit = Orders::Config.current.address_lookups_per_10_minutes
+    session_ip = { "REMOTE_ADDR" => "203.0.113.61" }
+    paths = %w[/auth/hack_club_address /Auth/Hack_Club_Address /auth/hack_club_address.json //auth/hack_club_address/]
+    (limit + 2).times { |i| post paths[i % paths.size], headers: session_ip }
+    # Signed out there is no per-person bucket (the strategy refuses anyone not signed in), so check the callback, which is per address.
+    21.times { |i| get ["/auth/hack_club_address/callback", "/Auth/Hack_Club_Address/Callback", "/auth/hack_club_address/callback.json"][i % 3], headers: { "REMOTE_ADDR" => "203.0.113.62" } }
+    assert_response :too_many_requests
+  end
+
+  test "every staff write shares a generous per-address limit on top of the specific ones, in any spelling" do
+    ip = { "REMOTE_ADDR" => "203.0.113.63" }
+    120.times { |i| patch(i.even? ? "/admin/ships/1/approve" : "/Admin//ships/1/reject.json", headers: ip) }
+    assert_not_equal 429, response.status
+    patch "/admin/merch/1/fulfill", headers: ip
+    assert_response :too_many_requests
+    get "/admin/ships", headers: ip
+    assert_not_equal 429, response.status, "reading is not counted"
+  end
+
   test "crew invite links are limited to 30 a minute per IP, so tokens cannot be guessed in bulk" do
     30.times { get "/team/join/#{'a' * 16}", headers: { "REMOTE_ADDR" => "203.0.113.20" } }
     get "/team/join/#{'a' * 16}", headers: { "REMOTE_ADDR" => "203.0.113.20" }
