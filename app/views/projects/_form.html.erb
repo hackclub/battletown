@@ -20,7 +20,7 @@
 
   <div class="projects-field">
     <%= f.label :repo_url, "GitHub link (optional)" %>
-    <%= f.url_field :repo_url, maxlength: Project::URL_MAX, placeholder: "https://github.com/your-name/your-repo", autocomplete: "off" %>
+    <%= f.url_field :repo_url, maxlength: Project::URL_MAX, placeholder: "https://github.com/you/your-repo", autocomplete: "off" %>
     <p class="projects-hint">The repository's main page. If a Hackatime project uses the same repo, we can link them for you.</p>
   </div>
 

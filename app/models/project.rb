@@ -10,6 +10,7 @@ class Project < ApplicationRecord
   NAME_RANGE = 1..60
   IDEA_MAX = 500
   URL_MAX = 300
+  DANGLING_TAIL = /(?:[\s,;:\-]+(?:a|an|the|in|of|on|to|and|or|for|with|where|that|is|are))*[\s,;:\-]*\z/i # a cut-off title should not end on "in"
   KIND_NAMES = { "game" => "My game", "website" => "My website", "app" => "My app", "tool" => "My tool",
                  "hardware" => "My hardware project" }.freeze
 
@@ -42,7 +43,7 @@ class Project < ApplicationRecord
   # A short title for a project the user has not named: the first sentence of the idea (shortened), else "My <kind>".
   def self.default_name(kind:, idea:)
     title = idea.to_s.split(/[.!?\n]/).first.to_s.squish
-    title = title.truncate(40, separator: " ", omission: "").sub(/[\s,;:\-]+\z/, "")
+    title = title.truncate(40, separator: " ", omission: "").sub(DANGLING_TAIL, "")
     title = title[0].upcase + title[1..] if title.present?
     title.presence || KIND_NAMES.fetch(kind.to_s, "My project")
   end

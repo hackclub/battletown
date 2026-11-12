@@ -45,6 +45,14 @@ Validation allowlists (all enforced by the model; use strong params and let `sav
 Tokens (`tokens.css`, placeholder, will be replaced): `--color-*`, `--text-*`, `--space-*`, `--radius-*`, `--shadow-*`, `--font-*`, `--container-width`. Use tokens, never raw values.
 Classes in `application.css`: `.container`, `.page`, `.prose`, `.btn` (`--primary`, `--ghost`, `--lg`), `.card`, `.flash`, `.visually-hidden`. Add `landing.css` / `onboarding.css` in `app/assets/stylesheets/`; propshaft includes every file via `stylesheet_link_tag :app`.
 
+## Projects and Hackatime links
+
+- Models: `Project` (`name` 1..60, `kind` in `User::PROJECT_KINDS`, `idea` <= 500, optional https `repo_url` (GitHub repo only, stored normalised: lowercase, no `www.`, no `.git`, no trailing slash) and `demo_url`, `status` active/archived, `active` flag, nullable `guide_key` sd/playground), `HackatimeLink` (`project`, `user`, `hackatime_project` <= 120, `link_method` manual/auto_repo/confirmed), `LinkSuggestion` (`project`, `hackatime_project`, `state` pending/accepted/declined). A user has at most 10 projects and exactly one active at a time (partial unique index); `current_user.active_project` is the one to read. A Hackatime project links to at most one project per user (`HackatimeLink.project_for(user, name)`). Tables cascade on user deletion.
+- Routes: `/projects` (list, new, edit, create, update, destroy), `PATCH /projects/:id/(activate|archive|unarchive)`, `POST|DELETE /projects/:id/hackatime_links`, `PATCH /projects/:project_id/link_suggestions/:id/(accept|decline)`. Signed in and onboarded only; other users' ids are a 404.
+- `Projects::AutoLinker.call(user, [ { name:, repo_url: } ])` links on an exact normalised GitHub repo match (`auto_repo`), otherwise makes a pending suggestion for a close name; it never links on a suggestion. `Projects::LinkSuggestions.accept!(suggestion)` / `.decline!(suggestion)` answer one; a declined suggestion is never asked again (an unlink also counts as a no).
+- Event: `ActiveSupport::Notifications.instrument("project_link_suggested.battletown", suggestion_id:)` fires after a new pending suggestion is saved. The Slack reminder task subscribes; the projects code sends nothing itself.
+- Onboarding's project step creates or updates the user's first project (`Project.sync_first_from_onboarding`) and still fills `users.project_kind` / `project_idea`.
+
 ## Staff-only UI
 
 Anything that ordinary users must not see is tinted like Hack Club Bank does: **green = development only**, **orange = admin only** (soft tint, dashed outline, small "Dev" / "Admin" tag).

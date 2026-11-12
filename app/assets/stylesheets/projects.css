@@ -16,7 +16,9 @@
 .projects-section { margin-bottom: var(--space-6); }
 .projects-section h2 { font-size: var(--text-lg); }
 .projects-hint { margin: var(--space-2) 0 0; color: var(--color-text-muted); font-size: var(--text-sm); }
-.projects-empty { color: var(--color-text-muted); }
+.projects-empty { margin-top: var(--space-4); color: var(--color-text-muted); }
+.projects-section > .projects-hint { margin-bottom: var(--space-4); }
+.projects--narrow .projects-lead { margin-bottom: var(--space-6); }
 .projects-empty-card { margin-bottom: var(--space-6); }
 
 /* List */
@@ -101,3 +103,9 @@
 .suggestions { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .suggestion { padding: var(--space-3) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
 .suggestion__text { margin-bottom: var(--space-3); }
+
+/* The header gets one more link for signed-in users: keep the Sign out button on one line on small screens. */
+@media (max-width: 30rem) {
+  .site-header__nav { gap: var(--space-2); }
+  .site-header__nav .btn { padding-inline: var(--space-3); white-space: nowrap; }
+}

@@ -2,6 +2,7 @@
 # project. The old user columns are left untouched. Self-contained (plain SQL, no app models) so it keeps working
 # if the models change; `backfill` is public so a test can run it.
 class BackfillFirstProjects < ActiveRecord::Migration[8.1]
+  DANGLING_TAIL = /(?:[\s,;:\-]+(?:a|an|the|in|of|on|to|and|or|for|with|where|that|is|are))*[\s,;:\-]*\z/i
   KIND_NAMES = { "game" => "My game", "website" => "My website", "app" => "My app", "tool" => "My tool", "hardware" => "My hardware project" }.freeze
 
   def up = backfill
@@ -28,7 +29,7 @@ class BackfillFirstProjects < ActiveRecord::Migration[8.1]
   # Same idea as Project.default_name: the first sentence of the idea, shortened, else "My <kind>".
   def title_for(kind, idea)
     title = idea.to_s.split(/[.!?\n]/).first.to_s.squish
-    title = title.truncate(40, separator: " ", omission: "").sub(/[\s,;:\-]+\z/, "")
+    title = title.truncate(40, separator: " ", omission: "").sub(DANGLING_TAIL, "")
     title = title[0].upcase + title[1..] if title.present?
     title.presence || KIND_NAMES.fetch(kind.to_s, "My project")
   end

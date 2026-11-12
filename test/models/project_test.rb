@@ -114,6 +114,7 @@ class ProjectTest < ActiveSupport::TestCase
 
   test "default_name uses the first sentence of the idea, else the kind" do
     assert_equal "A farming game", Project.default_name(kind: "game", idea: "a farming game. With cows!")
+    assert_equal "A farming game where the cows", Project.default_name(kind: "game", idea: "A farming game where the cows are in space. Very much WIP.")
     assert_equal "My app", Project.default_name(kind: "app", idea: nil)
     assert_equal "My project", Project.default_name(kind: "undecided", idea: "  ")
     assert_operator Project.default_name(kind: "game", idea: "word " * 40).length, :<=, 40
