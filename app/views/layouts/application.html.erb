@@ -24,21 +24,31 @@
     <header class="site-header">
       <div class="container site-header__inner">
         <%= link_to "Battletown", root_path, class: "site-header__brand" %>
-        <nav class="site-header__nav" aria-label="Account">
+        <% if signed_in? && current_user.onboarded? %>
+          <nav class="site-header__nav" aria-label="Main">
+            <%= nav_link "Dashboard", dashboard_path %>
+            <%= nav_link "Projects", projects_path %>
+            <%= nav_link "Ships", ships_path %>
+            <%= nav_link "Shop", shop_path %>
+            <%# Settings is a native disclosure (no JavaScript): Hackatime and Notifications live inside it. %>
+            <details class="site-menu">
+              <summary class="<%= "is-current" if settings_menu_current? %>">Settings</summary>
+              <div class="site-menu__panel">
+                <%= nav_link "Hackatime", hackatime_path %>
+                <%= nav_link "Notifications", settings_notifications_path %>
+              </div>
+            </details>
+          </nav>
+        <% end %>
+        <div class="site-header__account">
           <% if signed_in? %>
-            <%= link_to "Dashboard", dashboard_path if current_user.onboarded? %>
-            <%= link_to "Projects", projects_path if current_user.onboarded? %>
-            <%= link_to "Ships", ships_path if current_user.onboarded? %>
-            <%= link_to "Hackatime", hackatime_path if current_user.onboarded? %>
-            <%= link_to "Shop", shop_path if current_user.onboarded? %>
-            <%= link_to "Notifications", settings_notifications_path if current_user.onboarded? %>
-            <%= admin_tool(:div, label: false) { link_to "Admin", admin_root_path } %>
+            <%= admin_tool(:div, label: false) { link_to "Admin", admin_root_path, "aria-current": ("page" if request.path.start_with?("/admin")) } %>
             <%= button_to "Sign out", logout_path, method: :delete, class: "btn btn--ghost" %>
           <% else %>
             <%= render "shared/signup_button", label: "Sign in", css: "btn btn--ghost" %>
             <%= dev_tool(:div, label: false) { button_to "Dev login", dev_login_path, class: "btn btn--ghost", form: { data: { turbo: false } } } %>
           <% end %>
-        </nav>
+        </div>
       </div>
     </header>
 

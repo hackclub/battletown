@@ -104,8 +104,3 @@
 .suggestion { padding: var(--space-3) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
 .suggestion__text { margin-bottom: var(--space-3); }
 
-/* The header gets one more link for signed-in users: keep the Sign out button on one line on small screens. */
-@media (max-width: 30rem) {
-  .site-header__nav { gap: var(--space-2); }
-  .site-header__nav .btn { padding-inline: var(--space-3); white-space: nowrap; }
-}

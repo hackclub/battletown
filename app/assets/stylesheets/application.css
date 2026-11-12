@@ -103,11 +103,46 @@ main:focus { outline: none; }
   text-decoration: none;
 }
 
-.site-header__nav, .site-footer nav { display: flex; align-items: center; gap: var(--space-4); }
-.site-header__nav form { margin: 0; }
-/* Signed-in links plus the Sign out button can outgrow a phone: wrap instead of overflowing. */
-.site-header__nav { flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2) var(--space-4); }
-.site-header__nav .btn { white-space: nowrap; }
+.site-footer nav { display: flex; align-items: center; gap: var(--space-4); }
+
+/* Header: brand and account buttons on the first row, the main links on a second row of their own on phones; one row
+   from 48rem up. No JavaScript: Settings is a native <details>. */
+.site-header__inner { flex-wrap: wrap; row-gap: var(--space-2); }
+.site-header__brand { order: 1; }
+.site-header__account { order: 2; display: flex; align-items: center; gap: var(--space-2); margin-inline-start: auto; }
+.site-header__account form { margin: 0; }
+.site-header__account .btn { padding-inline: var(--space-3); white-space: nowrap; }
+.site-header__nav { order: 3; flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
+.site-header__nav a, .site-menu summary { padding-block: var(--space-1); }
+.site-header__nav a.is-current, .site-menu summary.is-current { color: var(--color-text); font-weight: 800; text-decoration-thickness: 3px; }
+
+.site-menu { position: relative; }
+.site-menu summary { color: var(--color-primary); cursor: pointer; text-decoration: underline; list-style: none; }
+.site-menu summary::-webkit-details-marker { display: none; }
+.site-menu summary::after { content: ""; display: inline-block; margin-inline-start: var(--space-1); border: 0.3em solid transparent; border-top-color: currentColor; vertical-align: -0.1em; }
+.site-menu[open] summary::after { border-top-color: transparent; border-bottom-color: currentColor; vertical-align: 0.1em; }
+.site-menu__panel {
+  position: absolute;
+  z-index: 10;
+  inset-inline-start: 0;
+  top: 100%;
+  display: grid;
+  gap: var(--space-2);
+  min-width: 10rem;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+}
+
+@media (min-width: 48rem) {
+  .site-header__inner { flex-wrap: nowrap; }
+  .site-header__brand { order: 1; }
+  .site-header__nav { order: 2; flex-basis: auto; margin-inline-start: auto; justify-content: flex-end; column-gap: var(--space-4); }
+  .site-header__account { order: 3; margin-inline-start: 0; }
+  .site-menu__panel { inset-inline-start: auto; inset-inline-end: 0; }
+}
 .site-footer a { color: var(--color-text-muted); }
 
 /* Buttons */

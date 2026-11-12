@@ -59,7 +59,7 @@ class ShopTest < ActionDispatch::IntegrationTest
   test "the header has a Shop link for onboarded users only" do
     sign_in_as @user
     get dashboard_path
-    assert_select "nav[aria-label=Account] a[href='/shop']", text: "Shop"
+    assert_select "nav[aria-label=Main] a[href='/shop']", text: "Shop"
   end
 
   # --- the locked state ---

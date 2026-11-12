@@ -106,7 +106,7 @@ class ShipsTest < ActionDispatch::IntegrationTest
   test "the header links to Ships for onboarded users" do
     sign_in_as @user
     get dashboard_path
-    assert_select "nav[aria-label=Account] a[href='#{ships_path}']", "Ships"
+    assert_select "nav[aria-label=Main] a[href='#{ships_path}']", "Ships"
   end
 
   test "a project with no linked Hackatime project asks to link one and shows no form" do

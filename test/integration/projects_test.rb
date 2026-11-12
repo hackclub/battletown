@@ -49,7 +49,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
   test "the header links to Projects for onboarded users only" do
     sign_in_as @user
     get dashboard_path
-    assert_select "nav[aria-label=Account] a[href='#{projects_path}']", "Projects"
+    assert_select "nav[aria-label=Main] a[href='#{projects_path}']", "Projects"
     delete logout_path
     get root_path
     assert_select "a[href='#{projects_path}']", 0
