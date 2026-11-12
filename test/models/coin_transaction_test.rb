@@ -41,7 +41,7 @@ class CoinTransactionTest < ActiveSupport::TestCase
     assert_not CoinTransaction.new(attributes(idempotency_key: "")).valid?
     assert_not CoinTransaction.new(attributes(idempotency_key: "k" * 121)).valid?
     assert_not CoinTransaction.new(attributes(note: "n" * 201)).valid?
-    assert_not CoinTransaction.new(attributes(created_by: "Amber Smith")).valid?
+    assert_not CoinTransaction.new(attributes(created_by: "Jane Doe")).valid?
     assert_not CoinTransaction.new(attributes(reference_type: "Ship")).valid?
     assert CoinTransaction.new(attributes(kind: "adjustment", amount: -5)).valid?
   end
