@@ -95,3 +95,4 @@
 /* Project review: the one-line "flagged project" warning on ship pages. */
 .admin-flagged-chip { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: var(--space-2) 0 0; font-weight: 700; }
 .admin-flagged-chip a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
+.admin-table .btn, .admin-table td.admin-table__num { white-space: nowrap; }
