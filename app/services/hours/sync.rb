@@ -49,7 +49,8 @@ module Hours
         rows = Array(user_or_rows)
       end
 
-      summary = rows.reduce(Summary.empty) { |total, day| total + sync_day(user, day) }
+      # One boss defeat check for the whole user, not one per credited day (Bosses::CheckDefeat.batched).
+      summary = Bosses::CheckDefeat.batched { rows.reduce(Summary.empty) { |total, day| total + sync_day(user, day) } }
       Rails.logger.warn("hours.sync skipped_negative=#{summary.skipped_negative}") if summary.skipped_negative.positive?
       summary
     end

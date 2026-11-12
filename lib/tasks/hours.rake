@@ -3,8 +3,10 @@ namespace :hours do
   desc "Import Hackatime time from a CSV (slack_id,date,seconds[,project]); safe to repeat: hours:import[path/to/file.csv]"
   task :import, [ :path ] => :environment do |_task, args|
     source = Hackatime::CsvSource.new(args[:path])
-    totals = source.users.find_each.reduce(Hours::Sync::Summary.empty) do |sum, user|
-      sum + Hours::Sync.call(user, source: source, from: nil, to: nil)
+    totals = Bosses::CheckDefeat.batched do
+      source.users.find_each.reduce(Hours::Sync::Summary.empty) do |sum, user|
+        sum + Hours::Sync.call(user, source: source, from: nil, to: nil)
+      end
     end
     puts "hours:import rows=#{source.row_count} invalid_rows=#{source.invalid_row_count} " \
          "unknown_slack_ids=#{source.unknown_slack_id_count} credited_seconds=#{totals.credited_seconds} " \

@@ -166,4 +166,22 @@ class Hours::SyncTest < ActiveSupport::TestCase
   test "DaySeconds defaults the project to nil" do
     assert_nil Hackatime::DaySeconds.new(date: DAY, seconds: 5).project
   end
+
+  test "a sync sums the boss week once, not once per credited day" do
+    boss = Boss.create!(name: "Sync boss", art_key: "placeholder", starts_on: DAY - 3, ends_on: DAY + 3, hp_seconds: 3_600)
+    sums = 0
+    original = Bosses::Damage.method(:for)
+    Bosses::Damage.define_singleton_method(:for) do |checked|
+      sums += 1
+      original.call(checked)
+    end
+    begin
+      sync(row(1_200, project: "a"), row(1_200, project: "b"), row(1_200, project: "a", date: DAY - 1))
+    ensure
+      Bosses::Damage.define_singleton_method(:for, original)
+    end
+    assert_equal 3, HourEntry.where(user: @user).count
+    assert_equal 1, sums
+    assert boss.reload.defeated?
+  end
 end

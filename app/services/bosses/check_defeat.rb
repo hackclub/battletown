@@ -12,12 +12,40 @@ module Bosses
 
     # Called from HourEntry after commit: checks every boss whose week covers that local date. The ledger write has
     # already committed, so a failure here must never fail it; the damage is derived, not stored, so the next entry
-    # catches up.
+    # catches up. Inside `batched` the date is only noted and checked when the batch ends.
     def self.for_date(date)
-      Boss.covering(date).where(defeated_at: nil).find_each { |boss| call(boss) }
+      pending = ActiveSupport::IsolatedExecutionState[:bosses_check_defeat_dates]
+      return pending << date if pending
+
+      check_dates([ date ])
+    end
+
+    # Defers the per-entry checks made inside the block to one check per boss when the outermost block ends (also
+    # when it raises: entries committed before the error still count). Summing a boss week costs the same for one
+    # entry as for thousands, so bulk writers (Hours::Sync, the hours:import and hackatime:sync tasks) wrap their
+    # loops in this instead of summing the week again after every entry. Per thread; nesting is a no-op.
+    def self.batched
+      return yield if ActiveSupport::IsolatedExecutionState[:bosses_check_defeat_dates]
+
+      ActiveSupport::IsolatedExecutionState[:bosses_check_defeat_dates] = Set.new
+      begin
+        yield
+      ensure
+        dates = ActiveSupport::IsolatedExecutionState.delete(:bosses_check_defeat_dates)
+        check_dates(dates)
+      end
+    end
+
+    def self.check_dates(dates)
+      return if dates.empty?
+
+      Boss.where(defeated_at: nil).where(starts_on: ..dates.max, ends_on: dates.min..).find_each do |boss|
+        call(boss) if dates.any? { |date| boss.range.cover?(date) }
+      end
     rescue StandardError => error
       Rails.logger.error("bosses.check_defeat failed error=#{error.class}")
     end
+    private_class_method :check_dates
 
     def initialize(boss)
       @boss = boss

@@ -20,13 +20,16 @@ namespace :hackatime do
     source = Hackatime::HttpSource.new
     counts = Hash.new(0)
     credited = Hours::Sync::Summary.empty
-    users.find_each do |user|
-      credited += Hours::Sync.call(user, source: source)
-      counts[:synced] += 1
-    rescue Hackatime::Client::AuthError
-      counts[:needs_reconnect] += 1
-    rescue Hackatime::Client::RetryableError, Hackatime::Client::ResponseError
-      counts[:retry_later] += 1
+    # One boss defeat check for the whole run (Bosses::CheckDefeat.batched), not one per credited day.
+    Bosses::CheckDefeat.batched do
+      users.find_each do |user|
+        credited += Hours::Sync.call(user, source: source)
+        counts[:synced] += 1
+      rescue Hackatime::Client::AuthError
+        counts[:needs_reconnect] += 1
+      rescue Hackatime::Client::RetryableError, Hackatime::Client::ResponseError
+        counts[:retry_later] += 1
+      end
     end
 
     puts "hackatime:sync users=#{counts[:synced]} needs_reconnect=#{counts[:needs_reconnect]} retry_later=#{counts[:retry_later]} " \

@@ -77,4 +77,43 @@ class Bosses::CheckDefeatTest < ActiveSupport::TestCase
     assert_nil @boss.reload.defeated_at
     assert Bosses::CheckDefeat.call(@boss), "the next check catches up"
   end
+
+  test "batched defers the checks to one per boss when the block ends" do
+    checked = []
+    original = Bosses::CheckDefeat.method(:call)
+    Bosses::CheckDefeat.define_singleton_method(:call) do |boss|
+      checked << boss.id
+      original.call(boss)
+    end
+    begin
+      Bosses::CheckDefeat.batched do
+        add_hours(@user, FRIDAY, 2_000)
+        add_hours(@user, FRIDAY + 1, 2_000)
+        Bosses::CheckDefeat.batched { add_hours(@user, FRIDAY + 2, 1) }
+        assert_empty checked, "nothing is summed inside the batch"
+        assert_nil @boss.reload.defeated_at
+      end
+    ensure
+      Bosses::CheckDefeat.define_singleton_method(:call, original)
+    end
+    assert_equal [ @boss.id ], checked
+    assert @boss.reload.defeated?
+  end
+
+  test "batched still checks when the block raises, and only the bosses covering the noted dates" do
+    other = make_boss(starts_on: FRIDAY + 7, hp_seconds: 1)
+    add_hours(@user, FRIDAY + 7, 5) # defeats the other boss straight away (no batch)
+    later = make_boss(starts_on: FRIDAY + 14, hp_seconds: 1)
+    HourEntry.insert_all!([ { user_id: @user.id, local_date: FRIDAY + 14, seconds: 10, source: "manual", note: "t", idempotency_key: "silent" } ])
+
+    assert_raises(RuntimeError) do
+      Bosses::CheckDefeat.batched do
+        add_hours(@user, FRIDAY, 3_600)
+        raise "sync failed half way"
+      end
+    end
+    assert @boss.reload.defeated?
+    assert other.reload.defeated?
+    assert_nil later.reload.defeated_at, "a boss whose dates were not credited is not checked"
+  end
 end
