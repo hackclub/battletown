@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035005) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_035006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -98,6 +98,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035005) do
     t.check_constraint "char_length(scopes::text) <= 100", name: "hackatime_connections_scopes_length_check"
     t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "hackatime_connections_last_error_code_check"
     t.check_constraint "refresh_token IS NULL OR char_length(refresh_token) <= 4000", name: "hackatime_connections_refresh_token_length_check"
+  end
+
+  create_table "hackatime_day_windows", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "local_date", null: false
+    t.datetime "starts_at", null: false
+    t.datetime "ends_at", null: false
+    t.string "hackatime_uid", limit: 40, null: false
+    t.datetime "created_at", null: false
+    t.index ["hackatime_uid", "ends_at"], name: "index_hackatime_day_windows_on_hackatime_uid_and_ends_at"
+    t.index ["user_id", "local_date"], name: "index_hackatime_day_windows_on_user_id_and_local_date", unique: true
+    t.check_constraint "char_length(hackatime_uid::text) >= 1 AND char_length(hackatime_uid::text) <= 40", name: "hackatime_day_windows_uid_length_check"
+    t.check_constraint "ends_at >= starts_at", name: "hackatime_day_windows_order_check"
   end
 
   create_table "hackatime_links", force: :cascade do |t|
@@ -320,6 +333,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035005) do
   add_foreign_key "coin_transactions", "users", on_delete: :cascade
   add_foreign_key "daily_results", "users", on_delete: :cascade
   add_foreign_key "hackatime_connections", "users", on_delete: :cascade
+  add_foreign_key "hackatime_day_windows", "users", on_delete: :cascade
   add_foreign_key "hackatime_links", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
   add_foreign_key "hackatime_links", "users", on_delete: :cascade
   add_foreign_key "hour_entries", "users", on_delete: :cascade

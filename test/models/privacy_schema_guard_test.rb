@@ -78,6 +78,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     DailyResult.create!(user: user, local_date: Date.new(2026, 11, 1), raw_seconds: 0, quick_met: false, goal_met: false,
                         streak_15: 0, goal_streak: 0, freeze_available: true)
     HackatimeConnection.create!(user: user, hackatime_uid: "1", access_token: "guard-token", scopes: "profile read", connected_at: Time.current)
+    HackatimeDayWindow.create!(user: user, local_date: Date.new(2026, 11, 9), starts_at: Time.utc(2026, 11, 9), ends_at: Time.utc(2026, 11, 10), hackatime_uid: "1")
     subject = Privacy::TokenVerifier::Subject.new(emails: [], slack_id: nil, identity_id: user.hca_uid)
 
     deleted = Privacy::Deleter.new(subject).call(dry_run: true).deleted
