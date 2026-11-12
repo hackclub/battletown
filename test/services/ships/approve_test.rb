@@ -127,6 +127,18 @@ class Ships::ApproveTest < ActiveSupport::TestCase
     assert_match(/not final/, ship.payout_note)
   end
 
+  test "the preview counts a day as settled when its row exists, as the payout does, even if the new zone's clock says not yet" do
+    ship = three_hour_ship
+    moment = Time.utc(2026, 11, 4, 6, 30) # Nov 3 settled for UTC at 06:00; Los Angeles is still on the evening of Nov 3
+    Game::Settle.call(@user, through: moment)
+    @user.update_columns(time_zone: "America/Los_Angeles")
+
+    assert_empty Ships::Approve.unsettled_dates(ship.reload, now: moment)
+    result = approve(ship, now: moment)
+    assert_empty result.unsettled_dates
+    assert_equal 2, result.credit.bonus_coins
+  end
+
   test "the payout follows the ship's snapshot, not the live ledger or the current links" do
     ship = three_hour_ship
     @project.hackatime_links.destroy_all
