@@ -1,40 +1,43 @@
 <% content_for :title, "Your orders" %>
-<section class="container shop">
-  <header class="shop-header">
-    <div>
-      <h1>Your orders</h1>
-      <p class="shop-lead">You have <strong><%= coins_text(@total) %></strong>.</p>
-    </div>
+<section class="container shop stack">
+  <header class="page-header">
+    <p class="eyebrow">Battletown shop</p>
+    <h1>Your orders</h1>
+    <p class="lead shop-lead">You have <strong><%= coins_text(@total) %></strong>.</p>
     <p><%= link_to "Back to the shop", shop_path, class: "btn btn--ghost" %></p>
   </header>
 
   <% if @orders.empty? %>
-    <div class="card">
-      <h2>No orders yet</h2>
-      <p>When you get something from the shop, it shows up here.</p>
-      <%= link_to "Browse the shop", shop_path, class: "btn btn--primary" %>
+    <div class="empty">
+      <%= image_tag "design/map-tree.svg", alt: "", class: "empty__art", width: 73, height: 119 %>
+      <h2 class="empty__title">No orders yet</h2>
+      <p class="empty__text">When you get something from the shop, it shows up here.</p>
+      <div class="empty__actions"><%= link_to "Browse the shop", shop_path, class: "btn btn--primary" %></div>
     </div>
   <% else %>
-    <ul class="shop-orders">
+    <ul class="shop-orders" role="list">
       <% @orders.each do |order| %>
         <li class="card shop-order" id="order-<%= order.id %>">
-          <div class="shop-order__head">
-            <h2 class="shop-order__name"><span aria-hidden="true"><%= order.emoji %></span> <%= order.display_name %></h2>
-            <span class="shop-status shop-status--<%= order.status %>"><%= order_status_text(order) %></span>
-          </div>
-          <p class="shop-order__meta">
-            <%= price_text(order.coins) %> &middot; ordered <%= order_date(order.created_at) %>
-            <% if order.fulfilled? %>&middot; fulfilled <%= order_date(order.fulfilled_at) %><% end %>
-            <% if order.cancelled? %>&middot; cancelled <%= order_date(order.cancelled_at) %><%= " (coins refunded)" if order.coins.positive? %><% end %>
-          </p>
-          <% if order.requested? %>
-            <p class="shop-note">The team will message you on Slack to arrange delivery.</p>
-            <% unless order.signup_sticker? %>
-              <%= button_to "Cancel order", cancel_order_path(order), method: :patch, class: "btn btn--ghost",
-                            "aria-label": "Cancel order: #{order.display_name}",
-                            form: { data: { turbo_confirm: "Cancel this order? Your #{coins_text(order.coins)} come back." } } %>
+          <span class="shop-order__art" aria-hidden="true"><%= order.emoji %></span>
+          <div class="shop-order__body">
+            <div class="shop-order__head">
+              <h2 class="shop-order__name"><%= order.display_name %></h2>
+              <span class="badge shop-status shop-status--<%= order.status %> <%= order_status_badge(order) %>"><%= order_status_text(order) %></span>
+            </div>
+            <p class="shop-order__meta">
+              <%= price_text(order.coins) %> &middot; ordered <%= order_date(order.created_at) %>
+              <% if order.fulfilled? %>&middot; fulfilled <%= order_date(order.fulfilled_at) %><% end %>
+              <% if order.cancelled? %>&middot; cancelled <%= order_date(order.cancelled_at) %><%= " (coins refunded)" if order.coins.positive? %><% end %>
+            </p>
+            <% if order.requested? %>
+              <p class="shop-note">The team will message you on Slack to arrange delivery.</p>
+              <% unless order.signup_sticker? %>
+                <%= button_to "Cancel order", cancel_order_path(order), method: :patch, class: "btn btn--sm",
+                              "aria-label": "Cancel order: #{order.display_name}",
+                              form: { data: { turbo_confirm: "Cancel this order? Your #{coins_text(order.coins)} come back." } } %>
+              <% end %>
             <% end %>
-          <% end %>
+          </div>
         </li>
       <% end %>
     </ul>

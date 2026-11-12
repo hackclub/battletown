@@ -1,29 +1,29 @@
 <% content_for :title, "Shop" %>
-<section class="container shop">
-  <header class="shop-header">
-    <div>
-      <h1>The shop</h1>
-      <p class="shop-lead">Trade the coins you earn for real gear. Every price is the same for everyone.</p>
-    </div>
+<section class="container shop stack">
+  <header class="page-header">
+    <p class="eyebrow">Battletown shop</p>
+    <h1>The shop</h1>
+    <p class="lead">Trade the coins you earn for real gear. Everyone pays the same price.</p>
     <p><%= link_to "Your orders", orders_path, class: "btn btn--ghost" %></p>
   </header>
 
-  <section class="card shop-balance <%= "shop-balance--locked" if @locked %>" aria-labelledby="balance-heading">
+  <section class="shop-balance on-map <%= "shop-balance--locked" if @locked %>" aria-labelledby="balance-heading">
+    <%= image_tag "design/map-house.svg", alt: "", class: "shop-balance__art", width: 150, height: 72 %>
     <h2 id="balance-heading" class="shop-balance__title">Your coins</h2>
     <dl class="shop-balance__figures">
+      <div class="shop-balance__main">
+        <dt>You can spend now</dt>
+        <dd id="coin-spendable"><%= coins_text(@spendable) %></dd>
+      </div>
       <div>
         <dt>Total</dt>
         <dd id="coin-total"><%= coins_text(@total) %></dd>
-      </div>
-      <div>
-        <dt>You can spend now</dt>
-        <dd id="coin-spendable"><%= coins_text(@spendable) %></dd>
       </div>
     </dl>
     <% if @locked %>
       <%= render "shop/verify_note" %>
     <% else %>
-      <p class="shop-note">You're verified, so all of your coins are ready to spend.</p>
+      <p class="shop-note"><span class="badge badge--success">Verified</span> You're verified, so all of your coins are ready to spend.</p>
     <% end %>
     <%= dev_tool(:div, class: "shop-dev") do %>
       <%= button_to "Give me 100 test coins", dev_coins_path, class: "btn" %>
@@ -31,8 +31,8 @@
   </section>
 
   <% unless @sticker_order %>
-    <section class="card shop-sticker" aria-labelledby="sticker-heading">
-      <span class="shop-item__emoji" aria-hidden="true"><%= @sticker.emoji %></span>
+    <section class="shop-sticker" aria-labelledby="sticker-heading">
+      <span class="shop-sticker__art" aria-hidden="true"><%= @sticker.emoji %></span>
       <div class="shop-sticker__body">
         <h2 id="sticker-heading">Claim your free sticker</h2>
         <p><%= @sticker.description %> No coins needed<%= ", and you don't have to be verified yet" if @locked %>. The team will message you on Slack to arrange delivery.</p>
@@ -41,30 +41,36 @@
     </section>
   <% end %>
 
-  <h2 class="shop-subhead">Things to get</h2>
-  <ul class="shop-grid">
-    <% @prizes.each do |prize| %>
-      <li class="card shop-item">
-        <% if prize.image.present? %>
-          <%= image_tag prize.image, alt: "", class: "shop-item__image" %>
-        <% else %>
-          <span class="shop-item__emoji" aria-hidden="true"><%= prize.emoji %></span>
-        <% end %>
-        <h3 class="shop-item__name"><%= prize.name %></h3>
-        <p class="shop-item__description"><%= prize.description %></p>
-        <p class="shop-item__meta">
-          <span class="shop-item__price"><%= coins_text(prize.coins) %></span>
-          <%# The ordinary "shop" tier needs no label; only the special tiers (daily, weekly) get a pill. %>
-          <% unless prize.tier == "shop" %><span class="shop-tier"><%= prize.tier.capitalize %></span><% end %>
-        </p>
-        <% if @locked %>
-          <button type="button" class="btn" disabled aria-describedby="shop-verify-note" aria-label="<%= prize.name %>: locked until you verify">Locked until you verify</button>
-        <% elsif @spendable < prize.coins %>
-          <button type="button" class="btn" disabled aria-label="<%= prize.name %>: <%= coins_text(prize.coins - @spendable) %> short">Need <%= coins_text(prize.coins - @spendable) %> more</button>
-        <% else %>
-          <%= link_to "Get this", shop_item_path(prize.key), class: "btn btn--primary", "aria-label": "Get this: #{prize.name}" %>
-        <% end %>
-      </li>
-    <% end %>
-  </ul>
+  <section aria-labelledby="things-heading">
+    <div class="section-head">
+      <h2 id="things-heading">Things to get</h2>
+    </div>
+    <ul class="shop-grid grid" role="list">
+      <% @prizes.each do |prize| %>
+        <li class="card card--chunky shop-item">
+          <div class="shop-item__art">
+            <% if prize.image.present? %>
+              <%= image_tag prize.image, alt: "", class: "shop-item__image" %>
+            <% else %>
+              <span class="shop-item__emoji" aria-hidden="true"><%= prize.emoji %></span>
+            <% end %>
+          </div>
+          <h3 class="card__title shop-item__name"><%= prize.name %></h3>
+          <p class="shop-item__description"><%= prize.description %></p>
+          <p class="shop-item__meta">
+            <span class="shop-item__price"><%= coins_text(prize.coins) %></span>
+            <%# The ordinary "shop" tier needs no label; only the special tiers (daily, weekly) get a pill. %>
+            <% unless prize.tier == "shop" %><span class="badge badge--warning shop-tier"><%= prize.tier.capitalize %></span><% end %>
+          </p>
+          <% if @locked %>
+            <button type="button" class="btn btn--block" disabled aria-describedby="shop-verify-note" aria-label="<%= prize.name %>: locked until you verify">Locked until you verify</button>
+          <% elsif @spendable < prize.coins %>
+            <button type="button" class="btn btn--block" disabled aria-label="<%= prize.name %>: <%= coins_text(prize.coins - @spendable) %> short">Need <%= coins_text(prize.coins - @spendable) %> more</button>
+          <% else %>
+            <%= link_to "Get this", shop_item_path(prize.key), class: "btn btn--primary btn--block", "aria-label": "Get this: #{prize.name}" %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
 </section>

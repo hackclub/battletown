@@ -113,6 +113,44 @@ class ShopTest < ActionDispatch::IntegrationTest
     assert_select ".shop-item button[disabled]", text: "Need 10 coins more"
   end
 
+  test "each card shows its art, price pill and exactly one of the three button states" do
+    verified!(@user)
+    give_coins(@user, 45)
+    sign_in_as @user
+    get shop_path
+    assert_select ".shop-item.card--chunky", Prize.paid.size
+    assert_select ".shop-item .shop-item__art", Prize.paid.size
+    assert_select ".shop-item .shop-item__price", Prize.paid.size
+    affordable = Prize.paid.count { |prize| prize.coins <= 45 }
+    assert_select ".shop-item a.btn--primary", text: "Get this", count: affordable
+    assert_select ".shop-item button[disabled]", Prize.paid.size - affordable
+    assert_select ".shop-item button[disabled]", text: /\ANeed \d+ coins? more\z/, count: Prize.paid.size - affordable
+    assert_select ".shop-balance .badge", text: "Verified"
+    assert_select "#shop-verify-note", 0
+  end
+
+  test "the locked state says so in words and every card button is disabled" do
+    give_coins(@user, 120)
+    sign_in_as @user
+    get shop_path
+    assert_select ".shop-balance--locked"
+    assert_select "#shop-verify-note .badge", text: /Locked for now/
+    assert_select ".shop-item a.btn", 0
+    assert_select ".shop-sticker button", text: "Claim your free sticker"
+  end
+
+  test "the shop pages never show a dollar amount" do
+    verified!(@user)
+    give_coins(@user, 120)
+    sign_in_as @user
+    place_order
+    [ shop_path, shop_item_path("keychain"), orders_path ].each do |path|
+      get path
+      assert_response :success
+      assert_no_match(/\$|\bUSD\b|dollar/i, css_select("main").text, "#{path} must price things in coins only")
+    end
+  end
+
   test "plural-safe copy: one coin short reads as one coin" do
     verified!(@user)
     give_coins(@user, 49)
@@ -298,7 +336,24 @@ class ShopTest < ActionDispatch::IntegrationTest
   test "an empty orders page invites you to the shop" do
     sign_in_as @user
     get orders_path
-    assert_select "h2", text: "No orders yet"
+    assert_select ".empty h2", text: "No orders yet"
+    assert_select ".empty a[href='#{shop_path}']", text: "Browse the shop"
+  end
+
+  test "every status is a word in a badge, not a colour alone" do
+    verified!(@user)
+    give_coins(@user, 200)
+    sign_in_as @user
+    requested = buy(@user, "keychain")
+    fulfilled = buy(@user, "poster")
+    fulfilled.update_columns(status: "fulfilled", fulfilled_at: Time.current)
+    cancelled = buy(@user, "sticker_pack")
+    Shop::Cancel.call(order: cancelled, by: @user)
+    get orders_path
+    assert_select "#order-#{requested.id} .badge.badge--warning", text: "Requested"
+    assert_select "#order-#{fulfilled.id} .badge.badge--success", text: "Fulfilled"
+    assert_select "#order-#{cancelled.id} .badge.badge--muted", text: "Cancelled"
+    assert_select "#order-#{requested.id} button", text: "Cancel order"
   end
 
   test "no address field exists anywhere in the shop flow" do

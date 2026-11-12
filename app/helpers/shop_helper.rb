@@ -11,6 +11,11 @@ module ShopHelper
 
   def order_status_text(order) = STATUS_TEXT.fetch(order.status)
 
+  # The shared badge colour for a status; the word is always printed too, and shop.css adds a mark in front of it.
+  STATUS_BADGE = { "requested" => "badge--warning", "fulfilled" => "badge--success", "cancelled" => "badge--muted" }.freeze
+
+  def order_status_badge(order) = STATUS_BADGE.fetch(order.status)
+
   # Orders carry a calendar date in the person's own zone (UTC when unset).
   def order_date(time, user = current_user)
     zone = ActiveSupport::TimeZone[user.time_zone.to_s] || ActiveSupport::TimeZone["UTC"]

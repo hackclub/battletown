@@ -1,80 +1,113 @@
-/* Shop: grid, balance banner, confirmation, orders, and the staff order queue. Tokens only. */
+/* Shop, confirmation and order history. Built from the shared design system (.page-header, .card--chunky, .badge,
+   .alert, .empty, .btn); this file only holds what those classes cannot do. Tokens only. The staff order queue at
+   the bottom is unchanged. */
 .shop--narrow { max-width: 40rem; }
+.shop-back { margin: 0; }
+/* A quiet button at the start of a line lines its label up with the text under it. */
+.shop-back .btn, .shop .page-header .btn--ghost { margin-inline-start: -1.25em; }
+/* The shared badge colours, restated here so another page's older unlayered .badge rule cannot wash them out. */
+.shop .badge {
+  display: inline-flex;
+  padding: 0 var(--space-3);
+  border: 2px solid var(--badge-border);
+  background: var(--badge-bg);
+  color: var(--badge-fg);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+.shop-note { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
+.alert.shop-note { color: var(--alert-ink); font-size: var(--text-base); }
 
-.shop-header {
+/* Balance banner: the map-blue band with the spendable coins big. Locked is written out and dashed, never colour alone. */
+.shop-balance {
+  position: relative;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border-bottom: var(--border-chunky) solid var(--color-card-blue);
+  border-radius: var(--radius-xl);
+  background: var(--color-map);
+}
+.shop-balance--locked { border: 3px dashed var(--color-bg); border-bottom: var(--border-chunky) solid var(--color-card-blue); }
+.shop-balance > * { position: relative; margin: 0; }
+.shop-balance__art { display: none; position: absolute; right: var(--space-8); bottom: var(--space-4); width: 9rem; height: auto; }
+.shop-balance__title { font-size: var(--text-lg); }
+.shop-balance__figures { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-8); margin: 0; }
+.shop-balance__figures dt { font-size: var(--text-sm); font-weight: 700; }
+.shop-balance__figures dd { margin: 0; font-family: var(--font-display); font-size: var(--text-xl); line-height: var(--leading-tight); font-variant-numeric: tabular-nums; }
+.shop-balance__main dd { font-size: var(--text-2xl); letter-spacing: var(--tracking-display); }
+.shop-balance .shop-note { color: var(--color-bg); font-size: var(--text-base); }
+.shop-lock { display: grid; gap: var(--space-2); max-width: 34rem; }
+.shop-lock p { margin: 0; }
+.shop-lock__icon { flex: none; }
+.shop-dev { align-self: start; justify-self: start; }
+.shop-dev form { margin: 0; }
+@media (min-width: 64rem) { .shop-balance__art { display: block; } .shop-lock, .shop-balance .shop-note { max-width: 34rem; } }
+
+/* Free sticker: a yellow sign (Figma sign yellow, ink blue on it is 5.8:1). */
+.shop-sticker {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: var(--border-chunky) solid var(--color-sign-yellow-edge);
+  border-radius: var(--radius-lg);
+  background: var(--color-sign-yellow);
+  color: var(--color-ink-blue);
 }
-.shop-header > div { flex: 1 1 18rem; min-width: 0; }
-.shop-header p { margin: 0; }
-.shop-lead { color: var(--color-text-muted); font-size: var(--text-lg); }
-.shop-back { margin: 0 0 var(--space-4); }
-.shop-subhead { margin: var(--space-8) 0 var(--space-4); }
-.shop-note { margin: 0 0 var(--space-4); color: var(--color-text-muted); font-size: var(--text-sm); }
-
-/* Balance banner. Locked state: a dashed outline and words, never colour alone. */
-.shop-balance { margin-bottom: var(--space-6); }
-.shop-balance--locked { border: 2px dashed var(--color-primary); }
-.shop-balance__title { margin: 0 0 var(--space-3); font-size: var(--text-lg); }
-.shop-balance__figures { display: flex; flex-wrap: wrap; gap: var(--space-6); margin: 0 0 var(--space-3); }
-.shop-balance__figures dt { color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 700; }
-.shop-balance__figures dd { margin: 0; font-family: var(--font-display); font-size: var(--text-xl); line-height: var(--leading-tight); font-variant-numeric: tabular-nums; }
-.shop-dev { margin-top: var(--space-3); }
-.shop-dev form { margin: 0; }
-
-/* Free sticker card */
-.shop-sticker { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
+.shop-sticker__art { display: grid; place-items: center; flex: none; width: 5rem; height: 5rem; border-radius: var(--radius-full); background: var(--color-bg); font-size: var(--text-2xl); line-height: 1; }
 .shop-sticker__body { flex: 1 1 16rem; min-width: 0; }
-.shop-sticker__body h2 { margin: 0 0 var(--space-2); font-size: var(--text-lg); }
-.shop-sticker__body p { margin: 0; color: var(--color-text-muted); }
+.shop-sticker__body h2 { margin: 0 0 var(--space-1); font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
+.shop-sticker__body p { margin: 0; font-weight: 700; }
 .shop-sticker form { margin: 0; }
 
-/* Grid */
-.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
-.shop-item { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+/* Prize grid: chunky blue cards, one column on a phone. */
+.shop-grid { --grid-min: 15rem; --grid-gap: var(--space-6); margin: 0; padding: 0; list-style: none; }
+.shop-item { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; padding: var(--space-4); }
 .shop-item form { margin: 0; }
-.shop-item__emoji { font-size: var(--text-2xl); line-height: 1; }
+.shop-item__art { display: grid; place-items: center; min-height: 9rem; padding: var(--space-3); border-radius: var(--radius-lg); background: var(--color-card-blue-light); }
+.shop-item__emoji { font-size: var(--text-sign-title); line-height: 1; }
 .shop-item__image { width: 100%; max-height: 8rem; object-fit: contain; }
-.shop-item__name { margin: 0; font-size: var(--text-lg); }
-.shop-item__description { flex: 1; margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
+.shop-item .card__title { margin: 0; overflow-wrap: anywhere; }
+.shop-item__description { flex: 1; margin: 0; }
 .shop-item__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; }
-.shop-item__price { color: var(--color-primary); font-family: var(--font-display); font-size: var(--text-lg); }
-.shop-item .btn { align-self: flex-start; text-align: center; }
-
-.shop-tier, .shop-status {
-  display: inline-block;
-  padding: 0 var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  font-size: var(--text-sm);
-  font-weight: 700;
-}
+.shop-item__price { padding: 0 var(--space-4); border-radius: var(--radius-full); background: var(--color-bg); color: var(--color-ink-blue); font-family: var(--font-display); font-size: var(--text-lg); line-height: 1.6; font-variant-numeric: tabular-nums; }
+.shop-item .btn--primary { --btn-border: var(--color-bg); }
+/* .card--chunky a would paint the link button's label pale blue; a button keeps its own label colour. */
+.shop-item a.btn, .shop-item a.btn:hover { color: var(--btn-fg); }
+/* A button you cannot press yet stays fully readable: dashed cream outline instead of a washed-out fill. */
+.shop-item .btn:disabled { --btn-bg: transparent; --btn-fg: var(--color-bg); --btn-border: var(--color-bg); --btn-edge: transparent; border-style: dashed; opacity: 1; }
 
 /* Confirmation */
 .shop-confirm { display: flex; flex-direction: column; gap: var(--space-3); }
-.shop-confirm p { margin: 0; }
-.shop-confirm__form { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.shop-confirm__art { min-height: 11rem; }
+.shop-confirm .card__title, .shop-confirm__description { margin: 0; }
+.shop-confirm__form { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin: 0; }
 .shop-sums { margin: 0; }
-.shop-sums > div { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); }
+.shop-sums > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); }
 .shop-sums dt { color: var(--color-text-muted); }
 .shop-sums dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
-.shop-sums__after dd { color: var(--color-primary); font-family: var(--font-display); }
+.shop-sums__after { border-bottom-width: 0; }
+.shop-sums__after dt { color: var(--color-text); font-weight: 700; }
+.shop-sums__after dd { color: var(--color-link); font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
 
-/* Orders. The status is always written out; the border style only backs it up. */
+/* Orders. The status is always written out as a badge word; the mark in front only backs it up. */
 .shop-orders { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.shop-order { display: flex; align-items: flex-start; gap: var(--space-4); }
+.shop-order__art { display: grid; place-items: center; flex: none; width: 3.5rem; height: 3.5rem; border-radius: var(--radius-lg); background: var(--color-card-blue-light); font-size: var(--text-xl); line-height: 1; }
+.shop-order__body { flex: 1; min-width: 0; }
 .shop-order__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
-.shop-order__name { margin: 0; font-size: var(--text-lg); }
+.shop-order__name { margin: 0; font-size: var(--text-lg); overflow-wrap: anywhere; }
 .shop-order__meta { margin: 0 0 var(--space-3); color: var(--color-text-muted); font-size: var(--text-sm); }
+.shop-order .shop-note { margin-bottom: var(--space-3); }
 .shop-order form { margin: 0; }
+.shop-status::before { margin-inline-end: 0.2em; font-weight: 700; }
 .shop-status--requested { border-style: dashed; }
-.shop-status--fulfilled { border-color: var(--color-success); border-width: 2px; }
-.shop-status--cancelled { border-style: dotted; color: var(--color-text-muted); }
+.shop-status--requested::before { content: "\2026"; }
+.shop-status--fulfilled::before { content: "\2713"; }
+.shop-status--cancelled { border-style: dotted; }
+.shop-status--cancelled::before { content: "\2715"; }
 
 /* Staff order queue (inside admin_tool; the orange tint comes from staff.css). */
 .admin-form--inline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); max-width: none; margin-bottom: var(--space-4); }
