@@ -29,6 +29,7 @@ module Shop
         existing = Order.find_by(user_id: @user.id, idempotency_key: @key)
         next replay(existing) if existing
 
+        Prize.reload! # the price and the archived flag are read again now that the lock is held (the request may have loaded them earlier)
         prize = Prize.find(@prize_key) or raise UnknownPrize
         raise ItemUnavailable unless prize.active?
         raise FreeItem if prize.free_signup? || prize.coins.zero?
