@@ -8,6 +8,9 @@ Rails.application.configure do
   config.flipper.preload = false
   # Flag checks stay out of the logs (an actor check would print a user id).
   config.flipper.log = false
+  # Flipper's development-only "strict" mode warns about every flag it has not stored yet; every known flag is registered
+  # at boot and an unstored flag simply means off, so the warnings (printed by db:migrate, db:seed, the console) are noise.
+  config.flipper.strict = false
 end
 
 # The database adapter is required lazily, on first use. Requiring flipper-active_record from the Gemfile loads

@@ -181,10 +181,24 @@ class NpsFeedbackTest < ActionDispatch::IntegrationTest
     assert_equal 5, NpsResponse.sole.score
   end
 
-  test "another window is a new survey for the same person" do
+  test "a window after the cooldown is a new survey for the same person" do
     answer!(token(@user, DATE), score: 8)
-    answer!(token(@user, DATE + 2), score: 6)
+    answer!(token(@user, DATE + Nps::Config.current.cooldown_days), score: 6)
     assert_equal [ 6, 8 ], NpsResponse.pluck(:score).sort
+  end
+
+  test "an older link still inside its lifetime cannot take a second answer within the cooldown, in either order" do
+    answer!(token(@user, DATE + 2), score: 8)
+    answer!(token(@user, DATE), score: 1, comment: "again")
+    assert_select "h1", "Thanks, you already answered"
+    answer!(token(@user, DATE + 4), score: 2)
+    assert_select "h1", "Thanks, you already answered"
+    assert_equal [ 8 ], NpsResponse.pluck(:score), "one answer per cooldown, whichever DM was opened"
+    assert_nil NpsResponse.sole.comment
+
+    other = users(:new_user)
+    answer!(token(other, DATE), score: 3)
+    assert_equal [ 3, 8 ], NpsResponse.pluck(:score).sort, "someone else's answer never counts against this person"
   end
 
   test "a signed-in person can answer too, and cannot use it to read or change anyone else's answer" do

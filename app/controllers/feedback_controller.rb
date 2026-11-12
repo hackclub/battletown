@@ -43,8 +43,11 @@ class FeedbackController < ApplicationController
     render(:invalid, status: :not_found) unless @user
   end
 
+  # One answer per survey: the same window, and also any window closer than the cooldown (a link stays valid for several days,
+  # so older DMs could otherwise each take an answer, and the cooldown after an answer only stops new prompts).
   def answered?
-    NpsResponse.exists?(user_id: @user.id, prompt_window_date: @claims.window_date)
+    reach = Nps::Config.current.cooldown_days - 1
+    NpsResponse.exists?(user_id: @user.id, prompt_window_date: (@claims.window_date - reach)..(@claims.window_date + reach))
   end
 
   def problems

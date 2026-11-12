@@ -143,7 +143,7 @@ class Teams::PayShipTest < ActiveSupport::TestCase
     assert_equal 1, team_rows.sole.amount # 8 hours in: the 3rd day is deflated, 32 coins x 5% = 1.6
   end
 
-  test "days that are not settled yet earn no crew bonus (the same rule as the streak bonus)" do
+  test "a ship approved while one of its days is still settling waits, then the retry scan pays the whole ship" do
     code(@mate, D[1], HOUR)
     code(@mate, D[3], HOUR)
     ship = ship_of_three_days
@@ -151,9 +151,18 @@ class Teams::PayShipTest < ActiveSupport::TestCase
     TeamPayout.delete_all
     CoinTransaction.where(kind: "team_bonus").delete_all
 
-    # Nov 3 settles on Nov 4 at 06:00 UTC for a UTC user.
+    # Nov 3 settles on Nov 4 at 06:00 UTC for a UTC user: until then nothing is paid and no marker says "looked at".
     result = Teams::PayShip.call(ship.reload, now: Time.utc(2026, 11, 3, 12))
-    assert_equal 1, result.matched_days
+    assert_equal [ :waiting, 0 ], [ result.status, result.coins ]
+    assert_equal [ 0, 0 ], [ TeamPayout.count, team_rows.count ]
+
+    # Still inside the grace period the next morning: still waiting.
+    assert_equal :waiting, Teams::PayShip.call(ship.reload, now: Time.utc(2026, 11, 4, 5)).status
+
+    scan = Teams::PayPending.scan(now: Time.utc(2026, 11, 4, 7))
+    assert_equal [ 1, 1 ], [ scan.scanned, scan.paid ]
+    assert_equal 2, TeamPayout.sole.matched_days, "both days a crewmate coded count once they have settled"
+    assert_equal 1, team_rows.count
   end
 
   test "the flag off: no payout, no marker, no ledger row, nothing read" do
