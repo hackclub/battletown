@@ -43,9 +43,11 @@ class Rack::Attack
 
   # Ship screenshots (flag `ship_screenshots`, config/game.yml `ship_screenshots:`): a ship form post that carries files.
   # The size check runs here, on the Content-Length header, BEFORE Rails reads or parses the body, so an oversized upload
-  # costs nothing but the 413 (a request without the header carries no file the app will accept; the per-file limit is
-  # checked again on the temp file in ShipImages::Processor). Uploads are also limited per address.
-  SHIP_FORM_PATH = %r{\A(?:/projects/\d+/ships|/ships/\d+)/?\z}
+  # costs nothing but the 413. A multipart post with NO Content-Length (a chunked body, which no browser form sends) is
+  # refused the same way, because Rack would otherwise spool the whole body to disk before the app could look at it; the
+  # per-file limit is checked again on the temp file in ShipImages::Processor. A format suffix or a trailing slash does not
+  # get around the path match (Rails routes /ships/5.json to the same action). Uploads are also limited per address.
+  SHIP_FORM_PATH = %r{\A/{0,3}(?:projects/\d+/ships|ships/\d+)(?:\.\w+)?/?\z}
   SIZE_RULE = "ship-images/size".freeze
 
   def self.ship_upload?(req)
@@ -53,7 +55,7 @@ class Rack::Attack
   end
 
   blocklist(SIZE_RULE) do |req|
-    ship_upload?(req) && req.content_length.to_i > ShipImages::Config.current.max_request_bytes
+    ship_upload?(req) && (req.content_length.nil? || req.content_length.to_i > ShipImages::Config.current.max_request_bytes)
   end
 
   self.blocklisted_responder = lambda do |request|
@@ -73,7 +75,12 @@ class Rack::Attack
   # Email unsubscribe links (GET shows the page, POST acts): human-sized, and a small limit keeps token guessing and
   # scanner floods cheap. Its own bucket, so a flood here never uses up anything else.
   throttle("email_unsubscribe/ip", limit: 20, period: 1.minute) do |req|
-    req.ip if req.path.start_with?("/email/unsubscribe/")
+    req.ip if req.path.start_with?("/email/unsubscribe/") && req.get?
+  end
+  # The one-click POST (RFC 8058) comes from mail providers' shared addresses, and a refused one is an unsubscribe that
+  # silently did not happen: its own, much larger bucket.
+  throttle("email_unsubscribe_post/ip", limit: 600, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/email/unsubscribe/") && req.post?
   end
 
   # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept

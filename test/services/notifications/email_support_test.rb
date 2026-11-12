@@ -23,7 +23,7 @@ class Notifications::EmailSupportTest < ActiveSupport::TestCase
     assert_nil EmailTransport.smtp_settings(base.merge("SMTP_PASSWORD" => "p"))
 
     open_relay = EmailTransport.smtp_settings(base)
-    assert_equal [ "smtp.example.test", 587, true ], [ open_relay[:address], open_relay[:port], open_relay[:enable_starttls_auto] ]
+    assert_equal [ "smtp.example.test", 587, :always ], [ open_relay[:address], open_relay[:port], open_relay[:enable_starttls] ]
     assert_not open_relay.key?(:user_name)
 
     authed = EmailTransport.smtp_settings(base.merge("SMTP_USERNAME" => "u", "SMTP_PASSWORD" => "p", "SMTP_DOMAIN" => "example.test", "SMTP_PORT" => "465"))

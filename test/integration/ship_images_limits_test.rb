@@ -39,6 +39,18 @@ class ShipImagesLimitsTest < ActiveSupport::TestCase
     assert_equal 0, @reached_app
   end
 
+  test "a format suffix, a trailing slash or a missing Content-Length do not get around the limit" do
+    over = @limits.max_request_bytes + 1
+    [ "/projects/5/ships.json", "/ships/5.json", "/ships/5/" ].each_with_index do |path, index|
+      assert_equal 413, call(path, method: "PATCH", length: over, ip: "203.0.113.#{40 + index}"), path
+    end
+
+    env = Rack::MockRequest.env_for("/ships/5", method: "PATCH", "CONTENT_TYPE" => MULTIPART, "REMOTE_ADDR" => "203.0.113.50", "HTTP_TRANSFER_ENCODING" => "chunked", input: "")
+    env.delete("CONTENT_LENGTH")
+    assert_equal 413, @app.call(env).first, "a chunked multipart body has no length to check, so it is refused"
+    assert_equal 0, @reached_app
+  end
+
   test "the 413 explains the limits in words" do
     env = Rack::MockRequest.env_for("/projects/5/ships", method: "POST", "CONTENT_TYPE" => MULTIPART, "CONTENT_LENGTH" => (@limits.max_request_bytes + 1).to_s, input: "")
     _status, _headers, body = @app.call(env)

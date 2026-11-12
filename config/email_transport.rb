@@ -31,8 +31,9 @@ module EmailTransport
     domain = env["SMTP_DOMAIN"].to_s.strip
     settings[:domain] = domain unless domain.empty?
     settings.merge!(user_name: username, password: password, authentication: :plain) unless username.empty?
-    # 465 is implicit TLS; everything else upgrades with STARTTLS when the server offers it.
-    port == 465 ? settings.merge(tls: true) : settings.merge(enable_starttls_auto: true)
+    # 465 is implicit TLS; everything else MUST upgrade with STARTTLS (never "when offered": a network attacker could strip
+    # the offer and read the credentials and the messages).
+    port == 465 ? settings.merge(tls: true) : settings.merge(enable_starttls: :always)
   end
 
   def configured?(env = ENV) = !smtp_settings(env).nil?

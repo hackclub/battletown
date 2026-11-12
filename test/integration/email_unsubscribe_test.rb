@@ -285,4 +285,15 @@ class EmailUnsubscribeTest < ActionDispatch::IntegrationTest
   ensure
     Rack::Attack.enabled = false
   end
+
+  test "a burst of one-click POSTs from a provider's shared address is not throttled like page views" do
+    Rack::Attack.enabled = true
+    Rack::Attack.cache.store.clear
+    with_feature(:email) do
+      30.times { post @path, headers: { "REMOTE_ADDR" => "203.0.113.8" } }
+      assert_not_equal 429, response.status
+    end
+  ensure
+    Rack::Attack.enabled = false
+  end
 end

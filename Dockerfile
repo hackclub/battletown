@@ -74,6 +74,10 @@ COPY --chown=rails:rails --from=build /rails /rails
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
+# Thruster refuses a request body over this many bytes before Rails sees it (a whole ship form with three screenshots is
+# about 16 MB: config/game.yml ship_screenshots, and the same check in config/initializers/rack_attack.rb).
+ENV MAX_REQUEST_BODY="17000000"
+
 # Start server via Thruster by default, this can be overwritten at runtime
 EXPOSE 80
 CMD ["./bin/thrust", "./bin/rails", "server"]
