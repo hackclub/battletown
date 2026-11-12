@@ -144,6 +144,17 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_equal "haven", user.reload.referral_source
   end
 
+  test "the account step describes Hackatime as optional now, not as coming soon" do
+    users(:new_user).update!(onboarding_step: 3)
+    sign_in_as users(:new_user)
+
+    get onboarding_step_path("account")
+    assert_response :success
+    assert_no_match(/coming soon/i, response.body)
+    assert_select "h2", "Hackatime"
+    assert_select "p", /Connecting Hackatime is optional/
+  end
+
   test "unknown referral sources are rejected" do
     user = users(:new_user)
     user.update!(onboarding_step: 3)
