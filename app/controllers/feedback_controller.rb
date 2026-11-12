@@ -19,8 +19,9 @@ class FeedbackController < ApplicationController
   def create
     return render(:thanks, locals: { again: true }) if answered?
 
-    @score = params.dig(:nps, :score).to_s
-    @comment = NpsResponse.clean_comment(params.dig(:nps, :comment))
+    answer = params[:nps].is_a?(ActionController::Parameters) ? params[:nps].permit(:score, :comment) : {}
+    @score = answer[:score].to_s
+    @comment = NpsResponse.clean_comment(answer[:comment])
     @errors = problems
     return render(:show, status: :unprocessable_content) if @errors.any?
 
