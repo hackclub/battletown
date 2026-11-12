@@ -7,6 +7,9 @@ module Features
   #     resource :team
   #   end
   class Constraint
+    # The flag this constraint guards (the router tests read it to prove every flagged route sits inside its own flag).
+    attr_reader :name
+
     def initialize(name)
       @name = Features.validate!(name)
     end
