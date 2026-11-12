@@ -25,6 +25,11 @@ class Notification < ApplicationRecord
   validates :last_error_code, format: { with: ERROR_CODE_FORMAT }, allow_nil: true
   validates :idempotency_key, presence: true, uniqueness: true, length: { maximum: 100 }
 
+  # A Slack nudge that also goes by email queues its email row (Notifications::Email::Triggers; a no-op while the `email`
+  # flag is off). After commit, so a failure there can never touch the transaction that created the Slack row.
+  after_create_commit -> { Notifications::Email::Triggers.slack_row_created(self) },
+                      if: -> { channel == "slack_dm" && Notifications::Email::FOLLOWS_SLACK_ROW.include?(kind) }
+
   scope :pending, -> { where(status: "pending") }
   scope :due, ->(now) { pending.where(due_at: ..now) }
 

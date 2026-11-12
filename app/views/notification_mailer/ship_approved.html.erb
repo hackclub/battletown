@@ -1,0 +1,7 @@
+<h1 style="margin:0 0 12px;font-size:22px;line-height:1.25;">Your ship was approved</h1>
+<p style="margin:0 0 12px;">Good news: your ship of <strong><%= @values[:project] %></strong> was approved for <%= @values[:hours] %> hours and you earned <strong><%= @values[:coins] %> coins</strong>.</p>
+<% if @values[:locked] %>
+  <p style="margin:0 0 12px;">Your coins unlock when you <a href="<%= @values[:verify_url] %>" style="color:#a8481a;">verify your identity with Hack Club</a>. You keep earning in the meantime.</p>
+<% end %>
+<p style="margin:16px 0;"><a href="<%= @values[:link] %>" style="display:inline-block;background:#a8481a;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px;">See your ship</a></p>
+<%= render "footer" %>

@@ -5,6 +5,7 @@ module Notifications
   #
   #   project_link_suggested.battletown (suggestion_id)  -> link_question, one per suggestion
   #   ship_approved.battletown / ship_rejected.battletown (ship_id) -> ship_approved / ship_rejected, one decision per ship
+  #                                                      (and, with the `email` flag on, one email row, Email::Triggers)
   #   ship_submitted.battletown (ship_id)                -> no message; pending ship reminders for that project are cancelled
   #
   # Handlers only create or cancel outbox rows. They run inside the request that fired the event, so each one runs in
@@ -59,6 +60,8 @@ module Notifications
 
         # One decision message per ship, whichever way it went.
         Outbox.enqueue(user: ship.user, kind: kind, subject_id: ship.id, key: "ship_decision:#{ship.id}")
+        # And, behind the `email` flag, the same decision by email (its own row and key; a person can have either).
+        Email::Triggers.ship_decision(ship, kind)
       end
     end
     private_class_method :decided

@@ -22,5 +22,7 @@ module Notifications
     end
 
     def self.enabled? = Features.enabled?(:email)
+
+    def self.adapter = MailerAdapter.new
   end
 end

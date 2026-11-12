@@ -70,6 +70,12 @@ class Rack::Attack
     req.ip if ship_upload?(req)
   end
 
+  # Email unsubscribe links (GET shows the page, POST acts): human-sized, and a small limit keeps token guessing and
+  # scanner floods cheap. Its own bucket, so a flood here never uses up anything else.
+  throttle("email_unsubscribe/ip", limit: 20, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/email/unsubscribe/")
+  end
+
   # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept
   # out of the general throttle below so a burst of requests there can never block it.
   throttle("privacy/ip", limit: 120, period: 1.minute) do |req|

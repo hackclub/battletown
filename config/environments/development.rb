@@ -30,6 +30,9 @@ Rails.application.configure do
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
+  # Email is never sent from development: the mail is built (so the previews and the pipeline run) and dropped.
+  config.action_mailer.delivery_method = :test
+  config.action_mailer.perform_deliveries = false
 
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false

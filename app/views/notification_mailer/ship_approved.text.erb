@@ -1,0 +1,12 @@
+Your ship was approved
+
+Good news: your ship of <%= @values[:project] %> was approved for <%= @values[:hours] %> hours and you earned <%= @values[:coins] %> coins.
+<% if @values[:locked] -%>
+
+Your coins unlock when you verify your identity with Hack Club: <%= @values[:verify_url] %>
+You keep earning in the meantime.
+<% end -%>
+
+See your ship: <%= @values[:link] %>
+
+<%= render "footer" %>

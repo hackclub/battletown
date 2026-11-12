@@ -61,10 +61,19 @@ Rails.application.configure do
   # has no database configured (see config/database.yml and the SOLID_QUEUE_IN_PUMA note in config/puma.rb).
   # config.active_job.queue_adapter = :solid_queue
 
-  # No mailer is used and no SMTP server is configured (Rails would otherwise try localhost:25 and, with
-  # raise_delivery_errors off, drop the mail silently). Remove this line and set delivery_method and
-  # smtp_settings when email is added.
-  config.action_mailer.perform_deliveries = false
+  # Email (Notifications::Email, behind the Flipper flag `email`). SMTP only when the environment describes a complete
+  # transport (SMTP_ADDRESS and MAIL_FROM, see config/email_transport.rb and docs/DEPLOY.md). Without it Rails would
+  # try localhost:25, so the :test method is used with deliveries switched off (nothing is kept in memory or sent),
+  # and the email dispatcher refuses to mark anything as sent.
+  if (smtp = EmailTransport.smtp_settings)
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = smtp
+    config.action_mailer.perform_deliveries = true
+    config.action_mailer.raise_delivery_errors = true
+  else
+    config.action_mailer.delivery_method = :test
+    config.action_mailer.perform_deliveries = false
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

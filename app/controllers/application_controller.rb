@@ -2,7 +2,9 @@ class ApplicationController < ActionController::Base
   include FeatureFlags
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern
+  # A controller can opt a request out (`skip_browser_check?`): the email unsubscribe POST comes from mail providers
+  # whose user agents are not browsers at all.
+  allow_browser versions: :modern, unless: :skip_browser_check?
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
@@ -10,6 +12,8 @@ class ApplicationController < ActionController::Base
   helper_method :current_user, :signed_in?
 
   private
+
+  def skip_browser_check? = false
 
   def current_user
     return @current_user if defined?(@current_user)

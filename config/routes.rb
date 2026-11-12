@@ -91,6 +91,17 @@ Rails.application.routes.draw do
     post "plinko/drops", to: "plinko_drops#create", as: :plinko_drops
   end
 
+  # Email notifications (flag `email`; the routes do not exist while it is off). The signed token is the credential: GET
+  # shows a confirmation page and changes nothing, POST unsubscribes (the button, and the RFC 8058 one-click request
+  # from mail providers, which carries no CSRF token: the one POST in the app besides /api/privacy that skips it).
+  # Keep above the /:ref catch-all.
+  constraints Features::Constraint.new(:email) do
+    scope "email/unsubscribe/:token", constraints: { token: /[A-Za-z0-9_-]{1,300}/ } do
+      get "", to: "email_unsubscribes#show", as: :email_unsubscribe
+      post "", to: "email_unsubscribes#create"
+    end
+  end
+
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 

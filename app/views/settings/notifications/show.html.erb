@@ -27,6 +27,35 @@
         <% end %>
       </ul>
     </fieldset>
+    <% if feature?(:email) %>
+      <fieldset class="notification-settings__fieldset" id="email-settings">
+        <legend class="notification-settings__legend">Email</legend>
+        <% unless @email_address_ok %>
+          <p class="alert alert--warning notification-settings__note" role="note">We can't email you yet because your Hack Club account has no usable email address. Your choices are saved for when it does.</p>
+        <% end %>
+        <ul class="notification-settings__list">
+          <li class="notification-settings__item">
+            <%= hidden_field_tag "email_enabled", "0", id: nil %>
+            <%= check_box_tag "email_enabled", "1", @email_on, id: "email_enabled", class: "notification-settings__box", aria: { describedby: "email_enabled_hint" } %>
+            <label class="notification-settings__label" for="email_enabled">
+              <span class="notification-settings__title">Send me email from Battletown</span>
+              <span class="notification-settings__hint" id="email_enabled_hint">We write to the address on your Hack Club account. Untick this to stop all email, whatever is ticked below.</span>
+            </label>
+          </li>
+          <% @email_settings.each do |kind, enabled| %>
+            <% label = @email_config.label(kind) %>
+            <li class="notification-settings__item">
+              <%= hidden_field_tag "email_preferences[#{kind}]", "0", id: nil %>
+              <%= check_box_tag "email_preferences[#{kind}]", "1", enabled, id: "email_preferences_#{kind}", class: "notification-settings__box", aria: { describedby: "email_preferences_#{kind}_hint" } %>
+              <label class="notification-settings__label" for="email_preferences_<%= kind %>">
+                <span class="notification-settings__title"><%= label["title"] %></span>
+                <span class="notification-settings__hint" id="email_preferences_<%= kind %>_hint"><%= label["hint"] %></span>
+              </label>
+            </li>
+          <% end %>
+        </ul>
+      </fieldset>
+    <% end %>
     <div class="notification-settings__actions">
       <%= submit_tag "Save changes", class: "btn btn--primary btn--lg" %>
     </div>

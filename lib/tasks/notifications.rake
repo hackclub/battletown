@@ -4,6 +4,10 @@ namespace :notifications do
     summary = Notifications::Dispatcher.run
     puts "notifications:dispatch enabled=#{summary.enabled} sent=#{summary.sent} skipped=#{summary.skipped} failed=#{summary.failed} " \
          "retried=#{summary.retried} cancelled=#{summary.cancelled} deferred=#{summary.deferred} halted=#{summary.halted}"
+    # The email rows, by the same rules; does nothing while the Flipper flag `email` is off or without a real SMTP transport in production.
+    email = Notifications::Email::Dispatcher.run
+    puts "notifications:dispatch channel=email enabled=#{email.enabled} sent=#{email.sent} skipped=#{email.skipped} failed=#{email.failed} " \
+         "retried=#{email.retried} cancelled=#{email.cancelled} deferred=#{email.deferred} halted=#{email.halted}"
   end
 
   desc "Queue ship reminders for projects whose unshipped hours crossed a threshold (ships.reminder_hours in config/game.yml). Run every 15 minutes or so from cron; safe to repeat."

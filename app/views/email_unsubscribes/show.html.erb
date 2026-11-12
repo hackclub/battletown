@@ -1,0 +1,28 @@
+<% content_for :title, "Email settings" %>
+<div class="container">
+  <article class="panel panel--white panel--narrow stack email-unsubscribe">
+    <% if @state == :confirm %>
+      <header class="page-header">
+        <p class="eyebrow">Email</p>
+        <h1>Stop Battletown emails?</h1>
+      </header>
+      <p>We'll stop sending you email from Battletown, a Hack Club program. You can still get messages on Slack, and you can turn email back on any time in your settings.</p>
+      <%= button_to "Stop Battletown emails", email_unsubscribe_path(token: params[:token]), method: :post, class: "btn btn--primary btn--lg" %>
+      <p class="email-unsubscribe__note">Nothing changes until you press the button.</p>
+    <% elsif @state == :done %>
+      <header class="page-header">
+        <p class="eyebrow">Email</p>
+        <h1>You're unsubscribed</h1>
+      </header>
+      <p>You won't get any more email from Battletown. Your coding, coins and ships are not affected.</p>
+      <p>Changed your mind? You can turn email back on in <%= link_to "your notification settings", settings_notifications_path %> (sign in first).</p>
+    <% else %>
+      <header class="page-header">
+        <p class="eyebrow">Email</p>
+        <h1>This link doesn't work</h1>
+      </header>
+      <p>This link isn't valid any more. It may have been replaced by a newer email, or it may have been copied wrongly.</p>
+      <p>You can choose which emails you get in <%= link_to "your notification settings", settings_notifications_path %> (sign in first).</p>
+    <% end %>
+  </article>
+</div>

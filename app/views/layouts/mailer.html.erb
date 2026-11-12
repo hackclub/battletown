@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <style>
-      /* Email styles need to be inline */
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Battletown</title>
   </head>
-
-  <body>
-    <%= yield %>
+  <body style="margin:0;padding:24px 12px;background:#f4f1ea;color:#1f2430;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;">
+    <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e3ddd0;border-radius:12px;padding:24px;">
+      <p style="margin:0 0 16px;font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#a8481a;">Battletown</p>
+      <%= yield %>
+    </div>
   </body>
 </html>

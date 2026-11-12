@@ -25,3 +25,6 @@
 .notification-settings__title { font-weight: 700; overflow-wrap: anywhere; }
 .notification-settings__hint { color: var(--color-text-muted); font-size: var(--text-sm); overflow-wrap: anywhere; }
 .notification-settings__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* The email unsubscribe page (/email/unsubscribe/:token): a single card with one button. */
+.email-unsubscribe__note { color: var(--color-text-muted); font-size: var(--text-sm); }

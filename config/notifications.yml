@@ -46,6 +46,32 @@ shared:
     nps_prompt: "Quick question: how likely are you to recommend Battletown to a friend? It takes a few seconds and you don't need to log in: {link} - the Hack Club Battletown team"
     ship_rejected: "Thanks for shipping {project}. It needs one more touch before we can approve it: {reason} Fix it up and ship again whenever you're ready: {link} - the Hack Club Battletown team"
 
+  # Email (the second channel; everything here is behind the Flipper flag `email`, and nothing is sent unless
+  # NOTIFICATIONS_ENABLED=true and a real SMTP transport is configured: see docs/DEPLOY.md). The sender address is the
+  # MAIL_FROM environment variable, never this file. Only the kinds listed under `subjects` are emailed.
+  email:
+    # Subject lines, built at send time. Placeholders in {braces}: {project} (their project name, shortened).
+    subjects:
+      ship_approved: "Your {project} ship was approved"
+      ship_rejected: "Your {project} ship needs one more touch"
+      returning_nudge: "The boss is still standing."
+    # At most this many emails of the kinds in `capped_kinds` per person in any 7 days (a nudge is cancelled, not
+    # delayed, when the person is at the cap). Ship decisions are transactional: they are not capped.
+    max_per_week: 2
+    capped_kinds:
+      - returning_nudge
+    # What each email switch is called on /settings/notifications (plain words, the owner can edit these).
+    preference_labels:
+      ship_approved:
+        title: "Email me when a ship is approved"
+        hint: "The hours and coins you earned."
+      ship_rejected:
+        title: "Email me when a ship needs changes"
+        hint: "What to fix before you ship again."
+      returning_nudge:
+        title: "Email me if I've been away for a while"
+        hint: "One friendly note, not a stream of them."
+
   # What each switch is called on /settings/notifications (plain words, the owner can edit these).
   preference_labels:
     daily_reminder:

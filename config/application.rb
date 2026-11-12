@@ -1,4 +1,5 @@
 require_relative "boot"
+require_relative "email_transport"
 
 require "rails"
 # Only the frameworks the app uses. Active Storage, Action Mailbox and Action Text are left out on purpose: nothing

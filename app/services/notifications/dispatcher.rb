@@ -24,10 +24,16 @@ module Notifications
   # they are older than `event_max_lateness` ("stale"). Every kind is checked against the preferences, the daily
   # reminder included.
   # At most one message per user is handled per run.
+  #
+  # One dispatcher per channel: this class handles the Slack rows (`channel: slack_dm`); Email::Dispatcher is a subclass
+  # that handles the email rows through the hooks below (`channel`, `recipient_problem`, `veto`, `build_content`,
+  # `deliver`), so the claim, lease, quiet hours, backoff and skipped-not-sent rules are the same for both.
   class Dispatcher
     Summary = Struct.new(:enabled, :sent, :skipped, :failed, :retried, :cancelled, :deferred, :halted, keyword_init: true)
 
     def self.enabled? = ENV["NOTIFICATIONS_ENABLED"] == "true"
+
+    def self.channel = Preferences::SLACK
 
     def self.run(now: Time.current, limit: 100, adapter: Slack.adapter, config: Config.current)
       new(now: now, limit: limit, adapter: adapter, config: config).run
@@ -48,7 +54,7 @@ module Notifications
 
       @summary.enabled = true
       if Rails.env.production? && !@adapter.delivers?
-        Rails.logger.warn("notifications.dispatch halted reason=no_delivering_adapter")
+        Rails.logger.warn("notifications.dispatch halted reason=no_delivering_adapter channel=#{channel}")
         @summary.halted = true
         return @summary
       end
@@ -68,16 +74,37 @@ module Notifications
         end
         reschedule_users
       end
-      Rails.logger.info("notifications.dispatch #{@summary.to_h.except(:enabled).map { |k, v| "#{k}=#{v}" }.join(' ')}")
+      Rails.logger.info("notifications.dispatch channel=#{channel} #{@summary.to_h.except(:enabled).map { |k, v| "#{k}=#{v}" }.join(' ')}")
       @summary
     end
 
     private
 
+    def channel = self.class.channel
+
+    # Hooks for a channel (Slack here). A problem with the recipient as a cancel code (nil when there is none), an extra
+    # reason to drop a row (nil to go on), the content built at send time (nil: the thing it was about is gone), and the
+    # send itself (a Slack::Result).
+    def recipient_problem(row, user)
+      "schedule_changed" unless valid_recipient?(row, user)
+    end
+
+    def veto(_row, _user) = nil
+
+    def build_content(row, user) = Message.build(row, user, config: @config)
+
+    def deliver(_row, user, text)
+      @adapter.deliver_dm(slack_id: user.slack_id, text: text)
+    rescue StandardError => e
+      # Never log e.message: it could carry the recipient or text.
+      Rails.logger.warn("notifications.dispatch adapter_error class=#{e.class.name}")
+      Slack::Result.failure("adapter_error", retryable: true)
+    end
+
     # Returns [[[row, user, text], ...rows to send], examined row count].
     def claim(size)
       Notification.transaction do
-        rows = Notification.due(@now).where.not(user_id: @seen_user_ids.to_a).order(:due_at, :id)
+        rows = Notification.due(@now).where(channel: channel).where.not(user_id: @seen_user_ids.to_a).order(:due_at, :id)
                            .limit(size).lock("FOR UPDATE SKIP LOCKED").to_a
         users = User.where(id: rows.map(&:user_id)).index_by(&:id)
         claimed = rows.filter_map do |row|
@@ -90,11 +117,15 @@ module Notifications
 
     def triage(row, user)
       return cancel(row, "user_gone") unless user
-      return cancel(row, "schedule_changed", user) unless valid_recipient?(row, user)
-      return cancel(row, "opted_out", user) unless Preferences.enabled?(user, row.kind)
+      problem = recipient_problem(row, user)
+      return cancel(row, problem, user) if problem
+      return cancel(row, "opted_out", user) unless Preferences.enabled?(user, row.kind, channel: channel)
       return cancel(row, "stale", user) if @now - row.due_at > lateness_limit(row)
 
-      text = Message.build(row, user, config: @config)
+      reason = veto(row, user)
+      return cancel(row, reason, user) if reason
+
+      text = build_content(row, user)
       return cancel(row, "subject_gone", user) unless text
 
       deferral = QuietHours.deferral(@now, ActiveSupport::TimeZone[user.time_zone], config: @config)
@@ -129,7 +160,7 @@ module Notifications
     end
 
     def handle(row, user, text)
-      result = deliver(user, text)
+      result = deliver(row, user, text)
       if result.ok? && !@adapter.delivers?
         row.update!(status: "skipped", last_error_code: "not_delivered")
         @summary.skipped += 1
@@ -153,14 +184,6 @@ module Notifications
         @reschedule << user if result.retryable && daily?(row)
         Rails.logger.info("notifications.dispatch failed notification_id=#{row.id} code=#{safe_code(result.error_code)}")
       end
-    end
-
-    def deliver(user, text)
-      @adapter.deliver_dm(slack_id: user.slack_id, text: text)
-    rescue StandardError => e
-      # Never log e.message: it could carry the recipient or text.
-      Rails.logger.warn("notifications.dispatch adapter_error class=#{e.class.name}")
-      Slack::Result.failure("adapter_error", retryable: true)
     end
 
     def release(row)
