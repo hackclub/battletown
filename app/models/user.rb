@@ -20,6 +20,8 @@ class User < ApplicationRecord
   has_many :orders
   # Deleted by the database (ON DELETE CASCADE).
   has_many :merch_claims, dependent: nil
+  # Private staff notes about this person; deleted by the database (ON DELETE CASCADE).
+  has_many :user_notes, dependent: nil
 
   validates :hca_uid, presence: true, uniqueness: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, length: { maximum: 254 }, allow_blank: true

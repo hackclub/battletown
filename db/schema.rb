@@ -582,6 +582,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
     t.check_constraint "name IS NULL OR char_length(name::text) >= 1 AND char_length(name::text) <= 40", name: "teams_name_check"
   end
 
+  create_table "user_notes", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "author_id"
+    t.string "body", limit: 500, null: false
+    t.datetime "created_at", null: false
+    t.index ["author_id"], name: "index_user_notes_on_author_id"
+    t.index ["user_id", "created_at"], name: "index_user_notes_on_user_id_and_created_at"
+    t.check_constraint "char_length(btrim(body::text)) >= 1", name: "user_notes_body_present_check"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "hca_uid", null: false
     t.string "email"
@@ -663,5 +673,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
   add_foreign_key "team_payouts", "ships", on_delete: :cascade
   add_foreign_key "team_payouts", "teams", on_delete: :nullify
   add_foreign_key "team_payouts", "users", on_delete: :cascade
+  add_foreign_key "user_notes", "users", column: "author_id", on_delete: :nullify
+  add_foreign_key "user_notes", "users", on_delete: :cascade
   add_foreign_key "welcome_back_windows", "users", on_delete: :cascade
 end

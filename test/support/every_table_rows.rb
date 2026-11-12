@@ -36,6 +36,7 @@ module EveryTableRows
     TeamMembership.create!(team: crew, user: user, joined_at: Time.current)
     TeamCooldown.create!(user: user, left_at: Time.current)
     TeamPayout.create!(user: user, ship: Ship.find_by!(user_id: user.id), team: crew, coins: 1, matched_days: 1)
+    UserNote.create!(user: user, author: users(:new_user), body: "guard note", created_at: Time.current)
     user
   end
 end

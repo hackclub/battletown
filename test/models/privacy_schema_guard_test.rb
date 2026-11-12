@@ -21,7 +21,8 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     "ships.reviewer_id" => "the staff member who reviewed a ship; the ship belongs to the teen",
     "admin_audit_events.actor_id" => "the staff member who did it; the trail holds ids and amounts, never another person's identity",
     "project_reviews.reviewer_id" => "the staff member who reviewed a project; the review belongs to the project (and so to the teen)",
-    "order_events.actor_id" => "the person who changed the order (a staff member, or the buyer); the history row belongs to the order, which cascades"
+    "order_events.actor_id" => "the person who changed the order (a staff member, or the buyer); the history row belongs to the order, which cascades",
+    "user_notes.author_id" => "the staff member who wrote a private note; the note belongs to the person it is about (a cascading key)"
   }.freeze
 
   # Tables that are not about a person: the Rails bookkeeping tables and the token ids of this very feature.
