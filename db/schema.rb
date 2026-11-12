@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035006) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_035007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -320,6 +320,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035006) do
     t.datetime "onboarded_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.date "signed_up_on", null: false
     t.index ["hca_uid"], name: "index_users_on_hca_uid", unique: true
     t.index ["slack_id"], name: "index_users_on_slack_id"
     t.check_constraint "char_length(project_idea) <= 500", name: "users_project_idea_length_check"

@@ -19,10 +19,11 @@ module CoinsHelper
     end
   end
 
-  # time_zone is written past the validation (which only knows Rails zone names) so tests can use any IANA id.
+  # time_zone is written past the validation (which only knows Rails zone names) so tests can use any IANA id; the
+  # sign-up date is the creation instant's local date in that zone, as if the account had been created with it.
   def build_user(time_zone: "UTC", created_on: Date.new(2026, 11, 1))
     user = User.create!(hca_uid: "ident!coins-#{SecureRandom.hex(6)}", created_at: Time.utc(created_on.year, created_on.month, created_on.day, 12))
-    user.update_columns(time_zone: time_zone)
+    user.update_columns(time_zone: time_zone, signed_up_on: Hours::Days.local_date(user.created_at, time_zone))
     user
   end
 

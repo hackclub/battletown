@@ -31,6 +31,8 @@ class User < ApplicationRecord
   validates :coding_days, numericality: { in: 0..127, only_integer: true }
   validates :onboarding_step, numericality: { in: 0..ONBOARDING_STEPS, only_integer: true }
 
+  before_save :set_signed_up_on, if: :signed_up_on_open?
+
   # Admins are the Hack Club Auth ids in the ADMIN_HCA_UIDS env var (see AdminAllowlist). Checked server-side
   # against the stored hca_uid on every call; nothing client-supplied is trusted.
   def admin? = AdminAllowlist.include?(hca_uid)
@@ -78,4 +80,16 @@ class User < ApplicationRecord
   end
 
   def prize = Prize.find(prize_key)
+
+  private
+
+  # `signed_up_on` is the local date the account was created on, in the user's zone: the game counts hours from it
+  # (Hours::Days.first_counted_date). It is set when the account is created and follows the zone only while onboarding
+  # (where the zone is chosen) is unfinished; after that it is frozen, so a later zone change never moves the cutoff.
+  def signed_up_on_open? = signed_up_on.nil? || (will_save_change_to_time_zone? && onboarded_at_in_database.nil?)
+
+  def set_signed_up_on
+    self.created_at ||= Time.current
+    self.signed_up_on = Hours::Days.local_date(created_at, self)
+  end
 end
