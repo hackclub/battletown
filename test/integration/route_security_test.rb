@@ -14,6 +14,8 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     @original_admins = ENV["ADMIN_HCA_UIDS"]
     @detailed = Rails.application.env_config["action_dispatch.show_detailed_exceptions"]
     Rails.application.env_config["action_dispatch.show_detailed_exceptions"] = false
+    # Routes behind a feature flag exist only while it is on, and these checks read the router: run them with each flag on.
+    Flipper.enable(:merch_track)
   end
 
   teardown do
