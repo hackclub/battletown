@@ -223,5 +223,24 @@ module Hackatime
       assert_equal 7_200, ledger(first) + ledger(third), "the same two hours must be credited once"
       assert_equal 0, ledger(first)
     end
+
+    test "two syncs at once in different zones take turns: windows are read and written under the user's row lock" do
+      @user.update!(time_zone: "Tokyo")
+      statements = []
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") { |*, payload| statements << payload[:sql] }
+      travel_to(utc(2026, 11, 11, 3)) do
+        DayWindows.new(user: @user, hackatime_uid: "4242", zone: ActiveSupport::TimeZone["Tokyo"]).resolve(Date.new(2026, 11, 9), Date.new(2026, 11, 11))
+      end
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+
+      lock = statements.index { |sql| sql.match?(/FROM "users".*FOR UPDATE/m) }
+      first_read = statements.index { |sql| sql.match?(/SELECT.*FROM "hackatime_day_windows"/m) }
+      write = statements.index { |sql| sql.match?(/INSERT INTO "hackatime_day_windows"/) }
+      release = statements.rindex { |sql| sql.match?(/\ARELEASE SAVEPOINT|\ACOMMIT/) }
+      assert lock, "the user's row must be locked"
+      assert_operator lock, :<, first_read, "locked before the existing windows are read"
+      assert_operator write, :<, release, "written before the lock is let go"
+      assert_equal 3, HackatimeDayWindow.where(user_id: @user.id).count
+    end
   end
 end

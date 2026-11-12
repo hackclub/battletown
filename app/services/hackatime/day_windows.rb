@@ -30,17 +30,25 @@ module Hackatime
     # Frozen windows for every date in first..last (writing the missing ones), then any already-frozen window of a
     # later date up to `ahead_until` that has started by `now` (after a move west, the old zone's dates run ahead of
     # the new zone's today). Ordered by date; empty windows included.
+    #
+    # Reading the frozen windows and writing the new ones happens under the user's row lock (the same first lock
+    # Ships::Submit and Hours::Credit take, and nothing else is locked inside, so the lock order cannot deadlock): two
+    # syncs at once in different zones take turns, and the second builds on what the first wrote instead of cutting
+    # overlapping windows. No HTTP call is made inside it.
     def resolve(first, last, now: Time.current, ahead_until: nil)
-      windows = own.where(local_date: (first - 1)..).index_by(&:local_date)
-      reach = own.where(local_date: ...first).maximum(:ends_at)
-      others = HackatimeDayWindow.where(hackatime_uid: @uid).where.not(user_id: @user.id).maximum(:ends_at)
+      HackatimeDayWindow.transaction do
+        User.lock.find(@user.id)
+        windows = own.where(local_date: (first - 1)..).index_by(&:local_date)
+        reach = own.where(local_date: ...first).maximum(:ends_at)
+        others = HackatimeDayWindow.where(hackatime_uid: @uid).where.not(user_id: @user.id).maximum(:ends_at)
 
-      fresh = (first..last).filter_map do |date|
-        window = windows[date] ||= build(date, windows, reach, others)
-        reach = [ reach, window.ends_at ].compact.max
-        window if window.new_record?
+        fresh = (first..last).filter_map do |date|
+          window = windows[date] ||= build(date, windows, reach, others)
+          reach = [ reach, window.ends_at ].compact.max
+          window if window.new_record?
+        end
+        persist(fresh)
       end
-      persist(fresh)
 
       ahead = ahead_until && ahead_until > last ? own.where(local_date: (last + 1)..ahead_until).where(starts_at: ..now).to_a : []
       own.where(local_date: first..last).order(:local_date).to_a + ahead.sort_by(&:local_date)
@@ -60,7 +68,7 @@ module Hackatime
 
     def midnight(date) = @zone.local(date.year, date.month, date.day)
 
-    # Two syncs for one user at once: the first window written for a date wins, and both return that one.
+    # Under the row lock a date is never written twice; the unique index stays as a backstop (first write wins).
     def persist(fresh)
       return if fresh.empty?
 
