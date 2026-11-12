@@ -15,6 +15,8 @@
 .sg-note code, .sg-code { padding: 0 0.3em; border-radius: var(--radius-sm); background: var(--color-bg); font-family: var(--font-mono); font-size: 0.85em; overflow-wrap: anywhere; }
 .sg-demo { display: grid; gap: var(--space-4); padding: var(--space-4); border: 2px dashed var(--color-ink-blue); border-radius: var(--radius-md); }
 .sg-demo--tight { gap: var(--space-2); }
+.sg-demo > * { min-width: 0; max-width: 100%; }
+.sg-demo .cta { --cta-size: clamp(1.5rem, 8vw, 3rem); }
 .sg-demo .site-header { border-radius: var(--radius-md); overflow: visible; }
 
 /* Colour swatches */
