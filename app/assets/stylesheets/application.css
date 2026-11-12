@@ -246,7 +246,7 @@
     color: var(--color-bg);
     font-weight: 700;
   }
-  .site-footer a:hover { color: #fff; }
+  .site-footer a:hover { color: var(--color-surface); }
   .site-footer nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-4); }
   .site-footer :focus-visible { outline-color: var(--color-bg); }
 }

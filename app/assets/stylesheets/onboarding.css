@@ -222,7 +222,7 @@
   border-style: solid;
   border-color: var(--color-primary);
   background: var(--color-primary);
-  box-shadow: inset 0 -0.2em 0 rgb(0 0 0 / 0.28);
+  box-shadow: inset 0 -0.2em 0 var(--edge-shade);
   color: var(--color-primary-contrast);
 }
 .day-all[aria-pressed="true"]::before { content: "\2713" / ""; }
@@ -263,7 +263,6 @@
 .celebration__lead { margin: 0; font-size: var(--text-lg); }
 .celebration__summary { display: grid; gap: var(--space-3); margin: 0; padding: var(--space-4) var(--space-6); border: 2px solid var(--color-border); }
 .celebration__summary div { display: grid; gap: var(--space-1); }
-.celebration__summary dt { color: var(--color-ink-blue); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .celebration__summary dd { margin: 0; font-size: var(--text-lg); font-weight: 700; overflow-wrap: anywhere; }
 /* The hero peeks out of the panel's bottom-right corner (wider screens only; it is decoration). */
 .onboarding__panel:has(.celebration) { position: relative; isolation: isolate; overflow: clip; }

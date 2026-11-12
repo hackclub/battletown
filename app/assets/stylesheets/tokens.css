@@ -135,6 +135,7 @@
   --radius-full: 999px;
   --shadow-sm: 0 1px 2px rgb(66 54 36 / 0.18); /* derived: warm shadow for the light theme */
   --shadow-md: 0 8px 24px rgb(66 54 36 / 0.16); /* derived */
+  --edge-shade: rgb(0 0 0 / 0.28); /* derived: the darker bottom edge under a filled button or pill (primary, danger, onboarding); not a colour token, it is a translucent shade */
   --shadow-button-edge: inset 0 -8px 0 rgb(0 0 0 / 0.41); /* Figma: pressed edge on the pink button (71:1001) */
   --border-chunky: 0.375rem; /* Figma: 6px cream button bottom edge (71:1000); the bottom edge of cards and panels */
   --shadow-cta-edge: inset 0 -0.1667em 0 #ff2d84; /* Figma pressed edge (8px at 48px type) in em so the CTA scales with its font-size; #ff2d84 is the colour Figma actually renders for the rgba(0,0,0,0.41) inset shadow in --shadow-button-edge */

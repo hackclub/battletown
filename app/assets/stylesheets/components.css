@@ -47,7 +47,7 @@
     --btn-bg: var(--color-primary);
     --btn-fg: var(--color-primary-contrast);
     --btn-border: var(--color-primary);
-    --btn-edge: rgb(0 0 0 / 0.28);
+    --btn-edge: var(--edge-shade);
   }
 
   /* Large / CTA: the Figma pink CTA (151:271). 24px display type is "large text", the only size where cream on this
@@ -75,7 +75,7 @@
     --btn-bg: var(--color-danger);
     --btn-fg: var(--color-primary-contrast);
     --btn-border: var(--color-danger);
-    --btn-edge: rgb(0 0 0 / 0.28);
+    --btn-edge: var(--edge-shade);
   }
 
   /* Ghost: no fill, no edge; underline on hover. For header buttons, "Cancel" and other quiet actions. */
@@ -211,7 +211,7 @@
   .toggle__input:checked + .toggle__label {
     border-color: var(--color-primary);
     background: var(--color-primary);
-    box-shadow: inset 0 -0.2em 0 rgb(0 0 0 / 0.28);
+    box-shadow: inset 0 -0.2em 0 var(--edge-shade);
     color: var(--color-primary-contrast);
   }
   .toggle__input:checked + .toggle__label::before { content: "\2713" / ""; }
@@ -291,7 +291,7 @@
   .band--map, .band--ink, .on-map, .on-ink {
     --color-focus: var(--color-bg);
     --color-link: var(--color-bg);
-    --color-link-hover: #fff;
+    --color-link-hover: var(--color-surface);
     --color-text-muted: var(--color-bg);
     color: var(--color-bg);
   }
@@ -480,6 +480,18 @@
   .section-head > :is(h1, h2, h3) { margin-bottom: 0; }
   .page-header { display: grid; gap: var(--space-2); margin-bottom: var(--space-8); }
   .page-header > * { margin: 0; }
+  /* Callout: a yellow sign plate (Figma sign yellow, with its darker edge) for the one thing to do or to celebrate on a card. */
+  .callout {
+    padding: var(--space-4) var(--space-6);
+    border-radius: var(--radius-lg);
+    border-bottom: var(--border-chunky) solid var(--color-sign-yellow-edge);
+    background: var(--color-highlight);
+    color: var(--color-text);
+  }
+  .callout a:not(.btn) { color: var(--color-text); font-weight: 700; }
+  .callout p { margin-bottom: var(--space-2); }
+  .callout > :last-child { margin-bottom: 0; }
+  .callout__title { font-family: var(--font-display); font-size: var(--text-xl); letter-spacing: var(--tracking-heading); line-height: var(--leading-tight); }
   .eyebrow { color: var(--color-ink-blue); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 }
 
@@ -504,7 +516,4 @@
   .lead { font-size: var(--text-lg); line-height: 1.5; }
   .display { font-family: var(--font-display); font-weight: 400; letter-spacing: var(--tracking-display); line-height: var(--leading-tight); }
   .numeric { font-variant-numeric: tabular-nums; }
-  .nowrap { white-space: nowrap; }
-  .mt-0 { margin-top: 0; }
-  .mb-0 { margin-bottom: 0; }
 }

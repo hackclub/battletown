@@ -99,6 +99,7 @@
   object-fit: cover;
   object-position: 85% 100%;
   margin-top: calc(var(--space-6) * -1);
+  /* A mask uses only the alpha of its stops, so black here is not a colour. */
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 70%, transparent);
   mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 70%, transparent);
 }
