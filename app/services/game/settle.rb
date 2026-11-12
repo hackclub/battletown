@@ -9,6 +9,11 @@ module Game
   # streak state it continues. Late hours: an hours entry that lands on an already settled date does NOT change the
   # stored row (streaks and bonuses are final once settled), it only shows up in later live totals.
   #
+  # Returning-user bonus (feature flag `returning`, Game::ReturningBoost): while the flag is on, the day's stored
+  # `bonus_bps` is raised to the welcome-back floor on a qualifying day inside a window (and the window is opened,
+  # idempotently, on the first qualifying day back after an idle stretch). The streak state is never touched; with the
+  # flag off this step does nothing and no window is written.
+  #
   # `through:` is the instant "now" (a Time); every date settled by then is written. `source:` is any object that
   # answers `seconds_by_date(user, range) => { Date => seconds }` (see Game::HoursSource).
   module Settle
@@ -31,14 +36,16 @@ module Game
 
         state = DailyResult.where(user_id: user.id).chronological.last&.streak_state || StreakCalculator.initial_state(config: config)
         seconds = source.seconds_by_date(user, first..target)
+        returning = ReturningBoost::Tracker.new(user, before: first) if Features.enabled?(:returning)
         (first..target).each do |date|
           result = StreakCalculator.step(state, seconds.fetch(date, 0), config: config)
           state = result.state
+          bonus_bps = returning ? returning.bonus_for(date, result) : result.bonus_bps
           written << DailyResult.create!(
             user: user, local_date: date, raw_seconds: seconds.fetch(date, 0).to_i.clamp(0..86_400),
             quick_met: result.quick_met, goal_met: result.goal_met, freeze_used: result.freeze_used,
             streak_15: state.streak_15, goal_streak: state.goal_streak, freeze_available: state.freeze_available,
-            days_since_freeze: state.days_since_freeze, bonus_bps: result.bonus_bps
+            days_since_freeze: state.days_since_freeze, bonus_bps: bonus_bps
           )
         end
       end

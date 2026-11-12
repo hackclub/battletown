@@ -212,3 +212,21 @@ shared:
     # name. A nickname is unique across players (case-insensitive). Keep every word plain and kind.
     nickname_adjectives: [ Brave, Bright, Calm, Clever, Cosmic, Curious, Daring, Dizzy, Eager, Fluffy, Gentle, Glowing, Happy, Jolly, Keen, Lively, Lucky, Mellow, Mighty, Nimble, Plucky, Quick, Quiet, Rapid, Silly, Snappy, Sunny, Swift, Tiny, Witty, Zesty, Zippy ]
     nickname_animals: [ Badger, Beaver, Bison, Camel, Corgi, Crane, Dingo, Dolphin, Falcon, Ferret, Fox, Gecko, Heron, Hedgehog, Ibex, Koala, Lemur, Lynx, Marmot, Newt, Otter, Owl, Panda, Parrot, Penguin, Puffin, Quokka, Raccoon, Seal, Tiger, Turtle, Walrus, Yak ]
+
+  # The returning-user bonus (feature flag `returning`; app/services/game/returning_boost.rb). A person who comes back
+  # after an idle stretch gets a short welcome-back boost: for boost_days local days starting with the first day back that
+  # reaches the 15-minute mark, the streak bonus of a qualifying day is at least floor_bps (never lower than the ramp
+  # already pays; the streak counter itself is untouched). It is paid like any streak bonus, on approved ship hours only.
+  returning:
+    # Whole local days without a qualifying (15-minute) day, after at least one qualifying day ever, that make the next
+    # qualifying day a "coming back" day. Also the idle length at which the one Slack nudge is sent.
+    idle_days: 7
+    # How many local days the boost lasts, counting the first day back.
+    boost_days: 3
+    # The streak bonus floor in basis points (1 bp = 0.01%): 1030 is 10.3%, the day-5 value of streaks.ramp_percent.
+    floor_bps: 1030
+    # The most welcome-back windows (and nudges) one person can ever get.
+    max_windows_per_user: 3
+    # No nudge for someone who has been idle longer than this many days (so switching the flag on never messages people
+    # who left long ago, and a nudge row pruned after notifications.retention_days can never be sent a second time).
+    nudge_max_idle_days: 30
