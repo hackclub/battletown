@@ -7,6 +7,18 @@ class ErrorPagesTest < ActiveSupport::TestCase
 
   def page_html(name) = Rails.public_path.join("#{name}.html").read
 
+  # Production serves public/ with a one-year cache, so the pages ask for error.css?v=<first 8 hex of its SHA-256>:
+  # change the stylesheet and the URL changes, so returning visitors never see old CSS with new markup.
+  def error_css_version = Digest::SHA256.hexdigest(Rails.public_path.join("error.css").read)[0, 8]
+
+  test "the error pages request error.css by a version that matches the file" do
+    PAGES.each do |code|
+      versions = page_html(code).scan(%r{href="/error\.css\?v=(\h+)"}).flatten
+      assert_equal [ error_css_version ], versions,
+                   "#{code}.html: error.css changed? Update every public/*.html link to /error.css?v=#{error_css_version}"
+    end
+  end
+
   test "error pages exist, link the same-origin stylesheet and use no inline script or style" do
     assert Rails.public_path.join("error.css").file?
     PAGES.each do |code|
@@ -14,7 +26,7 @@ class ErrorPagesTest < ActiveSupport::TestCase
       assert_includes html, "<title>", "#{code}.html needs a title"
       assert_includes html, "BattleTown</title>", "#{code}.html title ends with the brand"
       assert_includes html, "Battletown", "#{code}.html should be branded"
-      assert_includes html, 'href="/error.css"', "#{code}.html should link /error.css"
+      assert_includes html, %(href="/error.css?v=#{error_css_version}"), "#{code}.html should link /error.css?v=#{error_css_version} (see the versioned stylesheet test)"
       assert_includes html, 'href="/"', "#{code}.html should link home"
       assert_no_match(/<script/i, html, "#{code}.html has a script tag")
       assert_no_match(/<style/i, html, "#{code}.html has a style tag")
@@ -41,7 +53,7 @@ class ErrorPagesTest < ActiveSupport::TestCase
   end
 
   test "every file an error page or error.css points at exists in public" do
-    refs = PAGES.flat_map { |code| page_html(code).scan(/(?:src|href)="(\/[^"]*)"/).flatten }
+    refs = PAGES.flat_map { |code| page_html(code).scan(/(?:src|href)="(\/[^"?]*)(?:\?[^"]*)?"/).flatten }
     refs += Rails.public_path.join("error.css").read.scan(/url\("(\/[^"]+)"\)/).flatten
     refs.uniq.reject { |ref| ref == "/" }.each do |ref|
       assert Rails.public_path.join(ref.delete_prefix("/")).file?, "#{ref} is missing from public/"

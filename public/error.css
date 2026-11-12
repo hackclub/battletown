@@ -7,6 +7,8 @@
  * /error-scene.svg (SIL Open Font License 1.1, see app/assets/fonts/README.md), so the pages never depend on the app.
  * Contrast: black on cream 20.8:1, muted #4a4234 on cream 9.8:1, ink blue on sky 5.9:1, cream on the pink button is
  * 3.1:1 and only used at 24px and up (large text).
+ * Caching: production serves public/ for a year, so every page links /error.css?v=<first 8 hex of this file's SHA-256>.
+ * After any edit here, update the ?v= in public/*.html (the error pages test prints the value to use).
  */
 @font-face {
   font-family: "Poetsen One";
