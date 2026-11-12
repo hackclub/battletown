@@ -107,7 +107,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     assert_select ".shop-item__name", text: "Battletown T-shirt"
     assert_select ".shop-item__price", text: "50 coins"
     assert_select ".shop-item__price", text: "10 coins"
-    assert_select ".shop-tier", text: "Shop", minimum: 1
+    assert_select ".shop-tier", 0, "the plain shop tier is not worth a label on every card"
     assert_select ".shop-item a[href='#{shop_item_path('keychain')}']", text: "Get this"
     assert_select ".shop-item a[href='#{shop_item_path('tshirt')}']", count: 0
     assert_select ".shop-item button[disabled]", text: "Need 10 coins more"

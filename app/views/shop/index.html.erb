@@ -54,7 +54,8 @@
         <p class="shop-item__description"><%= prize.description %></p>
         <p class="shop-item__meta">
           <span class="shop-item__price"><%= coins_text(prize.coins) %></span>
-          <span class="shop-tier"><%= prize.tier.capitalize %></span>
+          <%# The ordinary "shop" tier needs no label; only the special tiers (daily, weekly) get a pill. %>
+          <% unless prize.tier == "shop" %><span class="shop-tier"><%= prize.tier.capitalize %></span><% end %>
         </p>
         <% if @locked %>
           <button type="button" class="btn" disabled aria-describedby="shop-verify-note" aria-label="<%= prize.name %>: locked until you verify">Locked until you verify</button>
