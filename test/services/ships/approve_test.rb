@@ -166,6 +166,19 @@ class Ships::ApproveTest < ActiveSupport::TestCase
     assert_equal :unavailable, Ships::Reject.call(ship: ship, reviewer: @reviewer, reason: "again").status
   end
 
+  test "staff cannot approve or reject their own ship, and nothing changes" do
+    ship = three_hour_ship
+    error = assert_raises(Ships::Approve::OwnShip) { Ships::Approve.call(ship: ship, reviewer: @user, approved_seconds: ship.coded_seconds, now: NOW) }
+    assert_kind_of Ships::Approve::Invalid, error
+    assert_match(/own ship/, error.message)
+    assert_raises(Ships::Reject::OwnShip) { Ships::Reject.call(ship: ship, reviewer: @user, reason: "Not good enough", now: NOW) }
+    assert_kind_of Ships::Reject::Invalid, Ships::Reject::OwnShip.new
+
+    assert_equal "submitted", ship.reload.status
+    assert_nil ship.reviewer
+    assert_equal 0, ledger.count
+  end
+
   test "a rejection reason is a preset and/or free text of at most 300 characters" do
     preset = Ships::Config.current.rejection_reasons.first
     assert_equal preset, Ships::Reject.reason_from(preset: preset, note: "")

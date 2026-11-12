@@ -235,6 +235,29 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
     assert_operator Coins::Balance.total(@teen), :>, 0
   end
 
+  test "an admin cannot approve or reject their own ship: a friendly message, no forms, nothing changes" do
+    make_admin(@teen)
+    sign_in_as @teen
+
+    get "/admin/ships/#{@ship.id}"
+    assert_response :success
+    assert_select ".admin-warning", /This is your own ship/
+    assert_select "form[action$='/approve']", 0
+    assert_select "form[action$='/reject']", 0
+
+    patch "/admin/ships/#{@ship.id}/approve"
+    assert_redirected_to "/admin/ships/#{@ship.id}"
+    follow_redirect!
+    assert_select ".flash", /You can't review your own ship/
+    patch "/admin/ships/#{@ship.id}/reject", params: { reason_note: "Nope" }
+    assert_redirected_to "/admin/ships/#{@ship.id}"
+    follow_redirect!
+    assert_select ".flash", /You can't review your own ship/
+
+    assert_equal "submitted", @ship.reload.status
+    assert_equal 0, CoinTransaction.count
+  end
+
   test "approving a ship the teen withdrew changes nothing" do
     Ships::Withdraw.call(ship: @ship)
     sign_in_admin

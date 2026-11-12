@@ -60,7 +60,12 @@
     </section>
   </div>
 
-  <% if ship.status_submitted? %>
+  <% if ship.status_submitted? && ship.user_id == current_user.id %>
+    <div class="admin-warning" role="note">
+      <p class="admin-warning__title">This is your own ship</p>
+      <p><%= Ships::Approve::OWN_SHIP_MESSAGE %></p>
+    </div>
+  <% elsif ship.status_submitted? %>
     <div class="admin-grid">
       <section class="admin-panel" aria-labelledby="ship-approve">
         <h2 id="ship-approve">Approve</h2>

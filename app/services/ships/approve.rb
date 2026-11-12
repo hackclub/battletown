@@ -11,9 +11,16 @@ module Ships
   # a note is kept on the ship (`payout_note`). Settling happens first, with the real hours source, outside the
   # ship lock; the payout itself is spread over the ship's own snapshot (Ships::SnapshotSource).
   #
+  # Staff can never approve their own ship (`OwnShip`, a kind of Invalid, so the friendly message reaches the admin).
+  #
   # Emits `ship_approved.battletown` (ship_id only) after the transaction commits.
   module Approve
     class Invalid < ArgumentError; end
+
+    OWN_SHIP_MESSAGE = "You can't review your own ship. Ask another reviewer.".freeze
+    class OwnShip < Invalid
+      def initialize(message = OWN_SHIP_MESSAGE) = super
+    end
 
     Result = Data.define(:status, :ship, :unsettled_dates, :credit) do
       def approved? = status == :approved
@@ -24,6 +31,8 @@ module Ships
 
     # Result#status is :approved (done now) or :unavailable (not waiting for review any more: nothing was changed).
     def call(ship:, reviewer:, approved_seconds:, now: Time.current, config: Config.current)
+      raise OwnShip if ship.user_id == reviewer&.id
+
       seconds = validate!(ship, approved_seconds, config)
       Game::Settle.call(ship.user, through: now)
 

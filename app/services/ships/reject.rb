@@ -6,6 +6,11 @@ module Ships
   module Reject
     class Invalid < ArgumentError; end
 
+    # Staff can never reject their own ship either (a kind of Invalid, so the friendly message reaches the admin).
+    class OwnShip < Invalid
+      def initialize(message = Approve::OWN_SHIP_MESSAGE) = super
+    end
+
     Result = Data.define(:status, :ship) do
       def rejected? = status == :rejected
     end
@@ -24,6 +29,8 @@ module Ships
     end
 
     def call(ship:, reviewer:, reason:, now: Time.current)
+      raise OwnShip if ship.user_id == reviewer&.id
+
       result = nil
       ship.with_lock do
         next result = Result.new(status: :unavailable, ship: ship) unless ship.status_submitted?
