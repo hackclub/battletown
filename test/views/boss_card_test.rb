@@ -35,6 +35,15 @@ class BossCardTest < ActionView::TestCase
     assert_match(/Everyone's coding chips away/, rendered)
   end
 
+  test "the card is a map band with the health bar as a shared progress and a state badge in words" do
+    card
+    assert_select "section.boss-card.on-map", 1
+    assert_select ".progress.progress--boss label.progress__label[for='boss-card-health']", "Boss health"
+    assert_select ".boss-card__state.badge.badge--primary", "In progress"
+    assert_select ".boss-card__facts .boss-card__community", /coded today|Be the first/
+    assert_select ".boss-card__stage img[alt]:not([alt=''])", 1
+  end
+
   test "the label beside the bar never reads 100% left once any damage has landed" do
     { 0 => [ "Full health", "100", /\ABoss at full health, no hits yet this week/ ],
       36 => [ "Under 1% damage", "100", /\ABoss has taken under 1% damage/ ],

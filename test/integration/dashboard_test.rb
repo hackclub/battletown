@@ -101,6 +101,33 @@ class DashboardTest < ActionDispatch::IntegrationTest
     assert_select "progress#dash-today-progress[max='3600']"
   end
 
+  test "the boss card leads the page, the sections follow in phone order and the goal bar carries its 15-minute mark" do
+    fill_in_everything(@user)
+    dashboard
+    order = css_select("main .dashboard > *").map { |node| node["class"].to_s.split.find { |c| c.match?(/\A(boss-card|dash-today|dash-project|dashboard__streaks|dash-coins|dash-hackatime|dash-prize|dashboard__header)\z/) } }
+    assert_equal %w[dashboard__header boss-card dash-today dash-project dashboard__streaks dash-coins dash-hackatime dash-prize], order
+    assert_select "section.boss-card.on-map h2#boss-card-title", 1
+    assert_select ".progress.progress--boss progress#boss-card-health", 1
+    assert_select ".progress.progress--goal .dash-meter__track[data-controller='goal-mark'][data-goal-mark-percent-value='25.0']", 1
+    assert_select ".dash-meter__mark[aria-hidden='true']", 1
+    assert_select "section.card--chunky.dash-prize .progress--prize progress", 1
+    assert_select ".dash-today .dash-callout", 0, "the first-run checklist is for brand-new users only"
+  end
+
+  test "a brand-new user gets a three-step checklist, each step ticked off as it happens" do
+    dashboard
+    assert_select ".dash-callout ol.dash-steps li", 3
+    assert_select ".dash-step--done", 0
+    assert_select ".dash-step a[href='#{hackatime_path}']", "Connect Hackatime"
+    assert_select ".dash-step a[href='#{new_project_path}']", "Add a project"
+
+    connect_hackatime(@user)
+    make_project(@user)
+    get dashboard_path
+    assert_select ".dash-step--done", 2
+    assert_select ".dash-step a", 0
+  end
+
   test "the today panel never reads more than the goal and cheers a day past it" do
     add_hours(@user, @today, 420 * 60)
     dashboard
