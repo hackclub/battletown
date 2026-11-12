@@ -66,3 +66,6 @@
 
 /* A .btn that is itself the staff element (class on the button): keep it a pill. */
 .btn.dev-only, .btn.admin-only { border-radius: var(--radius-full); }
+
+/* Form fields in staff pages never outgrow a phone (a long placeholder otherwise sets the width of a text input). */
+.dev-only input, .dev-only select, .dev-only textarea, .admin-only input, .admin-only select, .admin-only textarea { max-width: 100%; box-sizing: border-box; }

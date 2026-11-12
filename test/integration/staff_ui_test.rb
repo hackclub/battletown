@@ -54,5 +54,6 @@ class StaffUiTest < ActionDispatch::IntegrationTest
     assert_no_match(/\.(dev|admin)-only\.(dev|admin)-only \.btn/, css)
     assert_match(/\.dev-only--unlabelled\.dev-only--unlabelled \.btn\.btn/, css)
     assert_match(/\.admin-only--unlabelled\.admin-only--unlabelled \.btn\.btn/, css)
+    assert_match(/\.dev-only input[^{]*\{ max-width: 100%/, css, "staff form fields must not overflow a phone")
   end
 end
