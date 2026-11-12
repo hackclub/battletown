@@ -5,7 +5,7 @@ Nothing here has been run against a real deployment target: it was written and c
 ## Shape of the deploy
 
 - One container built from the `Dockerfile` (multi-stage, runs as the non-root user `rails`, uid 1000).
-- PostgreSQL is the only service. There is no Redis, no Memcached, no mail server, no object storage. Throttle counters and the landing page cache live in the same PostgreSQL database (Solid Cache).
+- PostgreSQL is the only service the app needs. There is no Redis, no Memcached, no object storage (ship screenshots, when that flag is on, are stored in PostgreSQL). Email (flag `email`) needs an SMTP account of your own, only when you switch it on. Throttle counters and the landing page cache live in the same PostgreSQL database (Solid Cache).
 - Listens on **port 80** (Thruster, which proxies to Puma on 3000 inside the container). The platform must route to container port 80, terminate TLS in front of it, and send `X-Forwarded-Proto: https`.
 - Health check: `GET /up` returns 200 whenever the app booted. It does not touch the database, so it is a liveness probe only, and it is exempt from host authorization, the SSL redirect and request logging, so a load balancer can probe it over plain HTTP with any `Host` header.
 - On start the default container command runs `bin/rails db:prepare` (see `bin/docker-entrypoint`), which creates the database if the role may, runs pending migrations and creates the cache table. If you override the container command (anything other than `./bin/thrust ./bin/rails server`), run `bin/rails db:prepare` yourself before starting it.
@@ -38,6 +38,7 @@ Never commit real values. Shapes below are examples only.
 | `WEB_CONCURRENCY` | no | Number of Puma worker processes (Puma reads it itself). Default 1. Safe above 1: throttle counters are shared through the database. | `2` |
 | `RAILS_LOG_LEVEL` | no | Default `info`. Do not use `debug` in production: it can log personal data. Request lines at `info` include the client IP and path. | `info` |
 | `HTTP_PORT` | no | Port Thruster listens on inside the container, default 80. Set it if the platform insists on another port (for example the value of its `PORT`). Do not set `PORT` for this: Thruster overrides it for Puma. | `8080` |
+| `MAX_REQUEST_BODY` | no | Thruster refuses a request body over this many bytes before Rails sees it. The image sets `17000000` (a ship form with three 5 MB screenshots plus text); the app enforces the same limit itself (`config/initializers/rack_attack.rb`). Do not raise it without raising `ship_screenshots.max_upload_bytes` and reading the screenshot section of CONTRACT. | `17000000` |
 | `SOLID_QUEUE_IN_PUMA` | no, leave unset | Would run the Solid Queue supervisor inside Puma. There are no jobs and no queue tables, so enabling it only crashes the supervisor. See "Background jobs". | |
 | `ADMIN_HCA_UIDS` | no | Comma-separated Hack Club Auth `sub` values of admins. Unset: nobody is an admin and `/admin` returns 404. | `ident!abc123,ident!def456` |
 | `SLACK_BOT_TOKEN` | no | Bot token (scope `chat:write`) that enables real Slack DMs. Unset: the null adapter is used and nothing is sent. Environment only, never the repository; see [SLACK_APP.md](SLACK_APP.md). Treat as a secret. | `xoxb-...` |
@@ -82,17 +83,26 @@ Solid Queue and Solid Cable are installed as gems but not configured: the previo
 
 ## Scheduled commands (cron)
 
-Nothing runs by itself. Schedule these on the host with the same environment as the app; all of them are safe to repeat, and the Slack ones stay silent while `NOTIFICATIONS_ENABLED` is not `true`:
+Nothing runs by itself, and there is ONE table of everything that can be scheduled. Schedule these on the host (or as Orchard jobs, below) with the same environment as the app. All are safe to repeat; the Slack and email ones stay silent while `NOTIFICATIONS_ENABLED` is not `true`; every task of a feature behind a Flipper flag returns at once, reading and writing nothing, while its flag is off, so creating the job early is harmless (it only costs a pod start).
 
-| Every | Command | Why |
-| --- | --- | --- |
-| minute | `bin/rails notifications:dispatch` | sends the queued Slack DMs and, with the Flipper flag `email` on and SMTP configured, the queued emails |
-| 15 minutes | `bin/rails notifications:ship_reminders` | queues the ship reminders for projects that crossed an hours threshold |
-| hour | `bin/rails game:settle` | settles finished local days (streaks and bonuses; the dashboard also settles lazily) |
-| hour, only with `HOURS_SOURCE=http` | `bin/rails "hackatime:sync[all]"` | pulls recent Hackatime hours for linked accounts |
-| day | `bin/rails privacy:purge_tokens` | deletes used data-deletion token ids older than 7 days (also purged as requests arrive) |
-| day | `bin/rails notifications:prune` | deletes finished notification rows older than `retention_days` (`config/notifications.yml`) |
-| day | `bin/rails notifications:schedule_all` | re-queues the daily reminder for anyone whose chain stopped (for example after a permanent Slack failure) |
+| Command | Schedule (UTC) | Create when | What it does |
+| --- | --- | --- | --- |
+| `bin/rails game:settle` | hourly (`5 * * * *`) | always | settles finished local days into `daily_results` (streaks and bonuses; the dashboard and ship approval also settle lazily). Exits 1 when any user failed |
+| `bin/rails privacy:purge_tokens` | daily (`20 9 * * *`) | always | deletes used data-deletion token ids older than 7 days (also purged as requests arrive) |
+| `bin/rails notifications:prune` | daily (`40 9 * * *`) | always | deletes finished notification rows older than `retention_days` (`config/notifications.yml`); sends nothing |
+| `bin/rails "hackatime:sync[all]"` | hourly (`35 * * * *`) | `HOURS_SOURCE=http` | pulls recent Hackatime hours for linked accounts (prints "skipped" and exits 0 otherwise) |
+| `bin/rails notifications:dispatch` | every 5 minutes (`*/5 * * * *`; once a minute if you want) | notifications switched on (`NOTIFICATIONS_ENABLED=true` and a bot token) | sends the queued Slack DMs and, with flag `email` on and SMTP configured, the queued emails |
+| `bin/rails notifications:ship_reminders` | every 15 minutes | notifications switched on | queues the 5 hour reminder and 10 hour nudge for projects that crossed them |
+| `bin/rails notifications:schedule_all` | daily (`50 9 * * *`) | notifications switched on | re-queues the daily reminder for anyone whose chain stopped |
+| `bin/rails notifications:returning_nudges` | daily (`10 15 * * *`) | flag `returning` on (and notifications switched on) | queues the one welcome-back Slack DM per idle period |
+| `bin/rails notifications:nps_prompts` | a few times a day (`30 14,18,22 * * *`) | flag `nps` on (and notifications switched on) | queues the one-click NPS survey DM for people due one |
+| `bin/rails nps:prune` | daily (`0 10 * * *`) | flag `nps` on | empties survey comments older than `nps.comment_retention_days` (90); scores are kept. Without it comments are kept for ever |
+| `bin/rails team:pay_pending` | every 15 minutes | flag `team` on | pays the crew bonus for recently approved ships whose payout did not run or was still waiting for a day to settle |
+| `bin/rails quests:evaluate` | hourly (`15 * * * *`) | flag `quests` on | records finished weekly quests and pays the rewards waiting on an approved ship (the dashboard and ship approval do this too, so it is the safety net for people who do not visit) |
+| `bin/rails returning:evaluate` | hourly (`25 * * * *`) | flag `returning` on (optional) | settles everyone's days so welcome-back windows open on time; the same work as `game:settle`, so skip it when that already runs hourly |
+| `bin/rails ship_images:prune` | daily (`0 11 * * *`) | flag `ship_screenshots` on | deletes screenshots of ships withdrawn more than 30 days ago and orphaned rows |
+
+Checks to run by hand, not on a schedule: `bin/rails slack:check` (bot token and scopes), `bin/rails ship_images:check` (libvips can read and write what screenshots need), `bin/rails db:encryption:init` (once, to make the encryption keys).
 
 Once, after the first `db:prepare`: `bin/rails bosses:seed` creates the launch bosses (idempotent; `db:seed` calls it too, and `db:prepare` only seeds a brand-new database).
 
@@ -163,6 +173,55 @@ Every job uses `concurrencyPolicy: forbid` (a fire is skipped while the previous
   concurrencyPolicy: forbid
   steps:
     - { type: app, deployment: web, command: "bin/rails notifications:schedule_all", timeoutSeconds: 900, retries: 1 }
+
+# Feature jobs: create each one only when its flag is switched on (until then it would only start a pod that returns at once).
+- name: returning-nudges
+  description: Queue the one welcome-back Slack DM per idle period (flag returning)
+  scheduleCron: "10 15 * * *"      # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails notifications:returning_nudges", timeoutSeconds: 900, retries: 1 }
+
+- name: nps-prompts
+  description: Queue the NPS survey DM (flag nps)
+  scheduleCron: "30 14,18,22 * * *" # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails notifications:nps_prompts", timeoutSeconds: 900, retries: 1 }
+
+- name: nps-prune
+  description: Empty survey comments past nps.comment_retention_days (flag nps)
+  scheduleCron: "0 10 * * *"       # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails nps:prune", timeoutSeconds: 600, retries: 1 }
+
+- name: team-pay-pending
+  description: Pay crew bonuses that did not run at approval (flag team)
+  scheduleCron: "*/15 * * * *"     # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails team:pay_pending", timeoutSeconds: 900, retries: 1 }
+
+- name: quests-evaluate
+  description: Record finished weekly quests and pay waiting rewards (flag quests)
+  scheduleCron: "15 * * * *"       # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails quests:evaluate", timeoutSeconds: 1800, retries: 1 }
+
+- name: ship-images-prune
+  description: Delete screenshots of long-withdrawn ships (flag ship_screenshots)
+  scheduleCron: "0 11 * * *"       # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails ship_images:prune", timeoutSeconds: 600, retries: 1 }
 ```
 
 Notes:

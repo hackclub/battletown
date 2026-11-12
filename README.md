@@ -45,6 +45,7 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 | `APP_URL` | Public URL; redirect URI is `$APP_URL/auth/hack_club/callback` |
 | `ADMIN_HCA_UIDS` | Comma-separated Hack Club Auth ids (OIDC `sub`) allowed into `/admin`; empty or unset means nobody (everyone else gets a 404). Locally, `ADMIN_HCA_UIDS=dev-user bin/rails s` makes Dev login an admin |
 | `APP_HOST` | Production only: comma-separated allowed hostnames (unset: the host of `APP_URL`; other hosts get 403, except the `/up` health check) |
+| `MAX_REQUEST_BODY` | Set by the Dockerfile (`17000000`): the biggest request body Thruster lets through, sized for a ship form with three screenshots (flag `ship_screenshots`). Leave it unless you change the screenshot limits |
 | `PRIVACY_AUDIENCE` | Audience a data-deletion token must carry (default `battletown`); the value to give Hack Club infrastructure, see `docs/PRIVACY_API.md` |
 | `PRIVACY_JWKS_URL` | Where the Hack Club data-deletion signing keys are fetched (default `https://yeet.hackclub.com/.well-known/jwks.json`); leave unset in production, `https` only |
 | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_DOMAIN`, `MAIL_FROM` | Email notifications (behind the Flipper flag `email`, default off; ship decisions and the welcome-back note, each with one-click unsubscribe). Real SMTP only when `SMTP_ADDRESS` and `MAIL_FROM` are set; otherwise nothing is sent. Names only here, values in the environment: see [docs/DEPLOY.md](docs/DEPLOY.md) and the "Email notifications" section of [docs/CONTRACT.md](docs/CONTRACT.md) |
@@ -54,16 +55,11 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 
 The Slack app that sends the reminder DMs is defined by `config/slack/manifest.yml` (bot scope `chat:write` only; no events, commands or Socket Mode). To create it, use api.slack.com/apps, Create New App, From a manifest, pick the Hack Club workspace, paste the manifest, install it and put the Bot User OAuth Token in `SLACK_BOT_TOKEN` (environment only, never the repo). Then run `bin/rails slack:check` to verify the token and its scopes, and set `NOTIFICATIONS_ENABLED=true` only when ready. Details, ownership and admin-approval notes: [docs/SLACK_APP.md](docs/SLACK_APP.md).
 
-### Cron entries needed at go-live
+### Cron entries and feature flags
 
-Nothing runs by itself; schedule these on the host (all are safe to repeat, and the Slack ones stay silent while `NOTIFICATIONS_ENABLED` is not `true`):
+Nothing runs by itself: the one table of every scheduled command, with its schedule (UTC) and when to create it, is in [docs/DEPLOY.md](docs/DEPLOY.md) ("Scheduled commands"). At go-live the always-needed ones are `game:settle` (hourly), `privacy:purge_tokens` and `notifications:prune` (daily); the Slack ones also need `NOTIFICATIONS_ENABLED=true` and a bot token.
 
-| Every | Command | Why |
-| --- | --- | --- |
-| minute | `bin/rails notifications:dispatch` | sends the queued Slack DMs |
-| 15 minutes | `bin/rails notifications:ship_reminders` | queues the 5 hour reminder and 10 hour nudge for projects that crossed them |
-| hour | `bin/rails game:settle` | settles finished days (streaks and bonuses) |
-| hour, only with `HOURS_SOURCE=http` | `bin/rails "hackatime:sync[all]"` | pulls recent Hackatime hours for linked accounts |
+Nine features ship switched OFF and stay dark (no route, link, card, row, message or query) until an admin turns them on at `/admin/flipper`: `team` (crews), `quests`, `returning` (welcome-back boost), `plinko`, `ship_screenshots`, `merch_track`, `email`, `nps` and `eligibility_gate`. The index with each flag's config key and what it needs is in [docs/CONTRACT.md](docs/CONTRACT.md) ("Feature flags"). There is no environment-variable switch.
 
 ## How auth works
 

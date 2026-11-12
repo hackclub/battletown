@@ -173,6 +173,8 @@ Signed-in, onboarded users get `<nav aria-label="Main">`: Dashboard, Projects, S
 - Every user-scoped record (projects, links, link suggestions, ships, orders) is looked up through `current_user`; someone else's id is a 404.
 - Every POST, PATCH, PUT and DELETE route has CSRF protection, except `/api/privacy/*` (bearer-token JSON API) and `POST /email/unsubscribe/:token` (authenticated by its signed token; the RFC 8058 one-click request carries no cookie). The route-security test lists the exemptions explicitly, so a new one fails it.
 - Only the Rails frameworks the app uses are loaded (`config/application.rb`): no Active Storage, Action Mailbox or Action Text, so no `/rails/...` upload or inbound-email endpoints.
+- Bearer tokens that travel in a URL path (`/team/join/<token>`, `/feedback/<token>`, `/email/unsubscribe/<token>`) are replaced by `[FILTERED]` in request log lines (`config/initializers/filter_path_tokens.rb`); Rails filters only the query string.
+- Referrer-Policy: the app-wide value is `strict-origin-when-cross-origin`. Two pages set their own: the NPS survey (`same-origin`, the strictest value that still makes a browser send an `Origin` header on the form POST: `no-referrer` makes Chrome send `Origin: null`, which Rails refuses) and the unsubscribe page (`no-referrer`, its POST is exempt from CSRF so `Origin: null` is harmless). Cross-site entry points (a Slack link, an invite link, sign-in and Hackatime callbacks) are plain GETs and need no `Origin`. `test/integration/nps_feedback_test.rb` pins this.
 - Logs carry no email, name, Slack id, tokens or free text (`test/integration/full_flow_log_privacy_test.rb`; `config/initializers/filter_parameter_logging.rb`).
 
 ## CSP (enforced)
@@ -194,7 +196,20 @@ Minitest + fixtures (`test/fixtures/users.yml` has `new_user` and `onboarded`). 
 
 Every new feature ships OFF and stays dark until the owner turns it on. A flagged-off feature creates no rows, sends no Slack message or email, spends no coins, shows nothing (no link, no card, no copy) and costs nothing (no job enqueued, no query it does not need). Flags are stored by Flipper (`flipper_features`, `flipper_gates`; no row or no gate = off) and flipped by admins at `/admin/flipper` (linked from the admin dashboard as "Feature flags"; on Orchard that is the live site's `/admin/flipper`). There is no env-var switch.
 
-- Known flags (`Features::KNOWN`): `team`, `quests`, `returning`, `plinko`, `ship_screenshots`, `merch_track`, `email`, `nps`, `eligibility_gate`.
+- Known flags (`Features::KNOWN`), the one index of all nine. Every flag is OFF until switched on at `/admin/flipper` (or `Flipper.enable(:name)` in a console; try it on staff first with `Flipper.enable_group(:name, :admins)` where the feature takes an actor, see below). Tunables are in `config/game.yml` under the key shown; "Needs" lists the environment and cron entries that make the flag useful (the cron table is in docs/DEPLOY.md).
+
+| Flag | What it adds | Config key | Needs | Section |
+| --- | --- | --- | --- | --- |
+| `team` | Crews and the crew coin bonus at ship approval | `team` | cron `team:pay_pending` | "Team bonus" |
+| `quests` | One weekly quest set by staff; reward paid with the next approved ship | `quests` | cron `quests:evaluate` (safety net) | "Weekly quests" |
+| `returning` | Welcome-back streak-bonus floor and one Slack nudge per idle period | `returning` | cron `notifications:returning_nudges`, Slack notifications on | "Returning-user bonus" |
+| `plinko` | Daily toy: balls from coded minutes, opt-in nickname leaderboard, no coins | `plinko` | nothing | "Plinko" |
+| `ship_screenshots` | Up to three screenshots per ship, re-encoded to WebP in PostgreSQL, owner and staff only | `ship_screenshots` | libvips (`ship_images:check`), cron `ship_images:prune`, `MAX_REQUEST_BODY` | "Ship screenshots" |
+| `merch_track` | Weekly reward track and claim queue | `merch_track` | nothing | "Weekly merch track" |
+| `email` | Email channel for ship decisions and the welcome-back note, one-click unsubscribe | `notifications.yml` `email:` | `SMTP_ADDRESS`, `MAIL_FROM` (and login), Slack notifications on | "Email notifications" |
+| `nps` | One-click NPS survey by Slack DM, staff results page | `nps` | cron `notifications:nps_prompts` and `nps:prune`, Slack notifications on | "NPS survey" |
+| `eligibility_gate` | Spending (shop and merch claims) also needs YSWS eligibility and a fresh sign-in | `eligibility` | nothing | "Eligibility gate" |
+
 - `Features.enabled?(name, actor = nil)`: true or false. An unknown name raises `ArgumentError` (typos fail loudly). If the flag store cannot be read it answers false and logs. Never call `Flipper.enabled?` directly in product code.
 - View and controller helper `feature?(:name)`; controller `before_action { require_feature!(:name) }` raises the same `RoutingError` an unknown path gets (plain 404); route constraint `constraints Features::Constraint.new(:name) do ... end` in `config/routes.rb` (the routes simply do not exist while off; an unknown name fails at boot).
 - Jobs, notifications, dispatch and callbacks check `Features.enabled?(:name)` first and return before creating anything. Gate the feature at every entry point, not only the page: routes, UI, jobs, mailers/Slack, model callbacks and rake tasks.
