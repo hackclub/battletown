@@ -15,6 +15,7 @@ class User < ApplicationRecord
 
   has_many :projects, dependent: :destroy
   has_many :hackatime_links, dependent: :destroy
+  has_many :ships, dependent: :destroy
   has_many :link_suggestions, through: :projects
   has_many :orders
 

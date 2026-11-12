@@ -12,6 +12,10 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
   # "table.column" => why it is not personal data. Nothing yet.
   NOT_PERSONAL = {}.freeze
 
+  # Foreign keys to users that deliberately do NOT cascade, with the reason: the row is about someone else (the subject
+  # of the row is reached through a cascading key), and the key is nulled so the staff member is forgotten.
+  NULLIFY_ALLOWED = { "ships.reviewer_id" => "the staff member who reviewed a ship; the ship belongs to the teen" }.freeze
+
   # Tables that are not about a person: the Rails bookkeeping tables and the token ids of this very feature.
   EXEMPT_TABLES = %w[schema_migrations ar_internal_metadata privacy_request_tokens].freeze
 
@@ -26,6 +30,11 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     assert_includes referencing.map(&:from_table), "notifications", "the guard found no foreign keys at all"
 
     referencing.each do |fk|
+      if NULLIFY_ALLOWED.key?("#{fk.from_table}.#{fk.column}")
+        assert_equal :nullify, fk.on_delete, "#{fk.from_table}.#{fk.column} is listed as nulled on delete"
+        next
+      end
+
       assert_equal :cascade, fk.on_delete, "#{fk.from_table}.#{fk.column} references users without ON DELETE CASCADE: a person's data would survive (or block) deletion"
     end
   end
@@ -40,7 +49,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
 
   test "columns that look personal are covered by a cascading foreign key or listed as not personal" do
     offenders = (app_tables - [ "users" ]).flat_map do |table|
-      cascading = user_foreign_keys(table).select { |fk| fk.on_delete == :cascade }.map(&:column)
+      cascading = user_foreign_keys(table).select { |fk| fk.on_delete == :cascade || NULLIFY_ALLOWED.key?("#{fk.from_table}.#{fk.column}") }.map(&:column)
       connection.columns(table).map(&:name).select { |name| name.match?(PERSONAL_COLUMN) }
                 .reject { |name| cascading.include?(name) || NOT_PERSONAL.key?("#{table}.#{name}") }.map { |name| "#{table}.#{name}" }
     end
@@ -62,6 +71,9 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     project.link_suggestions.create!(hackatime_project: "guard-other")
     CoinTransaction.create!(user: user, amount: 5, kind: "refund", idempotency_key: "guard-#{user.id}")
     Order.create!(user: user, prize_key: "sticker_pack", prize_name: "Sticker pack", coins: 20, kind: "purchase", idempotency_key: "guard-#{user.id}")
+    HourEntry.create!(user: user, local_date: Date.new(2026, 11, 9), seconds: 3600, source: "manual", note: "guard", hackatime_project: "guard-project", idempotency_key: "guard-ship-#{user.id}")
+    Ship.create!(user: user, project: project, status: "submitted", description: "Guard ship", repo_url: "https://github.com/guard/ship", coded_seconds: 3600,
+                 window_start_date: Date.new(2026, 11, 9), window_end_date: Date.new(2026, 11, 9), daily_seconds: { "2026-11-09" => 3600 }, submitted_at: Time.current)
     DailyResult.create!(user: user, local_date: Date.new(2026, 11, 1), raw_seconds: 0, quick_met: false, goal_met: false,
                         streak_15: 0, goal_streak: 0, freeze_available: true)
     HackatimeConnection.create!(user: user, hackatime_uid: "1", access_token: "guard-token", scopes: "profile read", connected_at: Time.current)

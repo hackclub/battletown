@@ -4,5 +4,5 @@ Rails.application.config.filter_parameters += [
   :code, :state, :id_token, :access_token, :client_secret, :phone, :birthdate, :address,
   :street, :locality, :region, :postal, :zip,
   :project_idea, :idea, :repo_url, :demo_url, :hackatime_project, "project.name", :display_name, :slack_id, :time_zone, :coding_time, :coding_day_names, :prize_key, :referral_source,
-  :note, :idempotency_key
+  :note, :idempotency_key, :description, :reason
 ]

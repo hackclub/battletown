@@ -17,6 +17,7 @@ class Project < ApplicationRecord
   belongs_to :user
   has_many :hackatime_links, dependent: :destroy
   has_many :link_suggestions, dependent: :destroy
+  has_many :ships, dependent: :destroy
 
   before_validation :normalize_fields
   before_validation :claim_active_slot, on: :create
@@ -63,6 +64,9 @@ class Project < ApplicationRecord
     end
     project.save
   end
+
+  # A project with a ship waiting for review or already approved is kept (its history backs the coins); archive it instead.
+  def deletable? = ships.where(status: Ship::WINDOW_STATUSES).none?
 
   # Names of the Hackatime projects linked to this project, in link order.
   def hackatime_project_names = hackatime_links.order(:id).pluck(:hackatime_project)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_035001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -235,6 +235,48 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035000) do
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "projects_status_check"
   end
 
+  create_table "ships", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "project_id", null: false
+    t.string "status", default: "draft", null: false
+    t.text "description"
+    t.string "repo_url"
+    t.string "demo_url"
+    t.integer "coded_seconds", null: false
+    t.date "window_start_date", null: false
+    t.date "window_end_date", null: false
+    t.jsonb "daily_seconds", default: {}, null: false
+    t.integer "approved_seconds"
+    t.bigint "reviewer_id"
+    t.datetime "reviewed_at"
+    t.string "rejection_reason", limit: 300
+    t.string "payout_note", limit: 300
+    t.datetime "submitted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_ships_on_project_id"
+    t.index ["project_id"], name: "index_ships_one_open_per_project", unique: true, where: "((status)::text = ANY ((ARRAY['draft'::character varying, 'submitted'::character varying])::text[]))"
+    t.index ["reviewer_id"], name: "index_ships_on_reviewer_id"
+    t.index ["status", "submitted_at"], name: "index_ships_on_status_and_submitted_at"
+    t.index ["user_id", "created_at"], name: "index_ships_on_user_id_and_created_at"
+    t.check_constraint "(status::text <> ALL (ARRAY['approved'::character varying, 'rejected'::character varying]::text[])) OR reviewed_at IS NOT NULL", name: "ships_reviewed_at_check"
+    t.check_constraint "(status::text = 'approved'::text) = (approved_seconds IS NOT NULL)", name: "ships_approved_seconds_presence_check"
+    t.check_constraint "(status::text = 'rejected'::text) = (rejection_reason IS NOT NULL)", name: "ships_rejection_reason_presence_check"
+    t.check_constraint "approved_seconds IS NULL OR approved_seconds > 0 AND approved_seconds <= coded_seconds", name: "ships_approved_seconds_range_check"
+    t.check_constraint "coded_seconds > 0", name: "ships_coded_seconds_check"
+    t.check_constraint "demo_url IS NULL OR char_length(demo_url::text) <= 300 AND demo_url::text ~ '^https://[^[:space:]/?\#@]+([/?#][^[:space:]]*)?$'::text", name: "ships_demo_url_check"
+    t.check_constraint "description IS NULL OR char_length(description) <= 1000", name: "ships_description_length_check"
+    t.check_constraint "jsonb_typeof(daily_seconds) = 'object'::text", name: "ships_daily_seconds_check"
+    t.check_constraint "payout_note IS NULL OR status::text = 'approved'::text", name: "ships_payout_note_check"
+    t.check_constraint "rejection_reason IS NULL OR char_length(btrim(rejection_reason::text)) >= 1", name: "ships_rejection_reason_blank_check"
+    t.check_constraint "repo_url IS NULL OR char_length(repo_url::text) <= 300 AND repo_url::text ~ '^https://github\\.com/[a-z0-9-]{1,39}/(?!\\.+$)[a-z0-9._-]{1,100}$'::text", name: "ships_repo_url_check"
+    t.check_constraint "status::text = 'draft'::text OR description IS NOT NULL AND char_length(btrim(description)) >= 1", name: "ships_description_required_check"
+    t.check_constraint "status::text = 'draft'::text OR repo_url IS NOT NULL", name: "ships_repo_required_check"
+    t.check_constraint "status::text = 'draft'::text OR submitted_at IS NOT NULL", name: "ships_submitted_at_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'submitted'::character varying, 'approved'::character varying, 'rejected'::character varying, 'withdrawn'::character varying]::text[])", name: "ships_status_check"
+    t.check_constraint "window_end_date >= window_start_date", name: "ships_window_dates_check"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "hca_uid", null: false
     t.string "email"
@@ -273,4 +315,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035000) do
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "projects", "users", on_delete: :cascade
+  add_foreign_key "ships", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
+  add_foreign_key "ships", "users", column: "reviewer_id", on_delete: :nullify
+  add_foreign_key "ships", "users", on_delete: :cascade
 end

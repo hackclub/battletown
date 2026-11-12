@@ -50,3 +50,17 @@ shared:
     slayer_seconds: 900
     # How many days after a boss ends the card keeps showing it (defeated or escaped) when no newer boss has started.
     afterglow_days: 7
+
+  # The ship flow and staff review (app/services/ships/**), read through Ships::Config.
+  ships:
+    # The fewest coded hours (since the last ship) a project needs before it can be shipped.
+    min_hours: 1.0
+    # Staff can lower the approved hours (never raise them) in steps of this many hours.
+    approval_step_hours: 0.25
+    # Quick reasons offered to a reviewer when rejecting; free text (up to 300 characters in all) can be added.
+    rejection_reasons:
+      - The GitHub link does not open, or the repository is private
+      - The demo link does not open
+      - The description does not say what you built yet
+      - The hours do not match what is in the project yet
+      - Please add more to the project and ship again
