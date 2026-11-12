@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_035004) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_035005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -265,6 +265,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_035004) do
     t.datetime "submitted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "hackatime_projects", default: [], null: false, array: true
     t.index ["project_id"], name: "index_ships_on_project_id"
     t.index ["project_id"], name: "index_ships_one_open_per_project", unique: true, where: "((status)::text = ANY ((ARRAY['draft'::character varying, 'submitted'::character varying])::text[]))"
     t.index ["reviewer_id"], name: "index_ships_on_reviewer_id"

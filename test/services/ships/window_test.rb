@@ -78,6 +78,72 @@ class Ships::WindowTest < ActiveSupport::TestCase
     assert_equal HOUR, window.seconds
   end
 
+  # Coverage follows the Hackatime project, not the project it is linked to now.
+  def move_link(from, to, name = "space-farm")
+    from.hackatime_links.find_by!(hackatime_project: name).destroy!
+    to.hackatime_links.create!(user_id: @user.id, hackatime_project: name, link_method: "manual")
+  end
+
+  test "moving a Hackatime link to another project never ships the same hours twice" do
+    code(@user, D[8], 2 * HOUR)
+    code(@user, D[9], 2 * HOUR)
+    first = submit_ship(@project)
+    first.update_columns(status: "approved", approved_seconds: first.coded_seconds, reviewed_at: Time.current)
+    other = make_project(@user, name: "Space Farm 2", hackatime: nil)
+    move_link(@project, other)
+
+    assert Ships::Window.call(other).empty?
+    assert_raises(Ships::Submit::NoHours) { submit_ship(other) }
+    code(@user, D[10], 3 * HOUR)
+    assert_equal({ D[10] => 3 * HOUR }, Ships::Window.call(other).seconds_by_date)
+    assert window.empty?, "the old project has no link left, so nothing to ship"
+  end
+
+  test "a waiting ship holds its hours even after its Hackatime project moves, so two ships cannot cover them" do
+    code(@user, D[9], 2 * HOUR)
+    submit_ship(@project)
+    other = make_project(@user, name: "Space Farm 2", hackatime: nil)
+    move_link(@project, other)
+
+    assert_raises(Ships::Submit::NoHours) { submit_ship(other) }
+    code(@user, D[10], 2 * HOUR)
+    assert_equal 2 * HOUR, submit_ship(other).coded_seconds
+  end
+
+  test "a rejected or withdrawn ship releases its hours to whichever project holds the link now" do
+    code(@user, D[9], 2 * HOUR)
+    ship = submit_ship(@project)
+    other = make_project(@user, name: "Space Farm 2", hackatime: nil)
+    move_link(@project, other)
+    ship.update_columns(status: "withdrawn")
+    assert_equal 2 * HOUR, Ships::Window.call(other).seconds
+    ship.update_columns(status: "rejected", rejection_reason: "no", reviewed_at: Time.current)
+    assert_equal 2 * HOUR, Ships::Window.call(other).seconds
+  end
+
+  test "each Hackatime project starts after the last ship that covered it" do
+    code(@user, D[8], HOUR)
+    first = submit_ship(@project)
+    assert_equal [ "space-farm" ], first.hackatime_projects
+    first.update_columns(status: "approved", approved_seconds: HOUR, reviewed_at: Time.current)
+    @project.hackatime_links.create!(user_id: @user.id, hackatime_project: "space-farm-assets", link_method: "manual")
+    code(@user, D[7], 30 * 60, hackatime: "space-farm-assets") # never shipped, so it still counts
+    code(@user, D[9], HOUR)
+    assert_equal({ D[7] => 1800, D[9] => HOUR }, window.seconds_by_date)
+    second = submit_ship(@project)
+    assert_equal %w[space-farm space-farm-assets], second.hackatime_projects.sort
+    assert window.empty?
+  end
+
+  test "a ship saved before coverage was recorded still blocks its own project's linked hours" do
+    code(@user, D[8], HOUR)
+    legacy = submit_ship(@project)
+    legacy.update_columns(hackatime_projects: [])
+    assert window.empty?
+    code(@user, D[9], HOUR)
+    assert_equal({ D[9] => HOUR }, window.seconds_by_date)
+  end
+
   test "dates are the frozen local dates, so time zones and daylight saving are already settled in the ledger" do
     # 2026-11-01 is the day US clocks fall back: 25 local hours. Entries credited with an instant keep the user's local date.
     @user.update_columns(time_zone: "America/New_York")

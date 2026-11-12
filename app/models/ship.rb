@@ -1,8 +1,9 @@
 # A teen's request to turn the time coded on one project (since their last ship) into approved hours and coins.
 #
 # The window is snapshotted when the ship is saved: `coded_seconds`, the local dates it covers and the seconds per
-# date (`daily_seconds`, { "2026-11-09" => 3600 }), so hours coded afterwards belong to the next ship and approval
-# never depends on the live ledger. Status: draft (editable), submitted (waiting for staff), approved (with
+# date (`daily_seconds`, { "2026-11-09" => 3600 }) and the Hackatime project names it covers (`hackatime_projects`),
+# so hours coded afterwards belong to the next ship, approval never depends on the live ledger, and moving a link to
+# another project cannot ship the same hours again (Ships::Window). Status: draft (editable), submitted (waiting for staff), approved (with
 # `approved_seconds` <= coded), rejected (with a reason; the window is free again, so it can be fixed and shipped as
 # a new ship) or withdrawn. Coins are never stored here: approval writes Coins::Ledger rows that reference the ship.
 #
@@ -148,7 +149,7 @@ class Ship < ApplicationRecord
   def window_is_frozen_after_submission
     return if status_was == "draft"
 
-    frozen = %w[coded_seconds window_start_date window_end_date daily_seconds project_id user_id]
+    frozen = %w[coded_seconds window_start_date window_end_date daily_seconds hackatime_projects project_id user_id]
     errors.add(:base, "A submitted ship's hours cannot change") if frozen.any? { |attribute| will_save_change_to_attribute?(attribute) }
   end
 
