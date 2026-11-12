@@ -33,9 +33,10 @@ class HcaAddressConfigTest < ActiveSupport::TestCase
     assert_equal "hack_club_address", OmniAuth::Strategies::HackClubAddress.default_options.name
   end
 
-  test "the sign-in scopes are unchanged: the address scope is still requested at sign-in for the time zone default" do
+  test "sign-in asks only for what it uses: the address scope stays (time zone default), phone and birthdate are not requested" do
     source = Rails.root.join("config/initializers/omniauth.rb").read
-    assert_includes source, "scope: %i[openid profile email name phone birthdate address verification_status slack_id basic_info]"
+    assert_includes source, "scope: %i[openid profile email name address verification_status slack_id basic_info]"
+    assert_no_match(/scope: %i\[[^\]]*(phone|birthdate)/, source)
   end
 
   test "the callback path is routed to the address controller only, and the sign-in callback does not accept the new provider" do

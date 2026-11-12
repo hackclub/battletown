@@ -66,9 +66,10 @@ Rails.application.config.middleware.use OmniAuth::Builder do
     name: :hack_club,
     issuer: Rails.configuration.x.hca.issuer,
     discovery: true,
-    # Every scope enabled on the Hack Club Auth app. phone, birthdate and address are requested
-    # but deliberately not stored or logged (see User#apply_hca_claims) pending a privacy decision.
-    scope: %i[openid profile email name phone birthdate address verification_status slack_id basic_info],
+    # Only what sign-in uses. `address` is read once, for the time zone default, and never stored or logged (see
+    # User#apply_hca_claims); `phone` and `birthdate` are NOT requested: nothing here uses them, and a teen's phone number and date
+    # of birth should not arrive at this server on every sign-in. (Shipping addresses are a separate, opt-in lookup at checkout.)
+    scope: %i[openid profile email name address verification_status slack_id basic_info],
     response_type: :code,
     pkce: true,
     client_auth_method: :post,

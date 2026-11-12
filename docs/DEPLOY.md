@@ -64,7 +64,7 @@ Register this redirect URI in the app at auth.hackclub.com (Developer Apps), exa
 $APP_URL/auth/hack_club/callback
 ```
 
-The app requests the scopes `openid profile email name phone birthdate address verification_status slack_id basic_info`, all of which must be enabled on the app.
+The app requests the scopes `openid profile email name address verification_status slack_id basic_info`, all of which must be enabled on the app (it does not ask for `phone` or `birthdate`; `address` is only read for the time zone default and never stored).
 
 #### Shipping addresses at checkout: two owner actions (nothing here has been done yet)
 
