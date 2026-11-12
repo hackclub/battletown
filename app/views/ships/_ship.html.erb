@@ -3,7 +3,7 @@
     <h2 class="ship__name"><%= link_to ship.project.name, ship_path(ship) %></h2>
     <%= ship_status_badge(ship) %>
   </div>
-  <p class="ship__meta"><%= [ "#{ship_hours(ship.coded_seconds)} coded", ship_dates_text(ship.window_start_date, ship.window_end_date), (ship.submitted_at ? "submitted #{ship.submitted_at.strftime('%b %-d')}" : nil) ].compact.join(", ") %></p>
+  <p class="ship__meta"><%= [ "#{ship_hours(ship.coded_seconds)} coded", ship_dates_text(ship.window_start_date, ship.window_end_date), (ship.submitted_at ? "submitted #{ship_submitted_on(ship)}" : nil) ].compact.join(", ") %></p>
   <% case ship.status %>
   <% when "approved" %>
     <% breakdown = ship.coin_breakdown %>

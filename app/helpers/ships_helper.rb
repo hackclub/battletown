@@ -31,6 +31,15 @@ module ShipsHelper
     first == last ? first.strftime("%b %-d") : "#{first.strftime('%b %-d')} to #{last.strftime('%b %-d')}"
   end
 
+  # The owner's local date a ship was submitted on ("Nov 11" or "Nov 11, 2026"), so it lines up with the local dates in
+  # the ship's window instead of the UTC date.
+  def ship_submitted_on(ship, year: false)
+    return unless ship.submitted_at
+
+    date = Game::Days.local_date(ship.submitted_at, ship.user.time_zone)
+    date.strftime(year ? "%b %-d, %Y" : "%b %-d")
+  end
+
   # Coins an hour at the deflated rate, for the "past 6 hours" note on the form.
   def ship_deflated_rate(config = Game::Config.current)
     format("%g", config.coins_per_hour * config.deflation_multiplier_milli / 1000.0)

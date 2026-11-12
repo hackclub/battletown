@@ -336,6 +336,21 @@ class ShipsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "the submitted date is the teen's local date, not the UTC date" do
+    three_hours
+    @user.update_columns(time_zone: "Pacific Time (US & Canada)")
+    ship = submit_ship(@project)
+    # 04:40 UTC on Nov 10 is still the evening of Nov 9 in Pacific time.
+    ship.update_columns(submitted_at: Time.utc(2026, 11, 10, 4, 40))
+    sign_in_as @user
+
+    get ship_path(ship)
+    assert_select "dt", "Submitted"
+    assert_select "dd", "Nov 9, 2026"
+    get ships_path
+    assert_select ".ship__meta", /submitted Nov 9\b/
+  end
+
   test "ship text is not written to the request log" do
     three_hours
     sign_in_as @user

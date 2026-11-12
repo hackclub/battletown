@@ -39,7 +39,7 @@
     <h2 id="ship-facts-heading">What you sent</h2>
     <dl class="ship-dl">
       <dt>Hours coded</dt><dd><%= ship_hours(@ship.coded_seconds) %> (<%= ship_dates_text(@ship.window_start_date, @ship.window_end_date) %>)</dd>
-      <% if @ship.submitted_at %><dt>Submitted</dt><dd><%= @ship.submitted_at.strftime("%b %-d, %Y") %></dd><% end %>
+      <% if @ship.submitted_at %><dt>Submitted</dt><dd><%= ship_submitted_on(@ship, year: true) %></dd><% end %>
       <dt>Description</dt><dd class="ship-dl__text"><%= @ship.description.presence || "Not written yet" %></dd>
       <% if @ship.repo_url.present? %><dt>GitHub</dt><dd><%= project_external_link @ship.repo_url.delete_prefix("https://"), @ship.repo_url %></dd><% end %>
       <% if @ship.demo_url.present? %><dt>Demo</dt><dd><%= project_external_link @ship.demo_url.delete_prefix("https://"), @ship.demo_url %></dd><% end %>
