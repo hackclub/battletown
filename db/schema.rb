@@ -44,12 +44,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
     t.index ["reference_type", "reference_id"], name: "index_coin_transactions_on_reference_type_and_reference_id"
     t.index ["user_id", "created_at"], name: "index_coin_transactions_on_user_id_and_created_at"
     t.index ["user_id", "idempotency_key"], name: "index_coin_transactions_on_user_id_and_idempotency_key", unique: true
-    t.check_constraint "(kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'refund'::character varying]::text[])) AND amount > 0 OR kind::text = 'purchase'::text AND amount < 0 OR kind::text = 'adjustment'::text", name: "coin_transactions_sign_check"
+    t.check_constraint "(kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'refund'::character varying, 'quest_reward'::character varying]::text[])) AND amount > 0 OR kind::text = 'purchase'::text AND amount < 0 OR kind::text = 'adjustment'::text", name: "coin_transactions_sign_check"
     t.check_constraint "(reference_type IS NULL) = (reference_id IS NULL)", name: "coin_transactions_reference_check"
     t.check_constraint "amount <> 0", name: "coin_transactions_amount_check"
     t.check_constraint "char_length(idempotency_key::text) >= 1 AND char_length(idempotency_key::text) <= 120", name: "coin_transactions_idempotency_key_check"
     t.check_constraint "created_by IS NULL OR created_by::text ~ '^[a-z0-9_:.-]{1,40}$'::text", name: "coin_transactions_created_by_check"
-    t.check_constraint "kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'purchase'::character varying, 'refund'::character varying, 'adjustment'::character varying]::text[])", name: "coin_transactions_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'purchase'::character varying, 'refund'::character varying, 'adjustment'::character varying, 'quest_reward'::character varying]::text[])", name: "coin_transactions_kind_check"
     t.check_constraint "note IS NULL OR char_length(note::text) <= 200", name: "coin_transactions_note_check"
   end
 
@@ -298,6 +298,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "projects_status_check"
   end
 
+  create_table "quest_completions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "quest_id", null: false
+    t.datetime "completed_at", null: false
+    t.bigint "coin_transaction_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["coin_transaction_id"], name: "index_quest_completions_on_coin_transaction_id"
+    t.index ["quest_id"], name: "index_quest_completions_on_quest_id"
+    t.index ["user_id", "quest_id"], name: "index_quest_completions_on_user_id_and_quest_id", unique: true
+    t.index ["user_id"], name: "index_quest_completions_pending_by_user", where: "(coin_transaction_id IS NULL)"
+  end
+
+  create_table "quests", force: :cascade do |t|
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.string "goal_key", limit: 40, null: false
+    t.jsonb "goal_params", default: {}, null: false
+    t.integer "reward_coins", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["starts_on"], name: "index_quests_on_starts_on", unique: true
+    t.check_constraint "ends_on >= starts_on", name: "quests_dates_check"
+    t.check_constraint "goal_key::text = ANY (ARRAY['code_days'::character varying, 'streak_days'::character varying, 'ship_project'::character varying, 'link_hackatime'::character varying, 'add_project'::character varying]::text[])", name: "quests_goal_key_check"
+    t.check_constraint "jsonb_typeof(goal_params) = 'object'::text", name: "quests_goal_params_check"
+    t.check_constraint "reward_coins >= 1 AND reward_coins <= 1000", name: "quests_reward_coins_check"
+  end
+
   create_table "ship_images", force: :cascade do |t|
     t.bigint "ship_id", null: false
     t.bigint "user_id", null: false
@@ -408,6 +436,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "orders", "users", on_delete: :cascade
   add_foreign_key "projects", "users", on_delete: :cascade
+  add_foreign_key "quest_completions", "coin_transactions", on_delete: :cascade
+  add_foreign_key "quest_completions", "quests", on_delete: :cascade
+  add_foreign_key "quest_completions", "users", on_delete: :cascade
   add_foreign_key "ship_images", "ships", on_delete: :cascade
   add_foreign_key "ship_images", "users", on_delete: :cascade
   add_foreign_key "ships", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade

@@ -71,3 +71,37 @@ shared:
       - The description does not say what you built yet
       - The hours do not match what is in the project yet
       - Please add more to the project and ship again
+
+  # Weekly quests (app/services/quests/**), read through Quests::Config. Behind the Flipper flag `quests` (off by default).
+  # One admin-set quest per boss week, chosen from a fixed menu of goals the code checks by itself; the flat reward is
+  # paid with the person's next approved ship (ledger kind quest_reward), never at completion.
+  quests:
+    # What the admin form pre-fills, and the most an admin may set. Coins only (1 coin is a small slice of one approved hour).
+    default_reward_coins: 15
+    max_reward_coins: 40
+    # Goals the admin can pick for a new quest. Must be keys of Quests::Goals::KEYS (a quest already made keeps working if a key is removed here).
+    allowed_goals: [ code_days, streak_days, ship_project, link_hackatime, add_project ]
+    # A quest is still checked this many days after its week ends, so time that syncs late still counts (the ledger accepts hours up to hours.max_backfill_days back).
+    evaluate_grace_days: 3
+    # Copy and limits for each goal. %{target} is the quest's number, %{minutes} the 15-minute streak bar (streaks.quick_minutes).
+    # `unit` words the progress line ("2 of 3 days"); a goal without a target is a single step ("Not yet" / "Done").
+    goals:
+      code_days:
+        title: "Code on %{target} different days"
+        description: "Code for at least %{minutes} minutes on %{target} different days this boss week."
+        unit: day
+        target: { min: 1, max: 7, default: 3 }
+      streak_days:
+        title: "Code %{target} days in a row"
+        description: "Code for at least %{minutes} minutes a day, %{target} days in a row, inside this boss week."
+        unit: day
+        target: { min: 2, max: 7, default: 3 }
+      ship_project:
+        title: "Ship a project"
+        description: "Send a ship in for review this boss week."
+      link_hackatime:
+        title: "Link a Hackatime project"
+        description: "Link one of your Hackatime projects to a project this boss week."
+      add_project:
+        title: "Add a project"
+        description: "Add a project to Battletown this boss week."

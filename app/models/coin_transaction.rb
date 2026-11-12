@@ -2,7 +2,7 @@
 # only disappear when the database cascades a user deletion). Write through Coins::Ledger, which serialises per user
 # and refuses a negative balance; read the balance with Coins::Balance.
 class CoinTransaction < ApplicationRecord
-  CREDIT_KINDS = %w[ship_approval streak_bonus refund].freeze
+  CREDIT_KINDS = %w[ship_approval streak_bonus refund quest_reward].freeze
   DEBIT_KINDS = %w[purchase].freeze
   KINDS = (CREDIT_KINDS + DEBIT_KINDS + %w[adjustment]).freeze
   KEY_MAX = 120
