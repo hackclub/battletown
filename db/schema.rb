@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_150003) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -336,6 +336,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150003) do
     t.string "tracking_carrier", limit: 20
     t.string "tracking_number", limit: 60
     t.string "tracking_label", limit: 40
+    t.index "(\nCASE status\n    WHEN 'requested'::text THEN 0\n    WHEN 'on_hold'::text THEN 1\n    WHEN 'shipped'::text THEN 2\n    ELSE 3\nEND), created_at DESC, id DESC", name: "index_orders_on_queue_order"
     t.index ["status", "created_at"], name: "index_orders_on_status_and_created_at"
     t.index ["user_id", "created_at"], name: "index_orders_on_user_id_and_created_at"
     t.index ["user_id", "idempotency_key"], name: "index_orders_on_user_id_and_idempotency_key", unique: true
