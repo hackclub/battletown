@@ -1,6 +1,6 @@
 <%# locals: (project:) -%>
 <section class="card dash-panel dash-project" aria-labelledby="dash-project-title">
-  <h2 id="dash-project-title">Active project</h2>
+  <h2 id="dash-project-title" class="dash-panel__title">Active project</h2>
 
   <% if project.nil? %>
     <p>You don't have an active project yet. A project is what you code on and ship.</p>
@@ -11,12 +11,12 @@
   <% else %>
     <h3 class="dash-project__name"><%= project.name %></h3>
     <p class="dash-project__meta"><%= project.linked_text %>. <%= link_to "Edit project", edit_project_path(project.id) %></p>
-    <p>Coded since your last ship: <strong><%= project.window_text %></strong> <span class="dash-muted">(at least <%= project.min_text %> to ship)</span></p>
+    <p class="dash-project__window">Coded since your last ship: <strong><%= project.window_text %></strong> <span class="dash-muted">(at least <%= project.min_text %> to ship)</span></p>
 
     <% ship = project.ship %>
     <% if project.can_ship %>
       <div class="dash-actions">
-        <%= link_to "Ship", new_project_ship_path(project.id), class: "btn btn--primary" %>
+        <%= link_to "Ship", new_project_ship_path(project.id), class: "btn btn--primary btn--lg" %>
       </div>
     <% elsif ship&.open %>
       <div class="dash-actions">

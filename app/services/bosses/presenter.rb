@@ -72,6 +72,13 @@ module Bosses
 
     def art_alt = boss && Boss::ARTS.fetch(boss.art_key)
 
+    # What the card draws: the placeholder illustration is shown as the designer's cut-out of the same boss (no
+    # background), so it can stand on the map. Presentation only; the stored art key is untouched.
+    CUTOUT_ART = { "placeholder" => [ "design/boss-weekly.webp", 1000, 965 ] }.freeze
+
+    # [path, width, height] of the picture for the card.
+    def stage_art = (boss && CUTOUT_ART[boss.art_key]) || [ art_path, 480, 376 ]
+
     # Percent of the health that has been dealt (integer floor, 0 to 100) and the same as a fraction.
     def damage_percent = boss ? BossMath.percent(damage, boss.hp_seconds) : 0
 

@@ -1,99 +1,203 @@
-/* The signed-in home page (app/views/dashboard/**). A plain, functional layout built from tokens only, so a designer can
-   restyle it without touching the markup: every block is a `.dash-*` class, the page grid is `.dashboard*`.
+/* The signed-in home page (app/views/dashboard/**), in the Battletown look. The boss card (bosses.css) is the hero, then
+   white `.card`s on the sky page; this file only writes what the shared components (components.css) do not: the page
+   grid, the Today layout with the 15-minute mark, the streak cards, the coin, the first-run checklist.
    Meaning is always carried by text (headlines, sentences, "Reached"/"Freeze ready"), never by colour or icon alone;
-   icons are aria-hidden decoration. Nothing here moves, so there is no reduced-motion override to maintain. */
-.dashboard { display: grid; gap: var(--space-6); }
-.dashboard > * { min-width: 0; }
+   icons are aria-hidden decoration. Tokens only. */
+.dashboard { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
+.dashboard > * { min-width: 0; margin: 0; }
 
-.dashboard__header h1 { margin-bottom: var(--space-1); }
-.dashboard__date { margin: 0; color: var(--color-text-muted); }
+.dashboard__header { margin-bottom: 0; }
+.dashboard__date { margin: 0; }
 
-.dashboard h2 { margin-top: 0; font-size: var(--text-lg); }
-.dashboard h3 { margin-top: 0; font-size: var(--text-base); }
+.dashboard .dashboard__heading { margin-bottom: var(--space-3); color: var(--color-ink-blue); font-size: var(--text-xl); }
+
+/* Wide screens: the boss spans the top, Today and the streaks follow, then the project and coins side by side. The
+   DOM order is the phone order (boss, Today, project, streaks, coins, Hackatime, prize). */
+@media (min-width: 64rem) {
+  .dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); align-items: start; }
+  .dashboard__header, .boss-card, .dash-today, .dashboard__streaks { grid-column: 1 / -1; }
+  .dash-project, .dash-coins, .dash-hackatime, .dash-prize { order: 1; }
+  .dash-project { grid-row: span 2; }
+  .dash-coins, .dash-hackatime { grid-column: 2; }
+}
+@media (min-width: 48rem) and (max-width: 63.999rem) {
+  .dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); align-items: start; }
+  .dashboard__header, .boss-card, .dash-today, .dashboard__streaks, .dash-project { grid-column: 1 / -1; }
+  .dash-project, .dash-coins, .dash-hackatime, .dash-prize { order: 1; }
+}
+@media (min-width: 48rem) { .dash-prize { grid-column: 1 / -1; } }
+
+.dashboard h3 { margin-top: 0; }
 
 /* Panels */
-.dash-panel { min-width: 0; padding: var(--space-4); }
-@media (min-width: 40rem) { .dash-panel { padding: var(--space-6); } }
-.dash-panel > :last-child { margin-bottom: 0; }
+.dash-panel { min-width: 0; }
+@media (min-width: 40rem) { .dash-panel { padding: var(--space-8); } }
+.dashboard .dash-panel__title { margin-bottom: var(--space-3); font-size: var(--text-xl); }
 
 .dash-muted { color: var(--color-text-muted); }
-.dash-big { margin-bottom: var(--space-2); font-size: var(--text-lg); }
-.dash-big strong { font-family: var(--font-display); font-size: var(--text-xl); }
-.dash-big__label { color: var(--color-text-muted); }
 .dash-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); margin-bottom: 0; }
 .dash-more { margin-top: var(--space-4); }
 
-/* Today */
+/* Coins: the balance as a big number beside a gold coin */
+.dash-big { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); margin-bottom: var(--space-3); font-size: var(--text-lg); }
+.dash-big strong { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 400; letter-spacing: var(--tracking-heading); line-height: 1; }
+.dash-big__label { color: var(--color-text-muted); }
+.dash-coin {
+  flex: none;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border: 3px solid var(--color-sign-yellow-edge);
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle at 35% 30%, var(--color-highlight) 0 45%, var(--color-sign-yellow) 46% 100%);
+  box-shadow: inset 0 -0.2rem 0 var(--color-sign-yellow-edge);
+}
+
+/* Today: the goal bar and its mark on the left, the two checks and the projected bonus on the right */
+.dash-today__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+@media (min-width: 48rem) { .dash-today__grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-8); } }
+
 .dash-callout {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-ink-brown);
-  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  border-bottom: var(--border-chunky) solid var(--color-sign-yellow-edge);
   background: var(--color-highlight);
   color: var(--color-text);
 }
 .dash-callout a { color: var(--color-text); font-weight: 700; }
-.dash-callout p { margin-bottom: var(--space-1); }
-.dash-callout p:last-child { margin-bottom: 0; }
-.dash-callout__title { font-family: var(--font-display); font-size: var(--text-lg); }
+.dash-callout p { margin-bottom: var(--space-2); }
+.dash-callout__title { font-family: var(--font-display); font-size: var(--text-xl); letter-spacing: var(--tracking-heading); line-height: var(--leading-tight); }
 
-/* A labelled native <progress> with its numbers in text beside it */
-.dash-meter { margin-bottom: var(--space-4); }
-.dash-meter__label { display: block; margin-bottom: var(--space-1); font-weight: 700; }
-.dash-meter__bar {
-  display: block;
-  width: 100%;
-  height: var(--space-4);
+.dash-steps { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.dash-step { display: flex; gap: var(--space-3); align-items: baseline; }
+.dash-step__mark {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
   border: 2px solid var(--color-ink-brown);
   border-radius: var(--radius-full);
-  background: var(--color-surface-raised);
-  overflow: hidden;
-  -webkit-appearance: none;
-  appearance: none;
+  background: var(--color-bg);
+  font-family: var(--font-display);
+  line-height: 1;
+  transform: translateY(0.3rem);
 }
-.dash-meter__bar::-webkit-progress-bar { background: var(--color-surface-raised); }
-.dash-meter__bar::-webkit-progress-value { background: var(--color-primary); }
-.dash-meter__bar::-moz-progress-bar { background: var(--color-primary); }
-.dash-meter__text { margin: var(--space-1) 0 0; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.dash-step--done .dash-step__mark { background: var(--color-success); border-color: var(--color-success); color: var(--color-bg); }
 
-.dash-checks { display: grid; gap: var(--space-1); margin: 0 0 var(--space-4); padding: 0; list-style: none; }
+/* A labelled native <progress> with its numbers in text under it. progress--goal is the Figma goal bar (13:11). */
+.dash-meter { margin-bottom: 0; }
+.dash-meter__label { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
+.dash-meter__text { margin: var(--space-1) 0 0; }
+.dash-meter__track { position: relative; padding-block: var(--space-2) var(--space-6); }
+.dash-meter__bar { height: 2.5rem; }
+.dash-meter__mark { display: none; }
+.dash-meter__track.is-marked .dash-meter__mark {
+  display: block;
+  position: absolute;
+  inset-block: 0 var(--space-6);
+  inset-inline-start: calc(var(--mark) * 1%);
+  inline-size: 0.3rem;
+  margin-inline-start: -0.15rem;
+  background: var(--color-ink-brown);
+  border-radius: var(--radius-full);
+  pointer-events: none;
+}
+.dash-meter__mark-label {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  margin-top: var(--space-1);
+  color: var(--color-ink-brown);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dash-checks { display: grid; gap: var(--space-2); margin: 0 0 var(--space-4); padding: 0; list-style: none; }
 .dash-check { display: flex; gap: var(--space-2); align-items: baseline; }
 .dash-check__mark { flex: none; inline-size: 1.25em; text-align: center; color: var(--color-text-muted); }
 .dash-check--done { font-weight: 700; }
 .dash-check--done .dash-check__mark { color: var(--color-success); }
 
 .dash-bonus {
+  margin: 0;
   padding: var(--space-3) var(--space-4);
-  border-inline-start: 4px solid var(--color-secondary);
-  background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-surface));
+  border-radius: var(--radius-md);
+  background: var(--color-sky);
+  color: var(--color-ink-blue);
+  font-weight: 700;
 }
 
-/* Streaks */
+/* Streaks: two cards side by side from tablet up, a gentle tint per state */
 .dashboard__streak-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
-@media (min-width: 40rem) { .dashboard__streak-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 40rem) { .dashboard__streak-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); } }
 
-.dash-streak { min-width: 0; padding: var(--space-4); }
-@media (min-width: 40rem) { .dash-streak { padding: var(--space-6); } }
-.dash-streak > :last-child { margin-bottom: 0; }
-.dashboard .dash-streak__title { margin-bottom: var(--space-2); color: var(--color-text-muted); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-.dash-streak__count { margin-bottom: var(--space-2); font-family: var(--font-display); font-size: var(--text-xl); line-height: var(--leading-tight); }
-.dash-streak--active { border-color: var(--color-success); }
-.dash-streak--frozen { border-color: var(--color-secondary); }
-.dash-facts { display: grid; gap: var(--space-1); margin: var(--space-3) 0 0; padding: 0; list-style: none; font-size: var(--text-sm); }
+.dash-streak { display: flex; gap: var(--space-4); align-items: flex-start; min-width: 0; }
+@media (min-width: 40rem) { .dash-streak { padding: var(--space-8); } }
+.dash-streak__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  font-size: var(--text-xl);
+  line-height: 1;
+}
+.dash-streak__main { min-width: 0; flex: 1; }
+.dash-streak__main > :last-child { margin-bottom: 0; }
+.dashboard .dash-streak__title { margin-bottom: var(--space-1); color: var(--color-text-muted); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.dash-streak__count { margin-bottom: var(--space-2); font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: var(--tracking-heading); line-height: var(--leading-tight); }
+.dash-streak__count strong { font-weight: 400; }
+.dash-streak--active { border-bottom-color: var(--color-progress); }
+.dash-streak--active .dash-streak__icon { background: var(--color-highlight); }
+.dash-streak--frozen { border-bottom-color: var(--color-secondary); background: var(--color-bg); }
+.dash-streak--frozen .dash-streak__icon { background: var(--color-sky); }
+.dash-streak--broken .dash-streak__icon { background: var(--color-success-bg); }
+
+.dash-facts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; list-style: none; font-size: var(--text-sm); }
+.dash-facts > li:not(.badge) { flex-basis: 100%; color: var(--color-text-muted); }
+.dash-facts .badge { white-space: normal; }
+
+/* Badges here read the shared --badge-* colours directly, so a page stylesheet that redefines .badge (projects.css) cannot flatten them. */
+:is(.dashboard, .boss-card) .badge:not(.ship-status) { display: inline-flex; border: 2px solid var(--badge-border); background: var(--badge-bg); color: var(--badge-fg); line-height: 1.6; }
 
 /* Project, ships */
-.dashboard .dash-project__name { margin-bottom: var(--space-1); font-size: var(--text-lg); }
+.dashboard .dash-project__name { margin-bottom: var(--space-1); font-size: var(--text-xl); }
 .dash-project__meta { color: var(--color-text-muted); }
-.dash-reason { padding: var(--space-3) var(--space-4); border-inline-start: 4px solid var(--color-ink-brown); background: var(--color-surface-raised); }
-.dash-ship { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--color-border); }
+.dash-project__window { margin-bottom: 0; }
+.dash-reason { margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--color-surface-raised); }
+.dash-ship { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 2px solid var(--color-border); }
 .dash-ship__line { margin-bottom: var(--space-2); }
 .dash-ship__reason { font-weight: 700; }
 
 /* Hackatime, prize */
-.dash-hackatime__status { margin-bottom: var(--space-2); font-size: var(--text-lg); }
-.dash-hackatime--needs-reconnect { border-color: var(--color-danger); }
-.dash-prize__name { margin-bottom: var(--space-3); }
+.dash-hackatime__status { margin-bottom: var(--space-3); }
+.dash-hackatime--needs-reconnect { border-bottom-color: var(--color-danger); }
+.dash-prize__name { margin-bottom: var(--space-4); }
+.dash-prize__emoji { font-size: var(--text-xl); }
+.dash-prize .dash-muted { color: var(--color-card-title); }
+.dash-prize .progress__label, .dash-prize .progress__text { color: var(--color-bg); }
+.dash-prize .progress__bar { border-color: var(--color-bg); }
+/* The shop button on the blue card: the foundation's `.card--chunky a` would paint its label pale blue on the cream face. */
+.dash-prize .btn { color: var(--btn-fg); }
+.dash-prize .btn:hover { color: var(--btn-fg); }
 
-/* The four smaller panels: one column on a phone, two from tablet up */
-.dashboard__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-items: start; }
-@media (min-width: 48rem) { .dashboard__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); } }
+/* The prize card is a full-width shop card from tablet up: the story on the left, the bar on the right. */
+@media (min-width: 48rem) {
+  .dash-prize {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "title title" "name meter" "note meter" "act meter";
+    column-gap: var(--space-8);
+    align-items: start;
+  }
+  .dash-prize > .dash-panel__title { grid-area: title; }
+  .dash-prize > .dash-prize__name { grid-area: name; }
+  .dash-prize > .dash-meter { grid-area: meter; align-self: center; }
+  .dash-prize > .dash-prize__note { grid-area: note; }
+  .dash-prize > .dash-actions { grid-area: act; }
+}

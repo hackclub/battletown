@@ -1,7 +1,7 @@
 <%# locals: (coins:) -%>
 <section class="card dash-panel dash-coins" aria-labelledby="dash-coins-title">
-  <h2 id="dash-coins-title">Coins</h2>
-  <p class="dash-big"><strong><%= coins.total_text %></strong> <span class="dash-big__label">in your balance</span></p>
+  <h2 id="dash-coins-title" class="dash-panel__title">Coins</h2>
+  <p class="dash-big"><span class="dash-coin" aria-hidden="true"></span><strong><%= coins.total_text %></strong> <span class="dash-big__label">in your balance</span></p>
   <% if coins.show_spendable %>
     <p>Spendable now: <strong><%= coins.spendable_text %></strong></p>
   <% end %>

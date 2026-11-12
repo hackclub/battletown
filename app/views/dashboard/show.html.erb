@@ -1,27 +1,28 @@
 <%# The signed-in home page. Every number and sentence comes from Dashboard::Presenter (@dashboard); the partials only
-    lay it out. One h1, one h2 per section (the boss card owns its own h2). Styles: dashboard.css. -%>
-<section class="container dashboard">
-  <header class="dashboard__header">
+    lay it out. One h1, one h2 per section (the boss card owns its own h2). The sections are direct children of one grid, in
+    reading order for a phone (boss, Today, project, streaks, then the rest); dashboard.css places them in two columns on a
+    wide screen. Styles: dashboard.css, bosses.css. -%>
+<div class="container dashboard">
+  <header class="page-header dashboard__header">
+    <p class="eyebrow dashboard__date"><time datetime="<%= @dashboard.today_date.iso8601 %>"><%= @dashboard.date_text %></time></p>
     <h1>Welcome, <%= @dashboard.name %></h1>
-    <p class="dashboard__date"><time datetime="<%= @dashboard.today_date.iso8601 %>"><%= @dashboard.date_text %></time></p>
   </header>
 
   <%= render "bosses/card", presenter: @dashboard.boss %>
 
   <%= render "dashboard/today", d: @dashboard %>
 
+  <%= render "dashboard/project", project: @dashboard.project %>
+
   <section class="dashboard__streaks" aria-labelledby="dash-streaks-title">
-    <h2 id="dash-streaks-title">Streaks</h2>
+    <h2 id="dash-streaks-title" class="dashboard__heading">Streaks</h2>
     <div class="dashboard__streak-cards">
       <%= render "dashboard/streak_card", card: @dashboard.quick_streak, key: "quick", freeze: true %>
       <%= render "dashboard/streak_card", card: @dashboard.goal_streak, key: "goal", freeze: false %>
     </div>
   </section>
 
-  <div class="dashboard__grid">
-    <%= render "dashboard/coins", coins: @dashboard.coins %>
-    <%= render "dashboard/project", project: @dashboard.project %>
-    <%= render "dashboard/hackatime", hackatime: @dashboard.hackatime %>
-    <%= render "dashboard/prize", prize: @dashboard.prize %>
-  </div>
-</section>
+  <%= render "dashboard/coins", coins: @dashboard.coins %>
+  <%= render "dashboard/hackatime", hackatime: @dashboard.hackatime %>
+  <%= render "dashboard/prize", prize: @dashboard.prize %>
+</div>

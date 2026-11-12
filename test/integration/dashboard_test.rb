@@ -152,7 +152,8 @@ class DashboardTest < ActionDispatch::IntegrationTest
   test "the first-run prompt does not push Hackatime on someone already connected" do
     connect_hackatime(@user)
     dashboard
-    assert_select ".dash-callout a", 0
+    assert_select ".dash-callout a[href='#{hackatime_path}']", 0
+    assert_select ".dash-callout", /Hackatime is connected\./
     assert_select ".dash-hackatime", /Connected/
   end
 

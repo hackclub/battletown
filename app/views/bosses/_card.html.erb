@@ -1,35 +1,38 @@
 <%# locals: (presenter:) -%>
-<%# The weekly boss card. Build the presenter with Bosses::Presenter.new(user:) and render this partial once per page
-    (the element ids are fixed). Aggregate community numbers and the viewer's own total only: no names, no avatars. -%>
-<section class="boss-card boss-card--<%= presenter.state.to_s.dasherize %>" aria-labelledby="boss-card-title">
+<%# The weekly boss card: the hero of the dashboard, drawn as the landing's "Fight together" map (a blue band with trees,
+    houses and a river behind the boss and its health bar). Build the presenter with Bosses::Presenter.new(user:) and render
+    this partial once per page (the element ids are fixed). Aggregate community numbers and the viewer's own total only:
+    no names, no avatars. Styles: bosses.css. -%>
+<section class="boss-card boss-card--<%= presenter.state.to_s.dasherize %> on-map" aria-labelledby="boss-card-title">
   <% if presenter.state == :none %>
     <div class="boss-card__body">
       <p class="boss-card__eyebrow">Weekly boss</p>
       <h2 id="boss-card-title" class="boss-card__title">No boss right now</h2>
-      <p><%= presenter.upcoming_text || "The next boss will be along soon. Every minute you code is a head start." %></p>
+      <p class="boss-card__lead"><%= presenter.upcoming_text || "The next boss will be along soon. Every minute you code is a head start." %></p>
       <p class="boss-card__community"><%= presenter.community_text %></p>
     </div>
   <% else %>
-    <%= image_tag presenter.art_path, alt: presenter.art_alt, class: "boss-card__art", width: 480, height: 376 %>
-
     <div class="boss-card__body">
       <p class="boss-card__eyebrow">
         Weekly boss
-        <span class="boss-card__state"><%= { in_progress: "In progress", defeated: "Defeated", escaped: "Escaped" }.fetch(presenter.state) %></span>
+        <% state = presenter.state %>
+        <span class="boss-card__state badge badge--<%= { in_progress: "primary", defeated: "success", escaped: "warning" }.fetch(state) %>"><%= { in_progress: "In progress", defeated: "Defeated", escaped: "Escaped" }.fetch(state) %></span>
       </p>
       <h2 id="boss-card-title" class="boss-card__title"><%= presenter.boss_name %></h2>
 
       <% if presenter.state == :defeated %>
-        <div class="boss-card__banner" role="status">
+        <div class="boss-card__banner on-light" role="status">
           <p class="boss-card__banner-title">Boss defeated!</p>
           <p>Together you took down <%= presenter.boss_name %>. Nice work, everyone.<%= " That is #{presenter.overkill_text} of overkill." if presenter.overkill_text %></p>
         </div>
       <% end %>
 
-      <div class="boss-card__health">
-        <label for="boss-card-health" class="boss-card__label">Boss health</label>
-        <progress id="boss-card-health" class="boss-card__bar" max="100" value="<%= presenter.health_percent %>" aria-describedby="boss-card-summary"><%= presenter.health_text %></progress>
-        <span class="boss-card__percent"><%= presenter.health_text %></span>
+      <div class="progress progress--boss boss-card__health">
+        <div class="progress__head">
+          <label for="boss-card-health" class="progress__label boss-card__label">Boss health</label>
+        </div>
+        <progress id="boss-card-health" class="progress__bar boss-card__bar" max="100" value="<%= presenter.health_percent %>" aria-describedby="boss-card-summary"><%= presenter.health_text %></progress>
+        <span class="progress__text boss-card__percent"><%= presenter.health_text %></span>
       </div>
       <p id="boss-card-summary" class="boss-card__summary"><%= presenter.summary %></p>
 
@@ -44,15 +47,22 @@
       <% end %>
 
       <% if presenter.user_slayer? %>
-        <p class="boss-card__badge"><span class="boss-card__badge-label"><span aria-hidden="true">&#9733;</span> Boss slayer</span> You coded at least 15 minutes this boss week, so this badge is yours.</p>
+        <p class="boss-card__badge"><span class="boss-card__badge-label badge"><span aria-hidden="true">&#9733;</span> Boss slayer</span> You coded at least 15 minutes this boss week, so this badge is yours.</p>
       <% elsif presenter.slayer_still_possible? %>
         <p class="boss-card__days">Code for 15 minutes before the week ends to earn the Boss slayer badge.</p>
       <% end %>
 
-      <% if presenter.contributed_text %>
-        <p class="boss-card__yours"><%= presenter.contributed_text %></p>
-      <% end %>
-      <p class="boss-card__community"><%= presenter.community_text %></p>
+      <div class="boss-card__facts">
+        <% if presenter.contributed_text %>
+          <p class="boss-card__yours"><%= presenter.contributed_text %></p>
+        <% end %>
+        <p class="boss-card__community"><%= presenter.community_text %></p>
+      </div>
+    </div>
+
+    <% art_path, art_width, art_height = presenter.stage_art %>
+    <div class="boss-card__stage">
+      <%= image_tag art_path, alt: presenter.art_alt, class: "boss-card__art", width: art_width, height: art_height %>
     </div>
   <% end %>
 </section>

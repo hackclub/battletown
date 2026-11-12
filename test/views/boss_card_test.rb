@@ -27,7 +27,7 @@ class BossCardTest < ActionView::TestCase
     assert_select "progress#boss-card-health[max='100'][value='38'][aria-describedby='boss-card-summary']", 1
     assert_select "#boss-card-summary", "Boss at 38% health, about 190 hours to go. Ends Thursday."
     assert_select ".boss-card__percent", "38% left"
-    assert_select "img.boss-card__art[alt]:not([alt=''])[src^='/assets/bosses/placeholder-']", 1
+    assert_select "img.boss-card__art[alt]:not([alt=''])[src^='/assets/design/boss-weekly-']", 1
     assert_select "[role='status']", 0, "no defeat banner while the boss stands"
     assert_select "[style]", 0, "no inline styles (CSP)"
     assert_select "script", 0

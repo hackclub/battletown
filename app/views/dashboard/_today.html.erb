@@ -1,35 +1,70 @@
 <%# locals: (d:) -%>
 <% today = d.today %>
 <section class="card dash-panel dash-today" aria-labelledby="dash-today-title">
-  <h2 id="dash-today-title">Today</h2>
+  <h2 id="dash-today-title" class="dash-today__title">Today</h2>
 
   <% if today.first_run %>
-    <div class="dash-callout">
+    <%# Brand-new: say what to do first and give the three steps, each ticked off as it happens. -%>
+    <div class="dash-callout on-light">
       <p class="dash-callout__title">Code for <%= today.quick_minutes %> minutes to start your streak.</p>
-      <% if d.hackatime.state == :not_connected %>
-        <p><%= link_to "Connect Hackatime", hackatime_path %> and your coding time counts automatically.</p>
-      <% else %>
-        <p>Your coding time shows up here after Hackatime syncs.</p>
-      <% end %>
+      <ol class="dash-steps">
+        <li class="dash-step <%= "dash-step--done" if d.hackatime.state == :connected %>">
+          <span class="dash-step__mark" aria-hidden="true"><%= d.hackatime.state == :connected ? "✓" : "1" %></span>
+          <span>
+            <% case d.hackatime.state %>
+            <% when :connected %>
+              Hackatime is connected.
+            <% when :needs_reconnect %>
+              <%= link_to "Reconnect Hackatime", hackatime_path %> so your coding time counts again.
+            <% else %>
+              <%= link_to "Connect Hackatime", hackatime_path %> and your coding time counts automatically.
+            <% end %>
+          </span>
+        </li>
+        <li class="dash-step <%= "dash-step--done" if d.project %>">
+          <span class="dash-step__mark" aria-hidden="true"><%= d.project ? "✓" : "2" %></span>
+          <span>
+            <% if d.project %>
+              Your project is set up: <strong><%= d.project.name %></strong>.
+            <% else %>
+              <%= link_to "Add a project", new_project_path %>, the thing you code on and ship.
+            <% end %>
+          </span>
+        </li>
+        <li class="dash-step">
+          <span class="dash-step__mark" aria-hidden="true">3</span>
+          <span>Start coding. <%= d.hackatime.state == :connected ? "Your coding time shows up here after Hackatime syncs." : "Your time shows up here once it is connected." %></span>
+        </li>
+      </ol>
     </div>
   <% end %>
 
-  <div class="<%= class_names("dash-meter", "dash-meter--done": today.goal_met, "dash-meter--smashed": today.goal_smashed) %>">
-    <label for="dash-today-progress" class="dash-meter__label">Minutes coded today</label>
-    <progress id="dash-today-progress" class="dash-meter__bar" max="<%= today.progress_max %>" value="<%= today.progress_value %>" aria-describedby="dash-today-text"><%= today.progress_text %></progress>
-    <p id="dash-today-text" class="dash-meter__text"><%= today.meter_text %></p>
+  <div class="dash-today__grid">
+    <div class="<%= class_names("progress progress--goal dash-meter", "dash-meter--done": today.goal_met, "dash-meter--smashed": today.goal_smashed) %>">
+      <div class="progress__head">
+        <label for="dash-today-progress" class="progress__label dash-meter__label">Minutes coded today</label>
+      </div>
+      <%# The 15-minute mark is drawn where it falls on the goal bar (a Stimulus controller sets its position: no inline style under the CSP). -%>
+      <div class="dash-meter__track" data-controller="goal-mark" data-goal-mark-percent-value="<%= (today.quick_minutes * 100.0 / today.goal_minutes).round(2) %>">
+        <progress id="dash-today-progress" class="progress__bar dash-meter__bar" max="<%= today.progress_max %>" value="<%= today.progress_value %>" aria-describedby="dash-today-text"><%= today.progress_text %></progress>
+        <span class="dash-meter__mark" aria-hidden="true"><span class="dash-meter__mark-label"><%= today.quick_minutes %> min</span></span>
+      </div>
+      <p id="dash-today-text" class="progress__text dash-meter__text"><%= today.meter_text %></p>
+    </div>
+
+    <div class="dash-today__side">
+      <ul class="dash-checks">
+        <li class="dash-check <%= "dash-check--done" if today.quick_met %>">
+          <span class="dash-check__mark" aria-hidden="true"><%= today.quick_met ? "✓" : "○" %></span>
+          <span><%= today.quick_text %></span>
+        </li>
+        <li class="dash-check <%= "dash-check--done" if today.goal_met %>">
+          <span class="dash-check__mark" aria-hidden="true"><%= today.goal_met ? "✓" : "○" %></span>
+          <span><%= today.goal_met ? "Daily goal reached" : "Daily goal: #{today.goal_minutes} minutes" %></span>
+        </li>
+      </ul>
+
+      <p class="dash-bonus"><%= today.bonus_message %></p>
+    </div>
   </div>
-
-  <ul class="dash-checks">
-    <li class="dash-check <%= "dash-check--done" if today.quick_met %>">
-      <span class="dash-check__mark" aria-hidden="true"><%= today.quick_met ? "✓" : "○" %></span>
-      <span><%= today.quick_text %></span>
-    </li>
-    <li class="dash-check <%= "dash-check--done" if today.goal_met %>">
-      <span class="dash-check__mark" aria-hidden="true"><%= today.goal_met ? "✓" : "○" %></span>
-      <span><%= today.goal_met ? "Daily goal reached" : "Daily goal: #{today.goal_minutes} minutes" %></span>
-    </li>
-  </ul>
-
-  <p class="dash-bonus"><%= today.bonus_message %></p>
 </section>
