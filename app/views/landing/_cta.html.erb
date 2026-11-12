@@ -1,7 +1,10 @@
+<%# locals: (extra_class: nil) -%>
 <%# Signed-in users who haven't finished onboarding continue it; everyone else signs up through Hack Club Auth.
+    extra_class adds classes to the button (the big, tilted one in the last section).
     (The development-only Dev login lives in the header nav, once.) -%>
+<% classes = ["cta", extra_class].compact.join(" ") %>
 <% if signed_in? %>
-  <%= link_to onboarding_path, class: "cta" do %><%= render "landing/cta_face", label: "Continue setup" %><% end %>
+  <%= link_to onboarding_path, class: classes do %><%= render "landing/cta_face", label: "Continue setup" %><% end %>
 <% else %>
-  <%= button_to "/auth/hack_club", method: :post, class: "cta", form: { data: { turbo: false } } do %><%= render "landing/cta_face", label: join_cta_label %><% end %>
+  <%= button_to "/auth/hack_club", method: :post, class: classes, form: { class: "cta-form", data: { turbo: false } } do %><%= render "landing/cta_face", label: join_cta_label %><% end %>
 <% end %>
