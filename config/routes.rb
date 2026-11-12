@@ -42,6 +42,11 @@ Rails.application.routes.draw do
     member { patch :withdraw }
   end
 
+  # Which Slack messages to receive (signed in and onboarded; only the current user's own switches).
+  namespace :settings do
+    resource :notifications, only: %i[show update]
+  end
+
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 

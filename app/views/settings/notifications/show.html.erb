@@ -1,0 +1,31 @@
+<% content_for :title, "Notifications" %>
+<section class="container notification-settings">
+  <h1>Notifications</h1>
+  <p class="notification-settings__lead">Battletown can send you a Slack message when something happens. Pick the ones you want. You can change this any time, and coding is never affected.</p>
+
+  <% if current_user.slack_id.blank? %>
+    <p class="notification-settings__note" role="note">We can't message you on Slack yet because your Hack Club account isn't linked to a Slack account. Your choices are saved for when it is.</p>
+  <% end %>
+
+  <%= form_with url: settings_notifications_path, method: :patch, class: "card notification-settings__form", data: { turbo: false } do %>
+    <fieldset class="notification-settings__fieldset">
+      <legend class="notification-settings__legend">Send me a Slack message for</legend>
+      <ul class="notification-settings__list">
+        <% @settings.each do |kind, enabled| %>
+          <% label = @config.label(kind) %>
+          <li class="notification-settings__item">
+            <%= hidden_field_tag "preferences[#{kind}]", "0", id: nil %>
+            <%= check_box_tag "preferences[#{kind}]", "1", enabled, id: "preferences_#{kind}", class: "notification-settings__box", aria: { describedby: "preferences_#{kind}_hint" } %>
+            <label class="notification-settings__label" for="preferences_<%= kind %>">
+              <span class="notification-settings__title"><%= label["title"] %></span>
+              <span class="notification-settings__hint" id="preferences_<%= kind %>_hint"><%= label["hint"] %></span>
+            </label>
+          </li>
+        <% end %>
+      </ul>
+    </fieldset>
+    <div class="notification-settings__actions">
+      <%= submit_tag "Save", class: "btn btn--primary" %>
+    </div>
+  <% end %>
+</section>

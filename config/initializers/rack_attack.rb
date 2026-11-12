@@ -19,6 +19,11 @@ class Rack::Attack
     req.ip if req.path == "/auth/hackatime/callback" || (req.path == "/hackatime" && !req.get?)
   end
 
+  # Notification preferences: saving is a human-sized action, so a small limit per address.
+  throttle("settings/ip", limit: 20, period: 1.minute) do |req|
+    req.ip if req.path == "/settings/notifications" && !req.get?
+  end
+
   # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept
   # out of the general throttle below so a burst of requests there can never block it.
   throttle("privacy/ip", limit: 120, period: 1.minute) do |req|

@@ -47,11 +47,21 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 | `APP_HOST` | Production only: comma-separated allowed hostnames (unset: the host of `APP_URL`; other hosts get 403, except the `/up` health check) |
 | `PRIVACY_AUDIENCE` | Audience a data-deletion token must carry (default `battletown`); the value to give Hack Club infrastructure, see `docs/PRIVACY_API.md` |
 | `PRIVACY_JWKS_URL` | Where the Hack Club data-deletion signing keys are fetched (default `https://yeet.hackclub.com/.well-known/jwks.json`); leave unset in production, `https` only |
-| `SLACK_BOT_TOKEN` / `NOTIFICATIONS_ENABLED` | Slack DM reminders (`app/services/notifications`, tunables in `config/notifications.yml`). Needs a bot token with `chat:write`; nothing is ever sent unless `NOTIFICATIONS_ENABLED` is exactly `true` (default off). Cron `bin/rails notifications:dispatch` every minute, or run `DispatchNotificationsJob` |
+| `SLACK_BOT_TOKEN` / `NOTIFICATIONS_ENABLED` | Slack DM reminders (`app/services/notifications`, tunables in `config/notifications.yml`). Needs a bot token with `chat:write`; nothing is ever sent unless `NOTIFICATIONS_ENABLED` is exactly `true` (default off). Cron `bin/rails notifications:dispatch` every minute, or run `DispatchNotificationsJob`. Everything it can send (daily reminder, link question, ship reminders, ship decisions) and the `/settings/notifications` switches are described in [docs/CONTRACT.md](docs/CONTRACT.md) |
 
 ### Slack app
 
 The Slack app that sends the reminder DMs is defined by `config/slack/manifest.yml` (bot scope `chat:write` only; no events, commands or Socket Mode). To create it, use api.slack.com/apps, Create New App, From a manifest, pick the Hack Club workspace, paste the manifest, install it and put the Bot User OAuth Token in `SLACK_BOT_TOKEN` (environment only, never the repo). Then run `bin/rails slack:check` to verify the token and its scopes, and set `NOTIFICATIONS_ENABLED=true` only when ready. Details, ownership and admin-approval notes: [docs/SLACK_APP.md](docs/SLACK_APP.md).
+
+### Cron entries needed at go-live
+
+Nothing runs by itself; schedule these on the host (all are safe to repeat, and the Slack ones stay silent while `NOTIFICATIONS_ENABLED` is not `true`):
+
+| Every | Command | Why |
+| --- | --- | --- |
+| minute | `bin/rails notifications:dispatch` | sends the queued Slack DMs |
+| 15 minutes | `bin/rails notifications:ship_reminders` | queues the 5 hour reminder and 10 hour nudge for projects that crossed them |
+| hour | `bin/rails game:settle` | settles finished days (streaks and bonuses) |
 
 ## How auth works
 
