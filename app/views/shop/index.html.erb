@@ -30,7 +30,7 @@
     <% end %>
   </section>
 
-  <% unless @sticker_order %>
+  <% if @sticker && !@sticker_order %>
     <section class="shop-sticker" aria-labelledby="sticker-heading">
       <span class="shop-sticker__art" aria-hidden="true"><%= @sticker.emoji %></span>
       <div class="shop-sticker__body">

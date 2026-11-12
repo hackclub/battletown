@@ -248,3 +248,17 @@ shared:
     withdrawn_retention_days: 30
     # Uploads (ship form posts that carry files) one address can make in ten minutes.
     uploads_per_10_minutes: 12
+
+  # Shop item pictures (app/services/shop_items/**), read through ShopItems::Config. Staff upload them at /admin/shop; they go
+  # through the same safe re-encode as ship screenshots (ShipImages::Processor): type by magic bytes, pixel limit read from the
+  # header, metadata stripped, saved as WebP.
+  shop_items:
+    # The biggest picture upload accepted, in bytes (2 MB). Checked before the file is read; at most 5,000,000, the database's own
+    # ceiling for a stored image. A whole admin request is capped at this plus a small allowance.
+    max_upload_bytes: 2000000
+    # Decompression-bomb guard: the most megapixels a picture may have, read from its header before any pixel is decoded.
+    max_megapixels: 16
+    # Pictures are scaled down (never up) so their long side is at most this many pixels (shop cards are small).
+    max_edge_px: 800
+    # WebP quality of the stored copy (1 to 100).
+    webp_quality: 85

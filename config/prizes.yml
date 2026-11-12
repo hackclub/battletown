@@ -1,3 +1,10 @@
+# THE DEFAULT SEED OF THE SHOP CATALOGUE, not the live catalogue. The live items are rows of the `shop_items` table, edited by
+# staff at /admin/shop (names, descriptions, coins, pictures, order, archiving) with no deploy. This file is read only:
+#   - by ShopItems::Seed (the migration that creates the table, `db:seed`, `bin/rails shop_items:import`), which ADDS items
+#     whose key is not in the table yet and never overwrites or un-archives one that is; and
+#   - as a fallback by Prize while the table is missing or empty (boot, assets:precompile, a fresh database).
+# So editing a price here changes nothing on a running site. Add a new default item here only if a fresh install should have it.
+#
 # PLACEHOLDER shop catalogue: the designer will replace these items (names, art, prices) later. Keep the shape.
 # The only price is `coins` (integer >= 0). The landing page and onboarding show hours, which are DERIVED in
 # app/models/prize.rb as coins / coins.per_approved_hour (config/game.yml); never store hours or any other price here.

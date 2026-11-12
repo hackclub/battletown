@@ -25,6 +25,9 @@ class User < ApplicationRecord
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, length: { maximum: 254 }, allow_blank: true
   validates :display_name, length: { maximum: 100 }
   validates :prize_key, inclusion: { in: ->(_) { Prize.keys } }, allow_nil: true
+  # Every key ever offered stays valid for people who already picked it (archived items included), but a NEW pick must be an
+  # item that is still on offer.
+  validate :prize_still_offered, if: :prize_key_changed?
   validates :project_kind, inclusion: { in: PROJECT_KINDS }, allow_nil: true
   validates :project_idea, length: { maximum: 500 }
   validates :coding_time, format: { with: /\A([01]\d|2[0-3]):[0-5]\d\z/ }, allow_nil: true
@@ -111,6 +114,12 @@ class User < ApplicationRecord
   def prize = Prize.find(prize_key)
 
   private
+
+  def prize_still_offered
+    return if prize_key.nil? || errors.include?(:prize_key)
+
+    errors.add(:prize_key, "is no longer in the shop: pick another") unless Prize.find(prize_key)&.active?
+  end
 
   # `signed_up_on` is the local date the account was created on, in the user's zone: the game counts hours from it
   # (Hours::Days.first_counted_date). It is set when the account is created and follows the zone only while onboarding

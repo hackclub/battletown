@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_143002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_150001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -496,6 +496,50 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_143002) do
     t.check_constraint "status::text = 'draft'::text OR submitted_at IS NOT NULL", name: "ships_submitted_at_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'submitted'::character varying, 'approved'::character varying, 'rejected'::character varying, 'withdrawn'::character varying]::text[])", name: "ships_status_check"
     t.check_constraint "window_end_date >= window_start_date", name: "ships_window_dates_check"
+  end
+
+  create_table "shop_items", force: :cascade do |t|
+    t.string "key", limit: 60, null: false
+    t.string "name", limit: 60, null: false
+    t.string "description", limit: 200, default: "", null: false
+    t.string "emoji", limit: 8
+    t.integer "coins", null: false
+    t.string "tier", default: "shop", null: false
+    t.string "kind", default: "regular", null: false
+    t.integer "position", default: 0, null: false
+    t.boolean "active", default: true, null: false
+    t.binary "image_content"
+    t.integer "image_width"
+    t.integer "image_height"
+    t.integer "image_byte_size"
+    t.string "image_sha256", limit: 64
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active", "position"], name: "index_shop_items_on_active_and_position"
+    t.index ["key"], name: "index_shop_items_on_key", unique: true
+    t.index ["kind"], name: "index_shop_items_one_free_signup", unique: true, where: "((kind)::text = 'free_signup'::text)"
+    t.check_constraint "\"position\" >= 0", name: "shop_items_position_check"
+    t.check_constraint "char_length(btrim(name::text)) >= 1 AND char_length(btrim(name::text)) <= 60", name: "shop_items_name_check"
+    t.check_constraint "char_length(description::text) <= 200", name: "shop_items_description_check"
+    t.check_constraint "coins >= 0", name: "shop_items_coins_check"
+    t.check_constraint "emoji IS NULL OR char_length(emoji::text) >= 1 AND char_length(emoji::text) <= 8", name: "shop_items_emoji_check"
+    t.check_constraint "image_content IS NULL AND image_width IS NULL AND image_height IS NULL AND image_byte_size IS NULL AND image_sha256 IS NULL OR image_content IS NOT NULL AND image_width > 0 AND image_height > 0 AND image_byte_size >= 1 AND image_byte_size <= 5000000 AND octet_length(image_content) = image_byte_size AND image_sha256::text ~ '^[0-9a-f]{64}$'::text AND SUBSTRING(image_content FROM 1 FOR 4) = '\\x52494646'::bytea AND SUBSTRING(image_content FROM 9 FOR 4) = '\\x57454250'::bytea", name: "shop_items_image_check"
+    t.check_constraint "key::text ~ '^[a-z0-9_]{1,60}$'::text", name: "shop_items_key_check"
+    t.check_constraint "kind::text = 'free_signup'::text AND coins = 0 OR kind::text = 'regular'::text AND coins > 0", name: "shop_items_kind_coins_check"
+    t.check_constraint "kind::text = ANY (ARRAY['regular'::character varying, 'free_signup'::character varying]::text[])", name: "shop_items_kind_check"
+    t.check_constraint "tier::text = ANY (ARRAY['daily'::character varying, 'weekly'::character varying, 'shop'::character varying]::text[])", name: "shop_items_tier_check"
+  end
+
+  create_table "staff_access_logs", force: :cascade do |t|
+    t.bigint "actor_id"
+    t.string "action", limit: 60, null: false
+    t.string "subject_type", limit: 60, null: false
+    t.bigint "subject_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["actor_id"], name: "index_staff_access_logs_on_actor_id"
+    t.index ["created_at"], name: "index_staff_access_logs_on_created_at"
+    t.index ["subject_type", "subject_id"], name: "index_staff_access_logs_on_subject_type_and_subject_id"
   end
 
   create_table "team_cooldowns", force: :cascade do |t|

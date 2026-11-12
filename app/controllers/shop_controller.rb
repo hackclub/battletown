@@ -4,7 +4,7 @@ class ShopController < ApplicationController
   before_action :require_login, :require_onboarded
 
   def index
-    @prizes = Prize.paid.sort_by { |prize| [ prize.coins, prize.name ] }
+    @prizes = Prize.paid # in the order staff set at /admin/shop
     @total = Coins::Balance.total(current_user)
     @spendable = Shop::Spendable.balance(current_user)
     @spend_state = current_user.spend_state
@@ -16,7 +16,11 @@ class ShopController < ApplicationController
   # "Get this": shows the price and the balance afterwards. The idempotency key is made here, once per page view, and
   # travels in a hidden field, so pressing the button twice (or reloading the POST) can only ever make one order.
   def show
-    @prize = Prize.paid.find { |prize| prize.key == params[:key] } or raise ActionController::RoutingError, "Not Found"
+    prize = Prize.find(params[:key])
+    raise ActionController::RoutingError, "Not Found" if prize.nil? || prize.free_signup?
+    return redirect_to(shop_path, alert: Shop::ItemUnavailable.new.message) unless prize.active?
+
+    @prize = prize
     @spendable = Shop::Spendable.balance(current_user)
     Shop::Spendable.check!(current_user)
     return redirect_to(shop_path, alert: Shop::InsufficientCoins.new.message) if @spendable < @prize.coins

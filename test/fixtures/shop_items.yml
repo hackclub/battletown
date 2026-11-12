@@ -1,0 +1,14 @@
+# The test catalogue is the default seed, config/prizes.yml, loaded the same way production's first rows are
+# (ShopItems::Seed.rows), so tests that name an item (tshirt, keychain, signup_sticker ...) keep working.
+<% ShopItems::Seed.rows.each do |row| %>
+<%= row[:key] %>:
+  key: <%= row[:key] %>
+  name: <%= row[:name].to_json %>
+  description: <%= row[:description].to_json %>
+  emoji: <%= row[:emoji].to_json %>
+  coins: <%= row[:coins] %>
+  tier: <%= row[:tier] %>
+  kind: <%= row[:kind] %>
+  position: <%= row[:position] %>
+  active: true
+<% end %>

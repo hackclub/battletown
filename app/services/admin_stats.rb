@@ -66,6 +66,11 @@ class AdminStats
   def prizes
     counts = User.group(:prize_key).count
     rows = Prize.paid.map { |prize| Row.new(label: prize.name, count: counts.fetch(prize.key, 0)) }
+    # An archived item stays in the stats for as long as anyone still has it picked.
+    archived = Prize.all.reject(&:active?).filter_map do |prize|
+      Row.new(label: "#{prize.name} (archived)", count: counts.fetch(prize.key, 0)) if counts.fetch(prize.key, 0).positive?
+    end
+    rows.concat(archived)
     rows << Row.new(label: "No pick yet", count: counts.fetch(nil, 0))
     retired = counts.sum { |key, count| key.nil? || Prize.find(key) ? 0 : count }
     rows << Row.new(label: "Prize no longer offered", count: retired) if retired.positive?

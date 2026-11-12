@@ -10,3 +10,6 @@
 
 # The launch bosses (idempotent; see Bosses::Seed).
 Bosses::Seed.call
+
+# The default shop catalogue from config/prizes.yml (idempotent: adds missing items, never overwrites an edited one).
+ShopItems::Seed.call

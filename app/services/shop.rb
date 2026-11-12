@@ -28,6 +28,11 @@ module Shop
     def initialize(msg = "That item isn't in the shop.") = super
   end
 
+  # The item exists but staff have archived it: it can no longer be bought (people who already ordered it keep their order).
+  class ItemUnavailable < Error
+    def initialize(msg = "That item isn't in the shop any more.") = super
+  end
+
   class FreeItem < Error
     def initialize(msg = "That one is free: claim it from the shop page instead of buying it.") = super
   end

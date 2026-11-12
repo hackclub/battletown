@@ -71,6 +71,7 @@ class AdminStatsTest < ActiveSupport::TestCase
   end
 
   test "the number of queries does not grow with the number of users" do
+    Prize.all # the catalogue is read once per request and remembered: warm it so both counts measure the same work
     before = query_count
     5.times { |i| User.create!(hca_uid: "extra-#{i}") }
     assert_equal before, query_count

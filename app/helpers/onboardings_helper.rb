@@ -62,7 +62,7 @@ module OnboardingsHelper
   end
 
   def onboarding_error_anchor(attribute)
-    return "user_prize_key_#{Prize.paid.first.key}" if attribute == :prize_key
+    return "user_prize_key_#{Prize.paid.first&.key}" if attribute == :prize_key
 
     ERROR_ANCHORS[attribute]
   end
@@ -86,7 +86,8 @@ module OnboardingsHelper
   def onboarding_saved_prize = Prize.find(current_user.prize_key_in_database)
 
   def onboarding_prize_selection
-    current_user.prize_key || (session[:prize_key] if Prize.find(session[:prize_key]))
+    picked = current_user.prize_key || session[:prize_key]
+    picked if Prize.paid.any? { |prize| prize.key == picked } # an archived item can't be re-picked
   end
 
   def referral_name(key) = ReferralSource.find(key)&.name

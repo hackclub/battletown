@@ -9,7 +9,7 @@ module Shop
     end
 
     def call
-      prize = Prize.free_signup or raise UnknownPrize
+      prize = Prize.free_signup or raise ItemUnavailable # none on offer: staff archived it
       @user.with_lock do
         raise AlreadyClaimed if Order.exists?(user_id: @user.id, kind: "signup_sticker")
 

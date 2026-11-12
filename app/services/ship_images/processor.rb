@@ -44,7 +44,7 @@ module ShipImages
       raise Rejected, "That file is empty." if size.zero?
       return if size <= config.max_upload_bytes
 
-      raise Rejected, "That file is #{format('%.1f', size / 1_000_000.0)} MB; the limit is #{format('%g', config.max_upload_bytes / 1_000_000.0)} MB for each screenshot."
+      raise Rejected, "That file is #{format('%.1f', size / 1_000_000.0)} MB; the limit is #{format('%g', config.max_upload_bytes / 1_000_000.0)} MB for each #{config.try(:picture_noun) || 'screenshot'}."
     end
 
     # The kind of picture by its first bytes, or nil.
