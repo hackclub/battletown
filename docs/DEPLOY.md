@@ -213,6 +213,19 @@ Dockerfile note: it has no `HEALTHCHECK` instruction, because a wrong one can ma
 - Migrations are forward only. Before shipping a migration that drops or rewrites data, take a database backup; roll a migration back with `bin/rails db:migrate:down:primary VERSION=<timestamp>` (or `db:migrate:down:cache` for the cache connection) only after the old image is serving.
 - To undo only the shared throttle store (for example if the cache database misbehaves), the fail-open wrapper already keeps the site up; redeploy the previous image to return to the previous in-process counters.
 
+## Performance
+
+Checked locally against a throwaway database seeded at launch-scale volume (thousands of users with mixed time zones, about half a million hours rows over four weeks, plus the matching settled days, ships, orders, coin ledger rows and notifications), with production-like settings (no reloading, eager loading, info logging) and server times read from the Rails log.
+
+- **User pages** (dashboard, shop, orders, projects, ships, settings, Hackatime): every one is under the 150 ms server-time target, met with room to spare. The dashboard is the heaviest: most of its time is the two community aggregates on the boss card (the week's damage and today's active count), which scan the whole week of the ledger and grow with it. If it ever nears the target, cache those two numbers for a minute; never cache the defeat check.
+- **Admin pages**: all under 150 ms except `/admin/metrics`, which stays under a second. Its funnel used to take far longer (an `IN (subquery)` inside an aggregate `FILTER` that PostgreSQL re-read once per user); it now uses `EXISTS`.
+- **`game:settle`**: an hourly run for everyone takes seconds, and even settling four weeks for every user from nothing stays under three minutes. Target (a few minutes) met.
+- **Hours writes**: each new ledger row used to re-sum the boss week. `Hours::Sync`, `hours:import` and `hackatime:sync` now run inside `Bosses::CheckDefeat.batched`, so a sync checks each boss once (several times cheaper per synced day).
+- **`notifications:ship_reminders`**: seconds per run (one pass over the projects with linked Hackatime projects, owners preloaded). `notifications:dispatch` handles at most 100 rows per run and stays well under a second with the null adapter; with `NOTIFICATIONS_ENABLED` unset it does nothing.
+- **Indexes added**: a partial index on pending notifications by `subject_id` (`index_notifications_on_pending_subject_id`, built `CONCURRENTLY`), so submitting a ship cancels its reminders without scanning every pending row. A covering index for the boss sums was tried and did not help (the ledger is already laid out by date), so it was not added.
+
+To re-check: create a separate scratch database (never the shared development one), `db:schema:load` it, bulk-load fake data with `insert_all` or `COPY`, run `bin/rails game:settle` once, then start the server on a spare port with `DATABASE_URL` pointing at it and time the pages from `log/development.log` (`Completed ... in Xms`). Use `EXPLAIN (ANALYZE, BUFFERS)` on anything slow. Keep the seed script and raw numbers out of the repository, and drop the database afterwards.
+
 ## Known limits (not defects)
 
 - A missing `HCA_CLIENT_ID` / `HCA_CLIENT_SECRET` is not detected at boot; sign-in fails when a visitor tries it. The smoke test catches it.
