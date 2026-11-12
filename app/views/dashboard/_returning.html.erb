@@ -1,0 +1,7 @@
+<%# locals: (banner:) -%>
+<%# The welcome-back banner of the returning-user bonus (feature flag `returning`; the presenter returns nil while it is off
+    or no boost is live). The meaning is in words. Styles: shared .callout; layout in dashboard.css. -%>
+<div class="callout dash-callout dash-returning on-light" role="status">
+  <p class="callout__title"><%= banner.title %></p>
+  <p><%= banner.message %></p>
+</div>

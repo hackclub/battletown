@@ -20,6 +20,9 @@ module Dashboard
     StreakCard = Data.define(:state, :days, :title, :headline, :message, :today_bonus_text, :next_bonus_text, :best_text,
                              :freeze_text, :freeze_ready)
 
+    # The welcome-back banner of the returning-user bonus (feature flag `returning`): shown only while the boost is real.
+    ReturningBanner = Data.define(:title, :message, :days_left)
+
     CoinsPanel = Data.define(:total, :spendable, :total_text, :spendable_text, :show_spendable, :locked, :verification_status, :has_orders)
 
     ShipSummary = Data.define(:id, :status, :label, :message, :reason, :open)
@@ -79,6 +82,14 @@ module Dashboard
       @merch_track = MerchTrack::Panel.for(user, today: today_date, now: now)
     end
 
+    # --- the returning-user bonus (nil unless the `returning` flag is on and the boost is live today) ---
+
+    def returning_banner
+      return @returning_banner if defined?(@returning_banner)
+
+      @returning_banner = build_returning_banner
+    end
+
     # --- coins ---
 
     def coins
@@ -134,6 +145,29 @@ module Dashboard
 
     def streaks = @streaks ||= Streaks.call(user: user, today: today_date, config: config)
 
+    # The welcome-back window that covers today, or the one today would open (nil with the flag off or when none).
+    def returning
+      return @returning if defined?(@returning)
+
+      @returning = Features.enabled?(:returning) ? Game::ReturningBoost.banner(user, today: today_date, today_met: streaks.quick_today_met) : nil
+    end
+
+    # The streak bonus a day with streak day `streak_day` is projected to earn on `date`, with the welcome-back floor.
+    def projected_bps(streak_day, date)
+      Game::ReturningBoost.floor(Game::BonusRamp.bps(streak_day, config: config), in_window: !!returning&.window&.covers?(date))
+    end
+
+    def build_returning_banner
+      info = returning
+      return unless info&.started
+
+      floor = self.class.percent_text(Game::ReturningBoost.config.floor_bps)
+      left = info.days_left
+      ReturningBanner.new(title: "Welcome back!", days_left: left,
+                          message: "Your streak bonus is boosted for #{left} more #{left == 1 ? 'day' : 'days'}. " \
+                                   "On each day you code #{config.quick_seconds / 60} minutes it is at least #{floor}.")
+    end
+
     def coins_text(amount) = "#{ActiveSupport::NumberHelper.number_to_delimited(amount)} #{amount == 1 ? 'coin' : 'coins'}"
 
     # --- today ---
@@ -166,7 +200,7 @@ module Dashboard
     # The bonus for today is projected from the streak as it stood when today began. It is never final before the
     # day is settled, so the words always say "once the day closes".
     def bonus_message(snap, quick_minutes)
-      percent = self.class.percent_text(Game::BonusRamp.bps(snap.carried_quick + 1, config: config))
+      percent = self.class.percent_text(projected_bps(snap.carried_quick + 1, today_date))
       if snap.quick_today_met
         "You've hit #{quick_minutes} minutes. Today's bonus is on track for #{percent}, confirmed once the day closes."
       elsif snap.carried_quick.positive?
@@ -186,8 +220,8 @@ module Dashboard
       else :empty
       end
       mark = config.quick_seconds / 60
-      today_bps = Game::BonusRamp.bps(snap.carried_quick + 1, config: config)
-      next_bps = Game::BonusRamp.bps(snap.carried_quick + 2, config: config)
+      today_bps = projected_bps(snap.carried_quick + 1, today_date)
+      next_bps = projected_bps(snap.carried_quick + 2, today_date + 1)
       StreakCard.new(
         state: state, days: days, title: "#{mark}-minute streak", headline: streak_headline(state, days),
         message: quick_message(state, snap, days, mark, self.class.percent_text(next_bps)),

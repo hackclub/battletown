@@ -15,14 +15,14 @@
    DOM order is the phone order (boss, Today, project, streaks, coins, Hackatime, prize). */
 @media (min-width: 64rem) {
   .dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); align-items: start; }
-  .dashboard__header, .boss-card, .dash-today, .dashboard__streaks { grid-column: 1 / -1; }
+  .dashboard__header, .dash-returning, .boss-card, .dash-today, .dashboard__streaks { grid-column: 1 / -1; }
   .dash-project, .dash-coins, .dash-hackatime, .dash-prize { order: 1; }
   .dash-project { grid-row: span 2; }
   .dash-coins, .dash-hackatime { grid-column: 2; }
 }
 @media (min-width: 48rem) and (max-width: 63.999rem) {
   .dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); align-items: start; }
-  .dashboard__header, .boss-card, .dash-today, .dashboard__streaks, .dash-project { grid-column: 1 / -1; }
+  .dashboard__header, .dash-returning, .boss-card, .dash-today, .dashboard__streaks, .dash-project { grid-column: 1 / -1; }
   .dash-project, .dash-coins, .dash-hackatime, .dash-prize { order: 1; }
 }
 @media (min-width: 48rem) { .dash-prize { grid-column: 1 / -1; } }
@@ -57,6 +57,8 @@
 @media (min-width: 48rem) { .dash-today__grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-8); } }
 
 .dash-callout { margin-bottom: var(--space-6); }
+/* The welcome-back banner sits in the dashboard grid, which already spaces its children */
+.dashboard > .dash-returning { margin: 0; }
 
 .dash-steps { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .dash-step { display: flex; gap: var(--space-3); align-items: baseline; }

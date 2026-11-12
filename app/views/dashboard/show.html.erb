@@ -8,6 +8,10 @@
     <h1>Welcome, <%= @dashboard.name %></h1>
   </header>
 
+  <% if (returning = @dashboard.returning_banner) %>
+    <%= render "dashboard/returning", banner: returning %>
+  <% end %>
+
   <%= render "bosses/card", presenter: @dashboard.boss %>
 
   <%= render "quests/card", card: @quest_card if @quest_card %>
