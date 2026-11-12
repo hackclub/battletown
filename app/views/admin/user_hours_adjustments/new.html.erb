@@ -1,0 +1,48 @@
+<% content_for :title, "Adjust hours" %>
+<% adjustment = @adjustment %>
+<% max = AdminUsers::Config.current.max_adjust_minutes %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to #{admin_person_name(@user.display_name, @user.id)}", admin_user_path(@user) %></p>
+    <header class="page-header">
+      <h1>Adjust hours</h1>
+      <p class="admin-dashboard__note">Adds or takes off coded time for one date of <%= admin_person_name(@user.display_name, @user.id) %>. It is a new entry in the hours ledger (earlier entries are never edited) and it is written to the audit trail with your reason. Days that already settled into a streak are not recalculated.</p>
+    </header>
+
+    <%= render "admin/shared/adjustment_errors", adjustment: adjustment %>
+    <% if @user.id == current_user.id %>
+      <div class="alert alert--warning admin-warning" role="note">
+        <p class="alert__title admin-warning__title">This is your own account</p>
+        <p><%= AdminUsers::Adjustment::OWN_ACCOUNT_MESSAGE %></p>
+      </div>
+    <% else %>
+      <section class="card admin-panel admin-form-card" aria-labelledby="hours-form">
+        <h2 id="hours-form" class="card__title">What to change</h2>
+        <%= form_with url: confirm_admin_user_hours_adjustment_path(@user), method: :post, class: "admin-form stack" do |form| %>
+          <%= hidden_field_tag :token, adjustment.token, id: nil %>
+          <fieldset class="field">
+            <legend>Direction</legend>
+            <label class="radio"><%= radio_button_tag :direction, "add", adjustment.direction != "subtract" %> Add time</label>
+            <label class="radio"><%= radio_button_tag :direction, "subtract", adjustment.direction == "subtract" %> Take time off</label>
+          </fieldset>
+          <div class="field">
+            <%= form.label :date, "Date (their local date)" %>
+            <%= form.date_field :date, value: adjustment.date, class: "input", required: true, "aria-describedby": "date-hint" %>
+            <span id="date-hint" class="field__hint admin-form__hint">From <%= adjustment.first_date.iso8601 %> to <%= adjustment.last_date.iso8601 %>. Time zone: <%= @user.time_zone.presence || "UTC" %>.</span>
+          </div>
+          <div class="field">
+            <%= form.label :minutes, "Minutes" %>
+            <%= form.number_field :minutes, value: adjustment.minutes, class: "input", min: 1, max: max, step: 1, required: true, "aria-describedby": "minutes-hint" %>
+            <span id="minutes-hint" class="field__hint admin-form__hint">1 to <%= number_with_delimiter(max) %> (24 hours at most). Taking time off can't go below zero for that day.</span>
+          </div>
+          <div class="field">
+            <%= form.label :reason, "Reason (#{AdminUsers::Adjustment::REASON_RANGE.min} to #{AdminUsers::Adjustment::REASON_RANGE.max} characters)" %>
+            <%= form.text_area :reason, value: adjustment.reason, class: "textarea", rows: 3, minlength: AdminUsers::Adjustment::REASON_RANGE.min, maxlength: AdminUsers::Adjustment::REASON_RANGE.max, required: true, "aria-describedby": "reason-hint" %>
+            <span id="reason-hint" class="field__hint admin-form__hint">Say what happened. It is saved with the ledger entry and in the audit trail. No names, emails or phone numbers.</span>
+          </div>
+          <div><%= form.submit "Review the change", class: "btn btn--primary" %></div>
+        <% end %>
+      </section>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,44 @@
+<% content_for :title, "Adjust coins" %>
+<% adjustment = @adjustment %>
+<% max = AdminUsers::Config.current.max_adjust_coins %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to #{admin_person_name(@user.display_name, @user.id)}", admin_user_path(@user) %></p>
+    <header class="page-header">
+      <h1>Adjust coins</h1>
+      <p class="admin-dashboard__note">Adds or takes off coins for <%= admin_person_name(@user.display_name, @user.id) %>. It is a new entry in the coin ledger (earlier entries are never edited) and it is written to the audit trail with your reason. Their balance can never go below zero.</p>
+    </header>
+
+    <%= render "admin/shared/adjustment_errors", adjustment: adjustment %>
+    <% if @user.id == current_user.id %>
+      <div class="alert alert--warning admin-warning" role="note">
+        <p class="alert__title admin-warning__title">This is your own account</p>
+        <p><%= AdminUsers::Adjustment::OWN_ACCOUNT_MESSAGE %></p>
+      </div>
+    <% else %>
+      <section class="card admin-panel admin-form-card" aria-labelledby="coins-form">
+        <h2 id="coins-form" class="card__title">What to change</h2>
+        <p>Balance now: <strong><%= number_with_delimiter(adjustment.balance_before) %></strong></p>
+        <%= form_with url: confirm_admin_user_coin_adjustment_path(@user), method: :post, class: "admin-form stack" do |form| %>
+          <%= hidden_field_tag :token, adjustment.token, id: nil %>
+          <fieldset class="field">
+            <legend>Direction</legend>
+            <label class="radio"><%= radio_button_tag :direction, "add", adjustment.direction != "subtract" %> Add coins</label>
+            <label class="radio"><%= radio_button_tag :direction, "subtract", adjustment.direction == "subtract" %> Take coins off</label>
+          </fieldset>
+          <div class="field">
+            <%= form.label :coins, "Coins" %>
+            <%= form.number_field :coins, value: adjustment.coins, class: "input", min: 1, max: max, step: 1, required: true, "aria-describedby": "coins-hint" %>
+            <span id="coins-hint" class="field__hint admin-form__hint">1 to <%= number_with_delimiter(max) %> at a time.</span>
+          </div>
+          <div class="field">
+            <%= form.label :reason, "Reason (#{AdminUsers::Adjustment::REASON_RANGE.min} to #{AdminUsers::Adjustment::REASON_RANGE.max} characters)" %>
+            <%= form.text_area :reason, value: adjustment.reason, class: "textarea", rows: 3, minlength: AdminUsers::Adjustment::REASON_RANGE.min, maxlength: AdminUsers::Adjustment::REASON_RANGE.max, required: true, "aria-describedby": "reason-hint" %>
+            <span id="reason-hint" class="field__hint admin-form__hint">Say what happened. It is saved with the ledger entry and in the audit trail. No names, emails or phone numbers.</span>
+          </div>
+          <div><%= form.submit "Review the change", class: "btn btn--primary" %></div>
+        <% end %>
+      </section>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,29 @@
+<% content_for :title, "Confirm coin adjustment" %>
+<% adjustment = @adjustment %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to #{admin_person_name(@user.display_name, @user.id)}", admin_user_path(@user) %></p>
+    <header class="page-header">
+      <h1>Confirm the coin change</h1>
+      <p class="admin-dashboard__note">Nothing has been changed yet. Check the numbers and your reason, then confirm.</p>
+    </header>
+
+    <section class="card admin-panel admin-form-card" aria-labelledby="coins-summary">
+      <h2 id="coins-summary" class="card__title">Summary</h2>
+      <dl class="admin-dl">
+        <dt>Person</dt><dd><%= admin_person_name(@user.display_name, @user.id) %></dd>
+        <dt>Change</dt><dd><strong><%= adjustment.add? ? "Add" : "Take off" %> <%= coins_text(adjustment.whole_coins) %></strong></dd>
+        <dt>Balance</dt><dd><%= number_with_delimiter(adjustment.balance_before) %> now, <strong><%= number_with_delimiter(adjustment.balance_after) %></strong> after</dd>
+        <dt>Your reason</dt><dd class="admin-text"><%= adjustment.reason %></dd>
+      </dl>
+      <%= form_with url: admin_user_coin_adjustment_path(@user), method: :post, class: "admin-form stack" do |form| %>
+        <%= hidden_field_tag :confirmed, "1", id: nil %>
+        <%= render "admin/shared/adjustment_hidden", adjustment: adjustment, fields: %w[token direction coins reason] %>
+        <div class="admin-actions">
+          <%= form.submit "Confirm and apply", class: "btn btn--primary" %>
+          <%= link_to "Start again", new_admin_user_coin_adjustment_path(@user), class: "btn" %>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+</div>

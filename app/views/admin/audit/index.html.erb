@@ -52,7 +52,7 @@
                 <th scope="row"><%= event.action.tr("_", " ").capitalize %></th>
                 <td>
                   <% if event.subject_type == "User" && @linkable_users.include?(event.subject_id) %>
-                    <%= link_to "User ##{event.subject_id}", "/admin/users/#{event.subject_id}" %>
+                    <%= link_to "User ##{event.subject_id}", admin_user_path(event.subject_id) %>
                   <% else %>
                     <%= event.subject_type %> #<%= event.subject_id %>
                   <% end %>

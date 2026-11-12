@@ -41,6 +41,17 @@ class Rack::Attack
     req.ip if req.path.start_with?("/plinko") && !req.get?
   end
 
+  # Staff user management (/admin/users): adjustments, notes and their confirm steps are human-sized, so a small limit per
+  # address stops a stuck script or a stolen session from rewriting ledgers. Reading the list and a person's page has a
+  # roomier limit of its own (it is how an attacker would trawl teenagers' details). Staff are a handful of people behind
+  # one or two addresses; both limits are far above real use.
+  throttle("admin_users_write/ip", limit: 30, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/admin/users") && !req.get? && !req.head?
+  end
+  throttle("admin_users_read/ip", limit: 120, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/admin/users") && (req.get? || req.head?)
+  end
+
   # Ship screenshots (flag `ship_screenshots`, config/game.yml `ship_screenshots:`): a ship form post that carries files.
   # The size check runs here, on the Content-Length header, BEFORE Rails reads or parses the body, so an oversized upload
   # costs nothing but the 413. A multipart post with NO Content-Length (a chunked body, which no browser form sends) is

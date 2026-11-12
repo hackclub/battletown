@@ -136,7 +136,7 @@ class AdminTest < ActionDispatch::IntegrationTest
   test "nothing else under /admin exists" do
     make_admin(users(:onboarded))
     sign_in_as users(:onboarded)
-    get "/admin/users"
+    get "/admin/accounts"
     assert_response :not_found
   end
 

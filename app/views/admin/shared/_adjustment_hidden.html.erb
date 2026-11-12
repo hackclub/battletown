@@ -1,0 +1,4 @@
+<%# The typed values carried from the form to the confirm step and on to the write. Needs `adjustment` and `fields`. %>
+<% fields.each do |name| %>
+  <%= hidden_field_tag name, adjustment.public_send(name), id: nil %>
+<% end %>

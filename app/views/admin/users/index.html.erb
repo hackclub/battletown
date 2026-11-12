@@ -1,0 +1,110 @@
+<% content_for :title, "Admin users" %>
+<% result = @result %>
+<% query = result.query %>
+<% totals = result.totals %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>People</h1>
+      <p class="admin-dashboard__note">Find someone, then open them to see their projects, hours and coins. The list shows display names only: an email, Slack id or Hack Club Auth id can be searched (exact match) but is never listed. These are teenagers' accounts, so open a person only when you need to; each time you open one it is written to the <%= link_to "audit trail", admin_audit_path %>.</p>
+    </header>
+
+    <%= form_with url: admin_users_path, method: :get, class: "card card--tight admin-form admin-form--inline", role: "search" do %>
+      <div class="field">
+        <%= label_tag :by, "Search by" %>
+        <%= select_tag :by, options_for_select(AdminUsers::Directory::SEARCH_LABELS.map { |key, label| [ label, key ] }, query.by), class: "select" %>
+      </div>
+      <div class="field">
+        <%= label_tag :q, "Search for" %>
+        <%= search_field_tag :q, query.q, class: "input", maxlength: 254, autocomplete: "off", spellcheck: false %>
+      </div>
+      <%= button_tag "Search", type: "submit", name: nil, class: "btn btn--primary" %>
+    <% end %>
+
+    <%= form_with url: admin_users_path, method: :get, class: "card card--tight admin-form admin-form--inline", "aria-label": "Filters" do %>
+      <%# The search stays with the filters. %>
+      <%= hidden_field_tag :by, query.by, id: nil %>
+      <%= hidden_field_tag :q, query.q, id: nil %>
+      <div class="field">
+        <%= label_tag :onboarded, "Onboarded" %>
+        <%= select_tag :onboarded, options_for_select(admin_tristate_options, query.onboarded), class: "select" %>
+      </div>
+      <div class="field">
+        <%= label_tag :verified, "Verified" %>
+        <%= select_tag :verified, options_for_select(admin_tristate_options, query.verified), class: "select" %>
+      </div>
+      <div class="field">
+        <%= label_tag :eligible, "YSWS eligible" %>
+        <%= select_tag :eligible, options_for_select(admin_tristate_options, query.eligible), class: "select" %>
+      </div>
+      <div class="field">
+        <%= label_tag :hackatime, "Hackatime connected" %>
+        <%= select_tag :hackatime, options_for_select(admin_tristate_options, query.hackatime), class: "select" %>
+      </div>
+      <div class="field">
+        <%= label_tag :referral, "How they heard" %>
+        <%= select_tag :referral, options_for_select([ [ "Any", "" ], [ "No source", "none" ] ] + @referrals.map { |referral| [ referral.name, referral.slug ] }, query.referral), class: "select" %>
+      </div>
+      <div class="field">
+        <%= label_tag :from, "Signed up from" %>
+        <%= date_field_tag :from, query.from, class: "input" %>
+      </div>
+      <div class="field">
+        <%= label_tag :to, "Signed up to" %>
+        <%= date_field_tag :to, query.to, class: "input" %>
+      </div>
+      <div class="field">
+        <%= label_tag :sort, "Sort" %>
+        <%= select_tag :sort, options_for_select(admin_sort_options, query.sort), class: "select" %>
+      </div>
+      <%= button_tag "Apply", type: "submit", name: nil, class: "btn btn--primary" %>
+      <%= link_to "Clear all", admin_users_path, class: "btn btn--sm" %>
+    <% end %>
+
+    <dl class="admin-stat grid" aria-label="Totals for this list">
+      <div class="card card--tight admin-stat__item"><dt>People in this list</dt><dd id="total-users"><%= number_with_delimiter(totals.users) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>Onboarded</dt><dd><%= number_with_delimiter(totals.onboarded) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>Verified</dt><dd><%= number_with_delimiter(totals.verified) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>YSWS eligible</dt><dd><%= number_with_delimiter(totals.eligible) %></dd></div>
+      <div class="card card--tight admin-stat__item"><dt>Hackatime connected</dt><dd><%= number_with_delimiter(totals.hackatime) %></dd></div>
+    </dl>
+
+    <p class="admin-count">Showing <%= result.pager.range_text %>.</p>
+
+    <% if result.rows.empty? %>
+      <p class="alert">No one matches<%= " that search" if query.searching? %>.</p>
+    <% else %>
+      <%= table_region("People") do %>
+        <table class="table table--zebra admin-table">
+          <caption>People (<%= AdminUsers::Directory::SORT_LABELS.fetch(query.sort).downcase %>, <%= AdminPager::PER_PAGE %> a page)</caption>
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Identity</th>
+              <th scope="col">Onboarded</th>
+              <th scope="col">Signed up</th>
+              <th scope="col" class="num admin-table__num">Coins</th>
+              <th scope="col" class="num admin-table__num">Hours</th>
+              <th scope="col">Last coded</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% result.rows.each do |row| %>
+              <tr id="user-<%= row.id %>">
+                <th scope="row"><%= link_to admin_person_name(row.display_name, row.id), admin_user_path(row.id) %></th>
+                <td><%= admin_verification_badge(row.verification_status) %> <%= admin_eligible_badge(row.ysws_eligible) %></td>
+                <td><%= admin_yes_no_badge(row.onboarded) %></td>
+                <td><%= row.signed_up_on.strftime("%-d %b %Y") %></td>
+                <td class="num admin-table__num"><%= number_with_delimiter(row.coins) %></td>
+                <td class="num admin-table__num"><%= admin_duration(row.seconds) %></td>
+                <td><%= row.last_coded ? row.last_coded.strftime("%-d %b %Y") : "Never" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+      <%= render "admin/shared/pager", pager: result.pager %>
+    <% end %>
+  <% end %>
+</div>

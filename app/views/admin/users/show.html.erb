@@ -1,0 +1,260 @@
+<% profile = @profile %>
+<% user = @user %>
+<% own = user.id == current_user.id %>
+<% content_for :title, "Admin person" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page") do %>
+    <p class="admin-back"><%= link_to "Back to the list of people", admin_users_path %></p>
+    <header class="page-header">
+      <h1><%= admin_person_name(user.display_name, user.id) %></h1>
+      <p class="admin-dashboard__note">Personal details of a teenager. Use them only for what you are doing right now, and do not copy them anywhere else. Opening this page was written to the <%= link_to "audit trail", admin_audit_path %>.</p>
+    </header>
+
+    <% if own %>
+      <div class="alert alert--warning admin-warning" role="note">
+        <p class="alert__title admin-warning__title">This is your own account</p>
+        <p><%= AdminUsers::Adjustment::OWN_ACCOUNT_MESSAGE %></p>
+      </div>
+    <% else %>
+      <div class="admin-actions" role="group" aria-label="Changes you can make">
+        <%= link_to "Adjust hours", new_admin_user_hours_adjustment_path(user), class: "btn" %>
+        <%= link_to "Adjust coins", new_admin_user_coin_adjustment_path(user), class: "btn" %>
+      </div>
+    <% end %>
+
+    <div class="admin-grid grid grid--2">
+      <section class="card admin-panel" aria-labelledby="user-profile">
+        <h2 id="user-profile" class="card__title">Profile</h2>
+        <dl class="admin-dl">
+          <dt>Display name</dt><dd><%= user.display_name.presence || "None" %></dd>
+          <dt>Email</dt><dd><%= user.email.presence || "None" %></dd>
+          <dt>Slack id</dt><dd><%= user.slack_id.presence || "None" %></dd>
+          <dt>Hack Club Auth id</dt><dd><%= user.hca_uid %></dd>
+          <dt>Verification</dt><dd><%= admin_verification_badge(user.verification_status) %> <small>from Hack Club Auth, read-only; checked <%= admin_utc(user.verification_checked_at, "%-d %b %Y") %></small></dd>
+          <dt>YSWS eligible</dt><dd><%= admin_yes_no_badge(user.ysws_eligible?) %> <small>from Hack Club Auth, read-only</small></dd>
+          <dt>Can spend coins</dt><dd><%= profile.spend_state.to_s.tr("_", " ").capitalize %></dd>
+          <dt>Time zone</dt><dd><%= user.time_zone.presence || "Not set (UTC)" %></dd>
+          <dt>How they heard</dt><dd><%= user.referral_source.presence || "No source" %></dd>
+          <dt>Onboarding</dt><dd><%= user.onboarded? ? "Finished #{admin_utc(user.onboarded_at, '%-d %b %Y')}" : "Not finished (step #{user.onboarding_step} of #{User::ONBOARDING_STEPS})" %></dd>
+          <dt>Signed up</dt><dd><%= admin_utc(user.created_at, "%-d %b %Y") %> (their date: <%= user.signed_up_on.iso8601 %>)</dd>
+          <dt>Hackatime</dt>
+          <dd>
+            <% hackatime = profile.hackatime %>
+            <%= admin_yes_no_badge(hackatime.connected, yes: "Connected", no: "Not connected") %>
+            <% if hackatime.connected %>
+              <small>last sync <%= admin_utc(hackatime.last_synced_at, "%-d %b %Y %H:%M") %><%= ", needs reconnecting" if hackatime.needs_reconnect %><%= ", last error #{hackatime.last_error_code}" if hackatime.last_error_code.present? %></small>
+            <% end %>
+          </dd>
+          <% profile.extras.each do |label, value| %>
+            <dt><%= label %></dt><dd><%= value %></dd>
+          <% end %>
+        </dl>
+      </section>
+
+      <section class="card admin-panel" aria-labelledby="user-streak">
+        <h2 id="user-streak" class="card__title">Streak</h2>
+        <% if profile.streak %>
+          <% streak = profile.streak %>
+          <dl class="admin-dl">
+            <dt>Last settled day</dt><dd><%= streak.local_date.strftime("%-d %b %Y") %></dd>
+            <dt>15-minute streak</dt><dd><%= streak.streak_15 %> <%= streak.streak_15 == 1 ? "day" : "days" %></dd>
+            <dt>Daily-goal streak</dt><dd><%= streak.goal_streak %> <%= streak.goal_streak == 1 ? "day" : "days" %></dd>
+            <dt>Bonus</dt><dd><%= number_with_precision(streak.bonus_bps / 100.0, precision: 1, strip_insignificant_zeros: true) %>%</dd>
+            <dt>Freeze</dt><dd><%= streak.freeze_available ? "Available" : "Used" %> (<%= streak.days_since_freeze %> days since)</dd>
+            <dt>Settled days</dt><dd><%= profile.settled_days %></dd>
+          </dl>
+        <% else %>
+          <p>No settled days yet.</p>
+        <% end %>
+        <h3>Notification outbox</h3>
+        <% if profile.outbox.empty? %>
+          <p>Nothing queued or sent.</p>
+        <% else %>
+          <%= table_region("Notification outbox counts") do %>
+            <table class="table table--zebra admin-table">
+              <caption>Messages by kind and state (counts only)</caption>
+              <thead><tr><th scope="col">Kind</th><th scope="col">State</th><th scope="col" class="num admin-table__num">Count</th></tr></thead>
+              <tbody>
+                <% profile.outbox.sort.each do |kind, statuses| %>
+                  <% statuses.sort.each do |status, count| %>
+                    <tr><th scope="row"><%= kind.tr("_", " ").capitalize %></th><td><%= status.capitalize %></td><td class="num admin-table__num"><%= count %></td></tr>
+                  <% end %>
+                <% end %>
+              </tbody>
+            </table>
+          <% end %>
+        <% end %>
+      </section>
+    </div>
+
+    <section class="card admin-panel" aria-labelledby="user-projects">
+      <h2 id="user-projects" class="card__title">Projects and ships</h2>
+      <% if profile.projects.empty? %>
+        <p>No projects yet.</p>
+      <% else %>
+        <%= table_region("Projects and ships") do %>
+          <table class="table table--zebra admin-table">
+            <caption>Projects with their ships</caption>
+            <thead>
+              <tr><th scope="col">Project</th><th scope="col">Kind</th><th scope="col">Project status</th><th scope="col">Ships</th></tr>
+            </thead>
+            <tbody>
+              <% profile.projects.each do |project| %>
+                <tr>
+                  <th scope="row"><%= project.name %></th>
+                  <td><%= project.kind.capitalize %></td>
+                  <td><%= project.status.capitalize %><%= " (active)" if project.active? %></td>
+                  <td>
+                    <% if project.ships.empty? %>
+                      None
+                    <% else %>
+                      <ul class="admin-inline-list">
+                        <% project.ships.sort_by { |ship| [ -ship.created_at.to_i, -ship.id ] }.each do |ship| %>
+                          <li>
+                            <%= admin_ship_badge(ship) %>
+                            <%= ship_hours(ship.coded_seconds) %> coded<%= ", #{ship_hours(ship.approved_seconds)} approved" if ship.approved_seconds %>
+                            <% unless ship.status == "draft" %>
+                              <%= link_to "Open", admin_ship_path(ship), "aria-label": "Open the review page for #{project.name}, ship ##{ship.id}" %>
+                            <% end %>
+                          </li>
+                        <% end %>
+                      </ul>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      <% end %>
+    </section>
+
+    <div class="admin-grid grid grid--2">
+      <section class="card admin-panel" aria-labelledby="user-coins">
+        <h2 id="user-coins" class="card__title">Coins</h2>
+        <p class="admin-count">Balance <strong id="coin-balance"><%= number_with_delimiter(profile.balance) %></strong></p>
+        <% if profile.ledger.empty? %>
+          <p>No coin entries yet.</p>
+        <% else %>
+          <%= table_region("Coin ledger") do %>
+            <table class="table table--zebra admin-table">
+              <caption>Latest <%= AdminUsers::Profile::LEDGER_ROWS %> coin entries, newest first</caption>
+              <thead>
+                <tr><th scope="col">When (UTC)</th><th scope="col">Kind</th><th scope="col" class="num admin-table__num">Coins</th><th scope="col">For</th><th scope="col">Note</th><th scope="col">By</th></tr>
+              </thead>
+              <tbody>
+                <% profile.ledger.each do |entry| %>
+                  <tr>
+                    <td><%= entry.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
+                    <th scope="row"><%= entry.kind.tr("_", " ").capitalize %></th>
+                    <td class="num admin-table__num"><%= admin_signed(entry.amount) %></td>
+                    <td><%= admin_reference_text(entry) %></td>
+                    <td><%= entry.note %></td>
+                    <td><%= entry.created_by %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          <% end %>
+        <% end %>
+      </section>
+
+      <section class="card admin-panel" aria-labelledby="user-hours">
+        <h2 id="user-hours" class="card__title">Hours, last <%= AdminUsers::Profile::HOURS_DAYS %> days</h2>
+        <%= table_region("Hours by day") do %>
+          <table class="table table--zebra admin-table">
+            <caption>Coded time on each local date (<%= profile.user.time_zone.presence || "UTC" %>), newest first. Read-only.</caption>
+            <thead>
+              <tr><th scope="col">Date</th><th scope="col" class="num admin-table__num">Coded</th><th scope="col" class="num admin-table__num">Of which adjusted</th><th scope="col">Day</th></tr>
+            </thead>
+            <tbody>
+              <% profile.hours_by_day.each do |day| %>
+                <tr>
+                  <th scope="row"><%= day.date.strftime("%a %-d %b") %></th>
+                  <td class="num admin-table__num"><%= admin_duration(day.seconds) %></td>
+                  <td class="num admin-table__num"><%= day.adjustment_seconds.zero? ? "" : admin_duration(day.adjustment_seconds) %></td>
+                  <td><%= day.counted ? (day.settled ? "Settled" : "Open") : "Before sign-up (not counted)" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      </section>
+    </div>
+
+    <section class="card admin-panel" aria-labelledby="user-orders">
+      <h2 id="user-orders" class="card__title">Orders</h2>
+      <% if profile.orders.empty? %>
+        <p>No orders.</p>
+      <% else %>
+        <%= table_region("Orders") do %>
+          <table class="table table--zebra admin-table">
+            <caption>Latest orders, newest first</caption>
+            <thead><tr><th scope="col">Item</th><th scope="col" class="num admin-table__num">Coins</th><th scope="col">Status</th><th scope="col">Ordered (UTC)</th></tr></thead>
+            <tbody>
+              <% profile.orders.each do |order| %>
+                <tr>
+                  <th scope="row"><%= order.prize_name %></th>
+                  <td class="num admin-table__num"><%= order.coins %></td>
+                  <td><%= admin_order_badge(order, order_status_text(order)) %></td>
+                  <td><%= order.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+        <p><%= link_to "Open the order queue to fulfil or cancel", admin_orders_path %></p>
+      <% end %>
+    </section>
+
+    <section class="card admin-panel" id="notes" aria-labelledby="user-notes">
+      <h2 id="user-notes" class="card__title">Private staff notes</h2>
+      <p class="small">Only staff see these. They can't be edited or deleted. Keep them short and factual: no phone numbers, addresses or other contact details.</p>
+      <%= form_with url: admin_user_notes_path(user), method: :post, class: "admin-form stack" do |form| %>
+        <div class="field">
+          <%= form.label :note, "Add a note" %>
+          <%= form.text_area :note, class: "textarea", rows: 3, maxlength: UserNote::BODY_MAX, required: true, "aria-describedby": "note-hint" %>
+          <span id="note-hint" class="field__hint admin-form__hint">Up to <%= UserNote::BODY_MAX %> characters.</span>
+        </div>
+        <div><%= form.submit "Add note", class: "btn btn--primary" %></div>
+      <% end %>
+      <% if profile.notes.empty? %>
+        <p>No notes yet.</p>
+      <% else %>
+        <ul class="admin-notes">
+          <% profile.notes.each do |note| %>
+            <li class="admin-notes__item">
+              <p class="admin-text"><%= note.body %></p>
+              <p class="small"><%= note.author ? admin_person_name(note.author.display_name, note.author_id) : "Former staff member" %>, <%= admin_utc(note.created_at) %></p>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </section>
+
+    <section class="card admin-panel" aria-labelledby="user-audit">
+      <h2 id="user-audit" class="card__title">Audit trail for this person</h2>
+      <% if profile.audit_events.empty? %>
+        <p>Nothing recorded yet.</p>
+      <% else %>
+        <%= table_region("Audit trail for this person") do %>
+          <table class="table table--zebra admin-table">
+            <caption>Latest <%= AdminUsers::Profile::AUDIT_ROWS %> events about this person</caption>
+            <thead><tr><th scope="col">When (UTC)</th><th scope="col">Who</th><th scope="col">What</th><th scope="col">Details</th></tr></thead>
+            <tbody>
+              <% profile.audit_events.each do |event| %>
+                <tr>
+                  <td><%= event.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
+                  <td><%= event.actor ? admin_person_name(event.actor.display_name, event.actor_id) : "Former staff member" %></td>
+                  <th scope="row"><%= event.action.tr("_", " ").capitalize %></th>
+                  <td><%= event.metadata.map { |key, value| "#{key.tr('_', ' ')}: #{value.nil? ? 'none' : value}" }.join(", ") %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      <% end %>
+      <p><%= link_to "Open the full audit trail", admin_audit_path %></p>
+    </section>
+  <% end %>
+</div>

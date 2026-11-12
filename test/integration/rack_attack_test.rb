@@ -38,6 +38,22 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_not_equal 429, response.status
   end
 
+  test "staff user writes are limited to 30 a minute per IP and reads to 120, in separate buckets" do
+    30.times { post "/admin/users/1/coins", headers: { "REMOTE_ADDR" => "203.0.113.30" } }
+    assert_not_equal 429, response.status
+    post "/admin/users/1/coins", headers: { "REMOTE_ADDR" => "203.0.113.30" }
+    assert_response :too_many_requests
+    get "/admin/users", headers: { "REMOTE_ADDR" => "203.0.113.30" }
+    assert_not_equal 429, response.status, "reading has its own bucket"
+    post "/admin/users/1/coins", headers: { "REMOTE_ADDR" => "203.0.113.31" }
+    assert_not_equal 429, response.status
+
+    120.times { get "/admin/users", headers: { "REMOTE_ADDR" => "203.0.113.32" } }
+    assert_not_equal 429, response.status
+    get "/admin/users", headers: { "REMOTE_ADDR" => "203.0.113.32" }
+    assert_response :too_many_requests
+  end
+
   test "a spoofed leading X-Forwarded-For entry does not reset the limit behind a proxy" do
     11.times do |i|
       post "/auth/hack_club", headers: { "REMOTE_ADDR" => "10.0.0.2", "X-Forwarded-For" => "198.51.100.#{i}, 203.0.113.9" }

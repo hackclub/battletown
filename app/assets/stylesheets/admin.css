@@ -96,3 +96,11 @@
 .admin-flagged-chip { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: var(--space-2) 0 0; font-weight: 700; }
 .admin-flagged-chip a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
 .admin-table .btn, .admin-table td.admin-table__num { white-space: nowrap; }
+
+/* Person page: ships listed inside a project row, and the private notes. */
+.admin-inline-list, .admin-notes { margin: 0; padding: 0; list-style: none; }
+.admin-inline-list li + li { margin-top: var(--space-2); }
+.admin-notes { display: grid; gap: var(--space-4); margin-top: var(--space-4); }
+.admin-notes__item { padding: var(--space-3) var(--space-4); border-inline-start: 4px solid var(--color-admin); background: var(--color-admin-bg); color: var(--color-admin-ink); }
+.admin-notes__item p { margin: 0; }
+.admin-notes__item .small { color: var(--color-admin-ink); }

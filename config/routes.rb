@@ -134,6 +134,17 @@ Rails.application.routes.draw do
     resource :metrics, only: :show
     # The audit trail (read-only) and user management. Writes live under users/:user_id and are throttled (rack_attack.rb).
     get "audit", to: "audit#index", as: :audit
+    resources :users, only: %i[index show], constraints: { id: /\d{1,12}/ } do
+      scope constraints: { user_id: /\d{1,12}/ } do
+        resource :hours_adjustment, path: "hours", only: %i[new create], controller: "user_hours_adjustments" do
+          post :confirm
+        end
+        resource :coin_adjustment, path: "coins", only: %i[new create], controller: "user_coin_adjustments" do
+          post :confirm
+        end
+        resources :notes, only: :create, controller: "user_notes"
+      end
+    end
     constraints(Features::Constraint.new(:plinko)) { resource :plinko, only: :show, controller: "plinko" }
     # Email row counts per week (flag `email`: the route does not exist while it is off).
     constraints Features::Constraint.new(:email) do

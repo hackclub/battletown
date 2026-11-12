@@ -1,0 +1,11 @@
+<%# Needs `adjustment`. Friendly sentences, one list, focusable so a keyboard user lands on them. %>
+<% if adjustment.errors.any? %>
+  <div class="alert alert--danger admin-form__errors" role="alert" tabindex="-1" id="adjustment-errors">
+    <p class="alert__title">Nothing was changed.</p>
+    <ul>
+      <% adjustment.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
