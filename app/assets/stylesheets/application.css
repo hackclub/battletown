@@ -105,6 +105,9 @@ main:focus { outline: none; }
 
 .site-header__nav, .site-footer nav { display: flex; align-items: center; gap: var(--space-4); }
 .site-header__nav form { margin: 0; }
+/* Signed-in links plus the Sign out button can outgrow a phone: wrap instead of overflowing. */
+.site-header__nav { flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2) var(--space-4); }
+.site-header__nav .btn { white-space: nowrap; }
 .site-footer a { color: var(--color-text-muted); }
 
 /* Buttons */

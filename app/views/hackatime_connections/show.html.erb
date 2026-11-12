@@ -1,0 +1,33 @@
+<% content_for :title, "Hackatime" %>
+<section class="container hackatime">
+  <h1>Settings</h1>
+
+  <div class="card hackatime__card" id="hackatime">
+    <h2 class="hackatime__title">Hackatime</h2>
+
+    <% if @connection.nil? %>
+      <p class="hackatime__status hackatime__status--off">Not connected</p>
+      <p>Connect your Hackatime account and your coding time counts toward the boss automatically. It is optional: you can keep coding and logging time without it.</p>
+      <p class="hackatime__fine">We only ask to read your coding time and your Hackatime user id (the <code>profile</code> and <code>read</code> permissions). We never see your code.</p>
+      <%= button_to "Connect Hackatime", "/auth/hackatime", method: :post, class: "btn btn--primary", form: { data: { turbo: false } } %>
+    <% elsif @connection.needs_reconnect? %>
+      <p class="hackatime__status hackatime__status--warn">Needs reconnecting</p>
+      <p>Hackatime stopped accepting our access, so your time isn't syncing right now. Connect again to pick up where you left off.</p>
+      <div class="hackatime__actions">
+        <%= button_to "Reconnect Hackatime", "/auth/hackatime", method: :post, class: "btn btn--primary", form: { data: { turbo: false } } %>
+        <%= button_to "Disconnect", hackatime_path, method: :delete, class: "btn btn--ghost" %>
+      </div>
+    <% else %>
+      <p class="hackatime__status hackatime__status--on">Connected</p>
+      <p class="hackatime__meta">
+        <% if @connection.last_synced_at %>
+          Last synced <time datetime="<%= @connection.last_synced_at.iso8601 %>"><%= time_ago_in_words(@connection.last_synced_at) %> ago</time>.
+        <% else %>
+          Not synced yet. Your time shows up after the next sync.
+        <% end %>
+      </p>
+      <%= button_to "Disconnect", hackatime_path, method: :delete, class: "btn btn--ghost",
+            form: { data: { turbo_confirm: "Disconnect Hackatime? We'll delete the access we saved." } } %>
+    <% end %>
+  </div>
+</section>

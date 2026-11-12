@@ -13,6 +13,12 @@ class Rack::Attack
     req.ip if req.post? && (req.path.start_with?("/auth/") || req.path == "/dev_login")
   end
 
+  # Hackatime linking: the callback is a GET (the POST that starts it is covered by auth/ip above), and connect /
+  # disconnect are the only calls that reach out to Hackatime, so keep them to a small, human-sized rate.
+  throttle("hackatime/ip", limit: 20, period: 1.minute) do |req|
+    req.ip if req.path == "/auth/hackatime/callback" || (req.path == "/hackatime" && !req.get?)
+  end
+
   # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept
   # out of the general throttle below so a burst of requests there can never block it.
   throttle("privacy/ip", limit: 120, period: 1.minute) do |req|

@@ -30,7 +30,10 @@ Rails.application.routes.draw do
   get "terms", to: "pages#terms"
 
   get "auth/:provider/callback", to: "sessions#create", constraints: { provider: "hack_club" }
+  # Hackatime account linking, additive to sign-in: the callback never signs anyone in (HackatimeConnectionsController).
+  get "auth/hackatime/callback", to: "hackatime_connections#create"
   get "auth/failure", to: "sessions#failure"
+  resource :hackatime, only: [ :show, :destroy ], controller: "hackatime_connections"
   delete "logout", to: "sessions#destroy"
   post "dev_login", to: "sessions#dev_login"
 

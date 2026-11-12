@@ -13,6 +13,8 @@ class SessionsController < ApplicationController
   end
 
   def failure
+    return hackatime_failure if params[:strategy].to_s == "hackatime"
+
     Rails.logger.warn("Auth failure: #{params[:message].to_s.truncate(60).inspect}")
     if params[:message].to_s == "access_denied"
       # They pressed Deny on the Hack Club Auth consent screen: that is a choice, not an error.
@@ -38,6 +40,20 @@ class SessionsController < ApplicationController
   end
 
   private
+
+  # A failed Hackatime link (bad state, denied consent, ...) is not a sign-in failure: send them back to the
+  # Hackatime page, never to the landing page, and never touch their session.
+  def hackatime_failure
+    message = params[:message].to_s
+    Rails.logger.warn("Hackatime link failure: #{message.truncate(40).inspect}")
+    return redirect_to root_path, alert: "Sign in to connect Hackatime." unless signed_in?
+
+    if message == "access_denied"
+      redirect_to hackatime_path, notice: "No problem, Hackatime wasn't connected. You can connect whenever you're ready."
+    else
+      redirect_to hackatime_path, alert: "We couldn't connect to Hackatime. Please try again."
+    end
+  end
 
   def hca_claims(auth)
     return unless auth && auth.provider.to_s == "hack_club" && auth.uid.present?

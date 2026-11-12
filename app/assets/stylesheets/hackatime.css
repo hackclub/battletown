@@ -1,0 +1,38 @@
+/* Hackatime connection settings (/hackatime). Tokens only, see docs/CONTRACT.md. */
+.hackatime { max-width: 40rem; }
+
+.hackatime__card { display: grid; gap: var(--space-3); }
+.hackatime__card p { margin: 0; overflow-wrap: anywhere; }
+.hackatime__title { margin: 0; }
+
+.hackatime__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid currentcolor;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+.hackatime__status::before {
+  content: "";
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: currentcolor;
+}
+.hackatime__status--on { color: var(--color-success); }
+.hackatime__status--warn { color: var(--color-danger); }
+.hackatime__status--off { color: var(--color-text-muted); }
+
+.hackatime__meta, .hackatime__fine { color: var(--color-text-muted); font-size: var(--text-sm); }
+
+.hackatime__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.hackatime__card form { justify-self: start; }
+.hackatime__actions form { justify-self: auto; }
+
+@media (max-width: 40rem) {
+  .hackatime__card { padding: var(--space-4); }
+}
