@@ -83,6 +83,8 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     guard_boss = Boss.create!(name: "Guard boss", art_key: "placeholder", starts_on: Date.new(2099, 1, 2), ends_on: Date.new(2099, 1, 8), hp_seconds: 3600)
     guard_quest = Quest.create!(starts_on: guard_boss.starts_on, goal_key: "add_project", reward_coins: 15)
     QuestCompletion.create!(user: user, quest: guard_quest, completed_at: Time.current, coin_transaction: CoinTransaction.find_by!(user: user, idempotency_key: "guard-#{user.id}"))
+    PlinkoDrop.create!(user: user, dropped_at: Time.current, local_date: Date.new(2026, 11, 9), slot: 4, points: 50, seed: 1, idempotency_key: "guard-drop-#{user.id}")
+    PlinkoPlayer.create!(user: user, nickname: "Guard Otter #{user.id}", leaderboard_opt_in: true)
     subject = Privacy::TokenVerifier::Subject.new(emails: [], slack_id: nil, identity_id: user.hca_uid)
 
     deleted = Privacy::Deleter.new(subject).call(dry_run: true).deleted

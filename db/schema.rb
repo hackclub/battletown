@@ -260,6 +260,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
     t.check_constraint "status::text = ANY (ARRAY['requested'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying]::text[])", name: "orders_status_check"
   end
 
+  create_table "plinko_drops", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.datetime "dropped_at", null: false
+    t.date "local_date", null: false
+    t.integer "slot", null: false
+    t.integer "points", null: false
+    t.bigint "seed", null: false
+    t.string "idempotency_key", limit: 64, null: false
+    t.index ["local_date"], name: "index_plinko_drops_on_local_date"
+    t.index ["user_id", "dropped_at"], name: "index_plinko_drops_on_user_id_and_dropped_at"
+    t.index ["user_id", "idempotency_key"], name: "index_plinko_drops_on_user_id_and_idempotency_key", unique: true
+    t.check_constraint "char_length(idempotency_key::text) >= 8 AND char_length(idempotency_key::text) <= 64", name: "plinko_drops_key_length_check"
+    t.check_constraint "points >= 0", name: "plinko_drops_points_check"
+    t.check_constraint "slot >= 0", name: "plinko_drops_slot_check"
+  end
+
+  create_table "plinko_players", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "nickname", limit: 40, null: false
+    t.boolean "leaderboard_opt_in", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((nickname)::text)", name: "index_plinko_players_on_lower_nickname", unique: true
+    t.index ["leaderboard_opt_in"], name: "index_plinko_players_on_opt_in", where: "leaderboard_opt_in"
+    t.index ["user_id"], name: "index_plinko_players_on_user_id", unique: true
+  end
+
   create_table "privacy_request_tokens", force: :cascade do |t|
     t.string "jti", null: false
     t.string "request_id"
@@ -435,6 +462,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_053000) do
   add_foreign_key "notification_preferences", "users", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
   add_foreign_key "orders", "users", on_delete: :cascade
+  add_foreign_key "plinko_drops", "users", on_delete: :cascade
+  add_foreign_key "plinko_players", "users", on_delete: :cascade
   add_foreign_key "projects", "users", on_delete: :cascade
   add_foreign_key "quest_completions", "coin_transactions", on_delete: :cascade
   add_foreign_key "quest_completions", "quests", on_delete: :cascade
