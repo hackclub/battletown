@@ -38,6 +38,6 @@ module ShipsHelper
 
   # The same Hack Club Auth verify link the onboarding account step uses.
   def ship_verify_link
-    link_to "verify your identity with Hack Club", "https://auth.hackclub.com", target: "_blank", rel: "noopener noreferrer"
+    link_to "Verify with Hack Club", "https://auth.hackclub.com", target: "_blank", rel: "noopener noreferrer"
   end
 end

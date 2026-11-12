@@ -66,7 +66,8 @@
   color: var(--color-text);
 }
 .admin-panel h2 { margin-top: 0; font-size: var(--text-lg); color: var(--color-admin-ink); }
-.admin-panel h3 { font-size: var(--text-base); color: var(--color-admin-ink); }
+.admin-panel h3 { margin-top: var(--space-6); font-size: var(--text-base); color: var(--color-admin-ink); }
+.admin-panel .admin-dl + .admin-table { margin-top: var(--space-4); }
 .admin-panel .admin-table { margin-bottom: var(--space-4); }
 .admin-grid + .admin-grid, .admin-grid + .admin-table { margin-top: var(--space-6); }
 .admin-table + p { margin-top: var(--space-4); }
@@ -94,5 +95,5 @@
 @media (max-width: 30rem) {
   .ship-dl, .admin-dl { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .ship-dl dd, .admin-dl dd { margin-bottom: var(--space-2); }
-  .admin-table { display: block; overflow-x: auto; }
+  .admin-dashboard > .admin-table { display: block; overflow-x: auto; }
 }
