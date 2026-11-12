@@ -42,12 +42,19 @@ module Hackatime
       ahead_until = today + 1 if to.nil? || to.to_date >= today
       windows = DayWindows.new(user: user, hackatime_uid: connection.hackatime_uid, zone: zone).resolve(first, last, ahead_until: ahead_until)
       client = @client_factory.call(connection)
-      rows = windows.reject(&:empty?).flat_map { |window| day_rows(client, zone, window) }
+      rows = windows.flat_map { |window| fetchable?(window, connection) ? day_rows(client, zone, window) : [] }
       connection.record_sync!
       rows
     end
 
     private
+
+    # Only a window frozen under the Hackatime account linked now: after a switch, the dates already frozen under the
+    # old account are never read with the new one, or the new account's time on them could be credited here as well
+    # as to whoever had it before. So a window's `hackatime_uid` is always the account its time came from, which is
+    # what DayWindows keys the cross-account rule on. Checked per window against the live connection, which a token
+    # refresh reloads.
+    def fetchable?(window, connection) = !window.empty? && window.hackatime_uid == connection.hackatime_uid.to_s
 
     def day_rows(client, zone, window)
       starts = window.starts_at.in_time_zone(zone)

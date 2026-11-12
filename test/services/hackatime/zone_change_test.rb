@@ -13,11 +13,13 @@ module Hackatime
     setup do
       @fake = start_fake_hackatime
       @user = users(:onboarded)
-      @coding = []
+      # Coding per Hackatime account, keyed by the token that reads it.
+      @coding = Hash.new { |hash, token| hash[token] = [] }
       @fake.on("GET", PROJECTS) do |req|
         from = Time.iso8601(req.query["start_date"])
         to = Time.iso8601(req.query["end_date"]) + HttpSource::END_MARGIN # the real window is inclusive
-        seconds = @coding.sum { |starts, ends| [ [ ends, to ].min - [ starts, from ].max, 0 ].max }
+        token = req.headers["authorization"].to_s.delete_prefix("Bearer ")
+        seconds = @coding[token].sum { |starts, ends| [ [ ends, to ].min - [ starts, from ].max, 0 ].max }
         [ 200, { "projects" => seconds.positive? ? [ { "name" => "battletown", "total_seconds" => seconds.to_f } ] : [] } ]
       end
     end
@@ -27,7 +29,7 @@ module Hackatime
       stop_fake_hackatime
     end
 
-    def code(starts, ends) = @coding << [ starts, ends ]
+    def code(starts, ends, token: SECRET_TOKEN) = @coding[token] << [ starts, ends ]
 
     def sync_at(now, user = @user)
       travel_to(now) { Hours::Sync.call(user.reload, source: HttpSource.new) }
@@ -173,6 +175,53 @@ module Hackatime
 
       assert_equal 7_200, ledger(first)
       assert_equal 3_600, ledger(second)
+    end
+
+    test "switching to a Hackatime account another Battletown account already used never re-reads dates frozen under the old one" do
+      first = @user
+      second = users(:new_user)
+      [ first, second ].each { |user| user.update!(time_zone: "UTC") }
+      connect_hackatime(first, uid: "777", access_token: "token-777")
+      code(utc(2026, 11, 10, 9), utc(2026, 11, 10, 11), token: "token-777")
+      sync_at utc(2026, 11, 10, 12), first
+      assert_equal 7_200, ledger(first)
+
+      # The second account syncs a throwaway Hackatime account, freezing its back-fill dates under that one.
+      connect_hackatime(second, uid: "888", access_token: "token-888")
+      sync_at utc(2026, 11, 10, 12), second
+      first.hackatime_connection.destroy!
+      second.hackatime_connection.destroy!
+      connect_hackatime(second, uid: "777", access_token: "token-777")
+      sync_at utc(2026, 11, 10, 13), second
+
+      assert_equal 7_200, ledger(first)
+      assert_equal 0, ledger(second)
+
+      # Time coded on the new account after the switch counts, on dates that were not frozen under the old one.
+      code(utc(2026, 11, 11, 9), utc(2026, 11, 11, 10), token: "token-777")
+      sync_at utc(2026, 11, 11, 12), second
+      assert_equal 3_600, ledger(second)
+    end
+
+    test "a window frozen under one Hackatime account is never read with another, so the time cannot follow it elsewhere" do
+      first = @user
+      third = users(:new_user)
+      [ first, third ].each { |user| user.update!(time_zone: "UTC") }
+      connect_hackatime(first, uid: "111", access_token: "token-111")
+      sync_at utc(2026, 11, 10, 8), first
+
+      # The same day, the first account switches to another Hackatime account and codes on it.
+      first.hackatime_connection.destroy!
+      connect_hackatime(first, uid: "777", access_token: "token-777")
+      code(utc(2026, 11, 10, 9), utc(2026, 11, 10, 11), token: "token-777")
+      sync_at utc(2026, 11, 10, 12), first
+      first.hackatime_connection.destroy!
+
+      connect_hackatime(third, uid: "777", access_token: "token-777")
+      sync_at utc(2026, 11, 10, 13), third
+
+      assert_equal 7_200, ledger(first) + ledger(third), "the same two hours must be credited once"
+      assert_equal 0, ledger(first)
     end
   end
 end

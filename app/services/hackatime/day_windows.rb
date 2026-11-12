@@ -13,8 +13,13 @@ module Hackatime
   #     account (a Hackatime account moved to a second Battletown account does not bring its hours again).
   #   If nothing is left the window is empty: it is still written, so the next date chains from it, but never fetched.
   #
-  # So a time zone change costs nothing in the common case. The one thing it can cost is the rest of a date that a
-  # second Battletown account already covered for the same Hackatime account.
+  # A window is only ever fetched with the Hackatime account it is labelled with (HttpSource skips the others), so the
+  # label is always the account the time came from and the cross-account rule above can key on it, whichever
+  # Battletown account the window belongs to.
+  #
+  # So a time zone change costs nothing in the common case. What it can cost is the rest of a date that a second
+  # Battletown account already covered for the same Hackatime account; and switching Hackatime accounts costs the
+  # dates already frozen under the old one (at most the back-fill window, today and tomorrow).
   class DayWindows
     def initialize(user:, hackatime_uid:, zone:)
       @user = user
