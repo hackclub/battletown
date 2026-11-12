@@ -83,8 +83,90 @@ Nothing runs by itself. Schedule these on the host with the same environment as 
 | 15 minutes | `bin/rails notifications:ship_reminders` | queues the ship reminders for projects that crossed an hours threshold |
 | hour | `bin/rails game:settle` | settles finished local days (streaks and bonuses; the dashboard also settles lazily) |
 | hour, only with `HOURS_SOURCE=http` | `bin/rails "hackatime:sync[all]"` | pulls recent Hackatime hours for linked accounts |
+| day | `bin/rails privacy:purge_tokens` | deletes used data-deletion token ids older than 7 days (also purged as requests arrive) |
+| day | `bin/rails notifications:prune` | deletes finished notification rows older than `retention_days` (`config/notifications.yml`) |
+| day | `bin/rails notifications:schedule_all` | re-queues the daily reminder for anyone whose chain stopped (for example after a permanent Slack failure) |
 
 Once, after the first `db:prepare`: `bin/rails bosses:seed` creates the launch bosses (idempotent; `db:seed` calls it too, and `db:prepare` only seeds a brand-new database).
+
+### On Orchard
+
+**None of these jobs exist yet. Creating them is an owner action** (Orchard dashboard or API); nothing in this repository creates them.
+
+Each job is an `app` step on the `web` deployment of `<project>`: it runs the command in the same image (`WORKDIR /rails`) with the same environment as the site. The entrypoint only runs `db:prepare` for the server command, so a job never migrates. Leave `envVars` empty: the jobs must read the same `NOTIFICATIONS_ENABLED`, `HOURS_SOURCE` and `SLACK_BOT_TOKEN` as `web`, never their own copies. Every run is a fresh pod that boots Rails, so cadence has a real cost (a per-minute job is 1,440 pod starts a day).
+
+Schedules are UTC, and that is fine: no command depends on when it fires. `game:settle` works out each user's settled days in that user's own time zone (local midnight plus `grace_hours` from `config/game.yml`), so an hourly run settles every zone, half-hour offsets included, within the hour; the dashboard also settles lazily. Daily reminder times and quiet hours are likewise computed per user by the dispatcher.
+
+Every job uses `concurrencyPolicy: forbid` (a fire is skipped while the previous run is still going) and one `app` step; `deployment: web` stands for the `deploymentId` of `web` in the same project. The first three can be created now; the rest only under the condition in their comment.
+
+```yaml
+- name: game-settle
+  description: Settle finished local days into daily_results (idempotent)
+  scheduleCron: "5 * * * *"        # UTC; settlement is per user's own zone, so any hourly minute works
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails game:settle", timeoutSeconds: 1800, retries: 1 }
+
+- name: privacy-purge-tokens
+  description: Delete used data-deletion token ids older than 7 days
+  scheduleCron: "20 9 * * *"       # UTC; night in the Americas, a tiny delete either way
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails privacy:purge_tokens", timeoutSeconds: 600, retries: 1 }
+
+- name: notifications-prune
+  description: Delete finished notification rows past retention_days (sends nothing)
+  scheduleCron: "40 9 * * *"       # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails notifications:prune", timeoutSeconds: 600, retries: 1 }
+
+- name: hackatime-sync              # create only once HOURS_SOURCE=http is set on web
+  description: Credit recent Hackatime time for linked accounts
+  scheduleCron: "35 * * * *"       # UTC; half an hour away from game-settle
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails \"hackatime:sync[all]\"", timeoutSeconds: 1800, retries: 0 }
+
+# The three below: create only when the owner enables notifications.
+- name: notifications-dispatch
+  description: Send due Slack DMs (no-op unless NOTIFICATIONS_ENABLED=true)
+  scheduleCron: "*/5 * * * *"      # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails notifications:dispatch", timeoutSeconds: 1800, retries: 0 }
+
+- name: notifications-ship-reminders
+  description: Queue ship reminders for projects that crossed an hours threshold
+  scheduleCron: "*/15 * * * *"     # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails notifications:ship_reminders", timeoutSeconds: 900, retries: 1 }
+
+- name: notifications-schedule-all
+  description: Re-queue the next daily reminder for every eligible user (idempotent)
+  scheduleCron: "50 9 * * *"       # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails notifications:schedule_all", timeoutSeconds: 900, retries: 1 }
+```
+
+Notes:
+
+- **`game-settle`** runs at minute 5 so the settle instant of whole-hour zones has just passed. It exits 0 even when some users fail: check `errors=` in its output line, not only the run status.
+- **`hackatime-sync`** calls Hackatime whenever it runs; the task does not check `HOURS_SOURCE` itself, which is why the job must not exist before that is set. Per-user failures are counted (`retry_later=`, `needs_reconnect=`), not raised, so retries stay at 0 and the next hour tries again. Order against `game-settle` does not matter: the grace period gives late hours several hours to land before a day settles.
+- **`privacy-purge-tokens`** is only a backstop (expired ids are also deleted as requests arrive). The time is arbitrary off-peak.
+- **`notifications-prune`** is the exception among the notification tasks: it sends nothing and only enforces retention, and finished rows exist even while notifications are off (changing a reminder schedule cancels the pending row), so create it now.
+- **`notifications-dispatch`** prints `enabled=false` and exits 0 while `NOTIFICATIONS_ENABLED` is not `true`, and in production refuses to send without `SLACK_BOT_TOKEN` (`halted=true`). Every 5 minutes is 288 pod starts a day instead of 1,440: reminders go out up to 5 minutes late, far inside `max_lateness_seconds` (3 hours), and the 5-minute send lease matches the cadence. A run handles at most 100 rows and one message per person (the task's built-in limit), roughly 1,200 an hour at this cadence; if reminders bunch up at popular times beyond that, tighten to `*/2` rather than adding steps. Retries 0 and a generous timeout because a run killed mid-send is the one way a DM can repeat (the leased row comes back after 5 minutes); the next fire is never more than 5 minutes away anyway.
+- **`notifications-ship-reminders`** only queues rows. Running it while notifications are off would queue messages the dispatcher later drops as stale (`event_max_lateness_seconds`, two days), so there is no point creating it earlier. To save pod starts it can be folded into the dispatch job, either as a first step (a failing scan then skips that dispatch) or as one command, `bin/rails notifications:ship_reminders notifications:dispatch` (one Rails boot for both; rake stops at the first task that raises). The scan then runs every 5 minutes instead of 15, which is more database work but changes nothing else: it is idempotent.
+- **`notifications-schedule-all`** is a safety net: daily reminders normally re-queue themselves (onboarding, settings changes, each send). It walks every onboarded user, which is why it is daily rather than a step of the dispatch job. Run it once on demand right after switching notifications on.
 
 ## Background jobs
 
