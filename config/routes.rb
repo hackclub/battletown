@@ -75,6 +75,16 @@ Rails.application.routes.draw do
     end
   end
 
+  # Plinko, the daily toy: the routes exist only while the `plinko` flag is on (a plain 404 otherwise; the controllers
+  # check the flag too). Signed in and onboarded only. Drops are JSON and decided on the server (docs/CONTRACT.md).
+  constraints Features::Constraint.new(:plinko) do
+    resource :plinko, only: :show, controller: "plinko" do
+      patch :leaderboard
+      post :nickname
+    end
+    post "plinko/drops", to: "plinko_drops#create", as: :plinko_drops
+  end
+
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 
@@ -103,6 +113,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#show"
     resource :metrics, only: :show
+    constraints(Features::Constraint.new(:plinko)) { resource :plinko, only: :show, controller: "plinko" }
     resources :bosses, only: %i[index edit update]
     constraints Features::Constraint.new(:nps) do
       get "nps", to: "nps#index", as: :nps

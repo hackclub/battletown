@@ -16,6 +16,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     Rails.application.env_config["action_dispatch.show_detailed_exceptions"] = false
     # Routes behind a feature flag exist only while it is on, and these checks read the router: run them with each flag on.
     Flipper.enable(:merch_track)
+    Flipper.enable(:plinko)
   end
 
   teardown do

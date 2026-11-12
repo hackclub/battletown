@@ -1,0 +1,10 @@
+<%# locals: (balls:) -%>
+<%# The dashboard teaser, shown only while the `plinko` flag is on: how many balls are ready, and a link. -%>
+<section class="card dash-panel dash-plinko" aria-labelledby="dash-plinko-title">
+  <h2 id="dash-plinko-title" class="dash-panel__title">Plinko</h2>
+  <p class="dash-big"><strong><%= balls.available %></strong> <span class="dash-big__label"><%= balls.available == 1 ? "ball" : "balls" %> ready to drop</span></p>
+  <p class="small">Every <%= pluralize(Plinko::Config.current.seconds_per_ball / 60, "minute") %> of coding earns a ball. Just for fun: points do not turn into coins.</p>
+  <div class="dash-actions">
+    <%= link_to(balls.any? ? "Drop a ball" : "Open Plinko", plinko_path, class: "btn btn--ghost") %>
+  </div>
+</section>

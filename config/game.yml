@@ -181,3 +181,34 @@ shared:
     invite_ttl_hours: 72
     # team:pay_pending only looks at ships approved within this many days.
     pay_pending_days: 3
+
+  # Plinko, the daily toy (app/services/plinko/**, read through Plinko::Config), behind the `plinko` flag. It never
+  # awards coins or prizes: balls come from counted coded time and give points, nothing else.
+  plinko:
+    # One ball for every this many counted coded minutes (counted = the hours ledger from the sign-up date, or from
+    # earning_starts_on, whichever is later). The count is cumulative: 7 minutes today and 3 tomorrow make one ball.
+    minutes_per_ball: 5
+    # The most balls that can wait in the bank at the end of a day. A new ball over the cap pushes out the oldest.
+    max_balls_banked: 20
+    # A ball can be dropped on the local day it was earned and the days after, until this many days have passed
+    # (7 means it is gone on the 7th day after the day it was earned).
+    ball_expiry_days: 7
+    # Optional launch date (YYYY-MM-DD): coded time before it earns no balls. Leave empty to count from each player's
+    # sign-up date (their first counted day).
+    earning_starts_on:
+    # Rows of pegs. A ball goes left or right with equal chance at every peg, so it lands in one of rows + 1 slots,
+    # numbered from 0 on the left. Slot k has chance C(rows, k) / 2^rows: with 8 rows that is
+    #   slot:    0    1     2     3     4     5     6     7    8
+    #   chance:  0.4% 3.1% 10.9% 21.9% 27.3% 21.9% 10.9% 3.1% 0.4%
+    # (the page shows the live table). The server picks the path from a random seed (Plinko::Board.walk); the
+    # browser only animates it.
+    rows: 8
+    # Points for each slot, left to right: rows + 1 numbers, a rare edge slot pays most. A ball always scores
+    # something: there is no losing slot. The average ball is worth about 83 points.
+    slot_points: [ 560, 200, 100, 70, 50, 70, 100, 200, 560 ]
+    # How many nicknames the weekly leaderboard shows (nicknames and points only).
+    leaderboard_size: 10
+    # Nicknames are "<adjective> <animal> <number from 10 to 99>", drawn at random from these lists, never from a
+    # name. A nickname is unique across players (case-insensitive). Keep every word plain and kind.
+    nickname_adjectives: [ Brave, Bright, Calm, Clever, Cosmic, Curious, Daring, Dizzy, Eager, Fluffy, Gentle, Glowing, Happy, Jolly, Keen, Lively, Lucky, Mellow, Mighty, Nimble, Plucky, Quick, Quiet, Rapid, Silly, Snappy, Sunny, Swift, Tiny, Witty, Zesty, Zippy ]
+    nickname_animals: [ Badger, Beaver, Bison, Camel, Corgi, Crane, Dingo, Dolphin, Falcon, Ferret, Fox, Gecko, Heron, Hedgehog, Ibex, Koala, Lemur, Lynx, Marmot, Newt, Otter, Owl, Panda, Parrot, Penguin, Puffin, Quokka, Raccoon, Seal, Tiger, Turtle, Walrus, Yak ]

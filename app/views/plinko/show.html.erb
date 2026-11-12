@@ -1,0 +1,133 @@
+<% content_for :title, "Plinko" %>
+<%# The daily toy. Balls come from coded minutes (Plinko::Balls); the server decides where each lands (Plinko::Drop) and
+    the plinko Stimulus controller only plays the route back. Points never turn into coins. One h1, one h2 per section.
+    Styles: plinko.css. -%>
+<% minutes = @config.seconds_per_ball / 60 %>
+<div class="container plinko stack">
+  <header class="page-header">
+    <p class="eyebrow">Just for fun</p>
+    <h1>Plinko</h1>
+    <p class="lead">Every <%= pluralize(minutes, "minute") %> of coding earns a ball. Drop it, watch it fall, score points. Plinko points do not turn into coins.</p>
+  </header>
+
+  <div class="plinko__layout"
+       data-controller="plinko"
+       data-plinko-url-value="<%= plinko_drops_path %>"
+       data-plinko-rows-value="<%= @board.rows %>"
+       data-plinko-points-value="<%= @board.slot_points.to_json %>"
+       data-plinko-balls-value="<%= @balls.available %>">
+    <section class="card plinko__board" aria-labelledby="plinko-board-title">
+      <h2 id="plinko-board-title" class="card__title">Drop a ball</h2>
+      <canvas class="plinko__canvas" data-plinko-target="canvas" role="img"
+              aria-label="A Plinko board: a ball falls through <%= @board.rows %> rows of pegs into one of <%= @board.slots %> slots. The slots on the edges pay the most."></canvas>
+      <p class="plinko__status" id="plinko-status" role="status" aria-live="polite" data-plinko-target="status">
+        <%= @balls.any? ? "Press the button to drop a ball." : "No balls yet. Code for a bit to earn one." %>
+      </p>
+      <div class="cluster plinko__controls">
+        <button type="button" class="btn btn--primary btn--lg" data-plinko-target="drop" data-action="plinko#drop" aria-describedby="plinko-status"<%= " disabled".html_safe unless @balls.any? %>>Drop a ball</button>
+        <p class="plinko__balls"><strong data-plinko-target="balls"><%= @balls.available %></strong> <span data-plinko-target="ballsLabel"><%= @balls.available == 1 ? "ball" : "balls" %></span> ready</p>
+        <button type="button" class="btn btn--ghost" data-plinko-target="sound" data-action="plinko#toggleSound" aria-pressed="true">Sound: <span data-state>on</span></button>
+      </div>
+      <noscript><p class="alert alert--warning">Plinko needs JavaScript to drop a ball.</p></noscript>
+      <p class="plinko__next muted" data-plinko-target="next">
+        <% if @balls.full %>
+          Your bank is full (<%= @config.max_balls_banked %> balls). Drop some so new ones are not lost.
+        <% else %>
+          Next ball in about <%= pluralize([ (@balls.seconds_to_next / 60.0).ceil, 1 ].max, "more minute") %> of coding.
+        <% end %>
+        <% if @balls.last_usable_on %>
+          Use your oldest ball by <%= l(@balls.last_usable_on, format: "%A %-d %B") %>; a ball lasts <%= pluralize(@config.ball_expiry_days, "day") %>.
+        <% end %>
+      </p>
+    </section>
+
+    <section class="card plinko__stats" aria-labelledby="plinko-stats-title">
+      <h2 id="plinko-stats-title" class="card__title">Your points</h2>
+      <dl class="plinko__totals">
+        <div><dt>Today</dt><dd data-plinko-target="today"><%= number_with_delimiter(@standings.today_points) %></dd></div>
+        <div><dt>This week</dt><dd data-plinko-target="week"><%= number_with_delimiter(@standings.week_points) %></dd></div>
+        <div><dt>All time</dt><dd data-plinko-target="total"><%= number_with_delimiter(@standings.total_points) %></dd></div>
+      </dl>
+      <% rank = @standings.rank %>
+      <p class="plinko__rank" data-plinko-target="rank">
+        <% if rank %>
+          Your place this week: <strong>#<%= rank.position %></strong> of <%= pluralize(rank.players, "player") %>. Only you see this, whether or not you are on the leaderboard.
+        <% else %>
+          Drop a ball to get a place this week. Weeks run Friday to Thursday.
+        <% end %>
+      </p>
+      <%= table_region("Your last 7 days") do %>
+        <table class="table table--zebra">
+          <caption>Your last 7 days</caption>
+          <thead>
+            <tr><th scope="col">Day</th><th scope="col" class="num">Balls dropped</th><th scope="col" class="num">Points</th></tr>
+          </thead>
+          <tbody>
+            <% @standings.days.each do |day| %>
+              <tr>
+                <th scope="row"><%= tag.time(l(day.date, format: "%a %-d %b"), datetime: day.date.iso8601) %></th>
+                <td class="num"><%= day.drops %></td>
+                <td class="num"><%= number_with_delimiter(day.points) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </section>
+
+    <section class="card plinko__leaderboard" aria-labelledby="plinko-board-heading">
+      <h2 id="plinko-board-heading" class="card__title">Weekly leaderboard</h2>
+      <p class="small">Top <%= @config.leaderboard_size %> this week, by nickname and points only. No names, no photos. It is just for fun: there are no prizes.</p>
+      <%= form_with url: leaderboard_plinko_path, method: :patch, class: "plinko__optin", data: { turbo: false } do %>
+        <%= hidden_field_tag :leaderboard_opt_in, "0", id: nil %>
+        <div class="field">
+          <label class="option" for="plinko-optin">
+            <%= check_box_tag :leaderboard_opt_in, "1", @player.leaderboard_opt_in, id: "plinko-optin", "aria-describedby": "plinko-optin-hint" %>
+            Show me on the leaderboard
+          </label>
+          <p class="field__hint" id="plinko-optin-hint">Off by default. Your nickname is <strong><%= @player.nickname %></strong>: made up for you, never your name.</p>
+        </div>
+        <%= button_tag "Save", type: "submit", class: "btn btn--primary btn--sm" %>
+      <% end %>
+      <%= button_to "Get a new nickname", nickname_plinko_path, class: "btn btn--ghost btn--sm", form: { data: { turbo: false } } %>
+
+      <% rows = @standings.leaderboard %>
+      <% if rows.any? %>
+        <ol class="plinko__list">
+          <% rows.each do |row| %>
+            <li class="<%= "is-you" if row.you %>">
+              <span class="plinko__nick"><%= row.nickname %><%= tag.span("you", class: "badge badge--primary") if row.you %></span>
+              <span class="plinko__score num"><%= number_with_delimiter(row.points) %></span>
+            </li>
+          <% end %>
+        </ol>
+      <% else %>
+        <p class="empty__text">Nobody is on the board yet this week.</p>
+      <% end %>
+    </section>
+
+    <section class="card plinko__odds" aria-labelledby="plinko-odds-title">
+      <h2 id="plinko-odds-title" class="card__title">The odds</h2>
+      <p class="small">Every peg sends the ball left or right with the same chance, so the middle is the most likely. The server picks the route; your browser only shows it. An average ball is worth about <%= number_with_precision(@board.expected_points, precision: 0) %> points.</p>
+      <%= table_region("Slot odds and points") do %>
+        <table class="table table--zebra">
+          <caption>Slot odds and points</caption>
+          <thead>
+            <tr><th scope="col">Slot</th><th scope="col" class="num">Chance</th><th scope="col" class="num">Points</th></tr>
+          </thead>
+          <tbody>
+            <% @board.odds.each_with_index do |chance, slot| %>
+              <tr>
+                <th scope="row"><%= slot + 1 %></th>
+                <td class="num"><%= number_to_percentage(chance.to_f * 100, precision: 1, strip_insignificant_zeros: true) %></td>
+                <td class="num"><%= number_with_delimiter(@board.points_for(slot)) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </section>
+  </div>
+
+  <p><%= link_to "Back to the dashboard", dashboard_path, class: "btn btn--ghost" %></p>
+</div>

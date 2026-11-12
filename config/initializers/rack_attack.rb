@@ -35,6 +35,12 @@ class Rack::Attack
     req.ip if req.path.start_with?("/team/join/") || (req.path.start_with?("/team") && !req.get?)
   end
 
+  # Plinko: dropping a ball, opting in and getting a new nickname are human-sized actions (a ball is also limited by the
+  # bank), so a limit per address that still leaves room for several people behind one shared network address.
+  throttle("plinko/ip", limit: 120, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/plinko") && !req.get?
+  end
+
   # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept
   # out of the general throttle below so a burst of requests there can never block it.
   throttle("privacy/ip", limit: 120, period: 1.minute) do |req|

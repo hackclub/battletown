@@ -57,6 +57,12 @@
             <p class="small">The goal and reward for each boss week.</p>
           </li>
         <% end %>
+        <% if feature?(:plinko) %>
+          <li class="card card--tight admin-link">
+            <h2 class="card__title"><%= link_to "Plinko", admin_plinko_path %></h2>
+            <p class="small">Balls dropped and players per day and week.</p>
+          </li>
+        <% end %>
       </ul>
     </nav>
 

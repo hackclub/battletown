@@ -1,0 +1,53 @@
+/* The Plinko page (app/views/plinko/**) and the dashboard teaser. Cards, buttons, tables and fields come from the shared
+   components (components.css); this only writes the page grid, the board canvas and the leaderboard list. Tokens only. */
+.plinko__layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.plinko__layout > * { min-width: 0; margin: 0; }
+
+@media (min-width: 64rem) {
+  .plinko__layout { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); }
+  .plinko__board { grid-row: span 2; }
+}
+
+.plinko__canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  margin-block: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.plinko__status { min-block-size: 3rem; margin-bottom: var(--space-3); font-weight: 700; }
+.plinko__controls { align-items: center; gap: var(--space-3) var(--space-4); }
+.plinko__balls { margin: 0; font-size: var(--text-lg); }
+.plinko__balls strong { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 400; letter-spacing: var(--tracking-heading); line-height: 1; }
+.plinko__next { margin-top: var(--space-3); margin-bottom: 0; }
+
+.plinko__totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin: 0 0 var(--space-4); }
+.plinko__totals > div { margin: 0; }
+.plinko__totals dt { color: var(--color-text-muted); font-size: var(--text-sm); }
+.plinko__totals dd { margin: 0; font-family: var(--font-display); font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
+.plinko__rank { margin-bottom: var(--space-4); }
+
+.plinko__optin { display: grid; gap: var(--space-3); justify-items: start; margin-block: var(--space-3); }
+.plinko__optin .field { margin: 0; }
+
+.plinko__list { display: grid; gap: var(--space-2); margin: var(--space-4) 0 0; padding: 0; list-style: none; counter-reset: place; }
+.plinko__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-block-size: var(--tap-size);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  counter-increment: place;
+}
+.plinko__list li::before { content: counter(place) "."; min-inline-size: 2ch; font-family: var(--font-display); }
+.plinko__list li.is-you { outline: 3px solid var(--color-ink-blue); }
+.plinko__nick { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.plinko__score { font-family: var(--font-display); }
+
+/* Dashboard teaser: a slim full-width card under the others on wide screens. */
+@media (min-width: 48rem) { .dash-plinko { grid-column: 1 / -1; order: 2; } }

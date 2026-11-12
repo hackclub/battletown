@@ -8,6 +8,7 @@ class DashboardController < ApplicationController
     @dashboard = Dashboard::Presenter.new(user: current_user)
     @quest_card = quest_card
     @team_summary = Teams::Summary.for(current_user) if feature?(:team)
+    @plinko = Plinko::Balls.for(current_user) if feature?(:plinko) # the teaser card; nothing is read while the flag is off
   end
 
   private
