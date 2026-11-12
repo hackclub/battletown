@@ -115,15 +115,18 @@
 .landing-hero__art { position: absolute; left: 0; top: 0; width: 100%; height: 98.77%; max-width: none; }
 .landing-hero__overlay { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; }
 
+/* Narrow screens: a cream pill under the floating account buttons. */
 .landing-referral {
   order: 0;
-  margin: 0;
+  margin: var(--space-16) var(--space-4) 0;
   padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
   background: var(--color-bg);
   color: var(--color-text);
   font-weight: 700;
   text-align: center;
 }
+.landing-referral ~ .landing-hero__content { padding-top: var(--space-6); }
 
 .landing-hero__content {
   position: relative;
@@ -342,6 +345,7 @@
 
   .landing-referral {
     position: absolute;
+    margin: 0;
     top: calc(12 * var(--u));
     left: 50%;
     z-index: 3;
