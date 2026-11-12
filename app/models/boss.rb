@@ -11,7 +11,8 @@ class Boss < ApplicationRecord
   # The most health a boss can have (100,000 hours); keeps the integer column far from overflow.
   MAX_HP_SECONDS = 360_000_000
   # A boss counts as started once its first day has begun in the earliest time zone on Earth (UTC+14), so an
-  # HP edit can never move anybody's bar once anybody could have started hitting it.
+  # HP edit can never move anybody's bar once anybody could have started hitting it. Any hours already on its dates
+  # start it too: Hours::Credit accepts a user's tomorrow, which in UTC+14 is a date no zone has reached yet.
   EARLIEST_ZONE = "Pacific/Kiritimati".freeze
 
   scope :covering, ->(date) { where(starts_on: ..date, ends_on: date..) }
@@ -50,7 +51,11 @@ class Boss < ApplicationRecord
     self.hp_seconds = nil
   end
 
-  def started?(now: Time.current) = starts_on.present? && now.in_time_zone(EARLIEST_ZONE).to_date >= starts_on
+  def started?(now: Time.current)
+    return false if starts_on.nil?
+
+    now.in_time_zone(EARLIEST_ZONE).to_date >= starts_on || (ends_on.present? && HourEntry.exists?(local_date: range))
+  end
 
   def self.human_attribute_name(attribute, options = {})
     attribute.to_s == "hp_seconds" ? "Health" : super

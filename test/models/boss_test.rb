@@ -117,6 +117,21 @@ class BossTest < ActiveSupport::TestCase
     end
   end
 
+  # Hours::Credit accepts the user's tomorrow, so a UTC+14 account can hit Friday's boss while it is still Thursday there.
+  test "health locks as soon as any hours land on the boss's dates, even before its first day begins anywhere" do
+    boss = make_boss(starts_on: Date.new(2026, 11, 20))
+    user = User.create!(hca_uid: "ident!boss-#{SecureRandom.hex(6)}")
+    user.update_columns(time_zone: "Pacific/Kiritimati", signed_up_on: Date.new(2026, 11, 1))
+
+    travel_to Time.utc(2026, 11, 18, 12) do
+      result = Hours::Credit.call(user: user, seconds: 600, source: "manual", idempotency_key: "early", local_date: Date.new(2026, 11, 20), note: "test")
+      assert result.created?
+      assert boss.started?
+      assert_not boss.update(hp_hours: 5)
+      assert_includes boss.errors.full_messages.join, "can't change once the boss has started"
+    end
+  end
+
   test "dates are not editable" do
     boss = make_boss
     assert_not boss.update(ends_on: boss.ends_on + 1)
