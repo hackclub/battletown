@@ -61,8 +61,8 @@ class Shop::ConcurrencyTest < ActiveSupport::TestCase
     give_coins(@user, 50)
     order = Shop::Purchase.call(user: @user, prize_key: "tshirt", idempotency_key: "to-cancel")
     outcomes = race(
-      -> { Shop::Cancel.call(order: Order.find(order.id), by: User.find(@user.id)) },
-      -> { Shop::Cancel.call(order: Order.find(order.id), by: User.find(@user.id)) }
+      -> { Orders::Cancel.call(order: Order.find(order.id), by: User.find(@user.id)) },
+      -> { Orders::Cancel.call(order: Order.find(order.id), by: User.find(@user.id)) }
     )
     assert_equal [ :ok, :ok ], outcomes.map(&:first)
     assert_equal 1, CoinTransaction.where(user_id: @user.id, kind: "refund").count

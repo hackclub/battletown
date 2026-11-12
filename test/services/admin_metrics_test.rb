@@ -119,7 +119,7 @@ class AdminMetricsTest < ActiveSupport::TestCase
     Shop::ClaimSticker.call(user: @teen)
     verified!(third)
     give_coins(third, 1000)
-    Shop::Cancel.call(order: buy(third, "keychain"), by: third)
+    Orders::Cancel.call(order: buy(third, "keychain"), by: third)
 
     assert_equal(
       { "Signed up" => 3, "Onboarded" => 1, "Connected Hackatime" => 2, "First coded day" => 2, "First ship submitted" => 2,

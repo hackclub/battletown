@@ -41,14 +41,6 @@ module Shop
     def initialize(msg = "You've already claimed your free sticker.") = super
   end
 
-  class NotCancellable < Error
-    def initialize(msg = "That order can't be cancelled any more.") = super
-  end
-
-  class NotFulfillable < Error
-    def initialize(msg = "That order can't be marked fulfilled.") = super
-  end
-
   # The same idempotency key was reused for a different request.
   class KeyConflict < Error
     def initialize(msg = "That request was already used for something else. Please try again.") = super
