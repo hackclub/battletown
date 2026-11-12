@@ -1,11 +1,13 @@
 require "test_helper"
 require_relative "../support/hca_address_helper"
+require_relative "../support/orders_helper"
 require_relative "../support/hackatime_helper"
 
 # The rules of the address round trip beyond the happy path: how many addresses, the OpenID Connect checks, who may start it, consent,
 # and every way Hack Club Auth can answer badly. All against a fake Hack Club Auth over a real local socket.
 class AddressLookupFlowTest < ActionDispatch::IntegrationTest
   include HcaAddressHelper
+  include OrdersTestHelper # with_orders_config
   include HackatimeHelper # capture_logs
 
   setup do
@@ -329,12 +331,24 @@ class AddressLookupFlowTest < ActionDispatch::IntegrationTest
 
   # --- limits and policy ---
 
-  test "starting a lookup is limited per person" do
+  test "starting a lookup is limited per person (config address_lookups_per_10_minutes)" do
     Rack::Attack.enabled = true
     Rack::Attack.cache.store.clear
-    Orders::Config.current.address_lookups_per_10_minutes.times { post "/auth/hack_club_address", params: checkout_params }
-    post "/auth/hack_club_address", params: checkout_params
-    assert_response :too_many_requests
+    with_orders_config(address_lookups_per_10_minutes: 3) do
+      3.times { post "/auth/hack_club_address", params: checkout_params }
+      assert_not_equal 429, response.status
+      post "/auth/hack_club_address", params: checkout_params
+      assert_response :too_many_requests
+    end
+  end
+
+  test "lookups do not use up the per-address sign-in limit, so a classroom behind one address can all order" do
+    Rack::Attack.enabled = true
+    Rack::Attack.cache.store.clear
+    with_orders_config(address_lookups_per_10_minutes: 100) do
+      15.times { post "/auth/hack_club_address", params: checkout_params }
+      assert_not_equal 429, response.status
+    end
   end
 
   test "the confirm page's Content-Security-Policy lets the form go to Hack Club Auth" do

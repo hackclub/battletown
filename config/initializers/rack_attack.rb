@@ -9,8 +9,10 @@ class Rack::Attack
   # right-most X-Forwarded-For address that is not a trusted proxy, so a client-supplied header value cannot
   # be used to dodge these limits. Private ranges are always trusted; list a public CDN or load balancer
   # in the TRUSTED_PROXIES env var, otherwise all visitors share the proxy's address.
+  # The address lookup at checkout (POST /auth/hack_club_address) has its own per-person limit below: counting it here too would let
+  # a classroom behind one address block each other from ordering.
   throttle("auth/ip", limit: 10, period: 1.minute) do |req|
-    req.ip if req.post? && (req.path.start_with?("/auth/") || req.path == "/dev_login")
+    req.ip if req.post? && ((req.path.start_with?("/auth/") && !req.path.match?(%r{\A/{1,3}auth/hack_club_address/?\z})) || req.path == "/dev_login")
   end
 
   # Hackatime linking: the callback is a GET (the POST that starts it is covered by auth/ip above), and connect /
