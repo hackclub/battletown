@@ -15,7 +15,7 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
 
     @admin = users(:onboarded)
     @teen = users(:new_user)
-    @teen.update_columns(display_name: "Casey Teen", email: "casey@example.com", slack_id: "U0CASEY", created_at: Time.utc(2026, 11, 1, 12),
+    @teen.update_columns(display_name: "Casey Teen", email: "casey@example.com", slack_id: "U0CASEY", created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1),
                          onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4)
     @project = make_project(@teen, name: "Cow Game")
     (7..9).each { |day| code(@teen, D[day], HOUR) }

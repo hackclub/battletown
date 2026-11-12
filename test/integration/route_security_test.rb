@@ -58,7 +58,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   test "every admin route is a 404 for signed-out visitors and non-admins, whatever the verb" do
     boss = Bosses::Seed.call && Boss.chronological.last
     teen = users(:new_user)
-    teen.update_columns(onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4, created_at: Time.utc(2026, 11, 1, 12))
+    teen.update_columns(onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4, created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
     project = make_project(teen)
     code(teen, Date.new(2026, 11, 8), HOUR)
     ship = submit_ship(project)
@@ -98,7 +98,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
 
   test "every user-scoped route answers 404 for someone else's ids and changes nothing" do
     owner = users(:onboarded)
-    owner.update_columns(created_at: Time.utc(2026, 11, 1, 12))
+    owner.update_columns(created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
     stranger = users(:new_user)
     stranger.update_columns(onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4)
     project = make_project(owner)

@@ -39,27 +39,11 @@ module Hours
       HourEntry.where(user_id: user.id, local_date: range).where(local_date: Days.first_counted_date(user)..)
     end
 
-    # Every user's entries on counted dates: the same rule as Days.first_counted_date, worked out in SQL. users.created_at
-    # is UTC; its local date comes from the user's zone through the zone's IANA id (an unknown or blank zone is UTC, as
-    # in Ruby).
+    # Every user's entries on counted dates: the same rule as Days.first_counted_date, worked out in SQL from the
+    # frozen `users.signed_up_on`.
     def counted(config: Config.current)
-      HourEntry.joins(:user).joins(zone_join)
-               .where("hour_entries.local_date >= ((users.created_at AT TIME ZONE 'UTC') AT TIME ZONE COALESCE(user_zones.iana, 'UTC'))::date - CAST(? AS integer)",
-                      config.days_before_signup_counted)
+      HourEntry.joins(:user)
+               .where("hour_entries.local_date >= users.signed_up_on - CAST(? AS integer)", config.days_before_signup_counted)
     end
-
-    # A VALUES list mapping every Rails zone name (what users.time_zone holds) and IANA id to the IANA id, limited to
-    # the ids this PostgreSQL knows so an older zone database can never make the boss query fail. Built once per process.
-    def zone_join
-      @zone_join ||= begin
-        connection = HourEntry.connection
-        known = connection.select_values("SELECT name FROM pg_timezone_names").to_set
-        rows = ActiveSupport::TimeZone.all.flat_map { |zone| [ [ zone.name, zone.tzinfo.name ], [ zone.tzinfo.name, zone.tzinfo.name ] ] }
-                                      .uniq(&:first).select { |_, iana| known.include?(iana) }
-        values = rows.map { |name, iana| "(#{connection.quote(name)}, #{connection.quote(iana)})" }.join(", ")
-        "LEFT JOIN (VALUES #{values}) AS user_zones(name, iana) ON user_zones.name = users.time_zone".freeze
-      end
-    end
-    private_class_method :zone_join
   end
 end

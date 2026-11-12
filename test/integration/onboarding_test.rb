@@ -235,6 +235,21 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_equal first, user.reload.onboarded_at
   end
 
+  test "the zone chosen while onboarding sets the sign-up date, and re-saving the schedule later never moves it" do
+    user = users(:new_user) # created at midnight UTC on 1 January: still 31 December in International Date Line West
+    sign_in_as user
+    finish_through(user, "project")
+    step("schedule", coding_day_names: %w[monday], coding_time: "18:30", time_zone: "International Date Line West")
+    assert_equal Date.new(2025, 12, 31), Hours::Days.first_counted_date(user.reload)
+
+    step("account")
+    step("celebrate")
+    assert user.reload.onboarded?
+    step("schedule", coding_day_names: %w[monday], coding_time: "18:30", time_zone: "UTC")
+    assert_equal "UTC", user.reload.time_zone
+    assert_equal Date.new(2025, 12, 31), Hours::Days.first_counted_date(user)
+  end
+
   test "onboarded users skip the celebration but can edit earlier steps" do
     user = users(:onboarded)
     sign_in_as user

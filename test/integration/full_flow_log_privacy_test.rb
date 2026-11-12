@@ -62,7 +62,7 @@ class FullFlowLogPrivacyTest < ActionDispatch::IntegrationTest
       patch onboarding_step_path("schedule"), params: { user: { coding_day_names: %w[monday friday], coding_time: "18:30", time_zone: "UTC" } }
       patch onboarding_step_path("account"), params: { user: {} }
       patch onboarding_step_path("celebrate"), params: { user: {} }
-      teen.reload.update_columns(created_at: Time.utc(2026, 11, 1, 12))
+      teen.reload.update_columns(created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
 
       project = teen.projects.first
       post project_hackatime_links_path(project), params: { hackatime_link: { hackatime_project: HACKATIME_NAME } }

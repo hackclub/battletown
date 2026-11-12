@@ -90,8 +90,8 @@ class Game::SignupCutoffTest < ActiveSupport::TestCase
 
   test "SQL and Ruby agree on the sign-up date across zones" do
     # 03:00 UTC on the 14th is still the 13th in Los Angeles; 12:00 UTC on the 13th is already the 14th in Auckland.
-    west = build_user(created_on: SIGNUP).tap { |user| user.update_columns(time_zone: "Pacific Time (US & Canada)", created_at: Time.utc(2026, 11, 14, 3)) }
-    east = build_user(created_on: BEFORE).tap { |user| user.update_columns(time_zone: "Auckland", created_at: Time.utc(2026, 11, 13, 12)) }
+    west = User.create!(hca_uid: "ident!cutoff-west", time_zone: "Pacific Time (US & Canada)", created_at: Time.utc(2026, 11, 14, 3))
+    east = User.create!(hca_uid: "ident!cutoff-east", time_zone: "Auckland", created_at: Time.utc(2026, 11, 13, 12))
     assert_equal BEFORE, Hours::Days.first_counted_date(west)
     assert_equal SIGNUP, Hours::Days.first_counted_date(east)
 

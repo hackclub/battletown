@@ -19,10 +19,12 @@ module Hours
     def zone_name(user_or_zone) = user_or_zone.respond_to?(:time_zone) ? user_or_zone.time_zone : user_or_zone
 
     # The first local date whose hours count for the game (boss damage, streaks, coins, the dashboard): the local date
-    # the account was created on, in the user's zone, minus `days_before_signup_counted` (0 by default). Earlier hours
-    # stay in the ledger but count for nothing. Hours::Totals applies the same rule in SQL for all users at once.
+    # the account was created on (`users.signed_up_on`, frozen once onboarding is done, so a later zone change never
+    # moves it), minus `days_before_signup_counted` (0 by default). Earlier hours stay in the ledger but count for
+    # nothing. Hours::Totals applies the same rule in SQL for all users at once. An unsaved user has no date yet: theirs
+    # is worked out the way it will be saved.
     def first_counted_date(user, config: Config.current)
-      local_date(user.created_at || Time.current, user) - config.days_before_signup_counted
+      (user.signed_up_on || local_date(user.created_at || Time.current, user)) - config.days_before_signup_counted
     end
   end
 end

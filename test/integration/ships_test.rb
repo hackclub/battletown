@@ -12,7 +12,7 @@ class ShipsTest < ActionDispatch::IntegrationTest
     @detailed = Rails.application.env_config["action_dispatch.show_detailed_exceptions"]
     Rails.application.env_config["action_dispatch.show_detailed_exceptions"] = false
     @user = users(:onboarded)
-    @user.update_columns(created_at: Time.utc(2026, 11, 1, 12))
+    @user.update_columns(created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
     @project = make_project(@user)
     @other_user = users(:new_user)
     @other_user.update_columns(onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4)

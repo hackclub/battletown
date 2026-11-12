@@ -18,7 +18,7 @@ class DashboardTest < ActionDispatch::IntegrationTest
     OmniAuth.config.test_mode = true
     @user = users(:onboarded)
     @today = Hours::Days.today(@user)
-    @user.update_columns(created_at: (@today - 30).in_time_zone("UTC")) # days before the account existed do not count
+    @user.update_columns(created_at: (@today - 30).in_time_zone("UTC"), signed_up_on: @today - 30) # days before the account existed do not count
   end
 
   teardown do
