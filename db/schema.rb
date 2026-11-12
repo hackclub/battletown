@@ -10,9 +10,56 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_020002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_030001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "coin_transactions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "amount", null: false
+    t.string "kind", null: false
+    t.string "reference_type", limit: 60
+    t.bigint "reference_id"
+    t.string "idempotency_key", limit: 120, null: false
+    t.string "note", limit: 200
+    t.string "created_by", limit: 40
+    t.datetime "created_at", null: false
+    t.index ["reference_type", "reference_id"], name: "index_coin_transactions_on_reference_type_and_reference_id"
+    t.index ["user_id", "created_at"], name: "index_coin_transactions_on_user_id_and_created_at"
+    t.index ["user_id", "idempotency_key"], name: "index_coin_transactions_on_user_id_and_idempotency_key", unique: true
+    t.check_constraint "(kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'refund'::character varying]::text[])) AND amount > 0 OR kind::text = 'purchase'::text AND amount < 0 OR kind::text = 'adjustment'::text", name: "coin_transactions_sign_check"
+    t.check_constraint "(reference_type IS NULL) = (reference_id IS NULL)", name: "coin_transactions_reference_check"
+    t.check_constraint "amount <> 0", name: "coin_transactions_amount_check"
+    t.check_constraint "char_length(idempotency_key::text) >= 1 AND char_length(idempotency_key::text) <= 120", name: "coin_transactions_idempotency_key_check"
+    t.check_constraint "created_by IS NULL OR created_by::text ~ '^[a-z0-9_:.-]{1,40}$'::text", name: "coin_transactions_created_by_check"
+    t.check_constraint "kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'purchase'::character varying, 'refund'::character varying, 'adjustment'::character varying]::text[])", name: "coin_transactions_kind_check"
+    t.check_constraint "note IS NULL OR char_length(note::text) <= 200", name: "coin_transactions_note_check"
+  end
+
+  create_table "daily_results", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "local_date", null: false
+    t.integer "raw_seconds", null: false
+    t.boolean "quick_met", null: false
+    t.boolean "goal_met", null: false
+    t.boolean "freeze_used", default: false, null: false
+    t.integer "streak_15", null: false
+    t.integer "goal_streak", null: false
+    t.boolean "freeze_available", null: false
+    t.integer "days_since_freeze", default: 0, null: false
+    t.integer "bonus_bps", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.index ["user_id", "local_date"], name: "index_daily_results_on_user_id_and_local_date", unique: true
+    t.check_constraint "NOT (bonus_bps > 0 AND NOT quick_met)", name: "daily_results_bonus_needs_quick_check"
+    t.check_constraint "NOT (bonus_bps > 0 AND streak_15 = 0)", name: "daily_results_bonus_needs_streak_check"
+    t.check_constraint "NOT (freeze_used AND bonus_bps > 0)", name: "daily_results_freeze_no_bonus_check"
+    t.check_constraint "NOT (freeze_used AND freeze_available)", name: "daily_results_freeze_spent_check"
+    t.check_constraint "NOT (freeze_used AND quick_met)", name: "daily_results_freeze_not_on_met_day_check"
+    t.check_constraint "NOT (freeze_used AND streak_15 = 0)", name: "daily_results_freeze_needs_streak_check"
+    t.check_constraint "bonus_bps >= 0 AND bonus_bps <= 10000", name: "daily_results_bonus_bps_check"
+    t.check_constraint "raw_seconds >= 0 AND raw_seconds <= 86400", name: "daily_results_raw_seconds_check"
+    t.check_constraint "streak_15 >= 0 AND goal_streak >= 0 AND days_since_freeze >= 0", name: "daily_results_counters_check"
+  end
 
   create_table "hackatime_links", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -151,6 +198,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_020002) do
     t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying, 'pending'::character varying, 'verified'::character varying, 'ineligible'::character varying]::text[])", name: "users_verification_status_check"
   end
 
+  add_foreign_key "coin_transactions", "users", on_delete: :cascade
+  add_foreign_key "daily_results", "users", on_delete: :cascade
   add_foreign_key "hackatime_links", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
   add_foreign_key "hackatime_links", "users", on_delete: :cascade
   add_foreign_key "hour_entries", "users", on_delete: :cascade

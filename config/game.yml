@@ -1,5 +1,5 @@
 # Game tunables, one top-level key per feature. Read through each feature's own config class
-# (hours: Hours::Config). Tunables only: no per-user data and no secrets.
+# (hours: Hours::Config; coins and streaks: Game::Config). Tunables only: no per-user data and no secrets.
 shared:
   # The hours ledger (app/services/hours/**).
   hours:
@@ -9,3 +9,34 @@ shared:
     max_backfill_days: 3
     # A user counts as active on a date from this many credited seconds (15 minutes).
     active_seconds: 900
+
+  # The coin economy and streaks (app/services/game/**, app/services/coins/**), read through Game::Config.
+  coins:
+    # Coins credited per APPROVED hour, before any streak bonus. Coins come from approved hours only.
+    per_approved_hour: 10
+
+    # Ship deflation (coins only, never boss damage): approved hours of a ship beyond this many since the previous
+    # ship convert at the multiplier. 0.8 means 8 coins per hour instead of 10 for the hours past the threshold.
+    deflation_after_hours: 6
+    deflation_multiplier: 0.8
+
+  streaks:
+    # A local day counts for the 15-minute streak (the one that drives the bonus ramp and the freeze) at this many
+    # coded minutes, and for the daily-goal streak (a counter for a later weekly merch track: no bonus, no freeze)
+    # at goal_minutes. Both are "at least": exactly the minimum counts.
+    quick_minutes: 15
+    goal_minutes: 60
+
+    # A local day is settled (becomes an immutable daily_results row) this many hours after local midnight, so a
+    # late Hackatime sync can still land on it.
+    grace_hours: 6
+
+    # The single auto-applied freeze protects the 15-minute streak from its first missed day. After it is used it
+    # is re-earned by this many consecutive qualifying days. A new player starts with it available.
+    freeze_regen_days: 7
+    freeze_starts_available: true
+
+    # Bonus percent on a day's base coins by 15-minute streak day (index 0 is day 1). Day 14 and beyond use the
+    # last value. One decimal each. Days 3 to 13 are the straight line from day 2 (7.0) to day 14 (20.0) rounded to
+    # one decimal; test/services/game/bonus_ramp_test.rb recomputes them. A missed day resets the streak to 0.
+    ramp_percent: [ 5.0, 7.0, 8.1, 9.2, 10.3, 11.3, 12.4, 13.5, 14.6, 15.7, 16.8, 17.8, 18.9, 20.0 ]

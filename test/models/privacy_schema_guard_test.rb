@@ -60,6 +60,9 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
     project = Project.create!(user: user, name: "Guard project", kind: "game")
     project.hackatime_links.create!(user_id: user.id, hackatime_project: "guard-project", link_method: "manual")
     project.link_suggestions.create!(hackatime_project: "guard-other")
+    CoinTransaction.create!(user: user, amount: 5, kind: "refund", idempotency_key: "guard-#{user.id}")
+    DailyResult.create!(user: user, local_date: Date.new(2026, 11, 1), raw_seconds: 0, quick_met: false, goal_met: false,
+                        streak_15: 0, goal_streak: 0, freeze_available: true)
     subject = Privacy::TokenVerifier::Subject.new(emails: [], slack_id: nil, identity_id: user.hca_uid)
 
     deleted = Privacy::Deleter.new(subject).call(dry_run: true).deleted
