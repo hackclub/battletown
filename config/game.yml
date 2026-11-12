@@ -17,6 +17,15 @@ shared:
     # count anyway; 0 means the sign-up date itself is the first that counts (fully).
     days_before_signup_counted: 0
 
+  # Staff user management (app/services/admin_users/**), read through AdminUsers::Config. Limits on one manual adjustment.
+  admin_users:
+    # The most coins one adjustment can add or take off.
+    max_adjust_coins: 500
+    # The most coded minutes one adjustment can add or take off (1440 = 24 hours; the ledger's own limit is one day).
+    max_adjust_minutes: 1440
+    # Viewing a person's page is written to the audit trail at most once per staff member and person in this many minutes.
+    view_audit_minutes: 10
+
   # The coin economy and streaks (app/services/game/**, app/services/coins/**), read through Game::Config.
   coins:
     # Coins credited per APPROVED hour, before any streak bonus. Coins come from approved hours only.
