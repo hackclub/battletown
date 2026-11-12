@@ -78,3 +78,10 @@
 .admin-form__errors p { margin-bottom: var(--space-1); font-weight: 700; }
 .admin-form__errors ul { margin: 0; padding-inline-start: var(--space-6); }
 .admin-dashboard__after { margin-top: var(--space-4); }
+
+/* Wide tables scroll sideways inside their own box on a phone instead of squeezing every word into one letter a line. */
+@media (max-width: 40rem) {
+  /* position: relative keeps the visually hidden column headings inside the scrolling box. */
+  .admin-table { position: relative; display: block; overflow-x: auto; }
+  .admin-table th, .admin-table td { white-space: nowrap; }
+}

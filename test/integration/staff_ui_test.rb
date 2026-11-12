@@ -49,6 +49,11 @@ class StaffUiTest < ActionDispatch::IntegrationTest
     assert_select ".admin-only", 0
   end
 
+  test "admin tables scroll inside their own box on phones, with a positioned box so hidden headings cannot escape it" do
+    css = Rails.root.join("app/assets/stylesheets/admin.css").read
+    assert_match(/@media \(max-width: 40rem\) \{[^}]*\.admin-table \{ position: relative; display: block; overflow-x: auto; \}/m, css)
+  end
+
   test "the staff stylesheet only strips button chrome from small staff chips, never from whole staff pages" do
     css = Rails.root.join("app/assets/stylesheets/staff.css").read
     assert_no_match(/\.(dev|admin)-only\.(dev|admin)-only \.btn/, css)
