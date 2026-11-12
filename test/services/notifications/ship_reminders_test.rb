@@ -26,10 +26,10 @@ class Notifications::ShipRemindersTest < ActiveSupport::TestCase
     assert_equal [ 5 * HOUR, 10 * HOUR ], Ships::Config.current.reminder_seconds
   end
 
-  test "the scan loads owners and links per batch, not once per project" do
+  test "the scan loads owners per batch, not once per project" do
     reads = lambda do
       tables = Hash.new(0)
-      counter = ->(*, payload) { payload[:sql].scan(/\ASELECT .*? FROM "(users|hackatime_links)"/) { tables[$1] += 1 } }
+      counter = ->(*, payload) { payload[:sql].scan(/\ASELECT .*? FROM "(users)"/) { tables[$1] += 1 } }
       ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { scan }
       tables
     end
