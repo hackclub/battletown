@@ -90,7 +90,7 @@ class UserSpendStateTest < ActiveSupport::TestCase
 
   test "a new row without a check time starts fresh (database default), so other code that creates users is not locked out" do
     user = User.create!(hca_uid: "ident!fresh", verification_status: "verified", ysws_eligible: true)
-    assert_in_delta Time.current, user.reload.verification_checked_at, 60
+    assert_in_delta ActiveRecord::Base.connection.select_value("SELECT now()"), user.reload.verification_checked_at, 60 # the default is the database clock
     with_feature(:eligibility_gate) { assert_predicate user, :can_spend_coins? }
   end
 

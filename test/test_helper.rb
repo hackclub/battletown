@@ -2,6 +2,7 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 require_relative "support/features_helper"
+require_relative "support/stub_method"
 
 module ActiveSupport
   class TestCase
@@ -12,6 +13,7 @@ module ActiveSupport
     fixtures :all
 
     include FeaturesHelper
+    include StubMethod
 
     # Add more helper methods to be used by all tests here...
   end

@@ -622,13 +622,22 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
 
   test "an audit failure rolls the change back" do
     admin!
-    AdminAudit.singleton_class.prepend(Module.new { def record!(**) = raise("audit down") })
+    # The archive only reaches the audit call when the item is active now: make that explicit rather than trusting what an earlier test left.
+    ShopItem.where(key: "tshirt").update_all(active: true)
+    Prize.reload!
+    reached = false
+    previous = Rails.application.env_config["action_dispatch.show_exceptions"]
+    Rails.application.env_config["action_dispatch.show_exceptions"] = :none # let the error come out of the request instead of a 500 page
     begin
-      assert_raises(RuntimeError) { patch "/admin/shop/tshirt/archive" }
+      stub_method(AdminAudit, :record!, ->(**) { reached = true; raise "audit down" }) do
+        assert_raises(RuntimeError) { patch "/admin/shop/tshirt/archive" }
+      end
     ensure
-      AdminAudit.singleton_class.ancestors.first.send(:remove_method, :record!)
+      Rails.application.env_config["action_dispatch.show_exceptions"] = previous
     end
-    assert ShopItem.find_by!(key: "tshirt").active
+    assert reached, "the archive must have called the audit trail"
+    assert ShopItem.find_by!(key: "tshirt").active, "the change was rolled back with the failed audit row"
+    assert_nothing_raised { AdminAudit.record!(actor: @admin, action: "shop_item_archived", subject: ShopItem.find_by!(key: "tshirt")) }
   end
 
   # --- the catalogue is not set up yet ---

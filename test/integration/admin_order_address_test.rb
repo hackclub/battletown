@@ -90,11 +90,13 @@ class AdminOrderAddressTest < ActionDispatch::IntegrationTest
   test "the audit row is written before the page is built: a failure while building it still leaves the record" do
     original = Admin::OrdersController.instance_method(:load_show)
     Admin::OrdersController.define_method(:load_show) { raise "page failed" }
+    previous = Rails.application.env_config["action_dispatch.show_exceptions"]
     begin
       Rails.application.env_config["action_dispatch.show_exceptions"] = :none
       assert_raises(RuntimeError) { reveal }
     ensure
-      Rails.application.env_config.delete("action_dispatch.show_exceptions")
+      # Put back what was there: deleting the key would turn every later test's errors into rendered 500 pages (nil means :all).
+      Rails.application.env_config["action_dispatch.show_exceptions"] = previous
       Admin::OrdersController.define_method(:load_show, original)
     end
     assert_equal 1, AdminAuditEvent.where(action: "order_address_revealed").count

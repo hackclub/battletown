@@ -6,6 +6,7 @@ class ReturningDashboardTest < ActionDispatch::IntegrationTest
   include ShipsTestSupport
 
   setup do
+    travel_to Time.utc(2026, 11, 16, 15) # midday UTC: what "today" and "settled" mean must not depend on the hour the suite runs
     OmniAuth.config.test_mode = true
     @user = users(:onboarded)
     @today = Hours::Days.today(@user)
@@ -13,6 +14,7 @@ class ReturningDashboardTest < ActionDispatch::IntegrationTest
   end
 
   teardown do
+    travel_back
     OmniAuth.config.test_mode = false
     OmniAuth.config.mock_auth[:hack_club] = nil
   end

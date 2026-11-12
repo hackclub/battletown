@@ -28,6 +28,9 @@ class OrderPrivacyEndToEndTest < ActionDispatch::IntegrationTest
   NEEDLES = [ STREET, STREET_2, POSTAL, PHONE, PHONE_DIGITS, RECIPIENT, BUYER, TRACKING, STAFF_NOTE, "Zqprobe", "Zqother" ].freeze
 
   setup do
+    # A daytime instant, pinned for the whole flow: the dispatcher holds messages back during quiet hours (22:00 to 07:00 by default),
+    # so a run at night with the real clock would send nothing.
+    travel_to Time.utc(2026, 11, 16, 12)
     OmniAuth.config.test_mode = true
     Features::NAMES.each { |name| Flipper.enable(name) }
     install_privacy_jwks
@@ -147,9 +150,8 @@ class OrderPrivacyEndToEndTest < ActionDispatch::IntegrationTest
     assert_not_includes whole_database_text, STREET_2, "the address columns are ciphertext at rest"
 
     # After the retention period the purge deletes the address; the buyer is then deleted through the data-deletion service.
-    travel_to 32.days.from_now do
-      assert_equal 1, Orders::PurgeAddresses.all
-    end
+    travel_to Time.current + 32.days
+    assert_equal 1, Orders::PurgeAddresses.all
     claims = privacy_claims(subject: privacy_subject(emails: [ EMAIL ], slack_id: "U0ORDERBUY", identity_id: @buyer.hca_uid))
     privacy_call("delete", privacy_token(claims))
     assert_response :ok

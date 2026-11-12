@@ -57,12 +57,8 @@ class UserNoteTest < ActiveSupport::TestCase
   end
 
   test "an audit failure rolls the note back" do
-    original = AdminAudit.method(:record!)
-    AdminAudit.define_singleton_method(:record!) { |**| raise ActiveRecord::StatementInvalid, "boom" }
-    begin
+    stub_method(AdminAudit, :record!, ->(**) { raise ActiveRecord::StatementInvalid, "boom" }) do
       assert_raises(ActiveRecord::StatementInvalid) { add("Will not stay.") }
-    ensure
-      AdminAudit.define_singleton_method(:record!, original)
     end
     assert_equal 0, UserNote.count
   end

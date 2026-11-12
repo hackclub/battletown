@@ -34,7 +34,8 @@ class AddVerificationCheckedAtMigrationTest < ActiveSupport::TestCase
     assert_predicate column.default_function, :present?
 
     insert_user("ident!after", created_at: Time.current, updated_at: Time.current)
-    assert_in_delta Time.current, User.find_by!(hca_uid: "ident!after").verification_checked_at, 60
+    # The column default is the DATABASE's clock (the same transaction time here), so compare with that, not this process's clock.
+    assert_in_delta ActiveRecord::Base.connection.select_value("SELECT now()"), User.find_by!(hca_uid: "ident!after").verification_checked_at, 60
   end
 
   test "running the backfill again leaves checked times alone" do
