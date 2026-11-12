@@ -80,7 +80,7 @@
             <div class="field">
               <%= form.label :approved_hours, "Approved hours (leave empty to approve all #{ship_hours(ship.coded_seconds)})" %>
               <%= form.number_field :approved_hours, class: "input", min: config.step_seconds / 3600.0, max: (ship.coded_seconds / 3600.0).floor(2), step: config.step_seconds / 3600.0, placeholder: (ship.coded_seconds / 3600.0).round(2), "aria-describedby": "approve-hint" %>
-              <span id="approve-hint" class="field__hint admin-form__hint">Can only be lowered, in steps of <%= format("%g", config.step_seconds / 3600.0) %> hours. Approving credits coins once, however many times it is pressed.</span>
+              <span id="approve-hint" class="field__hint admin-form__hint">Can only be lowered, in steps of <%= pluralize(format("%g", config.step_seconds / 3600.0), "hour") %>. Approving credits coins once, however many times it is pressed.</span>
             </div>
             <div><%= form.submit(@unsettled.any? ? "Approve anyway" : "Approve", class: "btn btn--primary") %></div>
           <% end %>

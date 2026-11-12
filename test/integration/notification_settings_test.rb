@@ -47,7 +47,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
 
   # --- the screen ---
 
-  test "shows every kind with a plain label, all on by default, and a Save button" do
+  test "shows every kind with a plain label, all on by default, and a Save changes button" do
     sign_in_as(@user)
     get settings_notifications_path
     assert_response :success
@@ -60,7 +60,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
       assert_select "input[type=hidden][name='preferences[#{kind}]'][value='0']"
       assert_select "label[for=preferences_#{kind}] .notification-settings__title", text: Notifications::Config.current.label(kind)["title"]
     end
-    assert_select "input[type=submit][value=Save]"
+    assert_select "input[type=submit][value='Save changes']"
     assert_select ".notification-settings__note", count: 0
     assert_equal "no-store", response.headers["Cache-Control"]
   end
