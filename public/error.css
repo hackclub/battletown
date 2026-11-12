@@ -1,9 +1,35 @@
 /*
- * Styles for the static error pages (404, 422, 500). Those files are served as-is, outside the Rails asset
- * pipeline, so this file is plain CSS with no digest. The colours are copied from app/assets/stylesheets/tokens.css
- * (a CSS file cannot import the digested stylesheet from here), so keep them in sync when the tokens change.
- * No inline styles or scripts are used, which keeps the pages valid under the app's CSP (style-src 'self').
+ * Styles for the static error pages (400, 404, 406, 422, 500). Those files are served as-is, outside the Rails asset
+ * pipeline, so this file is plain CSS with no digest and no custom properties (a 406 page must work in an old
+ * browser). The colours are copied from app/assets/stylesheets/tokens.css, each with its token name, so keep them in
+ * sync when the tokens change. No inline styles or scripts are used, which keeps the pages valid under the app's CSP
+ * (style-src 'self'). Fonts, logo and scene are same-origin copies in /error-fonts, /error-logo.svg and
+ * /error-scene.svg (SIL Open Font License 1.1, see app/assets/fonts/README.md), so the pages never depend on the app.
+ * Contrast: black on cream 20.8:1, muted #4a4234 on cream 9.8:1, ink blue on sky 5.9:1, cream on the pink button is
+ * 3.1:1 and only used at 24px and up (large text).
  */
+@font-face {
+  font-family: "Poetsen One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/error-fonts/poetsen-one-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "M PLUS Rounded 1c";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/error-fonts/mplus-rounded-1c-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "M PLUS Rounded 1c";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/error-fonts/mplus-rounded-1c-700.woff2") format("woff2");
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -15,34 +41,34 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  background: #fffef5; /* --color-bg */
+  gap: 1.5rem;
+  padding: 1.5rem 1rem;
+  background: #b1dcfe; /* --color-page (sky) */
   color: #000000; /* --color-text */
-  font: 1rem / 1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 500 1rem / 1.6 "M PLUS Rounded 1c", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* --font-body */
 }
 
-.brand {
-  margin: 0 0 1rem;
-  color: #000000;
-  font-size: 1.25rem;
-  font-weight: 800;
-  text-decoration: none;
-}
+strong { font-weight: 700; }
+
+body > header { width: 12rem; max-width: 70%; }
+.brand { display: block; line-height: 0; }
+.brand img { display: block; width: 100%; height: auto; }
 
 .card {
   width: 100%;
-  max-width: 32rem;
-  padding: 2rem;
-  border: 1px solid #dcc7a1; /* --color-border */
-  border-radius: 0.75rem; /* --radius-md */
-  background: #ffffff; /* --color-surface */
-  box-shadow: 0 8px 24px rgb(66 54 36 / 0.16); /* --shadow-md */
+  max-width: 34rem;
+  padding: 1.5rem 1.5rem 2rem;
+  border-bottom: 0.375rem solid #ffeada; /* --border-chunky, --color-cta-edge */
+  border-radius: 3rem; /* --radius-xl */
+  background: #fffef5; /* --color-bg (cream) */
   text-align: center;
 }
 
+.scene { display: block; width: 14rem; max-width: 70%; height: auto; margin: 0 auto 0.5rem; }
+
 .code {
   margin: 0 0 0.5rem;
-  color: #6b6150; /* --color-text-muted */
+  color: #0044b2; /* --color-ink-blue */
   font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -51,26 +77,45 @@ body {
 
 h1 {
   margin: 0 0 1rem;
-  font-size: 1.75rem;
-  line-height: 1.2;
+  font: 400 clamp(2rem, 1.2rem + 3.6vw, 3rem) / 1.2 "Poetsen One", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif; /* --font-display */
+  letter-spacing: -0.03em; /* --tracking-heading */
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 p { margin: 0 0 1rem; }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1.5rem;
-  border: 2px solid #cc0052; /* --color-primary */
-  border-radius: 999px;
-  background: #cc0052; /* --color-primary */
-  color: #fffef5; /* --color-primary-contrast */
-  font: inherit;
-  font-weight: 700;
+/* The pink call to action, as on the landing page (Figma 71:1000) at 24px: cream wrapper, pink face, pressed edge. */
+.cta {
+  display: inline-block;
+  max-width: 100%;
+  margin: 0.5rem 0 0.25rem;
+  padding: 0.4167em;
+  border-bottom: 0.125em solid #ffeada; /* --color-cta-edge */
+  border-radius: 1em; /* --radius-xl at this size */
+  background: #fffef5; /* --color-bg */
+  color: #fffef5; /* --color-bg */
+  font: 400 1.5rem / 1 "Poetsen One", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif; /* --text-md, --font-display */
+  letter-spacing: -0.06em; /* --tracking-display */
   text-decoration: none;
 }
-.btn:hover { filter: brightness(1.1); }
+.cta__face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.354em;
+  min-height: 2.75rem; /* --tap-size */
+  padding: 0.35em 0.708em;
+  border-radius: 0.5833em; /* --radius-lg */
+  background: #ff4797; /* --color-cta */
+  box-shadow: inset 0 -0.1667em 0 #ff2d84; /* --shadow-cta-edge */
+}
+.cta__arrow { flex: none; width: 0.87em; height: 0.875em; overflow: visible; }
+.cta:hover { color: #fffef5; filter: brightness(1.06); }
+.cta:focus-visible {
+  outline: 3px solid #0563de; /* --color-focus */
+  outline-offset: 4px;
+}
 
 a:focus-visible {
   outline: 3px solid #0563de; /* --color-focus */
@@ -78,7 +123,13 @@ a:focus-visible {
 }
 
 .footnote {
-  margin: 1.5rem 0 0;
-  color: #6b6150; /* --color-text-muted */
+  margin: 1rem 0 0;
+  color: #4a4234; /* --color-text-muted */
   font-size: 0.875rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cta { transition: transform 120ms ease; }
+  .cta:hover { transform: translateY(-0.04em); }
+  .cta:active { transform: translateY(0.03em); }
 }

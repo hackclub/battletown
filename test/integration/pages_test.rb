@@ -56,6 +56,17 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "legal pages are one readable prose panel with a single h1 and no inline styles" do
+    { "/privacy" => "Privacy", "/terms" => "Terms" }.each do |path, heading|
+      get path
+      assert_select "article.panel .prose", 1
+      assert_select "h1", text: heading, count: 1
+      assert_select "article .eyebrow", text: "Legal"
+      assert_select "[style]", 0
+      assert_select "article", text: /placeholder/
+    end
+  end
+
   test "security headers are set" do
     get "/"
     assert_match(/script-src 'self' 'nonce-/, response.headers["Content-Security-Policy"])
