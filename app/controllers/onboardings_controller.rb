@@ -71,7 +71,14 @@ class OnboardingsController < ApplicationController
     return false if user.errors.any?
 
     user.onboarding_step = [ user.onboarding_step, @index + 1 ].max
-    user.save
+    # The project step also creates or updates the user's first project (the old user columns stay populated).
+    saved = false
+    User.transaction do
+      saved = user.save && (@step != "project" || Project.sync_first_from_onboarding(user))
+      raise ActiveRecord::Rollback unless saved
+    end
+    user.errors.add(:project_idea, "couldn't be saved as a project. Please try again.") if !saved && user.errors.empty?
+    saved
   end
 
   def after_save_path

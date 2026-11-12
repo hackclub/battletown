@@ -10,6 +10,22 @@ Rails.application.routes.draw do
     patch "", to: "onboardings#update"
   end
 
+  # Signed-in, onboarded users only; every lookup is scoped to the current user (others' ids are a 404).
+  resources :projects, except: :show do
+    member do
+      patch :activate
+      patch :archive
+      patch :unarchive
+    end
+    resources :hackatime_links, only: %i[create destroy]
+    resources :link_suggestions, only: [] do
+      member do
+        patch :accept
+        patch :decline
+      end
+    end
+  end
+
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 

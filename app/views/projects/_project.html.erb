@@ -1,0 +1,38 @@
+<% info = project_kind_info(project.kind) %>
+<li class="card project <%= "project--active" if project.active? %>">
+  <div class="project__head">
+    <h2 class="project__name"><%= project.name %></h2>
+    <% if project.active? %><span class="badge badge--active">Active project</span><% end %>
+    <% if project.status_archived? %><span class="badge">Archived</span><% end %>
+  </div>
+  <p class="project__kind"><span aria-hidden="true"><%= info[:emoji] %></span> <%= info[:name] %></p>
+  <% if project.idea.present? %><p class="project__idea"><%= project.idea %></p><% end %>
+
+  <% if project.repo_url.present? || project.demo_url.present? %>
+    <ul class="project__links">
+      <% if project.repo_url.present? %><li><%= project_external_link "GitHub", project.repo_url %></li><% end %>
+      <% if project.demo_url.present? %><li><%= project_external_link "Demo", project.demo_url %></li><% end %>
+    </ul>
+  <% end %>
+
+  <% names = project.hackatime_links.sort_by(&:id).map(&:hackatime_project) %>
+  <p class="project__hackatime">
+    <% if names.any? %>
+      <span class="project__label">Hackatime:</span> <%= safe_join(names.map { |name| tag.span(name, class: "chip-name") }, " ") %>
+    <% else %>
+      <span class="project__label">No Hackatime project linked yet.</span>
+    <% end %>
+  </p>
+
+  <div class="project__actions">
+    <%= link_to "Edit", edit_project_path(project), class: "btn btn--ghost" %>
+    <% if project.status_active? && !project.active? %>
+      <%= button_to "Make active", activate_project_path(project), method: :patch, class: "btn btn--primary" %>
+    <% end %>
+    <% if project.status_active? %>
+      <%= button_to "Archive", archive_project_path(project), method: :patch, class: "btn btn--ghost" %>
+    <% else %>
+      <%= button_to "Unarchive", unarchive_project_path(project), method: :patch, class: "btn btn--ghost" %>
+    <% end %>
+  </div>
+</li>

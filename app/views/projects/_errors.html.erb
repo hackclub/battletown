@@ -1,0 +1,10 @@
+<% if record.errors.any? %>
+  <div class="projects-errors" role="alert">
+    <p>Let's fix a couple of things:</p>
+    <ul>
+      <% project_error_messages(record).each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

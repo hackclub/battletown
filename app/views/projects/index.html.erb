@@ -1,0 +1,40 @@
+<% content_for :title, "Projects" %>
+<section class="container projects">
+  <header class="projects-header">
+    <div>
+      <h1>Your projects</h1>
+      <p class="projects-lead">Keep a few going. One is active at a time, and that's where your coding time counts.</p>
+    </div>
+    <% if current_user.projects.count < Project::MAX_PER_USER %>
+      <%= link_to "Add a project", new_project_path, class: "btn btn--primary btn--lg" %>
+    <% else %>
+      <p class="projects-hint">You've reached <%= Project::MAX_PER_USER %> projects. Delete one to add another.</p>
+    <% end %>
+  </header>
+
+  <% if @suggestions.any? %>
+    <section class="card projects-section" aria-labelledby="suggestions-heading">
+      <h2 id="suggestions-heading">Is this yours?</h2>
+      <ul class="suggestions"><%= render partial: "projects/suggestion", collection: @suggestions, as: :suggestion %></ul>
+    </section>
+  <% end %>
+
+  <% if @live.empty? && @archived.empty? %>
+    <div class="card projects-empty-card">
+      <h2>No projects yet</h2>
+      <p>Add the first thing you're building and start logging time on it.</p>
+      <%= link_to "Add a project", new_project_path, class: "btn btn--primary" %>
+    </div>
+  <% end %>
+
+  <ul class="project-list">
+    <%= render partial: "projects/project", collection: @live, as: :project %>
+  </ul>
+
+  <% if @archived.any? %>
+    <h2 class="projects-subhead">Archived</h2>
+    <ul class="project-list project-list--archived">
+      <%= render partial: "projects/project", collection: @archived, as: :project %>
+    </ul>
+  <% end %>
+</section>

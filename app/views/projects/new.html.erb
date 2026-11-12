@@ -1,0 +1,7 @@
+<% content_for :title, "New project" %>
+<section class="container projects projects--narrow">
+  <p class="projects-back"><%= link_to "← All projects", projects_path %></p>
+  <h1>Add a project</h1>
+  <p class="projects-lead">Got something new to build? Add it here. You can keep a few going, with one active at a time.</p>
+  <div class="card"><%= render "projects/form", project: @project %></div>
+</section>

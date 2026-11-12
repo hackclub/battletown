@@ -1,0 +1,37 @@
+<%= form_with model: project, scope: :project, url: (project.persisted? ? project_path(project) : projects_path), class: "projects-form" do |f| %>
+  <%= render "projects/errors", record: project %>
+
+  <div class="projects-field">
+    <%= f.label :name, "Project name" %>
+    <%= f.text_field :name, maxlength: Project::NAME_RANGE.max, required: true, autocomplete: "off" %>
+    <p class="projects-hint">Up to <%= Project::NAME_RANGE.max %> characters. You can rename it any time.</p>
+  </div>
+
+  <div class="projects-field">
+    <%= f.label :kind, "What kind of project is it?" %>
+    <%= f.select :kind, project_kind_options %>
+  </div>
+
+  <div class="projects-field">
+    <%= f.label :idea, "What is it? (optional)" %>
+    <%= f.text_area :idea, rows: 3, maxlength: Project::IDEA_MAX, placeholder: "A sentence is plenty." %>
+    <p class="projects-hint">Up to <%= Project::IDEA_MAX %> characters.</p>
+  </div>
+
+  <div class="projects-field">
+    <%= f.label :repo_url, "GitHub link (optional)" %>
+    <%= f.url_field :repo_url, maxlength: Project::URL_MAX, placeholder: "https://github.com/your-name/your-repo", autocomplete: "off" %>
+    <p class="projects-hint">The repository's main page. If a Hackatime project uses the same repo, we can link them for you.</p>
+  </div>
+
+  <div class="projects-field">
+    <%= f.label :demo_url, "Demo link (optional)" %>
+    <%= f.url_field :demo_url, maxlength: Project::URL_MAX, placeholder: "https://", autocomplete: "off" %>
+    <p class="projects-hint">Where people can try it. Must start with https://</p>
+  </div>
+
+  <div class="projects-actions">
+    <%= f.button (project.persisted? ? "Save changes" : "Add project"), class: "btn btn--primary btn--lg" %>
+    <%= link_to "Cancel", projects_path, class: "btn btn--ghost" %>
+  </div>
+<% end %>
