@@ -68,6 +68,26 @@ class NpsFeedbackTest < ActionDispatch::IntegrationTest
     assert_match(/noindex/, response.headers["X-Robots-Tag"])
   end
 
+  # Decision (final integration pass): the app-wide Referrer-Policy stays strict-origin-when-cross-origin. The survey page alone
+  # uses same-origin, the strictest value that still lets the browser send an Origin header on the form POST (no-referrer makes
+  # Chrome send "Origin: null", which Rails refuses). Every other entry point (Slack link to this page, crew invite, unsubscribe
+  # link, sign-in and Hackatime callbacks) is a GET and needs no Origin, so they keep the global value or stricter.
+  test "only the survey page departs from the app-wide referrer policy, and no page is looser than the default" do
+    Flipper.enable(:team)
+    Flipper.enable(:email)
+    default = "strict-origin-when-cross-origin"
+    [ "/", "/privacy", "/auth/failure" ].each do |path|
+      get path
+      assert_equal default, response.headers["Referrer-Policy"], path
+    end
+    get "/team/join/#{Team.new_token}"
+    assert_includes [ default, nil ], response.headers["Referrer-Policy"].presence || nil
+    get feedback_path(token)
+    assert_equal "same-origin", response.headers["Referrer-Policy"]
+    get "/email/unsubscribe/anything"
+    assert_equal "no-referrer", response.headers["Referrer-Policy"], "the unsubscribe POST is exempt from CSRF, so Origin: null is harmless there"
+  end
+
   test "a bad link of any kind gets the same page and reveals nothing" do
     good = token
     bad_links = [ "a" * 40, good[0..-2] + (good[-1] == "a" ? "b" : "a"), good.sub(/\A./, "Z"), token(now: Time.current - 8.days),

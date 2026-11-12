@@ -27,6 +27,8 @@
 .dev-page .card, .dev-page .table-wrap { border-bottom-color: var(--color-dev); color: var(--color-text); }
 
 /* Dashboard: section links as tappable cards (the heading link stretches over the whole card), then the stat tiles. */
+.admin-sections__title { margin: 1.5rem 0 0.5rem; font-size: 1.125rem; }
+.admin-sections__title:first-child { margin-top: 0; }
 .admin-links { --grid-min: 14rem; margin: 0; padding: 0; list-style: none; }
 .admin-link { position: relative; display: grid; gap: var(--space-2); align-content: start; }
 .admin-link > * { margin: 0; }

@@ -7,66 +7,76 @@
       <p class="admin-dashboard__note">Read-only, aggregate counts only. No names, emails or ids are shown here. Signup days are UTC.</p>
     </header>
 
-    <nav aria-label="Admin sections">
+    <nav aria-label="Admin sections" class="admin-sections">
+      <%# Grouped by what staff do: decide things people are waiting on, set up the game, read the numbers, switch features. %>
+      <h2 class="admin-sections__title">Waiting for you</h2>
       <ul class="grid admin-links">
         <li class="card card--tight admin-link">
-          <h2 class="card__title"><%= link_to "Ship review queue", admin_ships_path %></h2>
+          <h3 class="card__title"><%= link_to "Ship review queue", admin_ships_path %></h3>
           <p class="admin-link__count"><%= admin_badge("#{@pending_ships} waiting", @pending_ships.positive? ? "badge--warning" : "badge--muted") %></p>
           <p class="small">Approve or reject submitted ships.</p>
         </li>
         <li class="card card--tight admin-link">
-          <h2 class="card__title"><%= link_to "Shop orders", admin_orders_path %></h2>
+          <h3 class="card__title"><%= link_to "Shop orders", admin_orders_path %></h3>
           <p class="admin-link__count"><%= admin_badge("#{requested_orders} requested", requested_orders.positive? ? "badge--warning" : "badge--muted") %></p>
           <p class="small">Fulfil or cancel what people ordered.</p>
         </li>
         <% if feature?(:merch_track) %>
           <% requested_merch = MerchClaim.where(status: "requested").count %>
           <li class="card card--tight admin-link">
-            <h2 class="card__title"><%= link_to "Merch claims", admin_merch_claims_path %></h2>
+            <h3 class="card__title"><%= link_to "Merch claims", admin_merch_claims_path %></h3>
             <p class="admin-link__count"><%= admin_badge("#{requested_merch} requested", requested_merch.positive? ? "badge--warning" : "badge--muted") %></p>
             <p class="small">Fulfil or cancel weekly reward claims.</p>
           </li>
         <% end %>
+      </ul>
+
+      <h2 class="admin-sections__title">Set up the game</h2>
+      <ul class="grid admin-links">
         <li class="card card--tight admin-link">
-          <h2 class="card__title"><%= link_to "Metrics", admin_metrics_path %></h2>
-          <p class="small">Daily and weekly actives, funnel, last active day.</p>
-        </li>
-        <% if feature?(:email) %>
-          <li class="card card--tight admin-link">
-            <h2 class="card__title"><%= link_to "Email", admin_email_path %></h2>
-            <p class="small">Email rows per week, by status.</p>
-          </li>
-        <% end %>
-        <li class="card card--tight admin-link">
-          <h2 class="card__title"><%= link_to "Feature flags", flipper_ui_path, data: { turbo: false } %></h2>
-          <p class="small">Switch new features on or off.</p>
-        </li>
-        <% if feature?(:nps) %>
-          <li class="card card--tight admin-link">
-            <h2 class="card__title"><%= link_to "NPS survey", admin_nps_path %></h2>
-            <p class="small">Score, trend and staff-only comments.</p>
-          </li>
-        <% end %>
-        <% if feature?(:team) %>
-          <li class="card card--tight admin-link">
-            <h2 class="card__title"><%= link_to "Crews", admin_teams_path %></h2>
-            <p class="small">Crew sizes and bonus coins paid.</p>
-          </li>
-        <% end %>
-        <li class="card card--tight admin-link">
-          <h2 class="card__title"><%= link_to "Weekly bosses", admin_bosses_path %></h2>
+          <h3 class="card__title"><%= link_to "Weekly bosses", admin_bosses_path %></h3>
           <p class="small">Names, art and health for each week's boss.</p>
         </li>
         <% if feature?(:quests) %>
           <li class="card card--tight admin-link">
-            <h2 class="card__title"><%= link_to "Weekly quests", admin_quests_path %></h2>
+            <h3 class="card__title"><%= link_to "Weekly quests", admin_quests_path %></h3>
             <p class="small">The goal and reward for each boss week.</p>
+          </li>
+        <% end %>
+        <li class="card card--tight admin-link">
+          <h3 class="card__title"><%= link_to "Feature flags", flipper_ui_path, data: { turbo: false } %></h3>
+          <p class="small">Switch new features on or off.</p>
+        </li>
+      </ul>
+
+      <h2 class="admin-sections__title">Numbers</h2>
+      <ul class="grid admin-links">
+        <li class="card card--tight admin-link">
+          <h3 class="card__title"><%= link_to "Metrics", admin_metrics_path %></h3>
+          <p class="small">Daily and weekly actives, funnel, last active day.</p>
+        </li>
+        <% if feature?(:team) %>
+          <li class="card card--tight admin-link">
+            <h3 class="card__title"><%= link_to "Crews", admin_teams_path %></h3>
+            <p class="small">Crew sizes and bonus coins paid.</p>
           </li>
         <% end %>
         <% if feature?(:plinko) %>
           <li class="card card--tight admin-link">
-            <h2 class="card__title"><%= link_to "Plinko", admin_plinko_path %></h2>
+            <h3 class="card__title"><%= link_to "Plinko", admin_plinko_path %></h3>
             <p class="small">Balls dropped and players per day and week.</p>
+          </li>
+        <% end %>
+        <% if feature?(:nps) %>
+          <li class="card card--tight admin-link">
+            <h3 class="card__title"><%= link_to "NPS survey", admin_nps_path %></h3>
+            <p class="small">Score, trend and staff-only comments.</p>
+          </li>
+        <% end %>
+        <% if feature?(:email) %>
+          <li class="card card--tight admin-link">
+            <h3 class="card__title"><%= link_to "Email", admin_email_path %></h3>
+            <p class="small">Email rows per week, by status.</p>
           </li>
         <% end %>
       </ul>
