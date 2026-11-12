@@ -16,7 +16,7 @@ class LandingSystemTest < ApplicationSystemTestCase
     visit root_path
 
     assert_selector "h1 img[alt='Battletown']"
-    assert_selector ".landing-hero__tagline", text: /Build projects,\s+get gear/
+    assert_selector ".hero__tagline", text: /Build projects,\s+get gear/
     assert_selector "h2", text: "How it works"
     assert_selector "h2", text: "FAQ"
     # Turbo is imported by app/javascript/application.js through the importmap; if a pin 404s it never loads.
@@ -29,7 +29,7 @@ class LandingSystemTest < ApplicationSystemTestCase
     )
 
     visit root_path
-    first(".landing-hero button.cta").click
+    first(".hero button.cta").click
 
     assert_current_path %r{\A/onboarding}
     assert_equal 1, User.where(hca_uid: "ident!system-test").count
