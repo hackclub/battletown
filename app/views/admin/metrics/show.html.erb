@@ -7,8 +7,9 @@
   <p class="admin-dashboard__note">
     Read-only, aggregate counts only: no names, emails or ids. A person is <strong>active</strong> on a day when they
     coded at least <%= pluralize(@metrics.minimum_seconds / 60, "minute") %> that day in their own time zone (the
-    streak threshold in config/game.yml). Days are the local dates on the hours ledger; today is
-    <%= @metrics.today.iso8601 %> (UTC) and is still filling in.
+    streak threshold in config/game.yml). Like the game, only time from the day each person signed up counts: time
+    back-filled from Hackatime for earlier days is left out of every number here. Days are the local dates on the hours
+    ledger; today is <%= @metrics.today.iso8601 %> (UTC) and is still filling in.
   </p>
 
   <section class="admin-metrics__section" aria-labelledby="metrics-daily">

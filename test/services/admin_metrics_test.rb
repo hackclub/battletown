@@ -23,7 +23,8 @@ class AdminMetricsTest < ActiveSupport::TestCase
                       idempotency_key: SecureRandom.hex(8))
   end
 
-  def extra_user(n) = User.create!(hca_uid: "metrics-#{n}")
+  # Signed up long before any date here, like the fixtures, so the sign-up cutoff leaves their hours alone.
+  def extra_user(n) = User.create!(hca_uid: "metrics-#{n}", created_at: Time.utc(2026, 1, 1))
 
   def daily_on(date) = metrics.daily.find { |day| day.date == date }
 
@@ -152,6 +153,38 @@ class AdminMetricsTest < ActiveSupport::TestCase
     assert_equal 1, dropout["14 days ago"]
     assert_equal 2, dropout["More than 14 days ago"]
     assert_equal 5, buckets.sum(&:count)
+  end
+
+  test "hours dated before a person signed up count for nothing, as in the game" do
+    @teen.update_columns(signed_up_on: TODAY - 5)
+    add(@teen, TODAY - 6, HOUR) # Hackatime back-fill from the day before sign-up
+
+    assert_equal 0, daily_on(TODAY - 6).active_users
+    assert_equal 0, daily_on(TODAY - 6).seconds
+    assert_equal 0, metrics.weekly.sum(&:active_users)
+    assert_equal 0, funnel["First coded day"]
+    assert_equal 0, metrics.dropout.sum(&:count)
+
+    add(@teen, TODAY - 5, HOUR) # the sign-up date itself counts fully
+    assert_equal [ 1, HOUR ], [ daily_on(TODAY - 5).active_users, daily_on(TODAY - 5).seconds ]
+    assert_equal 1, metrics.weekly.sum(&:active_users)
+    assert_equal 1, funnel["First coded day"]
+    assert_equal 1, dropout["5 days ago"]
+  end
+
+  test "days_before_signup_counted lets earlier days count here too" do
+    @teen.update_columns(signed_up_on: TODAY - 5)
+    add(@teen, TODAY - 6, HOUR)
+    add(@teen, TODAY - 7, HOUR)
+
+    original = Hours::Config.current
+    Hours::Config.instance_variable_set(:@current, original.with(days_before_signup_counted: 1))
+    assert_equal [ 1, HOUR ], [ daily_on(TODAY - 6).active_users, daily_on(TODAY - 6).seconds ]
+    assert_equal 0, daily_on(TODAY - 7).seconds
+    assert_equal 1, funnel["First coded day"]
+    assert_equal 1, dropout["6 days ago"]
+  ensure
+    Hours::Config.instance_variable_set(:@current, original)
   end
 
   test "each breakdown is one query, whatever the number of users" do

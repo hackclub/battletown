@@ -1,10 +1,13 @@
 # Aggregate engagement metrics for /admin/metrics: counts and sums only, never a name, email, Slack id or uid.
 #
 # A user is "active" on a local date when their net ledger seconds that date reach the 15-minute streak threshold
-# (`streaks.quick_minutes` in config/game.yml, via Game::Config). Dates are the frozen local dates on `hour_entries`;
-# "today" is the UTC date (like AdminStats), so the newest day is still filling in. Each breakdown is one grouped
-# query (GROUP BY / COUNT DISTINCT / generate_series), so the query count never grows with the number of users. The
-# time series are bounded by their date range; the funnel and the dropout view are all-time by definition.
+# (`streaks.quick_minutes` in config/game.yml, via Game::Config). Only counted dates are read, by the game's rule
+# (Hours::Days.first_counted_date): hours dated before the local date a user signed up on (minus
+# `hours.days_before_signup_counted`) are left out, as they are for the boss and streaks. Dates are the frozen local
+# dates on `hour_entries`; "today" is the UTC date (like AdminStats), so the newest day is still filling in. Each
+# breakdown is one grouped query (GROUP BY / COUNT DISTINCT / generate_series), so the query count never grows with the
+# number of users. The time series are bounded by their date range; the funnel and the dropout view are all-time by
+# definition.
 class AdminMetrics
   DAYS = 28
   WEEKS = 8
@@ -28,6 +31,14 @@ class AdminMetrics
     purchased: "First purchase"
   }.freeze
 
+  # Every user's ledger rows on counted dates (the same rule as Hours::Totals.counted), read in place of hour_entries.
+  COUNTED_ENTRIES = <<~SQL.squish.freeze
+    (SELECT hour_entries.user_id, hour_entries.local_date, hour_entries.seconds
+     FROM hour_entries
+     JOIN users ON users.id = hour_entries.user_id
+     WHERE hour_entries.local_date >= users.signed_up_on - CAST(:days_before AS integer)) AS counted_entries
+  SQL
+
   def self.call(today: Time.current.utc.to_date, minimum_seconds: Game::Config.current.quick_seconds)
     new(today: today, minimum_seconds: minimum_seconds).call
   end
@@ -35,6 +46,7 @@ class AdminMetrics
   def initialize(today:, minimum_seconds:)
     @today = today
     @minimum = Integer(minimum_seconds)
+    @days_before = Hours::Config.current.days_before_signup_counted
   end
 
   def call
@@ -52,7 +64,7 @@ class AdminMetrics
       FROM generate_series(CAST(:first AS date), CAST(:last AS date), interval '1 day') AS day
       LEFT JOIN (
         SELECT user_id, local_date, SUM(seconds) AS seconds
-        FROM hour_entries
+        FROM #{COUNTED_ENTRIES}
         WHERE local_date BETWEEN :first AND :last
         GROUP BY user_id, local_date
       ) AS per_day ON per_day.local_date = day::date
@@ -72,7 +84,7 @@ class AdminMetrics
       FROM generate_series(CAST(:first AS date), CAST(:last AS date), interval '7 days') AS week_start
       LEFT JOIN (
         SELECT user_id, local_date
-        FROM hour_entries
+        FROM #{COUNTED_ENTRIES}
         WHERE local_date BETWEEN :first AND :today
         GROUP BY user_id, local_date
         HAVING SUM(seconds) >= :minimum
@@ -94,7 +106,7 @@ class AdminMetrics
              COUNT(*) FILTER (WHERE users.id IN (SELECT user_id FROM hackatime_connections)
                                  OR users.id IN (SELECT user_id FROM hour_entries WHERE source = 'hackatime')) AS hackatime,
              COUNT(*) FILTER (WHERE users.id IN (
-               SELECT user_id FROM hour_entries GROUP BY user_id, local_date HAVING SUM(seconds) >= :minimum
+               SELECT user_id FROM #{COUNTED_ENTRIES} GROUP BY user_id, local_date HAVING SUM(seconds) >= :minimum
              )) AS coded,
              COUNT(*) FILTER (WHERE users.id IN (SELECT user_id FROM ships WHERE submitted_at IS NOT NULL)) AS shipped,
              COUNT(*) FILTER (WHERE users.id IN (SELECT user_id FROM ships WHERE status = 'approved')) AS approved,
@@ -119,7 +131,7 @@ class AdminMetrics
         SELECT user_id, MAX(local_date) AS last_day
         FROM (
           SELECT user_id, local_date
-          FROM hour_entries
+          FROM #{COUNTED_ENTRIES}
           WHERE local_date <= :today
           GROUP BY user_id, local_date
           HAVING SUM(seconds) >= :minimum
@@ -144,6 +156,7 @@ class AdminMetrics
   end
 
   def select(sql, **binds)
-    ActiveRecord::Base.connection.select_all(ActiveRecord::Base.sanitize_sql_array([ sql, binds ]), "AdminMetrics").to_a
+    sql = ActiveRecord::Base.sanitize_sql_array([ sql, binds.merge(days_before: @days_before) ])
+    ActiveRecord::Base.connection.select_all(sql, "AdminMetrics").to_a
   end
 end
