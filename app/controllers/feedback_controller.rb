@@ -30,10 +30,10 @@ class FeedbackController < ApplicationController
 
   private
 
-  # The link can sit in chat history, so keep the page and the link out of caches, search engines and Referer headers.
+  # The link can sit in chat history, so keep the page and the link out of caches, search engines and Referer headers (same-origin, not no-referrer: with no-referrer a browser sends "Origin: null" on the form POST and Rails refuses it).
   def private_page
     response.headers["Cache-Control"] = "no-store"
-    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Referrer-Policy"] = "same-origin"
     response.headers["X-Robots-Tag"] = "noindex, nofollow"
   end
 

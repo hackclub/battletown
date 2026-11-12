@@ -64,7 +64,7 @@ class NpsFeedbackTest < ActionDispatch::IntegrationTest
   test "the page is kept out of caches, search engines and the Referer header" do
     get feedback_path(token)
     assert_equal "no-store", response.headers["Cache-Control"]
-    assert_equal "no-referrer", response.headers["Referrer-Policy"]
+    assert_equal "same-origin", response.headers["Referrer-Policy"]
     assert_match(/noindex/, response.headers["X-Robots-Tag"])
   end
 

@@ -82,7 +82,7 @@
               <p class="admin-nps__meta">
                 <%= admin_badge("Score #{entry.score}", entry.score >= 9 ? "badge--success" : (entry.score >= 7 ? "badge--muted" : "badge--danger")) %>
                 <%= tag.time(entry.answered_at.utc.strftime("%-d %b %Y"), datetime: entry.answered_at.utc.iso8601) %>
-                <%= button_to "Show who wrote this", admin_nps_reveal_path(entry), class: "btn btn--sm", form: { data: { turbo: false } }, "aria-label": "Show who wrote the comment from #{entry.answered_at.utc.strftime('%-d %b')}" %>
+                <%= button_to "Show who wrote this", admin_nps_reveal_path(entry), class: "btn btn--sm", form: { data: { turbo: false } }, "aria-label": "Show who wrote this, comment from #{entry.answered_at.utc.strftime('%-d %b')}" %>
               </p>
             </li>
           <% end %>
