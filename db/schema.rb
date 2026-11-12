@@ -14,6 +14,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_030001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "bosses", force: :cascade do |t|
+    t.string "name", limit: 60, null: false
+    t.string "art_key", limit: 40, null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.integer "hp_seconds", null: false
+    t.datetime "defeated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["starts_on"], name: "index_bosses_on_starts_on", unique: true
+    t.check_constraint "art_key::text ~ '^[a-z0-9_-]{1,40}$'::text", name: "bosses_art_key_check"
+    t.check_constraint "char_length(btrim(name::text)) >= 1 AND char_length(btrim(name::text)) <= 60", name: "bosses_name_check"
+    t.check_constraint "ends_on >= starts_on", name: "bosses_dates_check"
+    t.check_constraint "hp_seconds >= 1 AND hp_seconds <= 360000000", name: "bosses_hp_seconds_check"
+    t.exclusion_constraint "daterange(starts_on, ends_on, '[]'::text) WITH &&", using: :gist, name: "bosses_no_overlap"
+  end
+
   create_table "coin_transactions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.integer "amount", null: false

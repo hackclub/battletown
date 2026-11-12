@@ -1,0 +1,27 @@
+<% content_for :title, "Dev boss" %>
+<%= dev_tool(:section, class: "container") do %>
+  <h1>Boss card</h1>
+  <p>
+    <% if @state %>
+      A made-up boss in the <strong><%= @state.tr("_", " ") %></strong> state, health left <%= @percent %>% (nothing is read or written).
+    <% else %>
+      The real card for you: the real presenter reading the real rows. Add time on <%= link_to "the hours page", dev_hours_path %> and reload.
+    <% end %>
+  </p>
+  <p>
+    <%= link_to "Real data", dev_boss_path, class: "btn btn--ghost" %>
+    <% @states.each do |state| %>
+      <%= link_to state.tr("_", " ").capitalize, dev_boss_path(state: state, percent: @percent), class: "btn btn--ghost" %>
+    <% end %>
+  </p>
+  <p>
+    Health left:
+    <% [ 100, 62, 10, 1, 0 ].each do |percent| %>
+      <%= link_to "#{percent}%", dev_boss_path(state: (@state || "in_progress"), percent: percent) %>
+    <% end %>
+  </p>
+<% end %>
+
+<div class="container">
+  <%= render "bosses/card", presenter: @presenter %>
+</div>

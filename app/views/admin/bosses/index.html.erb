@@ -1,0 +1,40 @@
+<% content_for :title, "Admin bosses" %>
+<%= admin_tool(:div, class: "admin-dashboard container") do %>
+  <h1>Weekly bosses</h1>
+  <p class="admin-dashboard__note">One boss per week, Friday to Thursday. Damage is the sum of everyone's raw coded time on the boss's local dates. Health can be changed until a boss starts; names and art any time. Aggregate numbers only.</p>
+
+  <table class="admin-table">
+    <caption>Bosses</caption>
+    <thead>
+      <tr>
+        <th scope="col">Boss</th>
+        <th scope="col">Dates</th>
+        <th scope="col" class="admin-table__num">Health (hours)</th>
+        <th scope="col" class="admin-table__num">Damage (hours)</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @bosses.each do |boss| %>
+        <tr>
+          <th scope="row"><%= boss.name %></th>
+          <td><%= boss.starts_on.strftime("%a %-d %b") %> to <%= boss.ends_on.strftime("%a %-d %b %Y") %></td>
+          <td class="admin-table__num"><%= number_with_delimiter(boss.hp_hours) %></td>
+          <td class="admin-table__num"><%= number_with_precision(@damage[boss.id] / 3600.0, precision: 1, delimiter: ",") %></td>
+          <td>
+            <% if boss.defeated? %>Defeated <%= boss.defeated_at.utc.strftime("%-d %b %H:%M UTC") %>
+            <% elsif boss.ends_on < @today %>Escaped
+            <% elsif boss.started? %>In progress
+            <% else %>Not started<% end %>
+          </td>
+          <td><%= link_to "Edit", edit_admin_boss_path(boss), "aria-label": "Edit #{boss.name}" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <% if @bosses.empty? %>
+    <p>No bosses yet. Run <code>bin/rails bosses:seed</code> to create the launch run.</p>
+  <% end %>
+  <p><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+<% end %>

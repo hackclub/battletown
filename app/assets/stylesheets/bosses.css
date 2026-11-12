@@ -1,0 +1,126 @@
+/* The weekly boss card (app/views/bosses/_card.html.erb). Tokens only. Meaning is always carried by text (the state
+   chip, the percentage, the summary sentence), never by colour alone, and the one animation is switched off for
+   people who ask for reduced motion. */
+.boss-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.boss-card--none { padding: var(--space-6) var(--space-4); }
+
+@media (min-width: 40rem) {
+  .boss-card { grid-template-columns: minmax(0, 14rem) minmax(0, 1fr); gap: var(--space-6); padding: var(--space-6); }
+  .boss-card--none { grid-template-columns: minmax(0, 1fr); }
+}
+
+.boss-card__art {
+  display: block;
+  width: 100%;
+  max-width: 20rem;
+  height: auto;
+  margin-inline: auto;
+  border: 3px solid var(--color-ink-brown);
+  border-radius: var(--radius-md);
+  background: var(--color-sky);
+}
+.boss-card--escaped .boss-card__art { opacity: 0.75; }
+.boss-card--defeated .boss-card__art { filter: grayscale(0.7); }
+
+.boss-card__body { min-width: 0; }
+.boss-card__body > :last-child { margin-bottom: 0; }
+
+.boss-card__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.boss-card__state {
+  padding: 0 var(--space-2);
+  border: 2px solid var(--color-ink-brown);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.boss-card__title { margin-bottom: var(--space-3); font-size: var(--text-xl); }
+
+.boss-card__banner {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 3px solid var(--color-ink-brown);
+  border-radius: var(--radius-md);
+  background: var(--color-highlight);
+  color: var(--color-text);
+  animation: boss-card-pop 600ms ease-out both;
+}
+.boss-card__banner p { margin-bottom: var(--space-1); }
+.boss-card__banner p:last-child { margin-bottom: 0; }
+.boss-card__banner-title { font-family: var(--font-display); font-size: var(--text-lg); }
+
+@keyframes boss-card-pop {
+  0% { transform: scale(0.94); }
+  60% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.boss-card__health {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "label percent" "bar bar";
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.boss-card__label { grid-area: label; font-weight: 700; }
+.boss-card__percent { grid-area: percent; font-variant-numeric: tabular-nums; font-weight: 700; }
+
+.boss-card__bar {
+  grid-area: bar;
+  display: block;
+  width: 100%;
+  height: var(--space-6);
+  border: 3px solid var(--color-ink-brown);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.boss-card__bar::-webkit-progress-bar { background: var(--color-surface-raised); }
+.boss-card__bar::-webkit-progress-value { background: var(--color-primary); transition: inline-size 400ms ease-out; }
+.boss-card__bar::-moz-progress-bar { background: var(--color-primary); }
+
+.boss-card__summary { margin: var(--space-2) 0 var(--space-3); }
+
+.boss-card__badge { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.boss-card__badge-label {
+  padding: var(--space-1) var(--space-3);
+  border: 3px solid var(--color-ink-brown);
+  border-radius: var(--radius-full);
+  background: var(--color-highlight);
+  color: var(--color-text);
+  font-family: var(--font-display);
+}
+
+.boss-card__yours { font-weight: 700; }
+.boss-card__community { color: var(--color-text-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .boss-card__banner { animation: none; }
+  .boss-card__bar::-webkit-progress-value { transition: none; }
+}

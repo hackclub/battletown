@@ -37,11 +37,13 @@ Rails.application.routes.draw do
   # Development-only tools (404 everywhere else, enforced in the controller).
   namespace :dev do
     resource :hours, only: %i[show create], controller: "hours"
+    resource :boss, only: :show, controller: "bosses"
   end
 
   # Staff-only, read-only; a non-admin gets a 404. Keep above the /:ref catch-all (a referral slug can never be "admin").
   namespace :admin do
     root "dashboard#show"
+    resources :bosses, only: %i[index edit update]
   end
 
   # Hack Club's data-deletion service (docs/PRIVACY_API.md): bearer-token authenticated, JSON only. The catch-all

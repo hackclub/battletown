@@ -87,3 +87,16 @@ Append-only `hour_entries` (seconds per user per frozen local date; `HourEntry` 
 - Read: `Hours::Totals.seconds_by_date(user, range)`, `.seconds_for_date(user, date)`, `.seconds_in_range(range)` (all users), `.active_user_count(date)`. Dates are the frozen local dates; `Hours::Days.local_date(instant, user)` / `.today(user)` do the zone maths.
 - Hackatime seam: `Hackatime::Source#daily_seconds(user:, from:, to:)`, `Hackatime::NullSource` (default), `Hackatime::CsvSource.new(path)`; `Hours::Sync.call(user_or_rows, ...)`. Rake: `hours:import[path]`, `hours:credit[slack_id,date,seconds,note]`.
 - Development only: `/dev/hours` adds minutes to the signed-in user for a local date (404 elsewhere).
+
+## Weekly boss (`app/services/bosses`, `app/models/boss.rb`, `app/views/bosses/_card.html.erb`)
+
+One `bosses` row per week (Friday to Thursday, dates inclusive and never overlapping): `name`, `art_key` (allowlist `Boss::ARTS`, image at `app/assets/images/bosses/<key>.webp`), `starts_on`, `ends_on`, `hp_seconds`, `defeated_at`. Damage is never stored: it is the sum of ALL users' raw coded seconds on the local dates inside the week (`Bosses::Damage.for(boss)`, from `Hours::Totals.seconds_in_range`). Health is set per boss by an admin at `/admin/bosses` and is editable until the boss starts; dates are fixed. `bin/rails bosses:seed` (and `db/seeds.rb`) create the four launch weeks idempotently and never overwrite an edited boss.
+
+- `Bosses::BossMath` (pure): `damage(sum)`, `percent` (integer floor, capped 100), `ratio` (capped 1.0), `remaining`, `overkill`, `defeated?`. Overkill is shown and never carried over.
+- `Bosses::Current.for(date)` / `.for_user(user)`: the boss covering that local date, or `:none`.
+- `Bosses::CheckDefeat.call(boss)`: sets `defeated_at` once (under `boss.with_lock`, conditional `UPDATE ... WHERE defeated_at IS NULL`) when damage >= health; it is called from `HourEntry` after commit for the bosses covering the entry's date, and a later correction never clears it.
+- `Bosses::Presenter.new(user:, today: nil)` returns plain values for the view: `state` (`:none :in_progress :defeated :escaped`), `boss_name`, `art_path`, `art_alt`, `health_percent` / `health_ratio` (what is left, for the bar), `damage_percent` / `damage_ratio`, `remaining_seconds`, `hours_to_go_text` ("about 190 hours to go", truncated), `overkill_seconds` / `overkill_text`, `days_left` (calendar, includes today), `ends_on`, `end_day_name`, `summary` (the text alternative), `user_slayer?` (>= `boss.slayer_seconds` of the user's own coded time in that week, boss down), `community_active_today` / `community_text` (a count, never names), `contributed_seconds_this_week` / `contributed_text` (the viewer's own only). A surviving boss "escapes" with no penalty.
+- View: `<%= render "bosses/card", presenter: Bosses::Presenter.new(user: current_user) %>`, once per page (fixed element ids; one `h2`). Styles in `bosses.css`.
+- Tunables in `config/game.yml` under `boss:` (`slayer_seconds`, `afterglow_days`).
+- Privacy: only aggregates and the viewer's own total are ever read for display; the card never shows another person's name, avatar, id or damage. `bosses` has no user reference.
+- Development only: `/dev/boss` shows the real card for you; `?state=in_progress|defeated|escaped|none&percent=<health left>` shows a made-up boss.

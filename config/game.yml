@@ -40,3 +40,10 @@ shared:
     # last value. One decimal each. Days 3 to 13 are the straight line from day 2 (7.0) to day 14 (20.0) rounded to
     # one decimal; test/services/game/bonus_ramp_test.rb recomputes them. A missed day resets the streak to 0.
     ramp_percent: [ 5.0, 7.0, 8.1, 9.2, 10.3, 11.3, 12.4, 13.5, 14.6, 15.7, 16.8, 17.8, 18.9, 20.0 ]
+
+  # The weekly boss (app/services/bosses/**).
+  boss:
+    # Coded seconds in a boss week (all of one's own local dates in it) that earn the "Boss slayer" badge when the boss falls (15 minutes).
+    slayer_seconds: 900
+    # How many days after a boss ends the card keeps showing it (defeated or escaped) when no newer boss has started.
+    afterglow_days: 7

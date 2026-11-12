@@ -11,6 +11,8 @@ class HourEntry < ApplicationRecord
 
   belongs_to :user
 
+  after_create_commit { Bosses::CheckDefeat.for_date(local_date) } # the weekly boss may have just fallen
+
   validates :source, inclusion: { in: SOURCES }
   validates :seconds, numericality: { only_integer: true, other_than: 0, in: -MAX_SECONDS..MAX_SECONDS }
   validates :seconds, numericality: { greater_than: 0, message: "must be positive unless the source is an adjustment" },
