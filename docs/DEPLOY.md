@@ -21,6 +21,12 @@ Never commit real values. Shapes below are examples only.
 | `HCA_CLIENT_ID` | yes | OAuth client id of the app at auth.hackclub.com (Developer Apps). Alternative: Rails credentials `hca.client_id`. | `a1b2c3...` |
 | `HCA_CLIENT_SECRET` | yes | OAuth client secret of the same app. Alternative: Rails credentials `hca.client_secret`. Treat as a secret. | `s3cr3t...` |
 | `HCA_ISSUER` | no | Hack Club Auth issuer, used for OIDC discovery. Default `https://auth.hackclub.com`. | `https://auth.hackclub.com` |
+| `HACKATIME_CLIENT_ID` | yes, for Hackatime linking | OAuth client id of the Hackatime app (hackatime.hackclub.com, OAuth apps; scopes `profile` and `read` only). Alternative: Rails credentials `hackatime.client_id`. Without it, "Connect Hackatime" fails with a friendly error; nothing else is affected. | `a1b2c3...` |
+| `HACKATIME_CLIENT_SECRET` | yes, for Hackatime linking | OAuth client secret of the same app. Alternative: Rails credentials `hackatime.client_secret`. Treat as a secret. | `s3cr3t...` |
+| `HACKATIME_URL` | no | Hackatime base URL, default `https://hackatime.hackclub.com`. Must be `https` in production (the app refuses to boot otherwise). Only change it to point at a fake provider locally. | `https://hackatime.hackclub.com` |
+| `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | yes | Encrypts the Hackatime OAuth tokens at rest. The app refuses to boot in production without it. Generate once with `bin/rails db:encryption:init` and keep the three values together. **Losing or changing them makes the saved tokens unreadable** (users would have to reconnect Hackatime); never commit them. | 32+ random characters |
+| `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | yes | Second key of the same set (required by Active Record encryption even though no column uses deterministic encryption yet). Boot fails without it. | 32+ random characters |
+| `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | yes | Third value of the same set. Boot fails without it. | 32+ random characters |
 | `SECRET_KEY_BASE` | yes, unless `RAILS_MASTER_KEY` is set and the credentials hold `secret_key_base` | Signs and encrypts the session cookie. The app refuses to boot without one. Generate with `bin/rails secret` (64 hex characters). Changing it signs everyone out. | 128 hex characters |
 | `RAILS_MASTER_KEY` | no | Only needed to read `config/credentials.yml.enc`. The app reads the Hack Club Auth credentials from the environment first and falls back to credentials, and `SECRET_KEY_BASE` replaces the credentials secret, so with those variables set no master key is needed. Needed later if email and Slack ID encryption at rest is added. | 32 hex characters (`config/master.key`) |
 | `DATABASE_URL` | yes | The PostgreSQL database. The only database setting needed: the cache connection reuses it. | `postgres://user:password@host:5432/dbname` |
@@ -46,6 +52,16 @@ $APP_URL/auth/hack_club/callback
 ```
 
 The app requests the scopes `openid profile email name phone birthdate address verification_status slack_id basic_info`, all of which must be enabled on the app.
+
+### Hackatime OAuth app
+
+Account linking is optional and separate from sign-in. Register this redirect URI on the Hackatime OAuth app, exactly, with no trailing slash, and give the app only the scopes `profile` and `read`:
+
+```
+$APP_URL/auth/hackatime/callback
+```
+
+Details of the endpoints used, token lifetime and the hours source: [HACKATIME.md](HACKATIME.md). Set `HACKATIME_CLIENT_ID` and `HACKATIME_CLIENT_SECRET` plus the three `ACTIVE_RECORD_ENCRYPTION_*` values in the production environment before launch.
 
 ## Database layout
 
@@ -77,7 +93,7 @@ Counters are stored in Solid Cache (PostgreSQL), so limits hold across Puma work
 ## Pre-deploy checklist
 
 1. Set at least `APP_URL`, `DATABASE_URL`, `SECRET_KEY_BASE`, `HCA_CLIENT_ID`, `HCA_CLIENT_SECRET`; set `APP_HOST` if there is more than one hostname.
-2. Register `$APP_URL/auth/hack_club/callback` in Developer Apps (above) and confirm the app has all scopes enabled.
+2. Register `$APP_URL/auth/hack_club/callback` in Developer Apps (above) and confirm the app has all scopes enabled. Register `$APP_URL/auth/hackatime/callback` on the Hackatime OAuth app (scopes `profile` and `read`), and set the three `ACTIVE_RECORD_ENCRYPTION_*` values (production does not boot without them).
 3. Check the platform routes to container port 80 (or set `HTTP_PORT`), terminates TLS and sends `X-Forwarded-Proto: https`.
 4. Point the platform health check at `GET /up` (expects 200) over HTTP or HTTPS, any host.
 5. Decide `TRUSTED_PROXIES` (above). If unsure, deploy without it, then check from two different networks that one is not throttled by the other's traffic.
