@@ -134,10 +134,13 @@ class TeamTest < ActionDispatch::IntegrationTest
     assert_select ".team__members li", 2
     assert_match(/Ann Example \(you\)/, response.body)
     assert_match(/Ben Example/, response.body)
+    # Look at what a person reads (visible text), not the markup: CSRF tokens, nonces and invite links in it are random
+    # base64 and could contain "5h" or "4321" by chance.
+    visible = Nokogiri::HTML(response.body).tap { |doc| doc.css("script, style, input, form").remove }.text
     %w[ben.private@example.com ann.private@example.com UBENPRIVATE2 UANNPRIVATE1 4321 4,321 ident!new ident!onboarded].each do |secret|
-      assert_not_includes response.body, secret
+      assert_not_includes visible, secret
     end
-    assert_no_match(/5 hours|5h|18000/, response.body)
+    assert_no_match(/5 hours|\b5h\b|18000/, visible)
   end
 
   test "nobody can open another crew's page: the page is always your own, and there is no id to change" do

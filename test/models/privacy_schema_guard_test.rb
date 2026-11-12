@@ -1,4 +1,5 @@
 require "test_helper"
+require_relative "../support/every_table_rows"
 
 # Guards the data-deletion promise (docs/PRIVACY_API.md): Privacy::Deleter deletes the users row and relies on the
 # database to cascade to everything about that person, and counts what each table lost. So a table that points at
@@ -6,6 +7,8 @@ require "test_helper"
 # listed here, with the reason, as deliberately not personal. A new table that breaks this fails the suite until it
 # is handled (add ON DELETE CASCADE, or decide what has to be retained and extend Privacy::Deleter::RETENTION_RULES).
 class PrivacySchemaGuardTest < ActiveSupport::TestCase
+  include EveryTableRows
+
   # Names that suggest a column holds a person's identity.
   PERSONAL_COLUMN = /user_id|slack|email|hca_uid|identity|ident_id|display_name|\bip\b|ip_address|phone|birth|address/
 
@@ -66,35 +69,7 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
   end
 
   test "every table referencing users is counted when a user is deleted" do
-    user = users(:onboarded)
-    Notification.create!(user: user, kind: "daily_reminder", status: "sent", scheduled_for: Time.current, due_at: Time.current, idempotency_key: "guard-#{user.id}")
-    HourEntry.create!(user: user, local_date: Date.new(2026, 11, 10), seconds: 600, source: "manual", note: "guard", idempotency_key: "guard-#{user.id}")
-    NotificationPreference.create!(user: user, kind: "ship_reminder", enabled: false)
-    project = Project.create!(user: user, name: "Guard project", kind: "game")
-    project.hackatime_links.create!(user_id: user.id, hackatime_project: "guard-project", link_method: "manual")
-    project.link_suggestions.create!(hackatime_project: "guard-other")
-    CoinTransaction.create!(user: user, amount: 5, kind: "refund", idempotency_key: "guard-#{user.id}")
-    Order.create!(user: user, prize_key: "sticker_pack", prize_name: "Sticker pack", coins: 20, kind: "purchase", idempotency_key: "guard-#{user.id}")
-    HourEntry.create!(user: user, local_date: Date.new(2026, 11, 9), seconds: 3600, source: "manual", note: "guard", hackatime_project: "guard-project", idempotency_key: "guard-ship-#{user.id}")
-    Ship.create!(user: user, project: project, status: "submitted", description: "Guard ship", repo_url: "https://github.com/guard/ship", coded_seconds: 3600,
-                 window_start_date: Date.new(2026, 11, 9), window_end_date: Date.new(2026, 11, 9), daily_seconds: { "2026-11-09" => 3600 }, submitted_at: Time.current)
-    ShipImage.create!(ship: Ship.find_by!(user: user), user: user, position: 1, content: "RIFFguard", byte_size: 9, width: 1, height: 1, sha256: "a" * 64)
-    DailyResult.create!(user: user, local_date: Date.new(2026, 11, 1), raw_seconds: 0, quick_met: false, goal_met: false,
-                        streak_15: 0, goal_streak: 0, freeze_available: true)
-    WelcomeBackWindow.create!(user: user, starts_on: Date.new(2026, 11, 8), ends_on: Date.new(2026, 11, 10), idle_days: 7)
-    HackatimeConnection.create!(user: user, hackatime_uid: "1", access_token: "guard-token", scopes: "profile read", connected_at: Time.current)
-    HackatimeDayWindow.create!(user: user, local_date: Date.new(2026, 11, 9), starts_at: Time.utc(2026, 11, 9), ends_at: Time.utc(2026, 11, 10), hackatime_uid: "1")
-    guard_boss = Boss.create!(name: "Guard boss", art_key: "placeholder", starts_on: Date.new(2099, 1, 2), ends_on: Date.new(2099, 1, 8), hp_seconds: 3600)
-    MerchClaim.create!(user: user, boss: guard_boss, item_key: "guard_item", item_name: "Guard item", claimed_at: Time.current)
-    guard_quest = Quest.create!(starts_on: guard_boss.starts_on, goal_key: "add_project", reward_coins: 15)
-    QuestCompletion.create!(user: user, quest: guard_quest, completed_at: Time.current, coin_transaction: CoinTransaction.find_by!(user: user, idempotency_key: "guard-#{user.id}"))
-    PlinkoDrop.create!(user: user, dropped_at: Time.current, local_date: Date.new(2026, 11, 9), slot: 4, points: 50, seed: 1, idempotency_key: "guard-drop-#{user.id}")
-    PlinkoPlayer.create!(user: user, nickname: "Guard Otter #{user.id}", leaderboard_opt_in: true)
-    NpsResponse.create!(user: user, score: 9, comment: "guard", answered_at: Time.current, prompt_window_date: Date.new(2026, 11, 9))
-    crew = Team.create!(name: "Guard crew", invite_token: Team.new_token, invite_expires_at: 1.day.from_now)
-    TeamMembership.create!(team: crew, user: user, joined_at: Time.current)
-    TeamCooldown.create!(user: user, left_at: Time.current)
-    TeamPayout.create!(user: user, ship: Ship.find_by!(user_id: user.id), team: crew, coins: 1, matched_days: 1)
+    user = user_with_rows_in_every_table
     subject = Privacy::TokenVerifier::Subject.new(emails: [], slack_id: nil, identity_id: user.hca_uid)
 
     deleted = Privacy::Deleter.new(subject).call(dry_run: true).deleted
