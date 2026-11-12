@@ -11,6 +11,11 @@ module Admin
     YES_NO = %w[yes no].freeze
     SORTS = { "newest" => "projects.created_at DESC, projects.id DESC", "oldest" => "projects.created_at ASC, projects.id ASC",
               "hours" => "COALESCE(coded.coded_seconds, 0) DESC, projects.id DESC" }.freeze
+    # Fixed SQL, picked by the whitelisted yes/no value (nothing from the request is ever put into a query string).
+    SHIPPED_SQL = { "yes" => "EXISTS (SELECT 1 FROM ships WHERE ships.project_id = projects.id AND ships.status <> 'draft')",
+                    "no" => "NOT EXISTS (SELECT 1 FROM ships WHERE ships.project_id = projects.id AND ships.status <> 'draft')" }.freeze
+    LINKED_SQL = { "yes" => "EXISTS (SELECT 1 FROM hackatime_links WHERE hackatime_links.project_id = projects.id)",
+                   "no" => "NOT EXISTS (SELECT 1 FROM hackatime_links WHERE hackatime_links.project_id = projects.id)" }.freeze
     HISTORY_LIMIT = 100
     SHIPS_LIMIT = 50
     NOTICES = { ok: "Marked OK.", flag: "Flagged. Nothing changes for the teen; staff see the flag.", clear: "Flag cleared.", note: "Note added." }.freeze
@@ -22,7 +27,7 @@ module Admin
       scope = filtered(Project.all)
       @total = scope.count
       @pager = AdminPager.new(total: @total, page: params[:page])
-      @projects = @pager.apply(scope.joins("LEFT JOIN (#{Projects::CodedTime.totals_sql}) coded ON coded.project_id = projects.id")
+      @projects = @pager.apply(scope.joins(Projects::CodedTime.join_sql)
                                     .select("projects.*, COALESCE(coded.coded_seconds, 0) AS coded_seconds")
                                     .includes(:user).reorder(Arel.sql(SORTS.fetch(@filters[:sort])))).to_a
       @ship_counts = ship_counts(@projects)
@@ -79,18 +84,12 @@ module Admin
     def filtered(scope)
       scope = scope.where(review_status: @filters[:review]) if @filters[:review]
       scope = scope.where(status: @filters[:status]) if @filters[:status]
-      scope = exists_filter(scope, @filters[:shipped], "SELECT 1 FROM ships WHERE ships.project_id = projects.id AND ships.status <> 'draft'")
-      scope = exists_filter(scope, @filters[:linked], "SELECT 1 FROM hackatime_links WHERE hackatime_links.project_id = projects.id")
+      scope = scope.where(SHIPPED_SQL.fetch(@filters[:shipped])) if @filters[:shipped]
+      scope = scope.where(LINKED_SQL.fetch(@filters[:linked])) if @filters[:linked]
       return scope unless @filters[:q]
 
       pattern = "%#{Project.sanitize_sql_like(@filters[:q])}%"
       scope.where("projects.name ILIKE :pattern OR projects.repo_url ILIKE :pattern", pattern: pattern)
-    end
-
-    def exists_filter(scope, choice, sql)
-      return scope unless choice
-
-      scope.where("#{choice == 'yes' ? 'EXISTS' : 'NOT EXISTS'} (#{sql})")
     end
 
     # { project_id => { "approved" => 1, "submitted" => 1 } } for the page, in one query. Drafts are the teen's own and never listed.

@@ -12,6 +12,7 @@ class Projects::ReviewConcurrencyTest < ActiveSupport::TestCase
   end
 
   teardown do
+    AdminAuditEvent.where(subject_type: "Project", subject_id: @project.id).delete_all # not cascaded: the trail outlives its subject
     User.where(id: [ @owner.id, @one.id, @two.id ]).delete_all # the database cascades to projects and reviews
   end
 

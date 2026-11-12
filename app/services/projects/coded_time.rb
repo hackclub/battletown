@@ -20,6 +20,9 @@ module Projects
       SQL
     end
 
+    # The join a queue adds to Project to read `coded.coded_seconds` for every row at once (LEFT JOIN: no link means no row, read as 0).
+    def join_sql(config: Hours::Config.current) = "LEFT JOIN (#{totals_sql(config: config)}) coded ON coded.project_id = projects.id"
+
     # { Date => seconds } for one project (dates with time only).
     def seconds_by_date(project, config: Hours::Config.current)
       names = project.hackatime_links.select(:hackatime_project)

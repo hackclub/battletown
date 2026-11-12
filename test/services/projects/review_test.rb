@@ -123,8 +123,12 @@ class Projects::ReviewTest < ActiveSupport::TestCase
   end
 
   test "a failed audit write rolls the whole review back: the row, the copy and the event go together" do
-    AdminAudit.stub(:record!, ->(**) { raise "audit down" }) do
+    original = AdminAudit.method(:record!)
+    AdminAudit.define_singleton_method(:record!) { |**| raise "audit down" }
+    begin
       assert_raises(RuntimeError) { Review.flag(project: @project, reviewer: @staff, details: "x") }
+    ensure
+      AdminAudit.define_singleton_method(:record!, original)
     end
     assert_equal 0, ProjectReview.count
     assert_equal "unreviewed", @project.reload.review_status
