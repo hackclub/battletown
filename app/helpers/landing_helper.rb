@@ -25,8 +25,9 @@ module LandingHelper
 
   # The boss health bar on the "Fight together" map for a signed-out visitor. Aggregate only: the boss's health left
   # and nothing about any person or about the visitor. Returns plain values (cached for a minute):
-  # { live:, percent:, text: }. With no boss standing this week it is a full bar saying the next boss is on its way
-  # (live is false).
+  # { live:, percent:, text:, label: }. text is the full sentence (the progress bar's content); label is the short form
+  # written on the plate under the bar (Figma "150/300 hours"). With no boss standing this week it is a full bar saying
+  # the next boss is on its way (live is false).
   def landing_boss
     @landing_boss ||= Rails.cache.fetch(BOSS_CACHE_KEY, expires_in: 1.minute) { build_landing_boss }
   end
@@ -45,11 +46,11 @@ module LandingHelper
         left = presenter.remaining_seconds / 3600
         total = number_with_delimiter(boss.hp_hours)
         text = left.zero? ? "Less than an hour left" : "#{number_with_delimiter(left)} of #{total} hours left"
-        return { live: true, percent: presenter.health_percent, text: text }
+        return { live: true, percent: presenter.health_percent, text: text, label: text }
       when :defeated
-        return { live: true, percent: 0, text: "Defeated! The next boss is on its way" }
+        return { live: true, percent: 0, text: "Defeated! The next boss is on its way", label: "Defeated!" }
       end
     end
-    { live: false, percent: 100, text: "Full health. The next boss is on its way" }
+    { live: false, percent: 100, text: "Full health. The next boss is on its way", label: "Next boss on its way" }
   end
 end

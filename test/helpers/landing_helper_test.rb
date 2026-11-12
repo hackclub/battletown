@@ -26,6 +26,6 @@ class LandingHelperTest < ActionView::TestCase
   end
 
   test "landing boss is a full decorative bar when there is no boss" do
-    assert_equal({ live: false, percent: 100, text: "Full health. The next boss is on its way" }, landing_boss)
+    assert_equal({ live: false, percent: 100, text: "Full health. The next boss is on its way", label: "Next boss on its way" }, landing_boss)
   end
 end

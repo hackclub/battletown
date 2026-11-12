@@ -1,16 +1,21 @@
 <% content_for :head do %>
   <meta name="description" content="Battletown is a Hack Club You Ship We Ship program. Build projects, take down a weekly boss with the community and earn prizes.">
 <% end %>
+<% content_for :body_class, "page--landing" %>
 <% boss = landing_boss %>
 
 <div class="landing">
-  <%# Hero (Figma 151:230 / 151:266): painted town on a sky page, the logo, the tagline and the chunky call to action.
-      On wide screens it is a 1440-wide composition that scales with the viewport; on narrow ones it stacks. -%>
+  <%# Hero (Figma 151:266): the painted town on a sky page, the logo, the tagline and the cream-wrapped call to action.
+      From 45rem up it is the 1440-wide Figma composition scaled with the viewport (every size is a multiple of --u, one
+      Figma pixel); below that it stacks. The painting is shown stretched exactly as Figma shows it. -%>
   <section class="landing-hero" aria-labelledby="landing-title">
     <div class="landing-hero__stage">
-      <%= image_tag "landing/hero-art.webp",
-            alt: "Painted scene of a colourful town. A large armoured warrior in a cat-ear helmet holds a scythe, and a small caped fighter in front of them holds a sword.",
-            class: "landing-hero__art", width: 1024, height: 659, fetchpriority: "high", decoding: "async" %>
+      <div class="landing-hero__scene">
+        <%= image_tag "landing/hero-painting.webp",
+              alt: "Painted scene of a colourful town. A large armoured warrior in a cat-ear helmet holds a scythe, and a small caped fighter in front of them holds a sword.",
+              class: "landing-hero__art", width: 1024, height: 279, fetchpriority: "high", decoding: "async" %>
+        <%= image_tag "landing/hero-overlay.svg", alt: "", class: "landing-hero__overlay", width: 1440, height: 1000 %>
+      </div>
 
       <% if @referral %>
         <p class="landing-referral" role="status">Welcome from <%= @referral.name %>! Join the fight.</p>
@@ -29,7 +34,8 @@
     </div>
   </section>
 
-  <%# How it works (Figma 151:279): three signs on one pole. A real ordered list; the artwork is decoration. -%>
+  <%# How it works (Figma 151:279 and the signs in 151:266): three signs on one pole. A real ordered list; the artwork is
+      decoration. -%>
   <section class="landing-signs" aria-labelledby="how-title">
     <h2 id="how-title" class="visually-hidden">How it works</h2>
     <div class="landing-signs__stage">
@@ -37,67 +43,72 @@
       <ol class="signs">
         <li class="sign sign--build">
           <%= image_tag "design/signpost-1-yellow.svg", alt: "", class: "sign__art", width: 911, height: 280, loading: "lazy" %>
-          <span class="sign__num" aria-hidden="true">1</span>
-          <h3 class="sign__title">Build</h3>
-          <p class="sign__body">Build your project, and count your hours</p>
+          <span class="sign__num" aria-hidden="true"><span>1</span></span>
+          <h3 class="sign__title"><span>Build</span></h3>
+          <p class="sign__body"><span>Build your project, and count your hours</span></p>
         </li>
         <li class="sign sign--ship">
           <%= image_tag "design/signpost-2-blue.svg", alt: "", class: "sign__art", width: 964, height: 247, loading: "lazy" %>
-          <span class="sign__num" aria-hidden="true">2</span>
-          <h3 class="sign__title">Ship</h3>
-          <p class="sign__body">Ship your project to deal damage to the boss, and get coins</p>
+          <span class="sign__num" aria-hidden="true"><span>2</span></span>
+          <h3 class="sign__title"><span>Ship</span></h3>
+          <p class="sign__body"><span>Ship your project to deal damage to the boss, <br>and get coins</span></p>
         </li>
         <li class="sign sign--prize">
           <%= image_tag "design/signpost-3-pink.svg", alt: "", class: "sign__art", width: 1022, height: 250, loading: "lazy" %>
-          <span class="sign__num" aria-hidden="true">3</span>
-          <h3 class="sign__title">Get your prize</h3>
-          <p class="sign__body">When the boss is defeated, collect your winnings, and claim a prize from the shop</p>
+          <span class="sign__num" aria-hidden="true"><span>3</span></span>
+          <h3 class="sign__title"><span>Get your prize</span></h3>
+          <p class="sign__body"><span>When the boss is defeated, collect your <br>winnings, and claim a prize from the shop</span></p>
         </li>
       </ol>
     </div>
   </section>
 
-  <%# Fight together (Figma 152:469): the blue map with the boss, its health bar and the closing call to action.
-      The trees, houses, river and the hero peeking in are decoration (aria-hidden or empty alt). -%>
-  <section class="band band--map band--wave landing-map" aria-labelledby="boss-title">
-    <div class="landing-map__art" aria-hidden="true">
+  <%# Fight together (Figma 152:469): the blue map with the boss, its health bar and the closing call to action. The river,
+      trees, houses and the fighter peeking in are decoration (aria-hidden or an empty alt). -%>
+  <section class="landing-map" aria-labelledby="boss-title">
+    <div class="landing-map__stage">
+      <%= image_tag "design/map-band.svg", alt: "", class: "landing-map__bg", width: 1607, height: 2344, loading: "lazy" %>
       <%= image_tag "design/map-river.svg", alt: "", class: "landing-map__river", width: 911, height: 1842, loading: "lazy" %>
-      <%= image_tag "design/hero-character.webp", alt: "", class: "landing-map__hero", width: 900, height: 757, loading: "lazy", decoding: "async" %>
-    </div>
 
-    <div class="container container--wide landing-map__grid">
       <div class="landing-map__copy">
         <h2 id="boss-title" class="landing-map__title">Fight together</h2>
-        <p class="landing-map__lead">Each boss has a health bar measured in hours of coding. Everyone who participates contributes hours to defeat the boss. Every hour you put in counts toward your own prize too.</p>
-        <div class="card card--cream card--tight landing-map__proof">
-          <h3 class="card__title" id="proof-title">Who's locked in</h3>
-          <%# TODO: replace the waiting message with real social proof (shout-outs) once the program has launched. No made-up numbers. -%>
-          <p><%= locked_in_text || "Teens from across Hack Club will show up here once Battletown launches." %></p>
+        <p class="landing-map__lead">Each boss has a health bar <br>measured in hours of coding. Everyone who participates contributes hours to defeat the boss</p>
+      </div>
+
+      <div class="landing-boss">
+        <div class="landing-boss__plate"><p class="landing-boss__label" id="landing-boss-label"><%= boss[:label] || boss[:text] %></p></div>
+        <%= image_tag "design/boss-shadow.svg", alt: "", class: "landing-boss__shadow", width: 470, height: 202, loading: "lazy" %>
+        <%= image_tag "design/boss-weekly.webp", alt: Boss::ARTS.fetch("placeholder"), class: "landing-boss__art", width: 1000, height: 965, loading: "lazy", decoding: "async" %>
+        <div class="landing-boss__bar">
+          <span class="visually-hidden" id="landing-boss-health">Boss health</span>
+          <progress max="100" value="<%= boss[:percent] %>" aria-labelledby="landing-boss-health" aria-describedby="landing-boss-label"><%= boss[:text] %></progress>
         </div>
       </div>
 
-      <div class="landing-map__boss">
-        <div class="progress progress--boss landing-map__hp">
-          <div class="progress__head">
-            <span class="progress__label" id="landing-boss-health">Boss health</span>
-            <span class="progress__text"><%= boss[:text] %></span>
-          </div>
-          <progress class="progress__bar" max="100" value="<%= boss[:percent] %>" aria-labelledby="landing-boss-health"><%= boss[:text] %></progress>
-        </div>
-        <%= image_tag "design/boss-shadow.svg", alt: "", class: "landing-map__shadow", width: 470, height: 202, loading: "lazy" %>
-        <%= image_tag "design/boss-weekly.webp", alt: Boss::ARTS.fetch("placeholder"), class: "landing-map__bossart", width: 1000, height: 965, loading: "lazy", decoding: "async" %>
+      <div class="landing-map__decor" aria-hidden="true">
+        <% 12.times do %><span class="landing-tree"></span><% end %>
+        <% 7.times do %><span class="landing-house"></span><% end %>
       </div>
+
+      <%= image_tag "design/hero-character.webp", alt: "", class: "landing-map__hero", width: 900, height: 757, loading: "lazy", decoding: "async" %>
 
       <div class="landing-map__join">
-        <p class="card card--cream card--tight landing-map__ready">Ready to join the fight?</p>
+        <%# The Figma note is blue on blue (1.8:1) and says it needs a container: it sits on a cream pill. -%>
+        <p class="landing-map__ready">Ready to join the fight?</p>
         <%= render "landing/cta", variant: "bare" %>
       </div>
     </div>
   </section>
 
-  <%# Below the map: the prizes and the questions, on cream. -%>
+  <%# Below the map: who is locked in, the prizes and the questions, on cream (not in the Figma, kept from the product). -%>
   <div class="band band--cream landing-more">
     <div class="container stack stack--lg">
+      <section class="landing-proof card card--sky card--tight" aria-labelledby="proof-title">
+        <h2 class="card__title" id="proof-title">Who's locked in</h2>
+        <%# TODO: replace the waiting message with real social proof (shout-outs) once the program has launched. No made-up numbers. -%>
+        <p><%= locked_in_text || "Teens from across Hack Club will show up here once Battletown launches." %></p>
+      </section>
+
       <section id="prizes" aria-labelledby="prizes-title">
         <h2 id="prizes-title">Pick a prize to work toward</h2>
         <p class="landing-note">Battletown is a Hack Club You Ship We Ship program. The prize lineup is still being finalised, and prices are in hours of coding.</p>

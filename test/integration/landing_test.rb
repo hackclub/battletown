@@ -47,6 +47,16 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".sign__title", text: "Ship"
     assert_select ".sign__title", text: "Get your prize"
     assert_select ".sign__num[aria-hidden='true']", 3
+    assert_select ".sign__body", text: /Build your project, and count your hours/
+    assert_select ".sign--ship .sign__body", text: /Ship your project to deal damage to the boss,\s+and get coins/
+    assert_select ".sign--prize .sign__body", text: /When the boss is defeated, collect your\s+winnings, and claim a prize from the shop/
+  end
+
+  test "sections run in the Figma order: hero, signs, map, then the cream band" do
+    get "/"
+    classes = css_select(".landing > *").map { |node| node["class"].to_s.split.first }
+    assert_equal %w[landing-hero landing-signs landing-map band], classes
+    assert_select "body.page--landing", 1
   end
 
   test "the sign up button posts to Hack Club Auth with a CSRF token and without Turbo" do
@@ -85,16 +95,32 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "the map shows the boss health as a native progress bar with a text label" do
     get "/"
-    assert_select ".landing-map progress.progress__bar[max='100'][aria-labelledby='landing-boss-health']", 1
+    assert_select ".landing-boss__bar progress[max='100'][aria-labelledby='landing-boss-health'][aria-describedby='landing-boss-label']", 1
     assert_select "#landing-boss-health", text: "Boss health"
-    assert_select ".landing-map__ready.card", text: "Ready to join the fight?" # on a container, not on the map blue
+    assert_select "#landing-boss-label.landing-boss__label"
+    assert_select ".landing-map__ready", text: "Ready to join the fight?" # a cream pill (see landing.css), not text straight on the map blue
+    assert_select ".landing-map__ready", text: /container/, count: 0
+  end
+
+  test "the map copy is the Figma copy with the missing space after the period fixed" do
+    get "/"
+    assert_select ".landing-map__title", text: "Fight together"
+    assert_select ".landing-map__lead", text: /Each boss has a health bar\s+measured in hours of coding\. Everyone who participates contributes hours to defeat the boss/
+  end
+
+  test "the map is decorated with twelve trees and seven houses that screen readers skip" do
+    get "/"
+    assert_select ".landing-map__decor[aria-hidden='true']" do
+      assert_select ".landing-tree", 12
+      assert_select ".landing-house", 7
+    end
   end
 
   test "with no boss this week the bar is full and says the next boss is coming" do
     assert_equal 0, Boss.count
     get "/"
-    assert_select ".landing-map progress[value='100']"
-    assert_select ".progress__text", text: /next boss is on its way/
+    assert_select ".landing-map progress[value='100']", text: /next boss is on its way/
+    assert_select ".landing-boss__label", text: "Next boss on its way"
   end
 
   test "the boss bar reads the current boss's aggregate health and nothing about people" do
@@ -104,17 +130,17 @@ class LandingTest < ActionDispatch::IntegrationTest
     add_hours(user, today, 25 * HOUR)
     get "/"
     assert_select ".landing-map progress[value='75']"
-    assert_select ".progress__text", text: "75 of 100 hours left"
+    assert_select ".landing-boss__label", text: "75 of 100 hours left"
     assert_no_match(/Private Person|ident!private/, response.body)
   end
 
   test "who's locked in shows a real count only once it is worth showing" do
     get "/"
     assert_select "#proof-title", text: "Who's locked in"
-    assert_select ".landing-map__proof", text: /will show up here once Battletown launches/
+    assert_select ".landing-proof", text: /will show up here once Battletown launches/
     add_users_until(LandingHelper::FIGHTER_COUNT_THRESHOLD)
     get "/"
-    assert_select ".landing-map__proof", text: /#{LandingHelper::FIGHTER_COUNT_THRESHOLD} fighters are locked in/
+    assert_select ".landing-proof", text: /#{LandingHelper::FIGHTER_COUNT_THRESHOLD} fighters are locked in/
   end
 
   test "keeps the free sticker note" do
@@ -125,12 +151,12 @@ class LandingTest < ActionDispatch::IntegrationTest
   test "every image has an alt attribute and decorative ones are empty" do
     get "/"
     images = css_select("img")
-    assert_operator images.size, :>=, 8
+    assert_operator images.size, :>=, 12
     images.each { |img| assert img.key?("alt"), "img #{img['src']} has no alt attribute" }
     assert_equal "Battletown", css_select(".landing-hero__logo img").first["alt"]
     assert css_select(".landing-hero__art").first["alt"].present?, "the hero painting should have a description"
-    assert css_select(".landing-map__bossart").first["alt"].present?, "the boss is content and needs a description"
-    %w[.sign__art .landing-signs__pole .landing-map__river .landing-map__shadow .landing-map__hero].each do |selector|
+    assert css_select(".landing-boss__art").first["alt"].present?, "the boss is content and needs a description"
+    %w[.landing-hero__overlay .sign__art .landing-signs__pole .landing-map__bg .landing-map__river .landing-boss__shadow .landing-map__hero].each do |selector|
       assert_operator css_select(selector).size, :>=, 1, selector
       css_select(selector).each { |img| assert_equal "", img["alt"], "#{selector} is decoration and needs an empty alt" }
     end
@@ -183,6 +209,13 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select "a.cta[href='#{onboarding_path}'] .cta__label", text: "Continue setup", minimum: 1
     assert_select ".landing-map a.cta.cta--bare[href='#{onboarding_path}']", 1
     assert_select ".landing-hero form[action='/auth/hack_club']", 0
+  end
+
+  test "the header on the landing is only the account control: the logo is part of the hero" do
+    get "/"
+    assert_select ".site-header .site-header__brand .visually-hidden", text: "Battletown" # hidden by landing.css, still the home link
+    assert_select ".site-header__account form[action='/auth/hack_club'] button", text: "Sign in"
+    assert_select ".site-nav, .site-header__nav", 0
   end
 
   test "onboarded users are redirected to the dashboard" do
