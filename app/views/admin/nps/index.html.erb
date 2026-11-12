@@ -1,0 +1,93 @@
+<% content_for :title, "Admin NPS" %>
+<% percent = ->(value) { value.nil? ? "No answers" : "#{value.positive? ? '+' : ''}#{value}" } %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page admin-nps") do %>
+    <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
+    <header class="page-header">
+      <h1>NPS survey</h1>
+      <p class="admin-dashboard__note">
+        "How likely are you to recommend Battletown?", 0 to 10. Net Promoter Score is the share of promoters (9 or 10) minus
+        the share of detractors (0 to 6), as a whole-number percentage of all answers (passives, 7 or 8, only count in the total).
+        It runs from -100 to +100. Comments are staff-only, shown without names, and emptied after <%= @retention_days %> days.
+      </p>
+    </header>
+
+    <section aria-labelledby="nps-overall">
+      <h2 id="nps-overall">All time</h2>
+      <dl class="admin-stat grid">
+        <div class="card card--tight admin-stat__item">
+          <dt>NPS</dt>
+          <dd class="admin-nps__score"><%= percent.call(@overall.nps) %></dd>
+        </div>
+        <div class="card card--tight admin-stat__item">
+          <dt>Answers</dt>
+          <dd><%= number_with_delimiter(@overall.responses) %></dd>
+        </div>
+        <div class="card card--tight admin-stat__item">
+          <dt>Promoters (9-10)</dt>
+          <dd><%= number_with_delimiter(@overall.promoters) %></dd>
+        </div>
+        <div class="card card--tight admin-stat__item">
+          <dt>Passives (7-8)</dt>
+          <dd><%= number_with_delimiter(@overall.passives) %></dd>
+        </div>
+        <div class="card card--tight admin-stat__item">
+          <dt>Detractors (0-6)</dt>
+          <dd><%= number_with_delimiter(@overall.detractors) %></dd>
+        </div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="nps-trend">
+      <h2 id="nps-trend">Last <%= Nps::Stats::TREND_DAYS %> days</h2>
+      <%= table_region("NPS by day (last #{Nps::Stats::TREND_DAYS} days)") do %>
+        <table class="table table--zebra admin-table">
+          <caption>NPS by day, UTC dates, newest first</caption>
+          <thead>
+            <tr>
+              <th scope="col">Day</th>
+              <th scope="col" class="num admin-table__num">Answers</th>
+              <th scope="col" class="num admin-table__num">Promoters</th>
+              <th scope="col" class="num admin-table__num">Passives</th>
+              <th scope="col" class="num admin-table__num">Detractors</th>
+              <th scope="col" class="num admin-table__num">NPS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @trend.reverse_each do |day| %>
+              <tr>
+                <th scope="row"><%= tag.time(day.date.strftime("%a %-d %b"), datetime: day.date.iso8601) %></th>
+                <td class="num admin-table__num"><%= day.tally.responses %></td>
+                <td class="num admin-table__num"><%= day.tally.promoters %></td>
+                <td class="num admin-table__num"><%= day.tally.passives %></td>
+                <td class="num admin-table__num"><%= day.tally.detractors %></td>
+                <td class="num admin-table__num"><%= day.tally.nps.nil? ? "-" : percent.call(day.tally.nps) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </section>
+
+    <section aria-labelledby="nps-comments">
+      <h2 id="nps-comments">Recent comments</h2>
+      <p class="admin-dashboard__note">Free text can identify a teen: names are hidden. "Show who wrote this" shows the display name for that one comment and records that you looked.</p>
+      <% if @comments.empty? %>
+        <p class="empty">No comments yet.</p>
+      <% else %>
+        <ul class="admin-nps__comments">
+          <% @comments.each do |entry| %>
+            <li class="admin-nps__comment">
+              <p class="admin-nps__text"><%= entry.comment %></p>
+              <p class="admin-nps__meta">
+                <%= admin_badge("Score #{entry.score}", entry.score >= 9 ? "badge--success" : (entry.score >= 7 ? "badge--muted" : "badge--danger")) %>
+                <%= tag.time(entry.answered_at.utc.strftime("%-d %b %Y"), datetime: entry.answered_at.utc.iso8601) %>
+                <%= button_to "Show who wrote this", admin_nps_reveal_path(entry), class: "btn btn--sm", form: { data: { turbo: false } }, "aria-label": "Show who wrote the comment from #{entry.answered_at.utc.strftime('%-d %b')}" %>
+              </p>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </section>
+  <% end %>
+</div>

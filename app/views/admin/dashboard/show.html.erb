@@ -35,6 +35,12 @@
           <h2 class="card__title"><%= link_to "Feature flags", flipper_ui_path, data: { turbo: false } %></h2>
           <p class="small">Switch new features on or off.</p>
         </li>
+        <% if feature?(:nps) %>
+          <li class="card card--tight admin-link">
+            <h2 class="card__title"><%= link_to "NPS survey", admin_nps_path %></h2>
+            <p class="small">Score, trend and staff-only comments.</p>
+          </li>
+        <% end %>
         <li class="card card--tight admin-link">
           <h2 class="card__title"><%= link_to "Weekly bosses", admin_bosses_path %></h2>
           <p class="small">Names, art and health for each week's boss.</p>

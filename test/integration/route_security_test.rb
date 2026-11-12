@@ -67,6 +67,8 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   # --- (b) every /admin route is a 404 for the signed-out and for non-admins ---
 
   test "every admin route is a 404 for signed-out visitors and non-admins, whatever the verb" do
+    # Flagged routes only exist while their flag is on: switch on the flags that add admin routes so each one is covered.
+    Flipper.enable(:nps)
     boss = Bosses::Seed.call && Boss.chronological.last
     teen = users(:new_user)
     teen.update_columns(onboarded_at: Time.utc(2026, 11, 2), onboarding_step: 4, created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
@@ -76,7 +78,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
     verified!(teen)
     give_coins(teen, 100)
     order = buy(teen, "keychain")
-    ids = { "admin/bosses" => boss.id, "admin/ships" => ship.id, "admin/orders" => order.id }
+    ids = { "admin/bosses" => boss.id, "admin/ships" => ship.id, "admin/orders" => order.id, "admin/nps" => 1 }
 
     routes = app_routes.select { |_verb, path, _controller, _route| path == "/admin" || path.start_with?("/admin/") }
     assert_operator routes.size, :>=, 10, "expected the admin routes to be found in the router"
@@ -168,6 +170,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   # The login and admin checks run before the CSRF check, so an admin write without a token is the same 404 as an
   # unknown path for everyone but a real admin (a 422 would reveal that the route exists).
   test "admin write routes are a 404, not a CSRF error, for signed-out visitors and non-admins" do
+    Flipper.enable(:nps)
     ENV["ADMIN_HCA_UIDS"] = "someone-else"
     routes = app_routes.select { |verb, path, *| STATE_CHANGING.include?(verb) && path.start_with?("/admin/") }
     assert_operator routes.size, :>=, 5, "expected the admin write routes to be found in the router"
@@ -187,6 +190,7 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   end
 
   test "every POST PATCH PUT and DELETE route rejects a request without a CSRF token, except /api/privacy" do
+    Flipper.enable(:nps)
     # An admin, so the /admin writes get past the admin check and reach the CSRF check too.
     ENV["ADMIN_HCA_UIDS"] = users(:onboarded).hca_uid
     sign_in_as users(:onboarded)
@@ -198,10 +202,29 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
       assert_operator exempt.size, :>=, 2
 
       protected_routes.each do |verb, path, _controller, _route|
-        url = fill(path, step: "prize", provider: "hack_club", key: "keychain")
+        url = fill(path, step: "prize", provider: "hack_club", key: "keychain", token: "a" * 40)
         process(verb.downcase.to_sym, url)
         assert_response :unprocessable_content, "#{verb} #{url} must reject a missing CSRF token"
       end
     end
+  end
+
+  # --- (e) the one public page that acts on a person's row ---
+
+  # PUBLIC BY DESIGN, so it is exempt from "signed in" checks: /feedback/:token (the NPS survey link in a Slack DM) must work
+  # without logging in. Its credential is the signed, purpose-scoped, expiring token in the path, it can only record one
+  # survey answer, and it shows nothing personal (test/integration/nps_feedback_test.rb). Any other route that is not
+  # behind login and touches a person's data must be added here on purpose, with a comment saying why.
+  test "the NPS survey routes are the only token-credentialed public routes, and exist only while the flag is on" do
+    public_by_design = [ %w[GET /feedback/:token], %w[POST /feedback/:token] ]
+    found = app_routes.select { |_verb, path, *| path.start_with?("/feedback") }.map { |verb, path, *| [ verb, path ] }
+    assert_equal public_by_design.sort, found.sort
+
+    get "/feedback/#{'a' * 40}"
+    assert_response :not_found, "flag off: the route does not exist"
+    Flipper.enable(:nps)
+    get "/feedback/#{'a' * 40}"
+    assert_response :not_found, "flag on, but a made-up token is refused"
+    assert_includes response.body, "This link isn't working"
   end
 end

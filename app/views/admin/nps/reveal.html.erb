@@ -1,0 +1,18 @@
+<% content_for :title, "Admin NPS comment" %>
+<div class="container container--wide">
+  <%= admin_tool(:div, class: "admin-dashboard admin-page admin-nps") do %>
+    <p class="admin-back"><%= link_to "Back to the NPS results", admin_nps_path %></p>
+    <header class="page-header">
+      <h1>Who wrote this</h1>
+      <p class="admin-dashboard__note">This view was recorded in the staff access log (who looked and at which comment, nothing else). Do not copy the name next to the comment anywhere else.</p>
+    </header>
+    <div class="admin-nps__comment">
+      <p class="admin-nps__text"><%= @answer.comment %></p>
+      <p class="admin-nps__meta">
+        <%= admin_badge("Score #{@answer.score}") %>
+        <%= tag.time(@answer.answered_at.utc.strftime("%-d %b %Y"), datetime: @answer.answered_at.utc.iso8601) %>
+        <strong>Display name: <%= @author %></strong>
+      </p>
+    </div>
+  <% end %>
+</div>

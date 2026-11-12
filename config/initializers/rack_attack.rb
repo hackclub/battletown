@@ -24,6 +24,11 @@ class Rack::Attack
     req.ip if req.path == "/settings/notifications" && !req.get?
   end
 
+  # The public NPS survey link: opening it or answering is a human-sized action.
+  throttle("feedback/ip", limit: 30, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/feedback/")
+  end
+
   # Hack Club's data-deletion service calls /api/privacy/* from a few addresses: a generous limit of its own, kept
   # out of the general throttle below so a burst of requests there can never block it.
   throttle("privacy/ip", limit: 120, period: 1.minute) do |req|

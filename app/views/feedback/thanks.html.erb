@@ -1,0 +1,11 @@
+<% content_for :title, "Thanks" %>
+<div class="container">
+  <article class="panel panel--white panel--narrow nps">
+    <header class="page-header">
+      <p class="eyebrow">Battletown</p>
+      <h1><%= again ? "Thanks, you already answered" : "Thanks for telling us!" %></h1>
+    </header>
+    <p class="lead"><%= again ? "We have your answer, so there's nothing more to do here." : "Your answer helps us make Battletown better." %></p>
+    <p><%= link_to "Go to Battletown", root_path, class: "btn" %></p>
+  </article>
+</div>

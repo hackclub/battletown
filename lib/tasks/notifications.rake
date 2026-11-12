@@ -12,6 +12,12 @@ namespace :notifications do
     puts "notifications:ship_reminders scanned=#{result.scanned} queued=#{result.queued}"
   end
 
+  desc "Queue the NPS survey DM for everyone due one (flag `nps`; nothing happens while it is off). Run a few times a day from cron; safe to repeat."
+  task nps_prompts: :environment do
+    result = Notifications::NpsPrompts.scan
+    puts "notifications:nps_prompts scanned=#{result.scanned} queued=#{result.queued}"
+  end
+
   desc "Queue the next daily reminder for every onboarded user with a Slack id (safe to repeat)"
   task schedule_all: :environment do
     count = 0
@@ -24,5 +30,12 @@ namespace :notifications do
   desc "Delete finished notifications older than retention_days (config/notifications.yml)"
   task prune: :environment do
     puts "notifications:prune deleted=#{Notifications::Retention.prune}"
+  end
+end
+
+namespace :nps do
+  desc "Empty NPS comments older than nps.comment_retention_days (config/game.yml); scores are kept. Run daily from cron."
+  task prune: :environment do
+    puts "nps:prune emptied=#{Nps::Prune.call}"
   end
 end

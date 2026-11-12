@@ -1,0 +1,23 @@
+/* The NPS survey page (/feedback/:token) and the staff NPS page (/admin/nps). The rating is the shared pill toggles
+   (.toggle-group, .toggle) as a radio group; only the layout around it is here. Tokens only. */
+.nps__form { display: grid; gap: var(--space-6); }
+.nps__fieldset { min-width: 0; }
+.nps__question { font-family: var(--font-display); font-size: var(--text-lg); line-height: 1.25; }
+
+/* Eleven pills: six to a row on a phone, all eleven in one row once there is room. */
+.nps__scale { display: grid; grid-template-columns: repeat(6, minmax(var(--tap-size), 1fr)); gap: var(--space-2); }
+.nps__scale .toggle { display: flex; }
+.nps__scale .toggle__label { width: 100%; padding-inline: var(--space-2); }
+@media (min-width: 40rem) {
+  .nps__scale { grid-template-columns: repeat(11, minmax(var(--tap-size), 1fr)); }
+}
+
+.nps__ends { display: flex; justify-content: space-between; gap: var(--space-4); margin: var(--space-2) 0 0; color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 700; }
+.nps__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* Staff page: the headline number and the comment list. */
+.admin-nps__score { margin: 0; font-family: var(--font-display); font-size: var(--text-sign-title); line-height: 1; }
+.admin-nps__comments { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.admin-nps__comment { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 2px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
+.admin-nps__text { margin: 0; overflow-wrap: anywhere; white-space: pre-line; }
+.admin-nps__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin: 0; font-size: var(--text-sm); }

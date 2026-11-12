@@ -15,6 +15,9 @@ module Notifications
 
     def ship(ship) = absolute(routes.ship_path(ship))
 
+    # The one-click survey page (no login). The token is made by Nps::Token at send time.
+    def feedback(token) = absolute(routes.feedback_path(token: token))
+
     def absolute(path) = "#{base}#{path}"
     def routes = Rails.application.routes.url_helpers
     private_class_method :absolute, :routes

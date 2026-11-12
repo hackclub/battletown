@@ -1,0 +1,42 @@
+<% content_for :title, "Quick question" %>
+<div class="container">
+  <article class="panel panel--white panel--narrow nps">
+    <header class="page-header">
+      <p class="eyebrow">Battletown</p>
+      <h1>Quick question</h1>
+    </header>
+
+    <% if @errors&.any? %>
+      <div class="alert alert--danger" role="alert">
+        <p class="alert__title">Almost there:</p>
+        <ul>
+          <% @errors.each do |message| %><li><%= message %></li><% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= form_with url: feedback_path(params[:token]), method: :post, scope: :nps, class: "nps__form", data: { turbo: false } do |form| %>
+      <%= tag.fieldset class: "field nps__fieldset", aria: { describedby: "nps-scale-hint" } do %>
+        <legend class="nps__question">How likely are you to recommend Battletown to a friend?</legend>
+        <div class="toggle-group nps__scale">
+          <% (0..10).each do |value| %>
+            <label class="toggle">
+              <%= radio_button_tag "nps[score]", value, @score == value.to_s, id: "nps_score_#{value}", class: "toggle__input", required: true %>
+              <span class="toggle__label"><%= value %><% if value.zero? %><span class="visually-hidden"> (not likely)</span><% elsif value == 10 %><span class="visually-hidden"> (very likely)</span><% end %></span>
+            </label>
+          <% end %>
+        </div>
+        <p class="nps__ends" id="nps-scale-hint"><span><span aria-hidden="true">0 =</span> Not likely</span><span><span aria-hidden="true">10 =</span> Very likely</span></p>
+      <% end %>
+
+      <div class="field nps__field">
+        <%= form.label :comment, "Anything you'd like to tell us? (optional)" %>
+        <%= form.text_area :comment, value: @comment, rows: 3, maxlength: NpsResponse::COMMENT_MAX, placeholder: "A sentence is plenty. Please don't include personal details.",
+              aria: { describedby: "nps-comment-hint" } %>
+        <p class="field__hint" id="nps-comment-hint">Up to <%= NpsResponse::COMMENT_MAX %> characters. Only the Battletown team can read it, and it is deleted after a while.</p>
+      </div>
+
+      <div class="nps__actions"><%= form.button "Send", class: "btn btn--primary btn--lg" %></div>
+    <% end %>
+  </article>
+</div>

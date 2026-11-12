@@ -31,7 +31,18 @@ module Notifications
       when "ship_reminder", "ship_mvp" then ship_reminder(row, user)
       when "ship_approved" then ship_approved(row, user)
       when "ship_rejected" then ship_rejected(row, user)
+      when "nps_prompt" then nps_prompt(row, user)
       end
+    end
+
+    # The survey link: a fresh signed token (so it lasts `nps.token_ttl_days` from now). Nothing is sent when the flag is
+    # off, or when the person already answered for this window or since.
+    def nps_prompt(row, user)
+      window = Nps::Eligibility.window_date(row.subject_id)
+      return nil unless window && Features.enabled?(:nps)
+      return nil if NpsResponse.where(user_id: user.id).where("prompt_window_date >= ?", window).exists?
+
+      { link: Links.feedback(Nps::Token.generate(user, window)) }
     end
 
     def link_question(row, user)

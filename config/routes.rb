@@ -53,6 +53,14 @@ Rails.application.routes.draw do
     post "merch/weeks/:boss_id/claim", to: "merch_claims#create", as: :merch_claim, constraints: { boss_id: /\d+/ }
   end
 
+  # The NPS survey page (flag `nps`: the routes do not exist while it is off). PUBLIC BY DESIGN: someone clicking the Slack link
+  # must not need to log in, so the signed token in the path is the only credential (Nps::Token: signed, purpose-scoped,
+  # expires, one answer per person and window). It can show a rating form and a thank-you, never anything personal.
+  constraints Features::Constraint.new(:nps) do
+    get "feedback/:token", to: "feedback#show", as: :feedback, constraints: { token: Nps::Token::PATH_FORMAT }
+    post "feedback/:token", to: "feedback#create", constraints: { token: Nps::Token::PATH_FORMAT }
+  end
+
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
 
@@ -82,6 +90,10 @@ Rails.application.routes.draw do
     root "dashboard#show"
     resource :metrics, only: :show
     resources :bosses, only: %i[index edit update]
+    constraints Features::Constraint.new(:nps) do
+      get "nps", to: "nps#index", as: :nps
+      post "nps/:id/reveal", to: "nps#reveal", as: :nps_reveal, constraints: { id: /\d+/ }
+    end
     resources :orders, only: :index do
       member do
         patch :fulfill
