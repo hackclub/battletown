@@ -20,12 +20,13 @@ Never commit real values. Shapes below are examples only.
 | `APP_HOST` | recommended | Comma-separated hostnames Rails answers to (DNS rebinding and Host header protection). Unset: the host of `APP_URL`. Add every hostname the platform may use (custom domain plus a platform default domain). Requests with another Host get 403, except `/up`. | `battletown.example.com,battletown.platform.example` |
 | `HCA_CLIENT_ID` | yes | OAuth client id of the app at auth.hackclub.com (Developer Apps). Alternative: Rails credentials `hca.client_id`. | `a1b2c3...` |
 | `HCA_CLIENT_SECRET` | yes | OAuth client secret of the same app. Alternative: Rails credentials `hca.client_secret`. Treat as a secret. | `s3cr3t...` |
-| `HCA_ISSUER` | no | Hack Club Auth issuer, used for OIDC discovery. Default `https://auth.hackclub.com`. | `https://auth.hackclub.com` |
+| `HCA_ISSUER` | no | Hack Club Auth issuer, used for OIDC discovery. Default `https://auth.hackclub.com`. Must be `https` in production (the app refuses to boot otherwise): the one-time address token travels to it. Only change it to point at a fake provider locally. | `https://auth.hackclub.com` |
+| `HCA_ADDRESS_PORTAL_URL` | no | Where the address step sends a person to add or edit the addresses saved in Hack Club Auth. Default `$HCA_ISSUER/portal/address` (the app adds `?return_to=` its own page). | `https://auth.hackclub.com/portal/address` |
 | `HACKATIME_CLIENT_ID` | yes, for Hackatime linking | OAuth client id of the Hackatime app (hackatime.hackclub.com, OAuth apps; scopes `profile` and `read` only). Alternative: Rails credentials `hackatime.client_id`. Without it, "Connect Hackatime" fails with a friendly error; nothing else is affected. | `a1b2c3...` |
 | `HACKATIME_CLIENT_SECRET` | yes, for Hackatime linking | OAuth client secret of the same app. Alternative: Rails credentials `hackatime.client_secret`. Treat as a secret. | `s3cr3t...` |
 | `HACKATIME_URL` | no | Hackatime base URL, default `https://hackatime.hackclub.com`. Must be `https` in production (the app refuses to boot otherwise). Only change it to point at a fake provider locally. | `https://hackatime.hackclub.com` |
 | `HOURS_SOURCE` | no | Overrides `hours_source` in `config/game.yml`: `null` (default, no Hackatime calls) or `http` (live Hackatime for users who linked their account). Then run `bin/rails "hackatime:sync[all]"` on a schedule. | `http` |
-| `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | yes | Encrypts the Hackatime OAuth tokens at rest. The app refuses to boot in production without it. Generate once with `bin/rails db:encryption:init` and keep the three values together. **Losing or changing them makes the saved tokens unreadable** (users would have to reconnect Hackatime); never commit them. | 32+ random characters |
+| `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | yes | Encrypts the Hackatime OAuth tokens and the shipping addresses (and the short-lived address offers) at rest. The app refuses to boot in production without it. Generate once with `bin/rails db:encryption:init` and keep the three values together. **Losing or changing them makes the saved tokens and addresses unreadable** (users would have to reconnect Hackatime, and a waiting order's address could not be read); never commit them. Keep them apart from database backups. | 32+ random characters |
 | `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | yes | Second key of the same set (required by Active Record encryption even though no column uses deterministic encryption yet). Boot fails without it. | 32+ random characters |
 | `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | yes | Third value of the same set. Boot fails without it. | 32+ random characters |
 | `SECRET_KEY_BASE` | yes, unless `RAILS_MASTER_KEY` is set and the credentials hold `secret_key_base` | Signs and encrypts the session cookie. The app refuses to boot without one. Generate with `bin/rails secret` (64 hex characters). Changing it signs everyone out. | 128 hex characters |
@@ -65,6 +66,23 @@ $APP_URL/auth/hack_club/callback
 
 The app requests the scopes `openid profile email name phone birthdate address verification_status slack_id basic_info`, all of which must be enabled on the app.
 
+#### Shipping addresses at checkout: two owner actions (nothing here has been done yet)
+
+Physical orders ask the buyer where to send them by reading their saved addresses from Hack Club Auth, once, at checkout (docs/CONTRACT.md, "Shipping addresses"). That is a SECOND, narrow round trip made with the same Hack Club Auth app (same `HCA_CLIENT_ID` and `HCA_CLIENT_SECRET`), so two things must be done by the owner before it can work in production:
+
+1. **Register the extra redirect URI** on the app at auth.hackclub.com (Developer Apps), exactly, with no trailing slash, next to the sign-in one:
+
+   ```
+   $APP_URL/auth/hack_club_address/callback
+   ```
+
+   A wrong or missing URI fails in production only: Hack Club Auth refuses the redirect and the buyer sees "We couldn't load your addresses".
+2. **Confirm that Battletown's Hack Club Auth app is HQ-official** (trusted). Hack Club Auth only returns `identity.addresses` from `GET /api/v1/me` to a token with the `address` scope, and only HQ-official apps may hold that scope; its address page (`/portal/address?return_to=`) also only redirects back to an official app's host. Sign-in already requests `address`, so the app is probably official, but nobody has confirmed it. If it is not, checkout shows "Address lookup isn't available yet" for physical items and still lets non-physical items (a shop item with "Posted to the buyer" unticked) be ordered; staff can still ship an order by hand with the audited override ("Needs an address" on the order page).
+
+The round trip asks for the scopes `openid address` only (no name, email, birthday or phone claim), needs a signed-in, onboarded person, and revokes its access token the moment the addresses are read; no Hack Club Auth token is ever stored. The sign-in scopes above are unchanged.
+
+**Testing it without the real Hack Club Auth.** Nothing in this repository calls auth.hackclub.com with credentials in tests. The suite runs the real OpenID Connect strategy against `test/support/fake_hca.rb` (a tiny local provider: discovery, signed ID token, `GET /api/v1/me`, `POST /oauth/revoke`). To walk the checkout in a browser, run any local provider that serves the same four endpoints, start the app with `HCA_ISSUER=http://127.0.0.1:<port>` (plain `http` is accepted outside production only), and set `HCA_CLIENT_ID` to the audience your fake puts in its ID tokens. Use a throwaway database.
+
 ### Hackatime OAuth app
 
 Account linking is optional and separate from sign-in. Register this redirect URI on the Hackatime OAuth app, exactly, with no trailing slash, and give the app only the scopes `profile` and `read`:
@@ -101,6 +119,8 @@ Nothing runs by itself, and there is ONE table of everything that can be schedul
 | `bin/rails quests:evaluate` | hourly (`15 * * * *`) | flag `quests` on | records finished weekly quests and pays the rewards waiting on an approved ship (the dashboard and ship approval do this too, so it is the safety net for people who do not visit) |
 | `bin/rails returning:evaluate` | hourly (`25 * * * *`) | flag `returning` on (optional) | settles everyone's days so welcome-back windows open on time; the same work as `game:settle`, so skip it when that already runs hourly |
 | `bin/rails ship_images:prune` | daily (`0 11 * * *`) | flag `ship_screenshots` on | deletes screenshots of ships withdrawn more than 30 days ago and orphaned rows |
+| `bin/rails orders:purge_addresses` | daily (`30 10 * * *`) | always (as soon as physical items can be ordered) | deletes shipping addresses that are due: 30 days after the order was shipped or fulfilled (`address_retention_days` in `config/orders.yml`), at once for cancelled and refunded orders. Writes an `address_purged` history entry per address (no content) and prints counts only. Safe to run twice. A status change also tidies up what is due, so a missed run only delays deletion |
+| `bin/rails orders:purge_address_offers` | daily (`35 10 * * *`) | always | deletes expired and used address offers (the 15-minute lists of addresses from Hack Club Auth; they are also swept whenever a new one is stored). Prints counts only |
 
 Checks to run by hand, not on a schedule: `bin/rails slack:check` (bot token and scopes), `bin/rails ship_images:check` (libvips can read and write what screenshots need), `bin/rails db:encryption:init` (once, to make the encryption keys).
 
@@ -222,12 +242,29 @@ Every job uses `concurrencyPolicy: forbid` (a fire is skipped while the previous
   concurrencyPolicy: forbid
   steps:
     - { type: app, deployment: web, command: "bin/rails ship_images:prune", timeoutSeconds: 600, retries: 1 }
+
+- name: orders-purge-addresses
+  description: Delete shipping addresses 30 days after shipped or fulfilled, and any left on cancelled or refunded orders
+  scheduleCron: "30 10 * * *"      # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails orders:purge_addresses", timeoutSeconds: 600, retries: 1 }
+
+- name: orders-purge-address-offers
+  description: Delete expired and used address offers (the 15-minute lists of addresses from Hack Club Auth)
+  scheduleCron: "35 10 * * *"      # UTC
+  enabled: true
+  concurrencyPolicy: forbid
+  steps:
+    - { type: app, deployment: web, command: "bin/rails orders:purge_address_offers", timeoutSeconds: 600, retries: 1 }
 ```
 
 Notes:
 
 - **`game-settle`** runs at minute 5 so the settle instant of whole-hour zones has just passed. It tries every user, prints its counts line, then exits 1 when any user failed (`errors=` above 0), so the run shows as failed; the one retry and the next hour try those users again (settling is idempotent).
 - **`hackatime-sync`** checks the hours source first, the same way the app does (`HOURS_SOURCE`, else `hours_source` in `config/game.yml`): unless it is `http` it prints `hackatime:sync skipped: ...`, exits 0 and never calls Hackatime (an unknown value fails the run). So creating the job early is harmless, but it only costs pod starts until `HOURS_SOURCE=http` is set on `web`. Per-user failures are counted (`retry_later=`, `needs_reconnect=`), not raised, so retries stay at 0 and the next hour tries again. Order against `game-settle` does not matter: the grace period gives late hours several hours to land before a day settles.
+- **`orders-purge-addresses`** is the retention promise made to buyers ("we delete it 30 days after it ships"), so create it before physical items can be ordered. It is idempotent, and a cancel or refund deletes the address at once without it; it also runs a small sweep after every order status change, so a missed run only delays deletion. **`orders-purge-address-offers`** is only a backstop (offers are also swept whenever a new one is stored and expire after 15 minutes either way).
 - **`privacy-purge-tokens`** is only a backstop (expired ids are also deleted as requests arrive). The time is arbitrary off-peak.
 - **`notifications-prune`** is the exception among the notification tasks: it sends nothing and only enforces retention, and finished rows exist even while notifications are off (changing a reminder schedule cancels the pending row), so create it now.
 - **`notifications-dispatch`** prints `enabled=false` and exits 0 while `NOTIFICATIONS_ENABLED` is not `true`, and in production refuses to send without `SLACK_BOT_TOKEN` (`halted=true`). Every 5 minutes is 288 pod starts a day instead of 1,440: reminders go out up to 5 minutes late, far inside `max_lateness_seconds` (3 hours), and the 5-minute send lease matches the cadence. A run handles at most 100 rows and one message per person (the task's built-in limit), roughly 1,200 an hour at this cadence; if reminders bunch up at popular times beyond that, tighten to `*/2` rather than adding steps. Retries 0 and a generous timeout because a run killed mid-send is the one way a DM can repeat (the leased row comes back after 5 minutes); the next fire is never more than 5 minutes away anyway.

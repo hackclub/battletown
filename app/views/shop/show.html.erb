@@ -37,7 +37,7 @@
         <%= hidden_field_tag :prize_key, @prize.key, id: nil %>
         <%= hidden_field_tag :idempotency_key, @idempotency_key, id: nil %>
         <%= button_tag "Place order for #{coins_text(@prize.coins)}", type: "submit", class: "btn btn--primary btn--lg",
-                       disabled: @address_offer.nil? || @address_offer.addresses.empty?,
+                       disabled: true,
                        data: { ship_to_picker_target: "submit", turbo_submits_with: "Placing order..." } %>
         <%= link_to "Not now", shop_path, class: "btn" %>
       <% end %>

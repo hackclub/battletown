@@ -34,6 +34,17 @@ module Orders
       due.to_a.count { |address| delete!(address, address.order) }
     end
 
+    # Everything that is due, in batches (what the rake task runs). Returns how many were deleted.
+    def all(now: Time.current)
+      total = 0
+      loop do
+        deleted = call(now: now)
+        total += deleted
+        break if deleted < BATCH
+      end
+      total
+    end
+
     # The sweep after a status change: never lets a problem here break the change itself.
     def sweep_quietly
       call

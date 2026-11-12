@@ -13,7 +13,7 @@
 
     <%= form_with url: update_address_order_path(@order), method: :patch, id: "address-form", class: "shop-confirm__form" do %>
       <%= button_tag "Use this address", type: "submit", class: "btn btn--primary btn--lg",
-                     disabled: @address_offer.nil? || @address_offer.addresses.empty?, data: { ship_to_picker_target: "submit", turbo_submits_with: "Saving..." } %>
+                     disabled: true, data: { ship_to_picker_target: "submit", turbo_submits_with: "Saving..." } %>
       <%= link_to "Keep the current one", order_path(@order), class: "btn" %>
     <% end %>
   </div>
