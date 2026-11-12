@@ -368,13 +368,13 @@
     background-image: url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"),
       url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"),
       url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg"), url("design/map-tree.svg");
-    background-position: 13% 9%, 97% 30%, 11% 58%, 38% 56%, 38% 66%, 56% 58%, 70% 57%, 60% 63%, 54% 66%, 49% 69%, 66% 69%, 58% 73%;
+    background-position: 7% 2%, 97% 30%, 11% 58%, 38% 56%, 38% 66%, 56% 58%, 70% 57%, 60% 63%, 54% 66%, 49% 69%, 66% 69%, 58% 73%;
     background-size: 5% auto;
   }
   .landing-map__art::after {
     background-image: url("design/map-house.svg"), url("design/map-house.svg"), url("design/map-house.svg"), url("design/map-house.svg"),
       url("design/map-house.svg"), url("design/map-house.svg"), url("design/map-house.svg");
-    background-position: 42% 3%, 26% 13%, 38% 54%, 26% 60%, 48% 63%, 88% 55%, 12% 72%;
+    background-position: 42% 3%, 28% 2%, 38% 54%, 26% 60%, 48% 63%, 88% 55%, 12% 72%;
     background-size: 10% auto;
   }
   .landing-map__hero { display: block; }
