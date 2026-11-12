@@ -226,16 +226,19 @@ class Bosses::PresenterTest < ActiveSupport::TestCase
   end
 
   test "community_active_today counts people at 15 minutes on the user's local today, and only counts" do
-    add_hours(@user, MONDAY, 900)
-    add_hours(@other, MONDAY, 899)
-    add_hours(@other, MONDAY - 1, 9_000)
-    third = User.create!(hca_uid: "ident!third", time_zone: "UTC")
-    add_hours(third, MONDAY, 3_600)
+    # Signing up stamps today's date, which decides which days count, so pin the clock to the Monday.
+    travel_to Time.utc(2026, 11, 16, 12) do
+      add_hours(@user, MONDAY, 900)
+      add_hours(@other, MONDAY, 899)
+      add_hours(@other, MONDAY - 1, 9_000)
+      third = User.create!(hca_uid: "ident!third", time_zone: "UTC")
+      add_hours(third, MONDAY, 3_600)
 
-    presenter = present
-    assert_equal 2, presenter.community_active_today
-    assert_equal "2 people coded today.", presenter.community_text
-    assert_equal "Be the first to code today.", present(today: MONDAY + 1).community_text
+      presenter = present
+      assert_equal 2, presenter.community_active_today
+      assert_equal "2 people coded today.", presenter.community_text
+      assert_equal "Be the first to code today.", present(today: MONDAY + 1).community_text
+    end
   end
 
   test "community text for exactly one person" do

@@ -16,15 +16,18 @@ class Bosses::SeedTest < ActiveSupport::TestCase
   end
 
   test "is idempotent and never overwrites an edited boss" do
-    Bosses::Seed.call
-    Boss.find_by!(starts_on: Date.new(2026, 11, 13)).update!(name: "The Great Compiler", hp_seconds: 720_000)
+    # A boss's health is locked once its week has started, so edit it from before the first week.
+    travel_to Time.utc(2026, 11, 10, 12) do
+      Bosses::Seed.call
+      Boss.find_by!(starts_on: Date.new(2026, 11, 13)).update!(name: "The Great Compiler", hp_seconds: 720_000)
 
-    assert_no_difference "Boss.count" do
-      assert_equal 0, Bosses::Seed.call
+      assert_no_difference "Boss.count" do
+        assert_equal 0, Bosses::Seed.call
+      end
+      boss = Boss.find_by!(starts_on: Date.new(2026, 11, 13))
+      assert_equal "The Great Compiler", boss.name
+      assert_equal 720_000, boss.hp_seconds
     end
-    boss = Boss.find_by!(starts_on: Date.new(2026, 11, 13))
-    assert_equal "The Great Compiler", boss.name
-    assert_equal 720_000, boss.hp_seconds
   end
 
   test "fills in only the missing weeks" do

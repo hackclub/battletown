@@ -28,7 +28,10 @@ class Bosses::CheckDefeatTest < ActiveSupport::TestCase
   end
 
   test "a ledger credit that crosses the health sets defeated_at through the callback" do
-    result = Hours::Credit.call(user: @user, seconds: 3_600, source: "manual", note: "hit", local_date: FRIDAY, idempotency_key: "cross")
+    # Hours::Credit only backfills a few days, so credit on the boss's first day.
+    result = travel_to(Time.utc(2026, 11, 13, 12)) do
+      Hours::Credit.call(user: @user, seconds: 3_600, source: "manual", note: "hit", local_date: FRIDAY, idempotency_key: "cross")
+    end
     assert result.created?
     assert @boss.reload.defeated?
   end

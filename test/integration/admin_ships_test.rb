@@ -175,9 +175,12 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
 
   test "approving with the default hours credits the coins once and shows the result" do
     sign_in_admin
-    travel_to(NOW) { patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: "" } }
-    assert_redirected_to "/admin/ships/#{@ship.id}"
-    follow_redirect!
+    # Follow the redirect inside the same pinned day: the session cookie expires 30 days after its last use.
+    travel_to NOW do
+      patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: "" }
+      assert_redirected_to "/admin/ships/#{@ship.id}"
+      follow_redirect!
+    end
     assert_select ".flash--notice", text: /Approved\. Credited 30 coins plus 2 streak bonus coins/
     @ship.reload
     assert_equal "approved", @ship.status
@@ -191,12 +194,12 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
 
   test "approving twice (a double click) credits once" do
     sign_in_admin
-    travel_to(NOW) do
+    travel_to NOW do
       patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: "" }
       patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: "" }
+      assert_redirected_to "/admin/ships/#{@ship.id}"
+      follow_redirect!
     end
-    assert_redirected_to "/admin/ships/#{@ship.id}"
-    follow_redirect!
     assert_select ".flash--alert", text: /no longer waiting/
     assert_equal 2, CoinTransaction.where(user_id: @teen.id).count
     assert_equal 32, Coins::Balance.total(@teen)
@@ -205,9 +208,11 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
   test "approved hours can be lowered in steps but never raised, and bad values change nothing" do
     sign_in_admin
     [ "3.5", "0", "-1", "1.1", "lots" ].each do |text|
-      travel_to(NOW) { patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: text } }
-      assert_redirected_to "/admin/ships/#{@ship.id}"
-      follow_redirect!
+      travel_to NOW do
+        patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: text }
+        assert_redirected_to "/admin/ships/#{@ship.id}"
+        follow_redirect!
+      end
       assert_select ".flash--alert", minimum: 1
       assert_equal "submitted", @ship.reload.status, text
     end
@@ -219,12 +224,14 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
 
   test "approving while recent days are unsettled still credits and leaves a note on the ship" do
     sign_in_admin
-    travel_to(Time.utc(2026, 11, 9, 12)) { patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: "" } }
+    travel_to Time.utc(2026, 11, 9, 12) do
+      patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: "" }
+      follow_redirect!
+    end
     @ship.reload
     assert_equal "approved", @ship.status
     assert_match(/2026-11-09/, @ship.payout_note)
     assert_equal 30, @ship.coin_breakdown[:base]
-    follow_redirect!
     assert_select ".admin-dl", text: /Payout note/
   end
 
@@ -261,8 +268,10 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
   test "approving a ship the teen withdrew changes nothing" do
     Ships::Withdraw.call(ship: @ship)
     sign_in_admin
-    travel_to(NOW) { patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: "" } }
-    follow_redirect!
+    travel_to NOW do
+      patch "/admin/ships/#{@ship.id}/approve", params: { approved_hours: "" }
+      follow_redirect!
+    end
     assert_select ".flash--alert", text: /no longer waiting/
     assert_equal "withdrawn", @ship.reload.status
     assert_equal 0, CoinTransaction.count
