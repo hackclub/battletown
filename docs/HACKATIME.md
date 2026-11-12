@@ -46,7 +46,7 @@ Table `hackatime_connections` (one row per user, `ON DELETE CASCADE`, so deletin
 
 `Hackatime::HttpSource#daily_seconds(user:, from:, to:)` returns `Hackatime::DaySeconds(date:, seconds:, project:)` rows and raises `Hackatime::Client::AuthError` (user must reconnect) or `Hackatime::Client::RetryableError` (rate limited, Hackatime down). A user with no connection, or one that needs reconnecting, has no rows. A successful call sets `last_synced_at`.
 
-Wiring (one line, when `hours_source: http` is selected in `config/game.yml`): return `Hackatime::HttpSource.new` from the source factory next to `NullSource` and `CsvSource`. A sync runner should rescue `RetryableError` per user and try again next run, and skip users whose connection needs a reconnect.
+Wiring: `Hackatime::HttpSource` includes `Hackatime::Source`. `Hackatime.source` (the default of `Hours::Sync`) returns it when `hours_source: http` under `hours:` in `config/game.yml`, or when the `HOURS_SOURCE=http` environment variable is set (the variable wins); the shipped default is `null`, so nothing calls Hackatime until you flip it. `bin/rails "hackatime:sync[all]"` (or `hackatime:sync[<user id>]`) runs `Hours::Sync` with the live source for every linked user who does not need a reconnect, and prints counts only (users, needs_reconnect, retry_later, credited seconds/days). It is safe to repeat and meant for cron. A rejected token marks the connection `needs_reconnect`; 429, 5xx and timeouts are counted as `retry_later` and tried again on the next run.
 
 ## Verifying the real round trip
 

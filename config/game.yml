@@ -3,6 +3,9 @@
 shared:
   # The hours ledger (app/services/hours/**).
   hours:
+    # Where Hours::Sync gets Hackatime time when no source is named: null (nothing) or http (live Hackatime, for
+    # users who linked their account at /hackatime). The HOURS_SOURCE environment variable overrides it.
+    hours_source: null
     # The most coded time one user can have credited for one local date (anti-abuse). Positive credits are clamped to it.
     daily_cap_seconds: 43200
     # A credit may not be dated further back than this many days before the user's local today (adjustments are exempt).

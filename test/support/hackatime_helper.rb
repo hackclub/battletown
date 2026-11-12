@@ -1,13 +1,5 @@
 require_relative "fake_hackatime"
 
-# Until the hours source seam (Hackatime::DaySeconds) lands from the hours work, tests use a stand-in with the same
-# shape. Once the real one exists it is autoloaded here and this does nothing.
-begin
-  Hackatime::DaySeconds
-rescue NameError
-  Hackatime.const_set(:DaySeconds, Data.define(:date, :seconds, :project))
-end
-
 module HackatimeHelper
   SECRET_TOKEN = "tok-secret-access-0123456789".freeze
   SECRET_REFRESH = "tok-secret-refresh-0123456789".freeze

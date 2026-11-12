@@ -8,6 +8,8 @@ module Hackatime
   # user's own: their `time_zone` decides when a day starts and what "today" is, so a 23 or 25 hour day around a
   # DST change is handled by the bounds, not by arithmetic here. See docs/HACKATIME.md.
   class HttpSource
+    include Source
+
     MAX_DAYS = 62
     # A calendar day is at most 25 hours long (DST); anything larger from Hackatime is clamped as nonsense.
     MAX_DAY_SECONDS = 25.hours.to_i
@@ -20,13 +22,16 @@ module Hackatime
 
     # Raises Hackatime::Client::AuthError (user must reconnect) or RetryableError (try again later); a user who
     # never connected, or must reconnect, simply has no rows.
-    def daily_seconds(user:, from:, to:)
+    #
+    # `from` / `to` are inclusive local dates. nil means unbounded, which here means: `to` is the user's today and
+    # `from` is MAX_DAYS - 1 days before `to` (a live API cannot be asked for "everything").
+    def daily_seconds(user:, from: nil, to: nil)
       connection = user.hackatime_connection
       return [] if connection.nil? || connection.needs_reconnect?
 
       zone = ActiveSupport::TimeZone[user.time_zone.to_s] || ActiveSupport::TimeZone["UTC"]
-      first = from.to_date
-      last = [ to.to_date, zone.today ].min
+      last = [ to&.to_date || zone.today, zone.today ].min
+      first = from&.to_date || (last - (MAX_DAYS - 1))
       return [] if last < first
       raise ArgumentError, "range too long (max #{MAX_DAYS} days)" if (last - first).to_i >= MAX_DAYS
 

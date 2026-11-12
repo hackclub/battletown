@@ -39,6 +39,7 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 | `HCA_CLIENT_ID` / `HCA_CLIENT_SECRET` | OAuth app from auth.hackclub.com (Developer Apps) |
 | `HCA_ISSUER` | Defaults to `https://auth.hackclub.com` |
 | `HACKATIME_CLIENT_ID` / `HACKATIME_CLIENT_SECRET` | Hackatime OAuth app (scopes `profile` and `read` only); redirect URI is `$APP_URL/auth/hackatime/callback`. Optional account linking, see [docs/HACKATIME.md](docs/HACKATIME.md) |
+| `HOURS_SOURCE` | Optional override of `hours_source` in `config/game.yml`: `null` (default, no Hackatime calls) or `http` (live Hackatime for linked users; `bin/rails "hackatime:sync[all]"`) |
 | `HACKATIME_URL` | Defaults to `https://hackatime.hackclub.com`; `https` only in production. Point it at a local fake provider to test linking |
 | `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` / `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` / `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | Encrypt the Hackatime tokens at rest. Required (production refuses to boot without them); in development generate them with `bin/rails db:encryption:init` and put them in `.env`. Tests use fixed throwaway values |
 | `APP_URL` | Public URL; redirect URI is `$APP_URL/auth/hack_club/callback` |
