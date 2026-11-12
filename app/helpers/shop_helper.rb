@@ -1,20 +1,11 @@
 module ShopHelper
   VERIFY_URL = "https://auth.hackclub.com".freeze
 
-  STATUS_TEXT = { "requested" => "Requested", "fulfilled" => "Fulfilled", "cancelled" => "Cancelled" }.freeze
-
   # "1 coin", "30 coins", "1,200 coins".
   def coins_text(amount) = "#{number_with_delimiter(amount)} #{amount == 1 ? 'coin' : 'coins'}"
 
   # A price: "Free" for zero.
   def price_text(amount) = amount.zero? ? "Free" : coins_text(amount)
-
-  def order_status_text(order) = STATUS_TEXT.fetch(order.status)
-
-  # The shared badge colour for a status; the word is always printed too, and shop.css adds a mark in front of it.
-  STATUS_BADGE = { "requested" => "badge--warning", "fulfilled" => "badge--success", "cancelled" => "badge--muted" }.freeze
-
-  def order_status_badge(order) = STATUS_BADGE.fetch(order.status)
 
   # Orders carry a calendar date in the person's own zone (UTC when unset).
   def order_date(time, user = current_user)

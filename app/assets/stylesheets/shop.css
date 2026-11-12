@@ -90,8 +90,25 @@
 .shop-order .shop-note { margin-bottom: var(--space-3); }
 .shop-order form { margin: 0; }
 .shop-status::before { margin-inline-end: 0.2em; font-weight: 700; }
-.shop-status--requested { border-style: dashed; }
+.shop-status--requested, .shop-status--on_hold { border-style: dashed; }
 .shop-status--requested::before { content: "\2026"; }
+.shop-status--on_hold::before { content: "\2016"; }
+.shop-status--shipped::before { content: "\2192"; }
 .shop-status--fulfilled::before { content: "\2713"; }
-.shop-status--cancelled { border-style: dotted; }
+.shop-status--cancelled, .shop-status--refunded { border-style: dotted; }
 .shop-status--cancelled::before { content: "\2715"; }
+.shop-status--refunded::before { content: "\21A9"; }
+.shop-status--overdue::before { content: "!"; }
+.shop-order__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.shop-order__name a { color: inherit; }
+
+/* One order's page: the facts, the plain timeline and the tracking. Words first; dates are plain text. */
+.shop-order-detail .shop-sums { margin: 0; }
+.shop-order-detail .shop-sums > div:last-child { border-bottom-width: 0; }
+.shop-timeline { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.shop-timeline li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-4); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); }
+.shop-timeline li:last-child { border-bottom-width: 0; }
+.shop-timeline__what { font-weight: 700; }
+.shop-timeline__when { color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.shop-tracking__number { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.shop-tracking__link { margin-inline-start: var(--space-2); }

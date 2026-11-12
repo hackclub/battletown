@@ -1,0 +1,44 @@
+<% content_for :title, "Order: #{@order.display_name}" %>
+<section class="container shop stack">
+  <header class="page-header">
+    <p class="eyebrow">Battletown shop</p>
+    <h1><%= @order.display_name %></h1>
+    <p class="lead shop-lead">
+      <span class="badge shop-status <%= order_status_class(@order) %> <%= order_status_badge(@order) %>"><%= order_status_text(@order) %></span>
+      <%= order_status_explanation(@order) %>
+    </p>
+    <p><%= link_to "Back to your orders", orders_path, class: "btn btn--ghost" %></p>
+  </header>
+
+  <div class="card shop-order-detail">
+    <dl class="shop-sums">
+      <div><dt>Item</dt><dd><%= @order.display_name %></dd></div>
+      <div><dt>Price</dt><dd><%= price_text(@order.coins) %></dd></div>
+      <div><dt>Ordered</dt><dd><%= order_date(@order.created_at) %></dd></div>
+      <% if @order.tracking? && (@order.shipped? || @order.fulfilled?) %>
+        <div><dt>Tracking</dt><dd><%= tracking_summary(@order) %></dd></div>
+      <% end %>
+    </dl>
+  </div>
+
+  <section class="card shop-timeline-card" aria-labelledby="order-timeline">
+    <h2 id="order-timeline" class="card__title">What happened</h2>
+    <ol class="shop-timeline" role="list">
+      <li><span class="shop-timeline__what">Ordered</span> <span class="shop-timeline__when"><%= order_date(@order.created_at) %></span></li>
+      <% @events.each do |event| %>
+        <li><span class="shop-timeline__what"><%= order_event_text(event) %></span> <span class="shop-timeline__when"><%= order_date(event.created_at) %></span></li>
+      <% end %>
+    </ol>
+  </section>
+
+  <% if @order.buyer_status == "requested" %>
+    <p class="shop-note">The team will message you on Slack to arrange delivery.</p>
+  <% end %>
+  <p class="shop-note">Questions about this order? Message the team on Slack.</p>
+
+  <% if @order.requested? && !@order.signup_sticker? %>
+    <%= button_to "Cancel order", cancel_order_path(@order, from: "order"), method: :patch, class: "btn",
+                  "aria-label": "Cancel order: #{@order.display_name}",
+                  form: { data: { turbo_confirm: "Cancel this order? Your #{coins_text(@order.coins)} come back." } } %>
+  <% end %>
+</section>

@@ -21,22 +21,27 @@
           <span class="shop-order__art" aria-hidden="true"><%= order.emoji %></span>
           <div class="shop-order__body">
             <div class="shop-order__head">
-              <h2 class="shop-order__name"><%= order.display_name %></h2>
-              <span class="badge shop-status shop-status--<%= order.status %> <%= order_status_badge(order) %>"><%= order_status_text(order) %></span>
+              <h2 class="shop-order__name"><%= link_to order.display_name, order_path(order), "aria-label": "#{order.display_name}: see this order" %></h2>
+              <span class="badge shop-status <%= order_status_class(order) %> <%= order_status_badge(order) %>"><%= order_status_text(order) %></span>
             </div>
             <p class="shop-order__meta">
               <%= price_text(order.coins) %> &middot; ordered <%= order_date(order.created_at) %>
+              <% if order.shipped? && order.shipped_at %>&middot; shipped <%= order_date(order.shipped_at) %><% end %>
               <% if order.fulfilled? %>&middot; fulfilled <%= order_date(order.fulfilled_at) %><% end %>
               <% if order.cancelled? %>&middot; cancelled <%= order_date(order.cancelled_at) %><%= " (coins refunded)" if order.coins.positive? %><% end %>
+              <% if order.refunded? %>&middot; refunded <%= order_date(order.refunded_at) %><%= " (coins refunded)" if order.coins.positive? %><% end %>
             </p>
-            <% if order.requested? %>
+            <% if order.buyer_status == "requested" %>
               <p class="shop-note">The team will message you on Slack to arrange delivery.</p>
-              <% unless order.signup_sticker? %>
+            <% end %>
+            <div class="shop-order__actions">
+              <%= link_to "See order", order_path(order), class: "btn btn--sm", "aria-label": "See order: #{order.display_name}" %>
+              <% if order.requested? && !order.signup_sticker? %>
                 <%= button_to "Cancel order", cancel_order_path(order), method: :patch, class: "btn btn--sm",
                               "aria-label": "Cancel order: #{order.display_name}",
                               form: { data: { turbo_confirm: "Cancel this order? Your #{coins_text(order.coins)} come back." } } %>
               <% end %>
-            <% end %>
+            </div>
           </div>
         </li>
       <% end %>

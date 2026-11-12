@@ -132,7 +132,7 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
       assert_difference "Order.count", 1 do
         place_order
       end
-      assert_redirected_to orders_path
+      assert_redirected_to order_path(Order.last)
     end
   end
 

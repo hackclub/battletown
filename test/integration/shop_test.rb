@@ -214,13 +214,15 @@ class ShopTest < ActionDispatch::IntegrationTest
     get shop_item_path("tshirt")
     key = css_select("input[name=idempotency_key]").first["value"]
     post orders_path, params: { prize_key: "tshirt", idempotency_key: key }
-    assert_redirected_to orders_path
+    assert_redirected_to order_path(Order.last)
     follow_redirect!
     assert_select ".flash--notice", /Order placed/
+    assert_select "h1", /Battletown T-shirt/
+    assert_select ".shop-status--requested", text: "Requested"
+    assert_select ".shop-note", /message you on Slack to arrange delivery/
+    get orders_path
     assert_select ".shop-order", 1
     assert_select ".shop-order__name", /Battletown T-shirt/
-    assert_select ".shop-status--requested", text: "Requested"
-    assert_select ".shop-order .shop-note", /message you on Slack to arrange delivery/
     assert_select ".shop-lead strong", text: "30 coins"
     assert_equal 30, Coins::Balance.total(@user)
   end
@@ -230,7 +232,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     give_coins(@user, 120)
     sign_in_as @user
     2.times { place_order(key: "same-key-123456") }
-    assert_redirected_to orders_path
+    assert_redirected_to order_path(Order.last)
     assert_equal 1, Order.count
     assert_equal 70, Coins::Balance.total(@user)
   end
@@ -348,7 +350,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     fulfilled = buy(@user, "poster")
     fulfilled.update_columns(status: "fulfilled", fulfilled_at: Time.current)
     cancelled = buy(@user, "sticker_pack")
-    Shop::Cancel.call(order: cancelled, by: @user)
+    Orders::Cancel.call(order: cancelled, by: @user)
     get orders_path
     assert_select "#order-#{requested.id} .badge.badge--warning", text: "Requested"
     assert_select "#order-#{fulfilled.id} .badge.badge--success", text: "Fulfilled"
