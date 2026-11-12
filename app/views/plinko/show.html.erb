@@ -16,6 +16,7 @@
        data-plinko-rows-value="<%= @board.rows %>"
        data-plinko-points-value="<%= @board.slot_points.to_json %>"
        data-plinko-balls-value="<%= @balls.available %>">
+    <div class="plinko__col plinko__col--play">
     <section class="card plinko__board" aria-labelledby="plinko-board-title">
       <h2 id="plinko-board-title" class="card__title">Drop a ball</h2>
       <canvas class="plinko__canvas" data-plinko-target="canvas" role="img"
@@ -41,6 +42,30 @@
       </p>
     </section>
 
+    <section class="card plinko__odds" aria-labelledby="plinko-odds-title">
+      <h2 id="plinko-odds-title" class="card__title">The odds</h2>
+      <p class="small">Every peg sends the ball left or right with the same chance, so the middle is the most likely. The server picks the route; your browser only shows it. An average ball is worth about <%= number_with_precision(@board.expected_points, precision: 0) %> points.</p>
+      <%= table_region("Slot odds and points") do %>
+        <table class="table table--zebra">
+          <caption>Slot odds and points</caption>
+          <thead>
+            <tr><th scope="col">Slot</th><th scope="col" class="num">Chance</th><th scope="col" class="num">Points</th></tr>
+          </thead>
+          <tbody>
+            <% @board.odds.each_with_index do |chance, slot| %>
+              <tr>
+                <th scope="row"><%= slot + 1 %></th>
+                <td class="num"><%= number_to_percentage(chance.to_f * 100, precision: 1, strip_insignificant_zeros: true) %></td>
+                <td class="num"><%= number_with_delimiter(@board.points_for(slot)) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </section>
+    </div>
+
+    <div class="plinko__col plinko__col--score">
     <section class="card plinko__stats" aria-labelledby="plinko-stats-title">
       <h2 id="plinko-stats-title" class="card__title">Your points</h2>
       <dl class="plinko__totals">
@@ -106,27 +131,7 @@
       <% end %>
     </section>
 
-    <section class="card plinko__odds" aria-labelledby="plinko-odds-title">
-      <h2 id="plinko-odds-title" class="card__title">The odds</h2>
-      <p class="small">Every peg sends the ball left or right with the same chance, so the middle is the most likely. The server picks the route; your browser only shows it. An average ball is worth about <%= number_with_precision(@board.expected_points, precision: 0) %> points.</p>
-      <%= table_region("Slot odds and points") do %>
-        <table class="table table--zebra">
-          <caption>Slot odds and points</caption>
-          <thead>
-            <tr><th scope="col">Slot</th><th scope="col" class="num">Chance</th><th scope="col" class="num">Points</th></tr>
-          </thead>
-          <tbody>
-            <% @board.odds.each_with_index do |chance, slot| %>
-              <tr>
-                <th scope="row"><%= slot + 1 %></th>
-                <td class="num"><%= number_to_percentage(chance.to_f * 100, precision: 1, strip_insignificant_zeros: true) %></td>
-                <td class="num"><%= number_with_delimiter(@board.points_for(slot)) %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      <% end %>
-    </section>
+    </div>
   </div>
 
   <p><%= link_to "Back to the dashboard", dashboard_path, class: "btn btn--ghost" %></p>

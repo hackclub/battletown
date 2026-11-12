@@ -3,9 +3,16 @@
 .plinko__layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; }
 .plinko__layout > * { min-width: 0; margin: 0; }
 
+/* A phone reads the board, your points, the leaderboard, then the odds; two columns (play, score) from 64rem. */
+.plinko__col { display: contents; }
+.plinko__col--score > .plinko__stats { order: 1; }
+.plinko__col--score > .plinko__leaderboard { order: 2; }
+.plinko__col--play > .plinko__odds { order: 3; }
+
 @media (min-width: 64rem) {
   .plinko__layout { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); }
-  .plinko__board { grid-row: span 2; }
+  .plinko__col { display: grid; gap: var(--space-8); align-content: start; min-width: 0; }
+  .plinko__col--score > *, .plinko__col--play > * { order: 0; }
 }
 
 .plinko__canvas {
