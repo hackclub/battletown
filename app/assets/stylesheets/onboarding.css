@@ -74,6 +74,7 @@
 .onboarding-prize strong { font-family: var(--font-display); font-size: var(--text-base); font-weight: 400; }
 
 /* Forms */
+.onboarding .field { grid-template-columns: minmax(0, 1fr); }
 /* Rails wraps an invalid field and its label in div.field_with_errors; the inline error and aria-invalid say it better. */
 .onboarding .field_with_errors { display: contents; }
 .onboarding__fieldset { margin: 0 0 var(--space-6); padding: 0; border: 0; }
@@ -89,6 +90,8 @@
 .onboarding__fieldset > .field__error { margin-bottom: var(--space-3); }
 /* On phones the primary action stays in reach: pinned to the bottom of the screen while the form is on it. */
 @media (max-width: 40rem) {
+  /* A focused field is never left hidden behind the pinned button. */
+  html:has(.onboarding) { scroll-padding-bottom: 6rem; }
   .onboarding__actions {
     position: sticky;
     bottom: 0;
@@ -176,6 +179,7 @@
 .toggle-group--kinds .toggle__label { font-size: var(--text-lg); }
 
 /* Idea chips */
+.chips li { min-width: 0; max-width: 100%; }
 .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .chip {
   min-height: var(--tap-size);
@@ -193,6 +197,7 @@
 }
 .chip:hover { background: var(--color-surface); }
 .chip:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.placeholder-link { max-width: 100%; white-space: normal; }
 .chip:active { transform: translateY(1px); }
 
 /* Days: the shared .toggle pills, plus the "Every day" toggle, which looks like one with a dashed edge */
