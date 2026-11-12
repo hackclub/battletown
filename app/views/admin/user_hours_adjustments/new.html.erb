@@ -18,7 +18,7 @@
     <% else %>
       <section class="card admin-panel admin-form-card" aria-labelledby="hours-form">
         <h2 id="hours-form" class="card__title">What to change</h2>
-        <%= form_with url: confirm_admin_user_hours_adjustment_path(@user), method: :post, class: "admin-form stack" do |form| %>
+        <%= form_with url: confirm_admin_user_hours_adjustment_path(@user), method: :post, class: "admin-form stack", data: { turbo: false } do |form| %>
           <%= hidden_field_tag :token, adjustment.token, id: nil %>
           <fieldset class="field">
             <legend>Direction</legend>

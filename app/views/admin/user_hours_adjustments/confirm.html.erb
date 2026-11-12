@@ -30,7 +30,7 @@
         <dt>That day</dt><dd><%= admin_duration(adjustment.day_before) %> now, <strong><%= admin_duration(adjustment.day_after) %></strong> after</dd>
         <dt>Your reason</dt><dd class="admin-text"><%= adjustment.reason %></dd>
       </dl>
-      <%= form_with url: admin_user_hours_adjustment_path(@user), method: :post, class: "admin-form stack" do |form| %>
+      <%= form_with url: admin_user_hours_adjustment_path(@user), method: :post, class: "admin-form stack", data: { turbo: false } do |form| %>
         <%= hidden_field_tag :confirmed, "1", id: nil %>
         <%= render "admin/shared/adjustment_hidden", adjustment: adjustment, fields: %w[token direction date minutes reason] %>
         <div class="admin-actions">

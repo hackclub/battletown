@@ -449,6 +449,20 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_select "tr", text: /seconds: 1800/
   end
 
+  # Turbo Drive ignores a form response that is neither a redirect nor an error (the confirm page is a plain 200 answer to a POST),
+  # so these forms opt out and the browser does an ordinary full-page post. Caught in the real-browser walk, invisible to a request test.
+  test "the adjustment forms that answer with a page rather than a redirect opt out of Turbo" do
+    as_admin(@staff)
+    get new_admin_user_hours_adjustment_path(@teen)
+    assert_select "form[action=?][data-turbo=false]", confirm_admin_user_hours_adjustment_path(@teen)
+    get new_admin_user_coin_adjustment_path(@teen)
+    assert_select "form[action=?][data-turbo=false]", confirm_admin_user_coin_adjustment_path(@teen)
+    post confirm_admin_user_hours_adjustment_path(@teen), params: hours_form
+    assert_select "form[action=?][data-turbo=false]", admin_user_hours_adjustment_path(@teen)
+    post confirm_admin_user_coin_adjustment_path(@teen), params: coins_form
+    assert_select "form[action=?][data-turbo=false]", admin_user_coin_adjustment_path(@teen)
+  end
+
   test "hours: a double submit with the same token changes the ledger once" do
     as_admin(@staff)
     form = hours_form.merge(confirmed: "1")

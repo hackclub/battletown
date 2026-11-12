@@ -19,7 +19,7 @@
       <section class="card admin-panel admin-form-card" aria-labelledby="coins-form">
         <h2 id="coins-form" class="card__title">What to change</h2>
         <p>Balance now: <strong><%= number_with_delimiter(adjustment.balance_before) %></strong></p>
-        <%= form_with url: confirm_admin_user_coin_adjustment_path(@user), method: :post, class: "admin-form stack" do |form| %>
+        <%= form_with url: confirm_admin_user_coin_adjustment_path(@user), method: :post, class: "admin-form stack", data: { turbo: false } do |form| %>
           <%= hidden_field_tag :token, adjustment.token, id: nil %>
           <fieldset class="field">
             <legend>Direction</legend>

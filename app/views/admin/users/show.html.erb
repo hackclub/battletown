@@ -92,7 +92,7 @@
       <% if profile.projects.empty? %>
         <p>No projects yet.</p>
       <% else %>
-        <%= table_region("Projects and ships") do %>
+        <%= table_region("Projects and ships table") do %>
           <table class="table table--zebra admin-table">
             <caption>Projects with their ships</caption>
             <thead>
@@ -103,7 +103,7 @@
                 <tr>
                   <th scope="row"><%= project.name %></th>
                   <td><%= project.kind.capitalize %></td>
-                  <td><%= project.status.capitalize %><%= " (active)" if project.active? %></td>
+                  <td><%= project.active? ? "Active, current project" : project.status.capitalize %></td>
                   <td>
                     <% if project.ships.empty? %>
                       None
@@ -129,65 +129,63 @@
       <% end %>
     </section>
 
-    <div class="admin-grid grid grid--2">
-      <section class="card admin-panel" aria-labelledby="user-coins">
-        <h2 id="user-coins" class="card__title">Coins</h2>
-        <p class="admin-count">Balance <strong id="coin-balance"><%= number_with_delimiter(profile.balance) %></strong></p>
-        <% if profile.ledger.empty? %>
-          <p>No coin entries yet.</p>
-        <% else %>
-          <%= table_region("Coin ledger") do %>
-            <table class="table table--zebra admin-table">
-              <caption>Latest <%= AdminUsers::Profile::LEDGER_ROWS %> coin entries, newest first</caption>
-              <thead>
-                <tr><th scope="col">When (UTC)</th><th scope="col">Kind</th><th scope="col" class="num admin-table__num">Coins</th><th scope="col">For</th><th scope="col">Note</th><th scope="col">By</th></tr>
-              </thead>
-              <tbody>
-                <% profile.ledger.each do |entry| %>
-                  <tr>
-                    <td><%= entry.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
-                    <th scope="row"><%= entry.kind.tr("_", " ").capitalize %></th>
-                    <td class="num admin-table__num"><%= admin_signed(entry.amount) %></td>
-                    <td><%= admin_reference_text(entry) %></td>
-                    <td><%= entry.note %></td>
-                    <td><%= entry.created_by %></td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          <% end %>
-        <% end %>
-      </section>
-
-      <section class="card admin-panel" aria-labelledby="user-hours">
-        <h2 id="user-hours" class="card__title">Hours, last <%= AdminUsers::Profile::HOURS_DAYS %> days</h2>
-        <%= table_region("Hours by day") do %>
+    <section class="card admin-panel" aria-labelledby="user-coins">
+      <h2 id="user-coins" class="card__title">Coins</h2>
+      <p class="admin-count">Balance <strong id="coin-balance"><%= number_with_delimiter(profile.balance) %></strong></p>
+      <% if profile.ledger.empty? %>
+        <p>No coin entries yet.</p>
+      <% else %>
+        <%= table_region("Coin ledger") do %>
           <table class="table table--zebra admin-table">
-            <caption>Coded time on each local date (<%= profile.user.time_zone.presence || "UTC" %>), newest first. Read-only.</caption>
+            <caption>Latest <%= AdminUsers::Profile::LEDGER_ROWS %> coin entries, newest first</caption>
             <thead>
-              <tr><th scope="col">Date</th><th scope="col" class="num admin-table__num">Coded</th><th scope="col" class="num admin-table__num">Of which adjusted</th><th scope="col">Day</th></tr>
+              <tr><th scope="col">When (UTC)</th><th scope="col">Kind</th><th scope="col" class="num admin-table__num">Coins</th><th scope="col">For</th><th scope="col">Note</th><th scope="col">By</th></tr>
             </thead>
             <tbody>
-              <% profile.hours_by_day.each do |day| %>
+              <% profile.ledger.each do |entry| %>
                 <tr>
-                  <th scope="row"><%= day.date.strftime("%a %-d %b") %></th>
-                  <td class="num admin-table__num"><%= admin_duration(day.seconds) %></td>
-                  <td class="num admin-table__num"><%= day.adjustment_seconds.zero? ? "" : admin_duration(day.adjustment_seconds) %></td>
-                  <td><%= day.counted ? (day.settled ? "Settled" : "Open") : "Before sign-up (not counted)" %></td>
+                  <td><%= entry.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
+                  <th scope="row"><%= entry.kind.tr("_", " ").capitalize %></th>
+                  <td class="num admin-table__num"><%= admin_signed(entry.amount) %></td>
+                  <td><%= admin_reference_text(entry) %></td>
+                  <td><%= entry.note %></td>
+                  <td><%= entry.created_by %></td>
                 </tr>
               <% end %>
             </tbody>
           </table>
         <% end %>
-      </section>
-    </div>
+      <% end %>
+    </section>
+
+    <section class="card admin-panel" aria-labelledby="user-hours">
+      <h2 id="user-hours" class="card__title">Hours, last <%= AdminUsers::Profile::HOURS_DAYS %> days</h2>
+      <%= table_region("Hours by day") do %>
+        <table class="table table--zebra admin-table">
+          <caption>Coded time on each local date (<%= profile.user.time_zone.presence || "UTC" %>), newest first. Read-only.</caption>
+          <thead>
+            <tr><th scope="col">Date</th><th scope="col" class="num admin-table__num">Coded</th><th scope="col" class="num admin-table__num">Of which adjusted</th><th scope="col">Day</th></tr>
+          </thead>
+          <tbody>
+            <% profile.hours_by_day.each do |day| %>
+              <tr>
+                <th scope="row"><%= day.date.strftime("%a %-d %b") %></th>
+                <td class="num admin-table__num"><%= admin_duration(day.seconds) %></td>
+                <td class="num admin-table__num"><%= day.adjustment_seconds.zero? ? "" : admin_duration(day.adjustment_seconds) %></td>
+                <td><%= day.counted ? (day.settled ? "Settled" : "Open") : "Before sign-up (not counted)" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </section>
 
     <section class="card admin-panel" aria-labelledby="user-orders">
       <h2 id="user-orders" class="card__title">Orders</h2>
       <% if profile.orders.empty? %>
         <p>No orders.</p>
       <% else %>
-        <%= table_region("Orders") do %>
+        <%= table_region("Orders table") do %>
           <table class="table table--zebra admin-table">
             <caption>Latest orders, newest first</caption>
             <thead><tr><th scope="col">Item</th><th scope="col" class="num admin-table__num">Coins</th><th scope="col">Status</th><th scope="col">Ordered (UTC)</th></tr></thead>
@@ -237,7 +235,7 @@
       <% if profile.audit_events.empty? %>
         <p>Nothing recorded yet.</p>
       <% else %>
-        <%= table_region("Audit trail for this person") do %>
+        <%= table_region("Audit events table") do %>
           <table class="table table--zebra admin-table">
             <caption>Latest <%= AdminUsers::Profile::AUDIT_ROWS %> events about this person</caption>
             <thead><tr><th scope="col">When (UTC)</th><th scope="col">Who</th><th scope="col">What</th><th scope="col">Details</th></tr></thead>

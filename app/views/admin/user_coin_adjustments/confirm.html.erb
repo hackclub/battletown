@@ -16,7 +16,7 @@
         <dt>Balance</dt><dd><%= number_with_delimiter(adjustment.balance_before) %> now, <strong><%= number_with_delimiter(adjustment.balance_after) %></strong> after</dd>
         <dt>Your reason</dt><dd class="admin-text"><%= adjustment.reason %></dd>
       </dl>
-      <%= form_with url: admin_user_coin_adjustment_path(@user), method: :post, class: "admin-form stack" do |form| %>
+      <%= form_with url: admin_user_coin_adjustment_path(@user), method: :post, class: "admin-form stack", data: { turbo: false } do |form| %>
         <%= hidden_field_tag :confirmed, "1", id: nil %>
         <%= render "admin/shared/adjustment_hidden", adjustment: adjustment, fields: %w[token direction coins reason] %>
         <div class="admin-actions">
