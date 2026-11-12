@@ -6,6 +6,10 @@ module Dashboard
   # folded through the pure Game::StreakCalculator from the live hours ledger, one date range query in all. Today is
   # NOT folded (it is not over): it only adds one to a streak if it has already reached the mark.
   #
+  # The live day ("today so far") is today, or the day after the last settled one when that is later: after a move west
+  # by more than the grace period, the new zone's today can be a date that has already settled. That date is final (its
+  # row already counts it) and new hours land on the next date, so the next date is the live one.
+  #
   # Reads only the given user's own rows. Returns a Snapshot of plain values.
   class Streaks
     Snapshot = Data.define(:today_seconds, :carried_quick, :carried_goal, :quick_today_met, :goal_today_met,
@@ -31,10 +35,11 @@ module Dashboard
                                                    Arel.sql("MAX(local_date) FILTER (WHERE freeze_used)"))
       state = last&.streak_state || Game::StreakCalculator.initial_state(config: @config)
       first = last ? last.local_date + 1 : Hours::Days.first_counted_date(@user)
-      seconds = Hours::Totals.seconds_by_date(@user, [ first, @today ].min..@today)
-      last_frozen = !last.nil? && last.local_date == @today - 1 && last.freeze_used
+      live = [ @today, (last.local_date + 1 if last) ].compact.max
+      seconds = Hours::Totals.seconds_by_date(@user, [ first, live ].min..live)
+      last_frozen = !last.nil? && last.local_date == live - 1 && last.freeze_used
 
-      (first...@today).each do |date|
+      (first...live).each do |date|
         result = Game::StreakCalculator.step(state, seconds.fetch(date, 0), config: @config)
         state = result.state
         best_quick = [ best_quick.to_i, state.streak_15 ].max
@@ -43,7 +48,7 @@ module Dashboard
         last_frozen = result.freeze_used
       end
 
-      today_seconds = seconds.fetch(@today, 0)
+      today_seconds = seconds.fetch(live, 0)
       snapshot = Snapshot.new(today_seconds: today_seconds, carried_quick: state.streak_15, carried_goal: state.goal_streak,
                               quick_today_met: today_seconds >= @config.quick_seconds, goal_today_met: today_seconds >= @config.goal_seconds,
                               best_quick: best_quick.to_i, best_goal: best_goal.to_i, freeze_ready: state.freeze_available,

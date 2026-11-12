@@ -190,6 +190,45 @@ class Dashboard::PresenterTest < ActiveSupport::TestCase
     assert_equal 3, Dashboard::Presenter.new(user: @user, now: early).quick_streak.days
   end
 
+  # Nov 3 settled for a UTC user at 06:00Z on the 4th; at 06:30Z Los Angeles is still on the evening of Nov 3.
+  test "a move west onto a day that already settled does not count that day twice" do
+    code_days(Date.new(2026, 11, 1), Date.new(2026, 11, 3))
+    moment = Time.utc(2026, 11, 4, 6, 30)
+    Game::Settle.call(@user, through: moment)
+    assert_equal 3, DailyResult.find_by!(user_id: @user.id, local_date: Date.new(2026, 11, 3)).streak_15
+
+    @user.update_columns(time_zone: "America/Los_Angeles")
+    d = Dashboard::Presenter.new(user: @user, now: moment)
+    assert_equal Date.new(2026, 11, 3), d.today_date
+    assert_equal 3, d.quick_streak.days
+    assert_nil d.quick_streak.best_text
+    assert_equal 0, d.today.minutes
+    refute d.today.quick_met
+    assert_equal "Code 15 minutes today to reach day 4.", d.quick_streak.message
+    assert_equal "Hit 15 minutes to keep your streak: today's bonus is 9.2% once the day closes.", d.today.bonus_message
+
+    # Time on the next unsettled date (where the new hours land) is the live day.
+    add_hours(@user, Date.new(2026, 11, 4), QUICK)
+    d = Dashboard::Presenter.new(user: @user, now: moment)
+    assert_equal 4, d.quick_streak.days
+    assert_equal 15, d.today.minutes
+    assert_match(/on track for 9\.2%/, d.today.bonus_message)
+  end
+
+  test "a move east past a settled day still counts today as the live day" do
+    code_days(Date.new(2026, 11, 1), Date.new(2026, 11, 3))
+    moment = Time.utc(2026, 11, 4, 6, 30)
+    Game::Settle.call(@user, through: moment)
+    @user.update_columns(time_zone: "Pacific/Kiritimati")
+    add_hours(@user, Date.new(2026, 11, 4), QUICK)
+
+    d = Dashboard::Presenter.new(user: @user, now: moment)
+    assert_equal Date.new(2026, 11, 4), d.today_date
+    assert_equal 4, d.quick_streak.days
+    assert_equal 15, d.today.minutes
+    assert d.today.quick_met
+  end
+
   test "it still works when settling never ran" do
     code_days(TODAY - 3, TODAY - 1)
     assert_equal 3, Dashboard::Presenter.new(user: @user, now: NOW).quick_streak.days
