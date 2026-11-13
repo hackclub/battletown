@@ -1,0 +1,57 @@
+/*
+ * The private style guide page (/styleguide, PagesController#styleguide). The page wears the landing page's class, so the
+ * parts it shows are drawn by landing.css itself. This file only lays the page out and un-pins parts that the landing
+ * page places on its map. Everything is scoped under .sg.
+ */
+.landing.sg { min-height: 100vh; padding: 6rem var(--side) 8rem; background: var(--sky); color: var(--navy); }
+.sg h1 { font: 400 clamp(2.5rem, 6vw, 4.5rem)/0.95 var(--display); letter-spacing: -0.04em; }
+.sg .sg__lead { max-width: 42rem; margin-top: 1rem; }
+.sg .sg__section { margin-top: 4rem; }
+.sg .sg__section > h2 { margin-bottom: 0.75rem; font-size: clamp(1.75rem, 3vw, 2.25rem); }
+.sg .sg__sub { margin: 2rem 0 0.5rem; font: 400 1.25rem/1.1 var(--display); letter-spacing: -0.03em; }
+.sg .sg__note { max-width: 42rem; margin-bottom: 1.25rem; font-size: 0.9375rem; line-height: 1.5; }
+.sg .sg__row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1.5rem 2rem; }
+
+/* Colour swatches */
+.sg .sg__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.sg .sg__swatch { overflow: hidden; border-radius: 0.9rem; background: var(--cream); font-size: 0.8125rem; line-height: 1.35; }
+.sg .sg__swatch p { padding: 0.55rem 0.75rem 0.7rem; }
+.sg .sg__swatch b { display: block; font: 400 1.0625rem/1.2 var(--display); letter-spacing: -0.03em; }
+.sg .sg__chip { display: block; height: 4.5rem; background: var(--c); }
+.sg .sg__chip--sky { --c: var(--sky); }
+.sg .sg__chip--blue { --c: var(--blue); }
+.sg .sg__chip--royal { --c: var(--royal); }
+.sg .sg__chip--navy { --c: var(--navy); }
+.sg .sg__chip--yellow { --c: var(--yellow); }
+.sg .sg__chip--yellow-shade { --c: var(--yellow-shade); }
+.sg .sg__chip--pink { --c: var(--pink); }
+.sg .sg__chip--pink-shade { --c: var(--pink-shade); }
+.sg .sg__chip--cream { --c: var(--cream); box-shadow: inset 0 -1px 0 var(--cream-shade); }
+.sg .sg__chip--podium { --c: #1f3f93; }
+.sg .sg__chip--podium-body { --c: #03045e; }
+.sg .sg__chip--stone { --c: #2449a0; }
+
+/* Grounds */
+.sg .sg__grounds { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.sg .sg__ground { position: relative; padding: 1.5rem; border-radius: 1.2rem; background: var(--g); color: var(--cream); }
+.sg .sg__grounds .sg__ground { padding-bottom: 5rem; border-radius: 0; }
+.sg .sg__ground--sky { --g: var(--sky); background: #b6d3fe; color: var(--navy); }
+.sg .sg__grounds .sg__ground--sky { background: var(--sky); box-shadow: inset 0 0 0 0 transparent; }
+.sg .sg__ground--blue { --g: var(--blue); }
+.sg .sg__ground--royal { --g: var(--royal); }
+.sg .sg__ground--navy { --g: var(--navy); }
+.sg .sg__yellow { color: var(--yellow); }
+.sg .sg__band { position: absolute; left: 0; right: 0; bottom: 1.25rem; height: 2.25rem; background: #45454b; mix-blend-mode: overlay; }
+
+/* Type */
+.sg .sg__display { font: 400 clamp(2.75rem, 7vw, 5rem)/0.95 var(--display); letter-spacing: -0.04em; margin-bottom: 0.75rem; }
+.sg .sg__body { max-width: 42rem; margin-bottom: 0.5rem; }
+
+/* Parts that the landing page pins to its map stand in the ordinary flow here */
+.sg .cta--big { margin-top: 0; }
+.sg .signpost { margin-top: 0; }
+.sg .fight__health { position: relative; inset: auto; display: inline-block; margin-left: 1rem; font-size: 1.05rem; }
+.sg .shelf { justify-content: flex-start; margin-top: 0; padding-inline: 0; }
+.sg .faq__list { margin-inline: 0; }
+.sg .prop { position: static; --w: 7; }
+.sg .sg__rules { display: grid; gap: 0.5rem; max-width: 42rem; padding-left: 1.2rem; list-style: disc; }

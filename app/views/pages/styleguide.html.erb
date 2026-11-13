@@ -1,0 +1,122 @@
+<% content_for :title, "Style guide" %>
+<% content_for :head do %><meta name="robots" content="noindex"><% end %>
+<%# Private reference page (see PagesController#styleguide). It wears the landing page's own class, so everything here
+    is drawn by the real rules in landing.css; styleguide.css only lays the page out. No style attributes (CSP). -%>
+<div class="landing sg">
+  <%= render "landing/sprite" %>
+  <h1>Battle Town style guide</h1>
+  <p class="sg__lead">The colours, type and parts the site is made of. Everything on this page is drawn by the same styles as the landing page, so if it changes there it changes here. Use what is here before making something new.</p>
+
+  <section class="sg__section" aria-labelledby="sg-colour">
+    <h2 id="sg-colour">Colour</h2>
+    <ul class="sg__grid">
+      <% [
+        [ "sky", "Sky", "#9dc4fd", "Ground at the top and the bottom of the page" ],
+        [ "blue", "Blue", "#1472d5", "Ground under the boss" ],
+        [ "royal", "Royal", "#1456bd", "Ground under the prizes" ],
+        [ "navy", "Navy", "#10285a", "The river, and text on sky or yellow" ],
+        [ "yellow", "Yellow", "#ffd000", "Headings on any blue ground" ],
+        [ "yellow-shade", "Yellow shade", "#dc9700", "Edge of a yellow thing" ],
+        [ "pink", "Pink", "#ff4797", "The button, and nothing else to press" ],
+        [ "pink-shade", "Pink shade", "#ff2d84", "Edge of the button" ],
+        [ "cream", "Cream", "#fffef5", "Text on blue, royal, navy and pink" ],
+        [ "podium", "Podium top", "#1f3f93", "Top face of a prize block" ],
+        [ "podium-body", "Podium body", "#03045e", "Front of a prize block" ],
+        [ "stone", "Stone", "#2449a0", "FAQ stepping stones" ]
+      ].each do |key, name, hex, use| %>
+        <li class="sg__swatch"><span class="sg__chip sg__chip--<%= key %>"></span><p><b><%= name %></b><code><%= hex %></code><br><%= use %></p></li>
+      <% end %>
+    </ul>
+    <h3 class="sg__sub">Grounds, and the path on each</h3>
+    <p class="sg__note">The path is one flat grey band with the overlay blend, so it comes out lighter on sky and deeper on the blues. Never a dotted line.</p>
+    <div class="sg__grounds">
+      <div class="sg__ground sg__ground--sky"><h2>Navy on sky</h2><p>Body text is navy here.</p><span class="sg__band"></span></div>
+      <div class="sg__ground sg__ground--blue"><h2 class="sg__yellow">Yellow on blue</h2><p>Body text is cream here.</p><span class="sg__band"></span></div>
+      <div class="sg__ground sg__ground--royal"><h2 class="sg__yellow">Yellow on royal</h2><p>Body text is cream here.</p><span class="sg__band"></span></div>
+      <div class="sg__ground sg__ground--navy"><h2 class="sg__yellow">Yellow on navy</h2><p>Body text is cream here.</p><span class="sg__band"></span></div>
+    </div>
+  </section>
+
+  <section class="sg__section" aria-labelledby="sg-type">
+    <h2 id="sg-type">Type</h2>
+    <div class="sg__type">
+      <p class="sg__display">Poetsen One</p>
+      <p class="sg__note">Headings, buttons, numbers, names. One weight (400), letters set tight (-0.04em), line height about 0.95. Always level, never tilted, except on the signpost boards, which slope with the board.</p>
+      <p class="sg__body">M PLUS Rounded 1c is for everything you read: this sentence is the body size, 17px, weight 500, with a line height of 1.6.</p>
+      <p class="sg__note">Weights 400, 500 and 700 are loaded.</p>
+    </div>
+  </section>
+
+  <section class="sg__section" aria-labelledby="sg-button">
+    <h2 id="sg-button">Button</h2>
+    <p class="sg__note">Pink face, bottom edge in a darker pink, cream label and arrow. No outline. There is one button style; the big one is the same thing at a larger size.</p>
+    <div class="sg__row">
+      <span class="cta"><%= render "landing/cta_face", label: "Join the fight" %></span>
+      <span class="cta cta--big"><%= render "landing/cta_face", label: "Join the fight" %></span>
+    </div>
+  </section>
+
+  <section class="sg__section" aria-labelledby="sg-signpost">
+    <h2 id="sg-signpost">Signpost</h2>
+    <p class="sg__note">One drawing: pole, shadow and three boards seen from the same side, each board just overlapping the one above.</p>
+    <ol class="signpost">
+      <li class="signpost__board signpost__board--1"><div class="signpost__text"><span class="signpost__num" aria-hidden="true">1</span><h3>build</h3><p>build your project, and count your hours</p></div></li>
+      <li class="signpost__board signpost__board--2"><div class="signpost__text"><span class="signpost__num" aria-hidden="true">2</span><h3>Ship</h3><p>ship your project to deal damage to the boss, and get coins</p></div></li>
+      <li class="signpost__board signpost__board--3"><div class="signpost__text"><span class="signpost__num" aria-hidden="true">3</span><h3>Get your prize</h3><p>When the boss is defeated, collect your winnings, and claim a prize from the shop</p></div></li>
+    </ol>
+  </section>
+
+  <section class="sg__section" aria-labelledby="sg-health">
+    <h2 id="sg-health">Boss health bar</h2>
+    <p class="sg__note">Slanted bar with a white edge: pink for health left, maroon for health lost.</p>
+    <div class="sg__ground sg__ground--blue"><p class="fight__health"><span>150/300 hours</span></p></div>
+  </section>
+
+  <section class="sg__section" aria-labelledby="sg-prize">
+    <h2 id="sg-prize">Prize block</h2>
+    <p class="sg__note">The prize stands in the middle of the lighter top face; the name sits on the darker front.</p>
+    <div class="sg__ground sg__ground--royal">
+      <ul class="shelf">
+        <% LandingHelper::LANDING_PRIZES.first(3).each do |prize| %>
+          <li class="prize"><%= image_tag prize[:image], alt: "" %><div class="prize__label"><h3><%= prize[:name] %></h3><span class="prize__hours"><%= prize[:hours] %></span></div></li>
+        <% end %>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sg__section" aria-labelledby="sg-faq">
+    <h2 id="sg-faq">Question stone</h2>
+    <p class="sg__note">A stepping stone in the river with a ripple all the way round. Stones differ a little in width and position so they look laid by hand.</p>
+    <div class="sg__ground sg__ground--navy faq">
+      <div class="faq__list">
+        <details open><summary>An open question</summary><p>The answer sits on the same stone, in a paler blue.</p></details>
+        <details><summary>A closed question</summary><p>Its answer.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sg__section" aria-labelledby="sg-scenery">
+    <h2 id="sg-scenery">Scenery</h2>
+    <p class="sg__note">One tree and one house, both Armand's drawings, used at a few sizes. Nothing else is scattered on the map.</p>
+    <div class="sg__ground sg__ground--blue sg__row">
+      <svg class="prop k-pine" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop k-round" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop k-bush" viewBox="0 0 73 119" aria-hidden="true"><use href="#p-tree"/></svg>
+      <svg class="prop k-house" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+      <svg class="prop k-tower" viewBox="0 0 870 519" aria-hidden="true"><use href="#p-house"/></svg>
+    </div>
+  </section>
+
+  <section class="sg__section" aria-labelledby="sg-rules">
+    <h2 id="sg-rules">Rules</h2>
+    <ul class="sg__rules">
+      <li>No outlines on anything, least of all buttons. A raised thing gets its edge from a darker shade of its own colour.</li>
+      <li>No hard offset shadows and no sticker blocks.</li>
+      <li>Flat colour only: no gradient fades, no glows, nothing floating.</li>
+      <li>Text sits level. Nothing animates in as you scroll.</li>
+      <li>The painting is only at the top of the page.</li>
+      <li>The page is a map: places joined by one curving path, never a straight line.</li>
+      <li>No made-up numbers. A count on the page is a real count.</li>
+    </ul>
+  </section>
+</div>

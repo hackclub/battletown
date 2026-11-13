@@ -12,6 +12,7 @@ Rails.application.routes.draw do
 
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
+  get "styleguide", to: "pages#styleguide" # private: development and admins only
 
   get "auth/:provider/callback", to: "sessions#create", constraints: { provider: "hack_club" }
   get "auth/failure", to: "sessions#failure"
