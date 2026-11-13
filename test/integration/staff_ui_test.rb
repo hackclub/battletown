@@ -48,4 +48,17 @@ class StaffUiTest < ActionDispatch::IntegrationTest
     get "/"
     assert_select ".admin-only", 0
   end
+
+  test "the style guide is not public: 404 outside development" do
+    get "/styleguide"
+    assert_response :not_found
+  end
+
+  test "the style guide renders in development with no style attributes" do
+    in_env("development") { get "/styleguide" }
+    assert_response :success
+    assert_select "h1", text: "Battle Town style guide"
+    assert_select ".sg .cta", 2
+    assert_select ".sg [style]", 0
+  end
 end
