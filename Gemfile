@@ -79,7 +79,7 @@ gem "omniauth-rails_csrf_protection"
 gem "omniauth_openid_connect"
 gem "rack-attack"
 
-gem "omniauth-oauth2", "~> 1.9"
+gem "omniauth-oauth2", "~> 1.10"
 
 # Feature flags: every new feature ships switched off until the owner flips it at /admin/flipper (see docs/CONTRACT.md)
 gem "flipper", "~> 1.4"
