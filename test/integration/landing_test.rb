@@ -64,19 +64,24 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".signpost__board--3 p", text: /When the boss is defeated, collect your winnings, and claim a prize from the shop/
   end
 
-  test "the sign up button posts to Hack Club Auth with a CSRF token and without Turbo" do
+  test "the call to action opens onboarding, and the landing offers no sign-in button" do
+    get "/"
+    assert_select ".hero a.cta[href='#{onboarding_path}'] .cta__label", text: /Join the fight/
+    assert_select ".final a.cta.cta--big[href='#{onboarding_path}']", 1
+    assert_select ".landing a.cta", 2 # hero and last call
+    assert_select ".site-header", text: /Sign in/, count: 0
+  end
+
+  test "visitors get a small sign-in link under the hero button for the account they already have, signed-in users do not" do
     original = ActionController::Base.allow_forgery_protection
     ActionController::Base.allow_forgery_protection = true
     get "/"
     assert_select ".hero form[action='/auth/hack_club'][method='post'][data-turbo='false']", 1 do
-      assert_select "input[name='authenticity_token'][type='hidden']", 1 do |tokens|
-        assert tokens.first["value"].present?
-      end
-      assert_select "button.cta", text: /Join the fight/
+      assert_select "input[name='authenticity_token'][type='hidden']", 1
+      assert_select "button.hero__signin", "Sign in"
+      assert_select "span", "Already have an account?"
     end
-    assert_select ".final form[action='/auth/hack_club'][method='post'][data-turbo='false'] input[name='authenticity_token']", 1
-    assert_select ".final button.cta.cta--big", 1
-    assert_select ".landing form[action='/auth/hack_club'] button.cta", 2 # hero and last call
+    assert_select "form[action='/auth/hack_club']", 1 # only that one: the page has no other sign-in control
   ensure
     ActionController::Base.allow_forgery_protection = original
   end
@@ -85,17 +90,17 @@ class LandingTest < ActionDispatch::IntegrationTest
     threshold = LandingHelper::FIGHTER_COUNT_THRESHOLD
     assert_operator User.count, :<, threshold
     get "/"
-    assert_select "button.cta .cta__label", text: "Join the fight", count: 2
-    assert_select "button.cta .cta__label", text: /other fighters/, count: 0
+    assert_select "a.cta .cta__label", text: "Join the fight", count: 2
+    assert_select "a.cta .cta__label", text: /other fighters/, count: 0
 
     add_users_until(threshold - 1)
     get "/"
-    assert_select "button.cta .cta__label", text: "Join the fight", count: 2
+    assert_select "a.cta .cta__label", text: "Join the fight", count: 2
 
     add_users_until(threshold)
     get "/"
-    assert_select "button.cta .cta__label", text: "Join #{threshold} other fighters", count: 2
-    assert_select "button.cta .cta__label", text: "Join the fight", count: 0
+    assert_select "a.cta .cta__label", text: "Join #{threshold} other fighters", count: 2
+    assert_select "a.cta .cta__label", text: "Join the fight", count: 0
   end
 
   test "the boss health is a native progress bar with a text label" do
@@ -232,14 +237,25 @@ class LandingTest < ActionDispatch::IntegrationTest
     get "/"
     assert_response :success
     assert_select "a.cta[href='#{onboarding_path}'] .cta__label", text: "Continue setup", count: 2
-    assert_select ".hero form[action='/auth/hack_club']", 0
+    assert_select "form[action='/auth/hack_club']", 0
   end
 
   test "the header on the landing is only the account control: the logo is part of the hero" do
     get "/"
     assert_select ".site-header .site-header__brand .visually-hidden", text: "Battletown" # hidden by landing.css, still the home link
-    assert_select ".site-header__account form[action='/auth/hack_club'] button", text: "Sign in"
+    assert_select ".site-header__account form[action='/auth/hack_club']", 0
     assert_select ".site-nav, .site-header__nav", 0
+  end
+
+  test "the hero notes are one balanced card for visitors and for signed-in people, with the sign-in line only for visitors" do
+    get "/"
+    assert_select ".hero .hero__notes .hero__sticker", 1
+    assert_select ".hero .hero__notes form.hero__signin-form button.hero__signin", 1
+    sign_in_as users(:new_user)
+    get "/"
+    assert_select ".hero .hero__notes .hero__sticker", 1
+    assert_select ".hero__signin-form", 0
+    assert_select ".hero__content > .hero__notes + *", 0 # nothing is left dangling inside the notes card's parent after it
   end
 
   test "onboarded users are redirected to the dashboard" do

@@ -1,7 +1,7 @@
 require "test_helper"
 
-# Browser tab titles: "BattleTown" when signed out, "Home - BattleTown" by default when signed in,
-# and "<Page> - BattleTown" for signed-in pages that name themselves (onboarding steps, legal pages).
+# Browser tab titles: "BattleTown" for the signed-out landing page, "Home - BattleTown" by default when signed in,
+# and "<Page> - BattleTown" for any page that names itself (onboarding steps, legal pages), signed in or not.
 class PageTitlesTest < ActionDispatch::IntegrationTest
   setup do
     OmniAuth.config.test_mode = true
@@ -24,12 +24,20 @@ class PageTitlesTest < ActionDispatch::IntegrationTest
     assert_select "title", text: "BattleTown", count: 1
   end
 
-  test "signed out legal pages are exactly BattleTown" do
-    [ privacy_path, terms_path ].each do |path|
+  test "signed out pages that name themselves keep their name in the title" do
+    { privacy_path => "Privacy", terms_path => "Terms" }.each do |path, name|
       get path
       assert_response :success
-      assert_select "title", text: "BattleTown", count: 1
+      assert_select "title", text: "#{name} - BattleTown", count: 1
     end
+  end
+
+  test "the signed out steps of onboarding each have their own title" do
+    get onboarding_step_path("age")
+    assert_select "title", text: "How old are you? - BattleTown", count: 1
+    patch onboarding_step_path("age"), params: { user: { age_group: "teen" } }
+    get onboarding_step_path("prize")
+    assert_select "title", text: "Pick your prize - BattleTown", count: 1
   end
 
   test "signed in onboarded user sees Home - BattleTown on the dashboard" do
@@ -72,6 +80,7 @@ class PageTitlesTest < ActionDispatch::IntegrationTest
     sign_in_as users(:new_user)
     user = users(:new_user)
     user.update!(onboarding_step: User::ONBOARDING_STEPS)
+    HackatimeConnection.create!(user: user, hackatime_uid: "6161", access_token: "t" * 20, scopes: "profile read", connected_at: Time.current)
     get onboarding_step_path("celebrate")
     assert_response :success
     assert_select "title", text: "You're in! - BattleTown", count: 1

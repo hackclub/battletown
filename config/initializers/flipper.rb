@@ -1,4 +1,4 @@
-# Feature flags (docs/CONTRACT.md, "Feature flags"). Flags live in the database (flipper_features, flipper_gates) and
+# Feature flags (projects/battletown/specs/contract.md, "Feature flags"). Flags live in the database (flipper_features, flipper_gates) and
 # are flipped at /admin/flipper by admins; the code reads them through Features.enabled?. In tests Flipper uses its
 # in-memory adapter (config.flipper.test_help, on in the test environment) and is reset before every test.
 Rails.application.configure do

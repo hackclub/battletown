@@ -2,7 +2,7 @@ require "test_helper"
 require_relative "../../support/hackatime_helper"
 
 # Changing time zone, or linking one Hackatime account to a second Battletown account, must never credit the same
-# coded instant twice (docs/HACKATIME.md, "Days and time zones"). The fake Hackatime here answers like the real one:
+# coded instant twice (projects/battletown/specs/hackatime.md, "Days and time zones"). The fake Hackatime here answers like the real one:
 # the seconds of coding that fall inside the requested window, so the tests reason about real instants.
 module Hackatime
   class ZoneChangeTest < ActiveSupport::TestCase

@@ -7,7 +7,7 @@ module Hackatime
   # (ISO 8601 with the user's UTC offset), which returns each project's seconds inside the window. Days are the
   # user's own: their `time_zone` decides when a day starts and what "today" is, so a 23 or 25 hour day around a
   # DST change is handled by the bounds, not by arithmetic here. The window of a date is frozen the first time it is
-  # fetched (Hackatime::DayWindows), so changing time zone never counts the same time twice. See docs/HACKATIME.md.
+  # fetched (Hackatime::DayWindows), so changing time zone never counts the same time twice. See projects/battletown/specs/hackatime.md.
   class HttpSource
     include Source
 

@@ -36,17 +36,17 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_nil session[:referral_source]
   end
 
-  test "landing renders for visitors with a sign up button posting to the auth path" do
+  test "landing renders for visitors with a call to action that opens onboarding" do
     get "/"
     assert_response :success
-    assert_select "form[action='/auth/hack_club'][method='post']"
+    assert_select "a.cta[href='#{onboarding_path}']"
   end
 
-  test "dashboard and onboarding require login" do
+  test "the dashboard requires login, onboarding starts anonymously" do
     get "/dashboard"
     assert_redirected_to root_path
     get "/onboarding"
-    assert_redirected_to root_path
+    assert_redirected_to onboarding_step_path("age")
   end
 
   test "legal pages render" do

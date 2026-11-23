@@ -1,4 +1,4 @@
-# The Plinko page (behind the `plinko` flag; docs/CONTRACT.md, "Plinko"): the board, the player's balls and points, and
+# The Plinko page (behind the `plinko` flag; projects/battletown/specs/contract.md, "Plinko"): the board, the player's balls and points, and
 # the opt-in weekly leaderboard. Dropping a ball is PlinkoDropsController. Nothing here touches coins.
 class PlinkoController < ApplicationController
   before_action { require_feature!(:plinko) }

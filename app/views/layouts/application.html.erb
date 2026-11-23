@@ -21,6 +21,9 @@
   <body <%= tag.attributes(class: content_for(:body_class).presence) %>>
     <a class="skip-link" href="#main">Skip to main content</a>
 
+    <%# A page can leave out the header (content_for :hide_site_header) or the footer (:hide_footer): onboarding does, so its
+        progress strip is the top of the page. %>
+    <% unless content_for?(:hide_site_header) %>
     <header class="site-header">
       <div class="container site-header__inner">
         <%# The logo is decorative (alt=""); the link's name is the visually hidden word, so it is announced once. %>
@@ -35,21 +38,30 @@
             <%= admin_tool(:div, label: false) { link_to "Admin", admin_root_path, "aria-current": ("page" if request.path.start_with?("/admin")) } %>
             <%= button_to "Sign out", logout_path, method: :delete, class: "btn btn--ghost" %>
           <% else %>
-            <%= render "shared/signup_button", label: "Sign in", css: "btn btn--primary btn--sm" %>
+            <%# A signed-out visitor only needs a Sign in after being sent here by a "sign in to continue" alert, so the
+                landing page stays free of one. %>
+            <% if flash[:alert].present? %>
+              <%= render "shared/signup_button", label: "Sign in", css: "btn btn--primary btn--sm" %>
+            <% end %>
             <%= dev_tool(:div, label: false) { button_to "Dev login", dev_login_path, class: "btn btn--ghost", form: { data: { turbo: false } } } %>
           <% end %>
         </div>
       </div>
     </header>
+    <% end %>
 
-    <% flash.each do |type, message| %>
-      <div class="flash flash--<%= type %>" role="status"><%= message %></div>
+    <%# Onboarding shows its flash messages inside the step (and focuses them): see onboardings/_frame. %>
+    <% unless content_for?(:flash_in_page) %>
+      <% flash.each do |type, message| %>
+        <div class="flash flash--<%= type %>" role="status"><%= message %></div>
+      <% end %>
     <% end %>
 
     <main id="main" class="page" tabindex="-1">
       <%= yield %>
     </main>
 
+    <% unless content_for?(:hide_footer) %>
     <footer class="site-footer">
       <div class="container site-footer__inner">
         <span>A Hack Club program</span>
@@ -59,5 +71,6 @@
         </nav>
       </div>
     </footer>
+    <% end %>
   </body>
 </html>

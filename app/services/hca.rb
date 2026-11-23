@@ -1,4 +1,4 @@
-# Hack Club Auth, as far as the shipping-address lookup needs it (docs/CONTRACT.md, "Shipping addresses"). Sign-in itself is
+# Hack Club Auth, as far as the shipping-address lookup needs it (projects/battletown/specs/contract.md, "Shipping addresses"). Sign-in itself is
 # OmniAuth (config/initializers/omniauth.rb); this namespace is only the two calls made with a one-time access token at
 # checkout: GET /api/v1/me (Hca::Me) and POST /oauth/revoke (Hca::TokenRevoker). A token is never stored, never logged and
 # never part of an error message; neither is anything Hack Club Auth sent back.

@@ -1,5 +1,5 @@
 module Orders
-  # Keeps shipping addresses only as long as the parcel needs them (docs/CONTRACT.md, "Shipping addresses").
+  # Keeps shipping addresses only as long as the parcel needs them (projects/battletown/specs/contract.md, "Shipping addresses").
   #
   #   cancelled or refunded      deleted straight away (Orders::Transition calls `after_transition`)
   #   shipped or fulfilled       `purge_after` is set to that moment + `address_retention_days` (30); the earlier of the two wins

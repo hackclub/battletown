@@ -49,7 +49,7 @@ module ShipsHelper
     format("%g", config.coins_per_hour * config.deflation_multiplier_milli / 1000.0)
   end
 
-  # The same Hack Club Auth verify link the onboarding account step uses.
+  # The Hack Club Auth verify link (the shop and merch pages use the same one).
   def ship_verify_link
     link_to "Verify with Hack Club", "https://auth.hackclub.com", target: "_blank", rel: "noopener noreferrer"
   end

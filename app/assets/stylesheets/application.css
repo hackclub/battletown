@@ -3,7 +3,7 @@
  * progress, tables, alerts) are in components.css; tokens in tokens.css. Everything here and in components.css lives in
  * cascade layers, so any page stylesheet (landing.css, dashboard.css, ...) and staff.css, which are not layered, win
  * over the foundation whatever order the files load in. Pages only need to write what differs.
- * Documented in docs/CONTRACT.md ("Design system"); preview at /dev/styleguide in development.
+ * Documented in projects/battletown/specs/contract.md ("Design system"); preview at /dev/styleguide in development.
  */
 @layer reset, base, layout, components, utilities;
 

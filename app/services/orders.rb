@@ -1,4 +1,4 @@
-# The order lifecycle (docs/CONTRACT.md, "Orders"). One service per transition (Orders::Hold, Release, Ship, Fulfil, Cancel,
+# The order lifecycle (projects/battletown/specs/contract.md, "Orders"). One service per transition (Orders::Hold, Release, Ship, Fulfil, Cancel,
 # Refund) plus note and tracking edits, all built on Orders::Transition and the pure table in Orders::StateMachine.
 module Orders
   # Everything that goes wrong here is a Shop::Error with a message that is fine to show to a person (no ids, no internals),
@@ -17,7 +17,7 @@ module Orders
     def initialize(msg = "You already have #{Orders::Config.current.max_open_requested} orders waiting for the team. Wait for one to be sent or cancel one first.") = super
   end
 
-  # Shipping address problems at checkout or when changing it (docs/CONTRACT.md, "Shipping addresses"). All friendly Shop::Errors;
+  # Shipping address problems at checkout or when changing it (projects/battletown/specs/contract.md, "Shipping addresses"). All friendly Shop::Errors;
   # the address pages show the message next to the dropdown.
   class AddressError < Shop::Error; end
 

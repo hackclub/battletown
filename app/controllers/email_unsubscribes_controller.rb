@@ -1,4 +1,4 @@
-# One-click unsubscribe for Battletown email (docs/CONTRACT.md, "Email notifications"): GET/POST /email/unsubscribe/:token.
+# One-click unsubscribe for Battletown email (projects/battletown/specs/contract.md, "Email notifications"): GET/POST /email/unsubscribe/:token.
 # No sign-in: the signed token (Notifications::Email::UnsubscribeToken) is the credential, and all it can do is switch
 # one person's email off.
 #

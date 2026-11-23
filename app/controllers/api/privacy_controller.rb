@@ -1,5 +1,5 @@
 module Api
-  # The data-deletion protocol of Hack Club's "yeet" service (docs/PRIVACY_API.md). Authenticated only by the signed
+  # The data-deletion protocol of Hack Club's "yeet" service (projects/battletown/specs/privacy-api.md). Authenticated only by the signed
   # bearer token and acting only on its claims, never on a body, query string, cookie or session: it inherits
   # ActionController::API on purpose, so none of ApplicationController's session or login behaviour is involved (and no
   # cookie is ever set). JSON only, never cached. Logs only the request id and the outcome.

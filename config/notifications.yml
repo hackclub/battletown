@@ -54,7 +54,7 @@ shared:
     ship_rejected: "Thanks for shipping {project}. It needs one more touch before we can approve it: {reason} Fix it up and ship again whenever you're ready: {link} - the Hack Club Battletown team"
 
   # Email (the second channel; everything here is behind the Flipper flag `email`, and nothing is sent unless
-  # NOTIFICATIONS_ENABLED=true and a real SMTP transport is configured: see docs/DEPLOY.md). The sender address is the
+  # NOTIFICATIONS_ENABLED=true and a real SMTP transport is configured: see projects/battletown/runbooks/deploy.md). The sender address is the
   # MAIL_FROM environment variable, never this file. Only the kinds listed under `subjects` are emailed.
   email:
     # Subject lines, built at send time. Placeholders in {braces}: {project} (their project name, shortened).

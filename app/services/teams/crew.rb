@@ -1,6 +1,6 @@
 module Teams
   # Creating, joining, leaving and re-keying a crew. Every change runs in a transaction under the user's row lock (and the
-  # crew's, taken after it: lock order is the user, then the crew, like the other services; see docs/CONTRACT.md "Row lock
+  # crew's, taken after it: lock order is the user, then the crew, like the other services; see projects/battletown/specs/contract.md "Row lock
   # order"), so two tabs or two people joining at once cannot overfill a crew or put one person in two.
   #
   # The rules (config/game.yml `team:`): one crew per person; at most `max_size` people; an invite link works until its

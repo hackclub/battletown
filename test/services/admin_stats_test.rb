@@ -38,11 +38,16 @@ class AdminStatsTest < ActiveSupport::TestCase
     assert_equal 0, stats.signups_per_day.sum(&:count)
   end
 
-  test "funnel is cumulative reached-at-least-step counts" do
-    # new_user is at step 0, onboarded at step 4.
-    assert_equal({ "Step 0" => 2, "Step 1" => 1, "Step 2" => 1, "Step 3" => 1, "Step 4" => 1 }, counts(stats.onboarding_funnel))
-    users(:new_user).update_columns(onboarding_step: 2)
-    assert_equal({ "Step 0" => 2, "Step 1" => 2, "Step 2" => 2, "Step 3" => 1, "Step 4" => 1 }, counts(stats.onboarding_funnel))
+  test "the funnel names each milestone and is cumulative" do
+    # new_user has signed up only (step 0); onboarded finished everything (step 6, onboarded_at set).
+    assert_equal({ "Signed up" => 2, "Saved a prize" => 1, "Saved a project" => 1, "Saved a schedule" => 1, "Confirmed their plan" => 1, "Finished onboarding" => 1 },
+                 counts(stats.onboarding_funnel))
+    users(:new_user).update_columns(onboarding_step: 3) # prize and project saved
+    assert_equal({ "Signed up" => 2, "Saved a prize" => 2, "Saved a project" => 2, "Saved a schedule" => 1, "Confirmed their plan" => 1, "Finished onboarding" => 1 },
+                 counts(stats.onboarding_funnel))
+    users(:new_user).update_columns(onboarding_step: 5) # a visitor's complete draft lands here at sign-up
+    assert_equal 2, counts(stats.onboarding_funnel)["Saved a schedule"]
+    assert_equal 1, counts(stats.onboarding_funnel)["Confirmed their plan"]
   end
 
   test "verification lists every status, zero included" do

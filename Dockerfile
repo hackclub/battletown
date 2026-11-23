@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
-# This Dockerfile is designed for production, not development. Build and run by hand (see docs/DEPLOY.md
+# This Dockerfile is designed for production, not development. Build and run by hand (see projects/battletown/runbooks/deploy.md
 # for every variable; RAILS_MASTER_KEY is only needed if secrets live in Rails credentials):
 # docker build -t battletown .
 # docker run -d -p 80:80 -e SECRET_KEY_BASE=... -e DATABASE_URL=... -e APP_URL=... -e HCA_CLIENT_ID=... -e HCA_CLIENT_SECRET=... --name battletown battletown

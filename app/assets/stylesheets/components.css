@@ -3,7 +3,7 @@
  * tables and lists, alerts and flashes, empty states, headings and layout helpers. Tokens only (tokens.css).
  * Everything is in cascade layers (see the top of application.css): page stylesheets and staff.css are not layered and
  * always win, so a page only writes what differs from these defaults.
- * Class reference with usage snippets: docs/CONTRACT.md ("Design system"). Live preview: /dev/styleguide (development).
+ * Class reference with usage snippets: projects/battletown/specs/contract.md ("Design system"). Live preview: /dev/styleguide (development).
  * Interactive states: hover = slight brightness lift, press = the chunky edge shrinks and the control drops, focus-visible
  * = the 3px --color-focus ring, disabled = 55% opacity. Motion only under prefers-reduced-motion: no-preference.
  */

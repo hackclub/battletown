@@ -1,5 +1,5 @@
 module Privacy
-  # Deletes everything this app holds about a data subject (docs/PRIVACY_API.md). The users row is deleted and the
+  # Deletes everything this app holds about a data subject (projects/battletown/specs/privacy-api.md). The users row is deleted and the
   # database cascades to every table that references it (schema guard: test/models/privacy_schema_guard_test.rb).
   # A dry run uses the exact same code: it really deletes inside a transaction, reads how many rows each table
   # lost, then rolls back, so the numbers an operator reviews are the numbers the real run produces.

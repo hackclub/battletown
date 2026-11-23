@@ -4,7 +4,7 @@
 <% content_for :body_class, "page--landing" %>
 <% boss = landing_boss %>
 
-<%# The page below the hero is one map you scroll down (Armand's design, 2026-11-11; see docs/FIGMA_GAPS.md). The scenery
+<%# The page below the hero is one map you scroll down (Armand's design, 2026-11-11; see projects/battletown/design/figma-gaps.md). The scenery
     props are placed by classes in landing.css, because the CSP forbids style attributes. The landing_map controller draws
     the path between the places. -%>
 <div class="landing" data-controller="landing-map">
@@ -26,7 +26,16 @@
         <h1 id="landing-title" class="hero__logo"><%= image_tag "design/logo.svg", alt: "Battletown", width: 579, height: 329 %></h1>
         <p class="hero__tagline">Build projects, <span>get gear</span></p>
         <%= render "landing/cta" %>
-        <p class="hero__sticker"><span aria-hidden="true">🎁</span> Free sticker when you sign up</p>
+        <%# Two quiet lines under the button, so "Join the fight" stays the one call to action. The second is for people who
+            already have an account: signing in is a POST, so only the words "Sign in" are the (link-looking) button. %>
+        <div class="hero__notes">
+          <p class="hero__sticker"><span aria-hidden="true">🎁</span> Free sticker when you sign up</p>
+          <% unless signed_in? %>
+            <%= form_with url: "/auth/hack_club", method: :post, class: "hero__signin-form", data: { turbo: false } do %>
+              <span>Already have an account?</span> <%= button_tag "Sign in", type: :submit, class: "hero__signin" %>
+            <% end %>
+          <% end %>
+        </div>
       </div>
     </div>
     <%= image_tag "landing/hero-swoosh-sky.svg", alt: "", class: "hero__swoosh", width: 1440, height: 350 %>
@@ -146,11 +155,19 @@
           <span class="hop hop--1" aria-hidden="true"></span><span class="hop hop--2" aria-hidden="true"></span><span class="hop hop--3" aria-hidden="true"></span><span class="hop hop--4" aria-hidden="true"></span><span class="hop hop--5" aria-hidden="true"></span>
           <details open>
             <summary>Who can join?</summary>
-            <p>Any teen. You sign in with your Hack Club account, and you'll need to verify your identity before you ship a project.</p>
+            <p>Any teen aged 13 to 18. You sign in with your Hack Club account.</p>
           </details>
           <details>
             <summary>What counts as coding time?</summary>
-            <p>Time tracked with Hackatime while you build your project. Please don't inflate your hours. Reading docs or watching videos doesn't count until you build something with what you learned, and art is usually capped at about a third of your project time. Time can't be counted in more than one You Ship We Ship program, and time logged before the program started doesn't count.</p>
+            <ul class="faq__rules">
+              <li>Hackatime is a free tool that tracks the time you spend coding.</li>
+              <li>Only time tracked with Hackatime while you build your project counts.</li>
+              <li>Log only time you really spent. Never add extra hours.</li>
+              <li>Reading docs or watching videos counts only once you build something with what you learned.</li>
+              <li>Time spent on art usually counts only up to about a third of your project time.</li>
+              <li>Time can only count toward one You Ship We Ship program.</li>
+              <li>Time you logged before the program started does not count.</li>
+            </ul>
           </details>
           <details>
             <summary>How do I earn prizes?</summary>
@@ -162,7 +179,7 @@
           </details>
           <details>
             <summary>How long does it run?</summary>
-            <p>It launches this week and runs for at least a month, with the option to extend it if it goes well.</p>
+            <p>It runs for at least a month. We may extend it if it goes well.</p>
           </details>
         </div>
       </div>

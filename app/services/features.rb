@@ -7,7 +7,7 @@
 # An unknown name raises ArgumentError, so a typo fails loudly instead of quietly staying off. No flipper_features
 # row or gate means off. If the flag store cannot be read (database down, tables not migrated yet) a flag counts as
 # off and the problem is logged: a flagged-off feature must never be the thing that takes a page down.
-# See docs/CONTRACT.md ("Feature flags").
+# See projects/battletown/specs/contract.md ("Feature flags").
 module Features
   # The known flags, each with a short label. Add a new flag here, then gate its routes, pages, jobs and messages.
   KNOWN = {

@@ -2,7 +2,7 @@ require "test_helper"
 
 # The foundation stylesheets and design images must exist, be served through Propshaft (digested, same origin) and
 # every url() in them must resolve; a missing file here would break every page. The real compile is also checked by
-# `RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1 bin/rails assets:precompile` (see docs/CONTRACT.md, "Design system").
+# `RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1 bin/rails assets:precompile` (see projects/battletown/specs/contract.md, "Design system").
 class StylesheetsTest < ActionDispatch::IntegrationTest
   STYLESHEETS = Rails.root.join("app/assets/stylesheets")
   DESIGN_IMAGES = Rails.root.join("app/assets/images/design")

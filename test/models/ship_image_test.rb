@@ -79,7 +79,7 @@ class ShipImageTest < ActiveSupport::TestCase
     insert_raw(position: 2, sha256: "b" * 64)
   end
 
-  # --- deletion: the database cascades (docs/PRIVACY_API.md) ---
+  # --- deletion: the database cascades (projects/battletown/specs/privacy-api.md) ---
 
   test "deleting the ship deletes its images" do
     create_image

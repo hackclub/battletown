@@ -13,7 +13,7 @@ shared:
   staff_actions_per_minute: 60
   exports_per_10_minutes: 6
 
-  # Shipping addresses (docs/CONTRACT.md, "Shipping addresses"). The address a buyer picks from Hack Club Auth at checkout is kept
+  # Shipping addresses (projects/battletown/specs/contract.md, "Shipping addresses"). The address a buyer picks from Hack Club Auth at checkout is kept
   # until `address_retention_days` after the order is shipped or fulfilled (whichever came first), deleted at once when the order
   # is cancelled or refunded, and always when the person is deleted. The list of addresses Hack Club Auth returns is kept for
   # `address_offer_minutes` only. `address_reveals_per_hour` limits how many full addresses one staff member can open in an hour.

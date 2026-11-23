@@ -25,7 +25,7 @@
           <span class="dash-step__mark" aria-hidden="true"><%= d.project ? "✓" : "2" %></span>
           <span>
             <% if d.project %>
-              Your project is set up: <strong><%= d.project.name %></strong>.
+              Your project is set up: <strong><%= d.project.name %></strong><%= "." unless d.project.name.end_with?("…") %>
             <% else %>
               <%= link_to "Add a project", new_project_path %>, the thing you code on and ship.
             <% end %>

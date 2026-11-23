@@ -1,0 +1,19 @@
+<% content_for :title, "One more step" %>
+<% content_for :hide_site_header, true %>
+<% content_for :hide_footer, true %>
+<%# The second half of signing in, straight after Hack Club: the form posts itself on to Hackatime's OAuth. Hackatime signs in
+    with Hack Club too, so this often passes through with no screen at all. The button stays for when scripts do not run. %>
+<section class="container onboarding-page">
+  <div class="onboarding stack">
+    <div class="panel onboarding__panel">
+      <header class="onboarding__header">
+        <h1 tabindex="-1"><span class="onboarding__title">One more step: Hackatime</span></h1>
+        <p class="lead onboarding__encouragement">Taking you to Hackatime, the free tool that counts your coding time. You'll come straight back.</p>
+      </header>
+      <div class="onboarding__actions">
+        <%= button_to "/auth/hackatime", method: :post, class: "btn btn--primary btn--lg",
+              form: { data: { turbo: false, controller: "auto-submit" } } do %>Continue to Hackatime<% end %>
+      </div>
+    </div>
+  </div>
+</section>

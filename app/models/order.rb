@@ -1,7 +1,7 @@
 # A shop order: a request for one item, paid for in coins. Created only through Shop::Purchase / Shop::ClaimSticker and
 # changed only through the Orders services (Hold, Release, Ship, Fulfil, Cancel, Refund, AddNote, UpdateTracking; they hold
 # the user lock, write the order_events history and keep the coin ledger in step). A physical order has at most one shipping
-# address (OrderAddress, chosen from Hack Club Auth at checkout, encrypted, deleted on a schedule: docs/CONTRACT.md, "Shipping
+# address (OrderAddress, chosen from Hack Club Auth at checkout, encrypted, deleted on a schedule: projects/battletown/specs/contract.md, "Shipping
 # addresses"); it is never read here except to say whether there is one. `coins` is the price at order time.
 #
 # Statuses: requested (waiting for the team), on_hold (parked by staff; the buyer still sees "Requested"), shipped, fulfilled,

@@ -4,8 +4,8 @@ Rails.application.routes.draw do
   root "landing#show"
 
   get "dashboard", to: "dashboard#show"
-  get "onboarding", to: "onboardings#show"
-  scope "onboarding/:step", constraints: { step: Regexp.union(OnboardingsController::STEPS) } do
+  get "onboarding", to: "onboardings#show", format: false
+  scope "onboarding/:step", constraints: { step: Regexp.union(OnboardingsController::STEPS) }, format: false do
     get "", to: "onboardings#step", as: :onboarding_step
     patch "", to: "onboardings#update"
   end
@@ -90,7 +90,7 @@ Rails.application.routes.draw do
   end
 
   # Plinko, the daily toy: the routes exist only while the `plinko` flag is on (a plain 404 otherwise; the controllers
-  # check the flag too). Signed in and onboarded only. Drops are JSON and decided on the server (docs/CONTRACT.md).
+  # check the flag too). Signed in and onboarded only. Drops are JSON and decided on the server (projects/battletown/specs/contract.md).
   constraints Features::Constraint.new(:plinko) do
     resource :plinko, only: :show, controller: "plinko" do
       patch :leaderboard
@@ -119,6 +119,8 @@ Rails.application.routes.draw do
   # The shipping-address lookup at checkout, also additive to sign-in: the callback never signs anyone in (AddressCallbacksController).
   get "auth/hack_club_address/callback", to: "address_callbacks#create"
   get "auth/failure", to: "sessions#failure"
+  # Straight after Hack Club sign-in, when there is no working Hackatime link yet: posts itself on to Hackatime's OAuth.
+  get "sign-in/hackatime", to: "sessions#hackatime_step", as: :sign_in_hackatime
   resource :hackatime, only: [ :show, :destroy ], controller: "hackatime_connections"
   delete "logout", to: "sessions#destroy"
   post "dev_login", to: "sessions#dev_login"
@@ -222,7 +224,7 @@ Rails.application.routes.draw do
     end
   end
 
-  # Hack Club's data-deletion service (docs/PRIVACY_API.md): bearer-token authenticated, JSON only. The catch-all
+  # Hack Club's data-deletion service (projects/battletown/specs/privacy-api.md): bearer-token authenticated, JSON only. The catch-all
   # answers other verbs and paths under /api/privacy with JSON. Keep above the /:ref catch-all.
   post "api/privacy/delete", to: "api/privacy#delete", format: false
   post "api/privacy/export", to: "api/privacy#export", format: false

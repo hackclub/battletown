@@ -1,6 +1,6 @@
 module Hackatime
   # Decides which UTC window each local date stands for when Hackatime time is fetched, and freezes it
-  # (HackatimeDayWindow), so the same coded instant is never credited to two dates. See docs/HACKATIME.md,
+  # (HackatimeDayWindow), so the same coded instant is never credited to two dates. See projects/battletown/specs/hackatime.md,
   # "Days and time zones".
   #
   # - A date that already has a window keeps it forever, whatever the user's time zone is now.

@@ -1,6 +1,6 @@
 module Privacy
   # Verifies the bearer token on the data-deletion/export endpoints: an ES256 JWT signed by Hack Club's service
-  # (docs/PRIVACY_API.md). This check is the only thing standing between the internet and deleting users, so
+  # (projects/battletown/specs/privacy-api.md). This check is the only thing standing between the internet and deleting users, so
   # everything is rejected unless it is exactly as expected. Any failure raises Invalid, which carries no detail
   # (not even which check failed) and never the token. A key server outage raises Jwks::Unavailable instead.
   class TokenVerifier

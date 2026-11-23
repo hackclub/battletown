@@ -1,12 +1,12 @@
 <% content_for :title, "Style guide" %>
 <%# Development-only (the controller 404s elsewhere). Everything here uses the real shared classes; the colour list and
-    contrast table are read from tokens.css. Markup for each component is documented in docs/CONTRACT.md. %>
+    contrast table are read from tokens.css. Markup for each component is documented in projects/battletown/specs/contract.md. %>
 <% arrow = capture do %><svg class="icon" viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg><% end %>
 
 <div class="container sg">
   <%= dev_tool(:header, class: "stack stack--sm") do %>
     <h1>Battletown style guide</h1>
-    <p>Every token and shared component, as shipped in <code class="sg-code">tokens.css</code>, <code class="sg-code">application.css</code> and <code class="sg-code">components.css</code>. Development only; compare with the Figma frames and read the class reference in <code class="sg-code">docs/CONTRACT.md</code> ("Design system"). The header at the top and the footer at the bottom of this page are the live ones.</p>
+    <p>Every token and shared component, as shipped in <code class="sg-code">tokens.css</code>, <code class="sg-code">application.css</code> and <code class="sg-code">components.css</code>. Development only; compare with the Figma frames and read the class reference in <code class="sg-code">projects/battletown/specs/contract.md</code> ("Design system"). The header at the top and the footer at the bottom of this page are the live ones.</p>
   <% end %>
 
   <nav aria-label="Style guide sections">
@@ -352,7 +352,7 @@
   <%# ------------------------------------------------------------ Nav %>
   <section class="sg-section" id="nav" aria-labelledby="h-nav">
     <h2 id="h-nav">Header navigation (signed in)</h2>
-    <p class="sg-note">This page is signed out, so the live header shows Sign in. Here is the signed-in header as it looks for onboarded users (<code>layouts/_main_nav</code>), with the current page marked by <code>aria-current="page"</code>.</p>
+    <p class="sg-note">This page is signed out, so the live header shows no Sign in (it only appears on onboarding pages and after a "sign in to continue" redirect). Here is the signed-in header as it looks for onboarded users (<code>layouts/_main_nav</code>), with the current page marked by <code>aria-current="page"</code>.</p>
     <div class="sg-demo">
       <div class="site-header"><div class="container site-header__inner">
         <a href="#nav" class="site-header__brand"><%= image_tag "design/logo.svg", alt: "", class: "site-header__logo", width: 77, height: 44 %><span class="visually-hidden">Battletown (preview)</span></a>

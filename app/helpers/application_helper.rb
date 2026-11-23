@@ -1,15 +1,16 @@
 module ApplicationHelper
   TITLE_BRAND = "BattleTown".freeze
 
-  # The <title> for the layout. Signed-out visitors always get the bare brand. Signed-in users get
-  # "<Page> - BattleTown" when the view set one with `content_for :title, "<Page>"`, otherwise
-  # "Home - BattleTown". Views pass only the page name; the brand is added here.
+  # The <title> for the layout: "<Page> - BattleTown" when the view set one with `content_for :title, "<Page>"`, for
+  # everyone (every page needs a title that says what it is, so the visitor steps of onboarding get theirs too). With no
+  # page name, signed-out visitors get the bare brand (the landing page) and signed-in users "Home - BattleTown". Views
+  # pass only the page name; the brand is added here.
   def page_title
-    return TITLE_BRAND unless signed_in?
-
     # content_for escapes what it is given and the layout escapes the whole title again, so "You're in!" would show
     # as "You&#39;re in!" in the tab: unescape once here and let the layout do the one escape.
     page = content_for(:title).presence
+    return TITLE_BRAND if page.nil? && !signed_in?
+
     "#{page ? CGI.unescapeHTML(page.to_s) : 'Home'} - #{TITLE_BRAND}"
   end
 

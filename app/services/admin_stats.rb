@@ -38,12 +38,17 @@ class AdminStats
     (first_day..@today).map { |day| Row.new(label: day.iso8601, count: counts.fetch(day, 0)) }
   end
 
-  # "Reached at least step N" for N = 0..ONBOARDING_STEPS, from one grouped query.
+  # Milestones in onboarding, as the `onboarding_step` that means it (the furthest step unlocked: an index into
+  # OnboardingsController::STEPS = age prize project schedule signup account celebrate). Only people who signed up have a
+  # row (visitors still answering the first steps live in a cookie), so the funnel starts at "Signed up". Reaching step N
+  # means the step before it was saved, and signed-in users skip the age and sign-up steps, so a saved schedule is step 5.
+  FUNNEL = [ [ "Signed up", 0 ], [ "Saved a prize", 2 ], [ "Saved a project", 3 ], [ "Saved a schedule", 5 ], [ "Confirmed their plan", 6 ] ].freeze
+
+  # Everyone who reached each milestone (so each row includes the ones below it), then everyone who finished.
   def onboarding_funnel
     by_step = User.group(:onboarding_step).count
-    (0..User::ONBOARDING_STEPS).map do |step|
-      Row.new(label: "Step #{step}", count: by_step.sum { |reached, count| reached >= step ? count : 0 })
-    end
+    rows = FUNNEL.map { |label, step| Row.new(label: label, count: by_step.sum { |reached, count| reached >= step ? count : 0 }) }
+    rows << Row.new(label: "Finished onboarding", count: User.where.not(onboarded_at: nil).count)
   end
 
   def verification

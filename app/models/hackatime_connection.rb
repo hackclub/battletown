@@ -1,4 +1,4 @@
-# The link between a Battletown user and their Hackatime account (docs/HACKATIME.md). Identity is the Hackatime
+# The link between a Battletown user and their Hackatime account (projects/battletown/specs/hackatime.md). Identity is the Hackatime
 # user id, never a Slack id match. Tokens are encrypted at rest (Active Record encryption) and are never logged:
 # encrypted attributes are filtered from #inspect automatically.
 class HackatimeConnection < ApplicationRecord

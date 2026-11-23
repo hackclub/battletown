@@ -281,12 +281,20 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
     assert_nil session[:user_id]
   end
 
-  test "a signed-in user who has not finished onboarding is sent to onboarding" do
+  test "a signed-in user who has not finished onboarding links during onboarding and goes back to its account step" do
     sign_in_as users(:new_user)
     mock_hackatime
-    assert_no_difference "HackatimeConnection.count" do
+    assert_difference "HackatimeConnection.count", 1 do
       get "/auth/hackatime/callback"
     end
+    assert_redirected_to onboarding_step_path("account")
+  end
+
+  test "the connect page and disconnecting are still for people who are in: someone who has not finished is sent to onboarding" do
+    sign_in_as users(:new_user)
+    get hackatime_path
+    assert_redirected_to onboarding_path
+    delete hackatime_path
     assert_redirected_to onboarding_path
   end
 

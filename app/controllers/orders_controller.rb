@@ -3,7 +3,7 @@
 # a plain 404. The buyer sees plain status words and dates only: a hold reads as "Requested", and staff notes, reason codes
 # and the staff history never reach these pages.
 #
-# Physical orders also carry a shipping address (docs/CONTRACT.md, "Shipping addresses"): chosen at checkout from the person's own
+# Physical orders also carry a shipping address (projects/battletown/specs/contract.md, "Shipping addresses"): chosen at checkout from the person's own
 # Hack Club Auth addresses, shown on their order page, and changeable (`address`, `update_address`) until the order is sent.
 class OrdersController < ApplicationController
   before_action :require_login, :require_onboarded

@@ -5,13 +5,17 @@
 class Project < ApplicationRecord
   KINDS = User::PROJECT_KINDS
   STATUSES = %w[active archived].freeze
-  REVIEW_STATUSES = %w[unreviewed ok flagged].freeze # staff only; see ProjectReview and docs/CONTRACT.md "Project review"
+  REVIEW_STATUSES = %w[unreviewed ok flagged].freeze # staff only; see ProjectReview and projects/battletown/specs/contract.md "Project review"
   GUIDE_KEYS = %w[sd playground].freeze # nil for none; guides themselves are not built yet
   MAX_PER_USER = 10
   NAME_RANGE = 1..60
   IDEA_MAX = 500
   URL_MAX = 300
   DANGLING_TAIL = /(?:[\s,;:\-]+(?:a|an|the|in|of|on|to|and|or|for|with|where|that|is|are))*[\s,;:\-]*\z/i # a cut-off title should not end on "in"
+  DEFAULT_NAME_MAX = 50 # a derived name, well inside NAME_RANGE so it still fits a card
+  ELLIPSIS = "…".freeze
+  LEADING_PUNCTUATION = /\A[\s.,;:!?\-–…]+/
+  TRAILING_PUNCTUATION = /[\s.,;:!?\-–]+\z/
   KIND_NAMES = { "game" => "My game", "website" => "My website", "app" => "My app", "tool" => "My tool",
                  "hardware" => "My hardware project" }.freeze
 
@@ -50,13 +54,30 @@ class Project < ApplicationRecord
     define_method(:"review_#{name}?") { review_status == name }
   end
 
-  # A short title for a project the user has not named: the first sentence of the idea (shortened), else "My <kind>".
+  # A title for a project the user has not named: the first sentence of the idea, whole when it is short, else cut
+  # at a word and ended with an ellipsis so it never reads as a finished sentence; "My <kind>" when there is no idea.
   def self.default_name(kind:, idea:)
-    title = idea.to_s.split(/[.!?\n]/).first.to_s.squish
-    title = title.truncate(40, separator: " ", omission: "").sub(DANGLING_TAIL, "")
+    sentence = idea.to_s.split(/(?<=[.!?])\s+|\n/).first.to_s.squish.sub(LEADING_PUNCTUATION, "")
+    title = shorten(sentence.sub(TRAILING_PUNCTUATION, ""))
     title = title[0].upcase + title[1..] if title.present?
     title.presence || KIND_NAMES.fetch(kind.to_s, "My project")
   end
+
+  def self.shorten(title)
+    return title if title.length <= DEFAULT_NAME_MAX
+
+    room = DEFAULT_NAME_MAX - ELLIPSIS.length
+    head = +""
+    title.each_grapheme_cluster do |cluster| # never split an emoji
+      break if head.length + cluster.length > room
+
+      head << cluster
+    end
+    head = head.sub(/\s+\S*\z/, "") if head.include?(" ") && !title[head.length].to_s.match?(/\s/) # drop a half-cut word
+    head = head.sub(TRAILING_PUNCTUATION, "").sub(DANGLING_TAIL, "").sub(TRAILING_PUNCTUATION, "")
+    head.empty? ? "" : head + ELLIPSIS
+  end
+  private_class_method :shorten
 
   # The onboarding project step: creates the user's first project from users.project_kind / project_idea, or
   # updates it when they come back to the step. A name the user never changed (still the derived one) follows
