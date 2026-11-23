@@ -48,6 +48,8 @@ class LandingSystemTest < ApplicationSystemTestCase
     find("label.toggle", text: "Game").click
     click_button "Continue"
     assert_current_path "/onboarding/schedule"
+    assert_selector ".transition--proof" # the "you'll be one of the first" moment plays over this step too
+    assert_no_selector ".transition", wait: 6
     find("label.day", text: "Mon").click
     click_button "Continue"
 
