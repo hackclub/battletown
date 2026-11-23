@@ -51,6 +51,8 @@ class LandingSystemTest < ApplicationSystemTestCase
     assert_selector ".transition--proof" # the "you'll be one of the first" moment plays over this step too
     assert_no_selector ".transition", wait: 6
     find("label.day", text: "Mon").click
+    # No address to take a zone from, and a CI browser's own zone (UTC) is not in the list, so the zone picker is open and empty: choose one.
+    select "Eastern Time (US & Canada)", from: "Your time zone"
     click_button "Continue"
 
     assert_current_path "/onboarding/signup"
