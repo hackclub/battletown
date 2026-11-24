@@ -1,4 +1,4 @@
-# WCAG 2.x contrast ratios for the token pairs the app really uses (docs/CONTRACT.md, "Design system" lists the results).
+# WCAG 2.x contrast ratios for the token pairs the app really uses (projects/battletown/specs/contract.md, "Design system" lists the results).
 # `need` is 4.5 for text, 3.0 for large text (24px+ display type) and for non-text parts (borders, focus rings, fills).
 module DesignSystem
   module Contrast

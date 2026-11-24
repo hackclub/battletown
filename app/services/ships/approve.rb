@@ -38,7 +38,7 @@ module Ships
 
       result = nil
       # Lock order: the user's row, then the ship's. Ships::Submit and Project#discard! hold the user and then write
-      # ship rows, so taking the ship first here could deadlock with them (docs/CONTRACT.md, "Row lock order").
+      # ship rows, so taking the ship first here could deadlock with them (projects/battletown/specs/contract.md, "Row lock order").
       ship.user.with_lock do
         ship.lock!
         next result = Result.new(status: :unavailable, ship: ship, unsettled_dates: [], credit: nil) unless ship.status_submitted?

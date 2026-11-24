@@ -1,8 +1,10 @@
 require "test_helper"
+require_relative "../support/hackatime_helper"
 require_relative "../support/notifications_helper"
 
 # The daily reminder is queued when onboarding finishes and whenever the schedule or Slack id changes.
 class ReminderWiringTest < ActionDispatch::IntegrationTest
+  include HackatimeHelper
   include NotificationsHelper
 
   setup { OmniAuth.config.test_mode = true }
@@ -28,6 +30,7 @@ class ReminderWiringTest < ActionDispatch::IntegrationTest
     step("prize", prize_key: "tshirt")
     step("project", project_kind: "game", project_idea: "A farming game")
     step("schedule", coding_day_names: %w[monday friday], coding_time: "18:30", time_zone: "UTC")
+    connect_hackatime(user) # required to finish the account step
     step("account")
     assert_equal onboarding_step_path("celebrate"), path_from(response)
     user.reload

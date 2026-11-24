@@ -62,6 +62,7 @@ class FullFlowLogPrivacyTest < ActionDispatch::IntegrationTest
       patch onboarding_step_path("prize"), params: { user: { prize_key: "keychain" } }
       patch onboarding_step_path("project"), params: { user: { project_kind: "game", project_idea: IDEA } }
       patch onboarding_step_path("schedule"), params: { user: { coding_day_names: %w[monday friday], coding_time: "18:30", time_zone: "UTC" } }
+      connect_hackatime(teen)
       patch onboarding_step_path("account"), params: { user: {} }
       patch onboarding_step_path("celebrate"), params: { user: {} }
       teen.reload.update_columns(created_at: Time.utc(2026, 11, 1, 12), signed_up_on: Date.new(2026, 11, 1))
@@ -94,8 +95,7 @@ class FullFlowLogPrivacyTest < ActionDispatch::IntegrationTest
       sign_in_with(teen, claims)
       post_order_as teen, prize_key: "custom_sticker"
       get orders_path
-      connect_hackatime(teen)
-      get hackatime_path
+      get hackatime_path # connected earlier, as the account step requires
       Notifications::Dispatcher.run
     end
 

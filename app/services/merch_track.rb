@@ -1,7 +1,7 @@
 # The weekly merch track (behind the Flipper flag `merch_track`): hit the daily goal on enough days of a boss week to
 # earn that week's item from a fixed track, then claim it once identity is verified (and, when configured, once a ship
 # has been approved). Tunables: config/game.yml under `merch_track:` (MerchTrack::Config). No coins are involved.
-# Read it all in docs/CONTRACT.md ("Weekly merch track").
+# Read it all in projects/battletown/specs/contract.md ("Weekly merch track").
 module MerchTrack
   # Every failure is one of these, with a message that is fine to show to the person (no ids, no internals).
   class Error < StandardError; end

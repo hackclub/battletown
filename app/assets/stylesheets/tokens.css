@@ -4,7 +4,7 @@
  * 138:177), the colour-block frame (13:10), the shop-card experiments (156:662-157:668) and the dashboard concept
  * (1:4). The file has no Figma variables or published styles, so every value was read from node fills. Values marked
  * "derived" are not in Figma: they were chosen to pass WCAG AA. The app page is sky (--color-page); content sits on
- * cream or white surfaces. Contrast table and usage: docs/CONTRACT.md "Design system"; live preview: /dev/styleguide
+ * cream or white surfaces. Contrast table and usage: projects/battletown/specs/contract.md "Design system"; live preview: /dev/styleguide
  * (development only). Only custom properties live here.
  */
 :root {
@@ -68,7 +68,7 @@
   --color-card-blue-light: #295cb2;
   --color-card-title: #aae5ff; /* 7.2:1 on --color-card-blue */
 
-  /* Status tints for alerts, flashes and badges (derived; ink on tint passes AA, see docs/CONTRACT.md) */
+  /* Status tints for alerts, flashes and badges (derived; ink on tint passes AA, see projects/battletown/specs/contract.md) */
   --color-success-bg: #def5e8;
   --color-success-ink: #05562f;
   --color-danger-bg: #fde7ec;
@@ -78,7 +78,7 @@
   --color-info-bg: #fffef5;
   --color-info-ink: #0044b2;
 
-  /* Staff-only UI (see docs/CONTRACT.md "Staff-only UI"). Green = development-only, orange = admin-only, like Hack Club Bank.
+  /* Staff-only UI (see projects/battletown/specs/contract.md "Staff-only UI"). Green = development-only, orange = admin-only, like Hack Club Bank.
      Ratios: dev ink 7.4:1 and border 4.5:1 on its bg, cream label text 5.0:1 on the border colour;
              admin ink 7.0:1 and border 4.6:1 on its bg, cream label text 5.1:1 on the border colour. */
   --color-dev: #1a7f3c; /* derived: accent, label fill */

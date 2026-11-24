@@ -1,5 +1,5 @@
 # Slack app manifest for Battletown (Hack Club). Create the app from it: https://api.slack.com/apps -> Create New App
-# -> From a manifest -> pick the Hack Club workspace -> paste this file. Full steps: docs/SLACK_APP.md.
+# -> From a manifest -> pick the Hack Club workspace -> paste this file. Full steps: projects/battletown/runbooks/slack-app.md.
 # Schema: https://docs.slack.dev/reference/app-manifest
 #
 # The Rails app only sends direct messages (Notifications::Slack::WebApiAdapter calls chat.postMessage with a Slack

@@ -368,8 +368,65 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     onboarding_step("project", project_kind: "game", project_idea: "x" * 501)
     assert_response :unprocessable_content
     assert_equal 0, Project.where(user_id: user.id).count
-    onboarding_step("project", project_kind: "hardware")
-    assert_equal "My hardware project", Project.where(user_id: user.id).sole.name
+    onboarding_step("project", project_kind: "hardware") # no longer offered
+    assert_response :unprocessable_content
+    assert_equal 0, Project.where(user_id: user.id).count
+    onboarding_step("project", project_kind: "tool")
+    assert_equal "My tool", Project.where(user_id: user.id).sole.name
+  end
+
+  # The name a teen gets for an idea they never named: the whole idea when short, else cut at a word with an ellipsis.
+  def derived_name(idea, kind: "game")
+    user = users(:new_user)
+    Project.where(user_id: user.id).destroy_all
+    sign_in_as user
+    onboarding_step("prize", prize_key: "tshirt")
+    onboarding_step("project", project_kind: kind, project_idea: idea)
+    Project.where(user_id: user.id).sole.name
+  end
+
+  test "a short idea becomes the whole name, so the dashboard never shows half a sentence" do
+    assert_equal "A multiplayer game I can play with friends", derived_name("A multiplayer game I can play with friends")
+  end
+
+  test "a long idea is cut at a word and ends with an ellipsis" do
+    name = derived_name("A Slack bot that reminds my whole class about homework every single evening")
+    assert_equal "A Slack bot that reminds my whole class about…", name
+    assert_operator name.length, :<=, Project::DEFAULT_NAME_MAX
+  end
+
+  test "only the first sentence names the project, without its punctuation" do
+    assert_equal "A farming game", derived_name("a farming game. With cows!")
+    assert_equal "What if cows could fly", derived_name("What if cows could fly?")
+    assert_equal "Make v2.0 of my site faster", derived_name("Make v2.0 of my site faster")
+    assert_equal "Line one", derived_name("Line one\nline two")
+  end
+
+  test "an idea with emoji keeps them whole, even when it has to be cut" do
+    assert_equal "🎮 cows in space", derived_name("🎮 cows in space")
+    name = derived_name("👨\u200D👩\u200D👧\u200D👦" * 30)
+    assert_operator name.length, :<=, Project::DEFAULT_NAME_MAX
+    assert_equal "…", name[-1]
+    assert_equal 0, name[0..-2].gsub("👨\u200D👩\u200D👧\u200D👦", "").length
+  end
+
+  test "no idea, or an idea with nothing to name it by, falls back to a name for the kind" do
+    assert_equal "My game", derived_name(nil)
+    assert_equal "My game", derived_name("   ")
+    assert_equal "My app", derived_name("...", kind: "app")
+  end
+
+  test "a derived name follows a longer idea, a chosen name never does" do
+    user = users(:new_user)
+    long = "A multiplayer game where friends race to build the tallest tower of cheese"
+    assert_equal "A multiplayer game where friends race to build…", derived_name(long)
+    onboarding_step("project", project_kind: "game", project_idea: "A cheese game")
+    project = Project.where(user_id: user.id).sole
+    assert_equal "A cheese game", project.name
+
+    project.update!(name: "Cheese Tower")
+    onboarding_step("project", project_kind: "game", project_idea: long)
+    assert_equal "Cheese Tower", project.reload.name
   end
 
   test "an onboarded user with projects revisiting the step updates their first project, not a new one" do

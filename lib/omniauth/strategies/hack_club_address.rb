@@ -3,7 +3,7 @@ require "omniauth_openid_connect"
 module OmniAuth
   module Strategies
     # The second Hack Club Auth provider: a one-time, narrow round trip made at checkout to read the person's saved addresses
-    # (docs/CONTRACT.md, "Shipping addresses"). Provider name "hack_club_address": POST /auth/hack_club_address (CSRF
+    # (projects/battletown/specs/contract.md, "Shipping addresses"). Provider name "hack_club_address": POST /auth/hack_club_address (CSRF
     # protected by omniauth-rails_csrf_protection), GET /auth/hack_club_address/callback (AddressCallbacksController).
     #
     # It is NOT a sign-in. The request phase refuses unless someone is already signed in, and unless the request names a

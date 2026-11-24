@@ -16,7 +16,7 @@ Rails.application.config.filter_parameters += [
   :metadata, /\Abody\z/,
   # Screenshot uploads: an uploaded file's log line would carry its original file name (often a real name); the alt text is free text.
   :images,
-  # Shipping addresses (docs/CONTRACT.md): the fields of an address, the encrypted offer's payload, the checkout's draft key and the
+  # Shipping addresses (projects/battletown/specs/contract.md): the fields of an address, the encrypted offer's payload, the checkout's draft key and the
   # Hack Club Auth address id travel in params, SQL binds and sessions only, never in a log line.
   /\Aline_[12]\z/, :city, :recipient, :payload, :draft, :address_id, :hca_address, :purge_after
 ]

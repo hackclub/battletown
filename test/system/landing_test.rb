@@ -23,15 +23,42 @@ class LandingSystemTest < ApplicationSystemTestCase
     assert_equal "object", page.evaluate_script("typeof window.Turbo")
   end
 
-  test "joining from the landing page signs in and goes on to onboarding" do
+  test "joining from the landing page opens onboarding, and signing up at the end creates the account" do
     OmniAuth.config.mock_auth[:hack_club] = OmniAuth::AuthHash.new(
       provider: "hack_club", uid: "ident!system-test", extra: { raw_info: {} }
     )
 
     visit root_path
-    first(".hero button.cta").click
+    assert_selector ".hero button.hero__signin", text: "Sign in" # the one sign-in control: for returning users
+    first(".hero a.cta").click
 
-    assert_current_path %r{\A/onboarding}
+    assert_current_path "/onboarding/age"
+    assert_selector ".transition--welcome", text: /Welcome to/
+    find(".transition--welcome").click # skipping the splash
+    assert_no_selector ".transition"
+    click_button "I'm a teen aged 13–18!"
+    assert_current_path "/onboarding/prize"
+    assert_equal 0, User.where(hca_uid: "ident!system-test").count # nothing is saved before sign-up
+
+    find("label.choice", match: :first).click
+    click_button "Continue"
+    assert_current_path "/onboarding/project" # straight on: the "others like you" moment plays over this step
+    assert_selector ".transition--proof"
+    assert_no_selector ".transition", wait: 6 # and fades away by itself
+    find("label.toggle", text: "Game").click
+    click_button "Continue"
+    assert_current_path "/onboarding/schedule"
+    assert_selector ".transition--proof" # the "you'll be one of the first" moment plays over this step too
+    assert_no_selector ".transition", wait: 6
+    find("label.day", text: "Mon").click
+    # No address to take a zone from, and a CI browser's own zone (UTC) is not in the list, so the zone picker is open and empty: choose one.
+    select "Eastern Time (US & Canada)", from: "Your time zone"
+    click_button "Continue"
+
+    assert_current_path "/onboarding/signup"
+    click_button "Sign up with Hack Club"
+    assert_current_path "/onboarding/account"
     assert_equal 1, User.where(hca_uid: "ident!system-test").count
+    assert_equal "game", User.find_by!(hca_uid: "ident!system-test").project_kind
   end
 end

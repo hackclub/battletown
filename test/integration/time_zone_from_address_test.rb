@@ -102,7 +102,7 @@ class TimeZoneFromAddressTest < ActionDispatch::IntegrationTest
   # -- schedule step ---------------------------------------------------------------------------------
 
   def at_schedule_step(user)
-    user.update!(onboarding_step: 2)
+    user.update!(onboarding_step: 3)
     sign_in_with(uid: user.hca_uid)
     get onboarding_step_path("schedule")
     assert_response :success
@@ -146,7 +146,7 @@ class TimeZoneFromAddressTest < ActionDispatch::IntegrationTest
 
   test "schedule step preselects the zone derived at first sign-in" do
     sign_in_with(uid: "ident!tz-step", raw_info: { "address" => address(region: "CA") })
-    User.find_by!(hca_uid: "ident!tz-step").update!(onboarding_step: 2)
+    User.find_by!(hca_uid: "ident!tz-step").update!(onboarding_step: 3)
     get onboarding_step_path("schedule")
     assert_response :success
     assert_select "summary strong", "Pacific Time (US & Canada)"

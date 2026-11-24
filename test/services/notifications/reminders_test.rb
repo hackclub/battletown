@@ -162,4 +162,59 @@ class Notifications::RemindersTest < ActiveSupport::TestCase
       end
     end
   end
+
+  # Different times on some days: coding_times holds only the overrides, the usual coding_time covers the rest.
+  PerDay = Struct.new(:coding_days, :coding_time, :coding_times, :time_zone)
+
+  def due_per_day(days, time, times, after, zone: "UTC")
+    Notifications::Reminders.due_at(PerDay.new(days, time, times, zone), after: after)
+  end
+
+  test "a day's own time wins over the usual time, and the other days keep the usual one" do
+    times = { "monday" => "17:00", "sunday" => "18:00" }
+    days = MON | WED | SUN
+    monday = due_per_day(days, "18:30", times, utc(2026, 11, 8, 20)) # Sunday evening, after Sunday's reminder
+    assert_equal utc(2026, 11, 9, 17, 0), monday
+    wednesday = due_per_day(days, "18:30", times, monday)
+    assert_equal utc(2026, 11, 11, 18, 30), wednesday
+    sunday = due_per_day(days, "18:30", times, wednesday)
+    assert_equal utc(2026, 11, 15, 18, 0), sunday
+    assert_equal utc(2026, 11, 16, 17, 0), due_per_day(days, "18:30", times, sunday)
+  end
+
+  test "an earlier time on a later day is not skipped" do
+    # Monday 20:00 and Tuesday 07:00: after Monday's reminder the next one is Tuesday morning.
+    times = { "monday" => "20:00", "tuesday" => "07:00" }
+    assert_equal utc(2026, 11, 10, 7, 0), due_per_day(3, "18:30", times, utc(2026, 11, 9, 20, 0))
+  end
+
+  test "per-day times follow the time zone and its DST rules" do
+    times = { "sunday" => "02:30" }
+    # 02:30 does not exist on Sunday 2027-03-14 in New York: that day fires at 03:00 local (07:00 UTC), the others at 18:30.
+    assert_equal utc(2027, 3, 14, 7, 0), due_per_day(SUN | MON, "18:30", times, utc(2027, 3, 13, 23, 31), zone: NEW_YORK)
+    assert_equal utc(2027, 3, 15, 22, 30), due_per_day(SUN | MON, "18:30", times, utc(2027, 3, 14, 7, 0), zone: NEW_YORK)
+  end
+
+  test "overrides only count for selected days, and a bad or blank one falls back to the usual time" do
+    assert_equal utc(2026, 11, 9, 18, 30), due_per_day(MON, "18:30", { "tuesday" => "07:00" }, utc(2026, 11, 9))
+    assert_equal utc(2026, 11, 9, 18, 30), due_per_day(MON, "18:30", { "monday" => "" }, utc(2026, 11, 9))
+    assert_equal utc(2026, 11, 9, 18, 30), due_per_day(MON, "18:30", { "monday" => "25:00" }, utc(2026, 11, 9))
+    assert_equal utc(2026, 11, 9, 18, 30), due_per_day(MON, "18:30", nil, utc(2026, 11, 9))
+    assert_equal utc(2026, 11, 9, 18, 30), due_per_day(MON, "18:30", "junk", utc(2026, 11, 9))
+  end
+
+  test "without a usual time only the days that have their own time get reminders" do
+    times = { "wednesday" => "07:15" }
+    assert_equal utc(2026, 11, 11, 7, 15), due_per_day(MON | WED, nil, times, utc(2026, 11, 9))
+    assert_nil due_per_day(MON, nil, times, utc(2026, 11, 9))
+    assert_nil due_per_day(MON, "bad", { "monday" => "bad" }, utc(2026, 11, 9))
+  end
+
+  test "due_between and scheduled? use each day's time" do
+    user = PerDay.new(MON | WED, "18:30", { "monday" => "17:00" }, "UTC")
+    assert_equal [ utc(2026, 11, 9, 17, 0), utc(2026, 11, 11, 18, 30), utc(2026, 11, 16, 17, 0) ],
+                 Notifications::Reminders.due_between(user, from: utc(2026, 11, 8), to: utc(2026, 11, 16, 23))
+    assert Notifications::Reminders.scheduled?(user, utc(2026, 11, 9, 17, 0))
+    assert_not Notifications::Reminders.scheduled?(user, utc(2026, 11, 9, 18, 30)) # Monday's usual time is no longer a reminder
+  end
 end

@@ -47,7 +47,7 @@ class NpsFeedbackTest < ActionDispatch::IntegrationTest
   test "a signed-out visitor with a good link sees the rating form and nothing personal" do
     get feedback_path(token)
     assert_response :success
-    assert_select "title", "BattleTown"
+    assert_select "title", "Quick question - BattleTown"
     assert_select "h1", "Quick question"
     assert_select "fieldset legend", /How likely are you to recommend Battletown/
     assert_select "input[type=radio][name='nps[score]']", 11

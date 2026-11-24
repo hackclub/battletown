@@ -32,9 +32,9 @@ class UserDbConstraintsTest < ActiveSupport::TestCase
     assert_accepted :coding_time, [ "00:00", "23:59", nil ]
   end
 
-  test "onboarding_step must be between 0 and 4" do
-    [ -1, 5 ].each { |bad| assert_rejected :onboarding_step, bad }
-    assert_accepted :onboarding_step, [ 0, 4 ]
+  test "onboarding_step must be between 0 and 6" do
+    [ -1, 7 ].each { |bad| assert_rejected :onboarding_step, bad }
+    assert_accepted :onboarding_step, [ 0, 6 ]
   end
 
   test "coding_days must be between 0 and 127" do

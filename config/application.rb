@@ -37,14 +37,14 @@ module Battletown
     # The Hack Club Auth app's credentials (also used by the address lookup, which revokes its one-time token).
     config.x.hca.client_id = ENV["HCA_CLIENT_ID"].presence
     config.x.hca.client_secret = ENV["HCA_CLIENT_SECRET"].presence
-    # Shipping-address lookup at checkout (docs/CONTRACT.md, "Shipping addresses"): a second sign-in provider with only the
+    # Shipping-address lookup at checkout (projects/battletown/specs/contract.md, "Shipping addresses"): a second sign-in provider with only the
     # `openid address` scopes, its own callback (register this exact URI on the Hack Club Auth app), and the page where a
     # person adds or edits the addresses saved in Hack Club Auth.
     config.x.hca.address_redirect_uri = "#{ENV.fetch("APP_URL", "http://localhost:3000")}/auth/hack_club_address/callback"
     config.x.hca.address_scopes = %i[openid address]
     config.x.hca.address_portal_url = ENV.fetch("HCA_ADDRESS_PORTAL_URL", "#{ENV.fetch("HCA_ISSUER", "https://auth.hackclub.com")}/portal/address")
 
-    # Hackatime account linking (config/initializers/omniauth.rb, docs/HACKATIME.md). The redirect URI must match
+    # Hackatime account linking (config/initializers/omniauth.rb, projects/battletown/specs/hackatime.md). The redirect URI must match
     # the one registered on the Hackatime OAuth app exactly. HACKATIME_URL exists so a local fake provider can stand in.
     config.x.hackatime.base_url = ENV.fetch("HACKATIME_URL", "https://hackatime.hackclub.com").chomp("/")
     config.x.hackatime.redirect_uri = "#{ENV.fetch("APP_URL", "http://localhost:3000")}/auth/hackatime/callback"
@@ -52,6 +52,11 @@ module Battletown
     # The OAuth app's credentials: environment first, Rails credentials as the fallback (like Hack Club Auth).
     config.x.hackatime.client_id = ENV["HACKATIME_CLIENT_ID"].presence
     config.x.hackatime.client_secret = ENV["HACKATIME_CLIENT_SECRET"].presence
+    # The sign-in chain (SessionsController#hackatime_step, like Save Point's): straight after Hack Club sign-in, someone
+    # with no working Hackatime link is sent on to Hackatime's OAuth, which signs in with Hack Club too, so it usually passes
+    # through with no screen. On when the OAuth app is set up; HACKATIME_CHAIN=0 turns it off (for example when the app's
+    # credentials are not working yet, so sign-in does not send everyone into a failing step). Off in tests unless one sets it.
+    config.x.hackatime.sign_in_chain = config.x.hackatime.client_id.present? && config.x.hackatime.client_secret.present? && ENV["HACKATIME_CHAIN"] != "0"
 
     # Active Record encryption for the Hackatime tokens (HackatimeConnection). Keys come from the environment in every
     # environment except test (config/environments/test.rb); production refuses to boot without them (production.rb).

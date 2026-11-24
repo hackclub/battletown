@@ -1,7 +1,7 @@
 /*
  * Landing page: one map you scroll down. A hero painting, then a signpost, then a series of places (the boss arena,
  * the prize market, the FAQ river, the last call), each with its own ground colour and curved edge, joined by a dotted
- * path. The page below the hero follows Armand's map design of 2026-11-11, not Figma (see docs/FIGMA_GAPS.md).
+ * path. The page below the hero follows Armand's map design of 2026-11-11, not Figma (see projects/battletown/design/figma-gaps.md).
  *
  * This file is bundled into every page (stylesheet_link_tag :app), so every rule is under .landing, or under
  * body:has(.landing) when it must reach the site header, footer or <main> around it. Fonts come from fonts.css and
@@ -48,11 +48,15 @@ body:has(.landing) .site-header .btn {
 }
 
 /* The footer lies over the bottom of the last section, so Orpheus can reach the very bottom of the page. On phones his
-   cape fills that corner, so the footer sits on it in cream at the right; on wider screens it sits on the sky at the left. */
+   cape fills that corner, so the footer sits on it at the right, on a solid blue backing (cream on the painting was 1.1:1);
+   on wider screens it sits on the sky at the left in navy, with no backing. */
 body:has(.landing) { position: relative; }
 body:has(.landing) .site-footer { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; border-top: 0; background: none; color: var(--cream); pointer-events: none; }
 body:has(.landing) .site-footer__inner { flex-direction: column; align-items: flex-end; gap: var(--space-1); max-width: none; margin: 0; padding-inline: var(--side, 1.25rem); }
 body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
+@media (max-width: 63.999rem) {
+  body:has(.landing) .site-footer__inner { width: fit-content; max-width: calc(100% - 2 * var(--side)); margin: 0 var(--side) var(--space-4) auto; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--color-ink-blue); } /* cream on it is 8.4:1, and the cream focus ring is too */
+}
 @media (min-width: 64rem) {
   body:has(.landing) .site-footer { color: var(--navy); }
   body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /* the cream ring would be 1.8:1 on the sky */
@@ -110,7 +114,7 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   color: var(--cream);
   font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display); /* never under 24px: cream on this pink is 3.1:1, which only passes as large text */
   letter-spacing: -0.05em;
-  text-decoration: none; white-space: nowrap; cursor: pointer;
+  text-decoration: none; cursor: pointer;
 }
 .landing .cta__face {
   display: inline-flex; align-items: center; gap: 0.36em;
@@ -119,6 +123,7 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   background: var(--pink);
   box-shadow: inset 0 -0.1667em 0 var(--pink-shade);
 }
+.landing .cta__label { text-wrap: balance; } /* a long label ("Join 1,234 other fighters") wraps inside the button at large text sizes instead of running out of it */
 .landing .cta svg { width: 0.87em; height: 0.875em; overflow: visible; flex: none; }
 .landing .cta:focus-visible { outline: 3px solid var(--navy); outline-offset: 4px; }
 @media (prefers-reduced-motion: no-preference) {
@@ -155,10 +160,19 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   .landing .hero__tagline { padding: 0; font-size: 2rem; white-space: nowrap; }
   .landing .hero__swoosh { height: var(--swoosh-height); margin-top: calc(var(--swoosh-overlap) * -1); object-fit: fill; }
 }
-.landing .hero__sticker {
-  margin: 0; padding: 0.25rem 0.875rem; border-radius: var(--radius-full); background: var(--yellow); color: #000;
-  font-size: 0.875rem; font-weight: 700; line-height: 1.5;
+/* Two quiet lines of navy text under the button, together on one soft frosted card so they read over the painting. The
+   sign-in line is a button only because signing in is a POST; it looks like a link. */
+.landing .hero__notes {
+  display: grid; justify-items: start; gap: 0.125rem; padding: 0.5rem 0.875rem; border-radius: 1rem;
+  background: rgb(255 255 255 / 0.6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
+.landing .hero__sticker, .landing .hero__signin-form { margin: 0; color: var(--navy); font-size: 0.875rem; font-weight: 700; line-height: 1.5; }
+.landing .hero__signin {
+  display: inline; min-height: 1.5rem; padding: 0 0.15em; border: 0; background: none; color: inherit;
+  font: inherit; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer;
+}
+.landing .hero__signin:hover { text-decoration-thickness: 2px; }
+.landing .hero__signin:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; border-radius: 0.2rem; } /* the blue ring was 3.1:1 on the sky; navy is 8:1 on it and 10:1 on the hero wash */
 /* ---- How it works: just the signpost, on flat sky. Its top board pokes up over the hero's bottom edge. ---- */
 .landing .how { position: relative; background: var(--sky); color: var(--navy); }
 .landing .how__inner { display: flex; flex-direction: column; align-items: center; padding: 0 0.5rem calc(var(--edge-a) * 0.72 + 1.5vw); }
@@ -263,8 +277,8 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 /* The prize stands in the middle of the block's top face, not on its front edge. */
 .landing .prize img { display: block; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
 .landing .prize__emoji { display: flex; align-items: center; justify-content: center; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }
-.landing .prize h3 { color: #a9dcff; font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; }
-.landing .prize__hours { display: block; margin-top: 0.15rem; color: #d7e6ff; font-size: 0.8125rem; line-height: 1.2; }
+.landing .prize h3 { color: #a9dcff; font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
+.landing .prize__hours { display: block; margin-top: 0.15rem; color: #d7e6ff; font-size: 0.8125rem; line-height: 1.2; overflow-wrap: anywhere; }
 @media (min-width: 40rem) {
   .landing .shelf { --gap: 1.25rem; }
   .landing .prize { width: calc((100% - 2 * var(--gap)) / 3); }
@@ -313,6 +327,7 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .faq details[open] summary::after { content: "\2212"; }
 .landing .faq summary:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; border-radius: 0.4rem; }
 .landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: #d7e6ff; font-size: 1rem; }
+.landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: #d7e6ff; font-size: 1rem; } /* one rule per line; the markers keep it a list in every browser */
 @media (min-width: 64rem) {
   /* The stones step in from the right, where the path comes down beside the prizes, and out again toward Orpheus. */
   .landing .hop--1 { --hx: calc(100% - 7.5rem); }

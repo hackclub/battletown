@@ -1,4 +1,4 @@
-# One item in the shop, in the database so staff change it at /admin/shop instead of deploying (docs/CONTRACT.md, "Shop
+# One item in the shop, in the database so staff change it at /admin/shop instead of deploying (projects/battletown/specs/contract.md, "Shop
 # catalogue"). Everything that READS the catalogue goes through the `Prize` facade, which wraps these rows; write here only
 # from the admin controller, ShopItems::Seed and tests.
 #

@@ -1,5 +1,5 @@
 module Notifications
-  # Email, the second channel of the notification outbox (docs/CONTRACT.md, "Email notifications"). Everything here is
+  # Email, the second channel of the notification outbox (projects/battletown/specs/contract.md, "Email notifications"). Everything here is
   # behind the Flipper flag `email` (Features): with it off nothing is queued, rendered or sent.
   #
   # Only the kinds worth an email go out by email. The daily reminder, link questions and ship reminders stay Slack-only

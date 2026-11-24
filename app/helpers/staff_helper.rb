@@ -1,6 +1,6 @@
 # Staff-only UI: green for development-only controls, orange for admin-only ones (like Hack Club Bank).
 # Always wrap staff UI in one of these helpers so it cannot reach ordinary users; the gating is server-side.
-# See docs/CONTRACT.md ("Staff-only UI") and app/assets/stylesheets/staff.css.
+# See projects/battletown/specs/contract.md ("Staff-only UI") and app/assets/stylesheets/staff.css.
 module StaffHelper
   # Renders the block only when Rails.env is development.
   #   <%= dev_tool(:div) { button_to "Dev login", dev_login_path } %>

@@ -79,7 +79,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
       redirect_uri: Rails.configuration.x.hca.redirect_uri
     }
 
-  # The shipping-address lookup at checkout (docs/CONTRACT.md, "Shipping addresses"): the same Hack Club Auth app, but only the
+  # The shipping-address lookup at checkout (projects/battletown/specs/contract.md, "Shipping addresses"): the same Hack Club Auth app, but only the
   # scopes `openid address`, its own callback (register `#{APP_URL}/auth/hack_club_address/callback` on the app too), and only
   # ever for someone who is already signed in. The issuer and credentials are read at request time, like Hackatime's URL.
   provider OmniAuth::Strategies::HackClubAddress,

@@ -1,16 +1,18 @@
 # Battletown
 
+Project documentation (interface contract, deploy runbook, privacy API, plans, design notes) is kept in the agent wiki, not in this repo: `projects/battletown/` in `transcental/agent-wiki`. Paths written below as `projects/battletown/...` mean files there.
+
 Battletown is a Hack Club You Ship We Ship (YSWS) program, run by Amber and Armand (formerly called "Village"). Teens code, log time with Hackatime, and chip away at a shared boss to earn prizes from a shop.
-This repo is the platform: landing page, sign-up, onboarding, dashboard, projects, a Hackatime hours ledger, streaks and coins, the weekly boss, ships with staff review, the shop and orders, Slack reminders, a small admin area and Hack Club's data-deletion API (Rails 8.1, PostgreSQL, importmap, plain CSS). What is built and what is still open: [docs/PLATFORM_BACKLOG.md](docs/PLATFORM_BACKLOG.md).
+This repo is the platform: landing page, sign-up, onboarding, dashboard, projects, a Hackatime hours ledger, streaks and coins, the weekly boss, ships with staff review, the shop and orders, Slack reminders, a small admin area and Hack Club's data-deletion API (Rails 8.1, PostgreSQL, importmap, plain CSS). What is built and what is still open: `projects/battletown/plans/platform-backlog.md` in the agent wiki.
 
 ## Setup
 
-```sh
+``sh
 bundle install
 cp .env.example .env   # then fill in HCA_CLIENT_ID / HCA_CLIENT_SECRET (gitignored; loaded by dotenv-rails in development/test only)
 bin/rails db:prepare   # also creates the launch bosses; `bin/rails bosses:seed` is safe to repeat
 bin/dev            # or bin/rails s -p 3000
-```
+``
 
 For real Hack Club Auth sign-in in development, the app's redirect URI in auth.hackclub.com (Developer Apps) must be exactly `http://localhost:3000/auth/hack_club/callback`, and the server must run on port 3000 (matching `APP_URL`).
 
@@ -20,11 +22,11 @@ Sign in locally with the **Dev login** button (development only, no Hack Club Au
 
 `bin/rails test` uses the `battletown_test` database (plus `battletown_test-N` for the parallel workers). Several checkouts, worktrees or agents running tests at the same time must not share one: give each a unique suffix, for example
 
-```sh
+``sh
 export TEST_DB_SUFFIX=_a
 TEST_DB_SUFFIX=_a bin/rails db:test:prepare
 TEST_DB_SUFFIX=_a bin/rails test
-```
+``
 
 The suffix is appended to the test database name in `config/database.yml` (empty by default, so CI is unchanged).
 
@@ -32,13 +34,13 @@ The suffix is appended to the test database name in `config/database.yml` (empty
 
 See `.env.example`. Credentials can alternatively live in Rails credentials under `hca: { client_id:, client_secret: }`.
 
-**Production:** the complete variable list (`SECRET_KEY_BASE`, `DATABASE_URL`, `TRUSTED_PROXIES`, ...), the single-database layout, the port and health check (`/up`), the pre-deploy checklist and rollback notes are in [docs/DEPLOY.md](docs/DEPLOY.md). Only PostgreSQL is needed; `RAILS_MASTER_KEY` is optional when the secrets are set as environment variables.
+**Production:** the complete variable list (`SECRET_KEY_BASE`, `DATABASE_URL`, `TRUSTED_PROXIES`, ...), the single-database layout, the port and health check (`/up`), the pre-deploy checklist and rollback notes are in `projects/battletown/runbooks/deploy.md` in the agent wiki. Only PostgreSQL is needed; `RAILS_MASTER_KEY` is optional when the secrets are set as environment variables.
 
 | Variable | Purpose |
 | --- | --- |
 | `HCA_CLIENT_ID` / `HCA_CLIENT_SECRET` | OAuth app from auth.hackclub.com (Developer Apps) |
 | `HCA_ISSUER` | Defaults to `https://auth.hackclub.com` |
-| `HACKATIME_CLIENT_ID` / `HACKATIME_CLIENT_SECRET` | Hackatime OAuth app (scopes `profile` and `read` only); redirect URI is `$APP_URL/auth/hackatime/callback`. Optional account linking, see [docs/HACKATIME.md](docs/HACKATIME.md) |
+| `HACKATIME_CLIENT_ID` / `HACKATIME_CLIENT_SECRET` | Hackatime OAuth app (scopes `profile` and `read` only); redirect URI is `$APP_URL/auth/hackatime/callback`. Required: connecting Hackatime is the account step of onboarding, so without these nobody can finish signing up (see `projects/battletown/specs/hackatime.md` in the agent wiki). |
 | `HOURS_SOURCE` | Optional override of `hours_source` in `config/game.yml`: `null` (default, no Hackatime calls) or `http` (live Hackatime for linked users; `bin/rails "hackatime:sync[all]"`) |
 | `HACKATIME_URL` | Defaults to `https://hackatime.hackclub.com`; `https` only in production. Point it at a local fake provider to test linking |
 | `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` / `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` / `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | Encrypt the Hackatime tokens at rest. Required (production refuses to boot without them); in development generate them with `bin/rails db:encryption:init` and put them in `.env`. Tests use fixed throwaway values |
@@ -46,25 +48,25 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 | `ADMIN_HCA_UIDS` | Comma-separated Hack Club Auth ids (OIDC `sub`) allowed into `/admin`; empty or unset means nobody (everyone else gets a 404). Locally, `ADMIN_HCA_UIDS=dev-user bin/rails s` makes Dev login an admin |
 | `APP_HOST` | Production only: comma-separated allowed hostnames (unset: the host of `APP_URL`; other hosts get 403, except the `/up` health check) |
 | `MAX_REQUEST_BODY` | Set by the Dockerfile (`17000000`): the biggest request body Thruster lets through, sized for a ship form with three screenshots (flag `ship_screenshots`). Leave it unless you change the screenshot limits |
-| `PRIVACY_AUDIENCE` | Audience a data-deletion token must carry (default `battletown`); the value to give Hack Club infrastructure, see `docs/PRIVACY_API.md` |
+| `PRIVACY_AUDIENCE` | Audience a data-deletion token must carry (default `battletown`); the value to give Hack Club infrastructure, see `projects/battletown/specs/privacy-api.md` (agent wiki)` |
 | `PRIVACY_JWKS_URL` | Where the Hack Club data-deletion signing keys are fetched (default `https://yeet.hackclub.com/.well-known/jwks.json`); leave unset in production, `https` only |
-| `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_DOMAIN`, `MAIL_FROM` | Email notifications (behind the Flipper flag `email`, default off; ship decisions and the welcome-back note, each with one-click unsubscribe). Real SMTP only when `SMTP_ADDRESS` and `MAIL_FROM` are set; otherwise nothing is sent. Names only here, values in the environment: see [docs/DEPLOY.md](docs/DEPLOY.md) and the "Email notifications" section of [docs/CONTRACT.md](docs/CONTRACT.md) |
-| `SLACK_BOT_TOKEN` / `NOTIFICATIONS_ENABLED` | Slack DM reminders (`app/services/notifications`, tunables in `config/notifications.yml`). Needs a bot token with `chat:write`; nothing is ever sent unless `NOTIFICATIONS_ENABLED` is exactly `true` (default off). Cron `bin/rails notifications:dispatch` every minute, or run `DispatchNotificationsJob`. Everything it can send (daily reminder, link question, ship reminders, ship decisions) and the `/settings/notifications` switches are described in [docs/CONTRACT.md](docs/CONTRACT.md) |
+| `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_DOMAIN`, `MAIL_FROM` | Email notifications (behind the Flipper flag `email`, default off; ship decisions and the welcome-back note, each with one-click unsubscribe). Real SMTP only when `SMTP_ADDRESS` and `MAIL_FROM` are set; otherwise nothing is sent. Names only here, values in the environment: see `projects/battletown/runbooks/deploy.md` in the agent wiki and the "Email notifications" section of `projects/battletown/specs/contract.md` in the agent wiki |
+| `SLACK_BOT_TOKEN` / `NOTIFICATIONS_ENABLED` | Slack DM reminders (`app/services/notifications`, tunables in `config/notifications.yml`). Needs a bot token with `chat:write`; nothing is ever sent unless `NOTIFICATIONS_ENABLED` is exactly `true` (default off). Cron `bin/rails notifications:dispatch` every minute, or run `DispatchNotificationsJob`. Everything it can send (daily reminder, link question, ship reminders, ship decisions) and the `/settings/notifications` switches are described in `projects/battletown/specs/contract.md` in the agent wiki |
 
 ### Slack app
 
-The Slack app that sends the reminder DMs is defined by `config/slack/manifest.yml` (bot scope `chat:write` only; no events, commands or Socket Mode). To create it, use api.slack.com/apps, Create New App, From a manifest, pick the Hack Club workspace, paste the manifest, install it and put the Bot User OAuth Token in `SLACK_BOT_TOKEN` (environment only, never the repo). Then run `bin/rails slack:check` to verify the token and its scopes, and set `NOTIFICATIONS_ENABLED=true` only when ready. Details, ownership and admin-approval notes: [docs/SLACK_APP.md](docs/SLACK_APP.md).
+The Slack app that sends the reminder DMs is defined by `config/slack/manifest.yml` (bot scope `chat:write` only; no events, commands or Socket Mode). To create it, use api.slack.com/apps, Create New App, From a manifest, pick the Hack Club workspace, paste the manifest, install it and put the Bot User OAuth Token in `SLACK_BOT_TOKEN` (environment only, never the repo). Then run `bin/rails slack:check` to verify the token and its scopes, and set `NOTIFICATIONS_ENABLED=true` only when ready. Details, ownership and admin-approval notes: `projects/battletown/runbooks/slack-app.md` in the agent wiki.
 
 ### Cron entries and feature flags
 
-Nothing runs by itself: the one table of every scheduled command, with its schedule (UTC) and when to create it, is in [docs/DEPLOY.md](docs/DEPLOY.md) ("Scheduled commands"). At go-live the always-needed ones are `game:settle` (hourly), `privacy:purge_tokens` and `notifications:prune` (daily); the Slack ones also need `NOTIFICATIONS_ENABLED=true` and a bot token.
+Nothing runs by itself: the one table of every scheduled command, with its schedule (UTC) and when to create it, is in `projects/battletown/runbooks/deploy.md` in the agent wiki ("Scheduled commands"). At go-live the always-needed ones are `game:settle` (hourly), `privacy:purge_tokens` and `notifications:prune` (daily); the Slack ones also need `NOTIFICATIONS_ENABLED=true` and a bot token.
 
-Nine features ship switched OFF and stay dark (no route, link, card, row, message or query) until an admin turns them on at `/admin/flipper`: `team` (crews), `quests`, `returning` (welcome-back boost), `plinko`, `ship_screenshots`, `merch_track`, `email`, `nps` and `eligibility_gate`. The index with each flag's config key and what it needs is in [docs/CONTRACT.md](docs/CONTRACT.md) ("Feature flags"). There is no environment-variable switch.
+Nine features ship switched OFF and stay dark (no route, link, card, row, message or query) until an admin turns them on at `/admin/flipper`: `team` (crews), `quests`, `returning` (welcome-back boost), `plinko`, `ship_screenshots`, `merch_track`, `email`, `nps` and `eligibility_gate`. The index with each flag's config key and what it needs is in `projects/battletown/specs/contract.md` in the agent wiki ("Feature flags"). There is no environment-variable switch.
 
 ## How auth works
 
 Hack Club Auth (OIDC, discovery, PKCE, scopes `openid profile email name address verification_status slack_id basic_info`; `address` is only read for the time zone default and is never stored).
-"Sign up" and "sign in" are the same flow: `POST /auth/hack_club` (CSRF-protected) -> Hack Club Auth -> `GET /auth/hack_club/callback` -> `SessionsController#create`, which finds or creates the user by `sub` (`users.hca_uid`), resets the session, and routes to onboarding or the dashboard. IDV is **not** required at signup; the status is stored and should be enforced at shipping. Phone, birthdate and address are requested (all scopes enabled on the app) but **not stored or logged** pending a privacy decision; only name, email, Slack ID, verification status and a time zone are persisted. The address is used transiently, in memory, at first sign-in: `AddressTimeZone` (`app/services/address_time_zone.rb`, table in `config/address_time_zones.yml`) turns the primary address's country and region into a time zone name, and only that name is stored as `users.time_zone` (never overwritten on later sign-ins). The onboarding schedule step shows it as one line of text with a "Change time zone" control; if no zone can be derived it falls back to the browser's zone, then to a blank select. The parsing follows the OIDC `address` claim as documented at https://auth.hackclub.com/docs and has not yet been verified against a real response.
+Onboarding comes first and needs no account: visitors answer age, prize, project and schedule (held in the encrypted session, see `OnboardingDraft`), then sign up with Hack Club on the `signup` step, which copies those answers onto the new account. People who already have an account use "Already have an account? Sign in" in the onboarding header to skip it. "Sign up" and "sign in" are the same flow: `POST /auth/hack_club` (CSRF-protected) -> Hack Club Auth -> `GET /auth/hack_club/callback` -> `SessionsController#create`, which finds or creates the user by `sub` (`users.hca_uid`), resets the session, and routes to onboarding or the dashboard. IDV is **not** required at signup, in onboarding or to ship: sign-in reads the verification status from the claims and stores it (refreshed at every sign-in), and it is enforced only when someone tries to spend coins (some pages before the shop still nudge; see `projects/battletown/specs/contract.md` (agent wiki)). Phone, birthdate and address are requested (all scopes enabled on the app) but **not stored or logged** pending a privacy decision; only name, email, Slack ID, verification status and a time zone are persisted. The address is used transiently, in memory, at first sign-in: `AddressTimeZone` (`app/services/address_time_zone.rb`, table in `config/address_time_zones.yml`) turns the primary address's country and region into a time zone name, and only that name is stored as `users.time_zone` (never overwritten on later sign-ins). The onboarding schedule step shows it as one line of text with a "Change time zone" control; if no zone can be derived it falls back to the browser's zone, then to a blank select. The parsing follows the OIDC `address` claim as documented at https://auth.hackclub.com/docs and has not yet been verified against a real response.
 
 ## Where to edit things
 
@@ -73,17 +75,17 @@ Hack Club Auth (OIDC, discovery, PKCE, scopes `openid profile email name address
 - Shop items: `config/prizes.yml` (placeholder, the designer replaces them; the only price is `coins`, hours are derived from `config/game.yml`)
 - Referral slugs (`/haven`, `/terra`, `/stardance`): `config/referrals.yml`
 - "How did you hear about us?" options on the onboarding account step: `config/referral_sources.yml` (generic answers) plus the programs from `config/referrals.yml`, via `ReferralSource`
-- Interfaces for page work: `docs/CONTRACT.md`
+- Interfaces for page work: `projects/battletown/specs/contract.md` (agent wiki)`
 
 ## Security notes
 
-Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (shared Solid Cache store in production, in-process store in development and test), secure/httponly/lax session cookies with a 30 day idle timeout, host allowlist, filtered sensitive params, allowlist validation on every user-supplied field, and the Hack Club data-deletion API (`POST /api/privacy/delete` and `/export`, ES256 token verified against Hack Club's keys, one-time `jti`, no personal data logged; `docs/PRIVACY_API.md`). Run `bin/ci` (rubocop, bundler-audit, importmap audit, brakeman, tests) before merging.
+Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (shared Solid Cache store in production, in-process store in development and test), secure/httponly/lax session cookies with a 30 day idle timeout, host allowlist, filtered sensitive params, allowlist validation on every user-supplied field, and the Hack Club data-deletion API (`POST /api/privacy/delete` and `/export`, ES256 token verified against Hack Club's keys, one-time `jti`, no personal data logged; `projects/battletown/specs/privacy-api.md` (agent wiki)`). Run `bin/ci` (rubocop, bundler-audit, importmap audit, brakeman, tests) before merging.
 
 ## Open questions / TODO
 
-- Before launch: register with the Hack Club yeet deletion service, see docs/DEPLOY.md ("Before launch (blocking)").
+- Before launch: register with the Hack Club yeet deletion service, see `projects/battletown/runbooks/deploy.md` (agent wiki) ("Before launch (blocking)").
 - Real Hack Club Auth login: the redirect to auth.hackclub.com works with the registered app; the full round trip (login, consent, callback) still needs a manual run with a real account.
 - Final design tokens and copy (Figma style guide pending).
 - Privacy policy and terms are placeholders; a GDPR/data request is in progress. Email and Slack ID are stored unencrypted for now.
 - Final shop items and prices, Plinko and the shipping-address decision (orders are requests; the team arranges delivery on Slack) are open.
-- Production cache store: decided and built, but untested on a real deployment. Production uses Solid Cache in the app's PostgreSQL database for `Rails.cache` and the rack-attack counters (dev/test keep an in-process store); see docs/DEPLOY.md for the single-database layout and the post-deploy store check. Still to confirm with the platform: which container port it routes to (80 by default) and whether a proxy with a public address needs listing in `TRUSTED_PROXIES`.
+- Production cache store: decided and built, but untested on a real deployment. Production uses Solid Cache in the app's PostgreSQL database for `Rails.cache` and the rack-attack counters (dev/test keep an in-process store); see `projects/battletown/runbooks/deploy.md` (agent wiki) for the single-database layout and the post-deploy store check. Still to confirm with the platform: which container port it routes to (80 by default) and whether a proxy with a public address needs listing in `TRUSTED_PROXIES`.

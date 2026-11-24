@@ -1,7 +1,11 @@
 class User < ApplicationRecord
   PROJECT_KINDS = %w[game website app tool hardware undecided].freeze
+  # Hardware is not supported: it stays valid for projects already saved (the allowlist above, the database check), but a new
+  # pick must be one of these.
+  OFFERED_PROJECT_KINDS = (PROJECT_KINDS - %w[hardware]).freeze
   DAYS = %w[monday tuesday wednesday thursday friday saturday sunday].freeze
-  ONBOARDING_STEPS = 4
+  TIME_FORMAT = /\A([01]\d|2[0-3]):[0-5]\d\z/
+  ONBOARDING_STEPS = 6 # index of the last step in OnboardingsController::STEPS
 
   # Deleted by the database (ON DELETE CASCADE), so the data-deletion API removes the Hackatime tokens too.
   has_one :hackatime_connection, dependent: nil
@@ -31,14 +35,17 @@ class User < ApplicationRecord
   # Every key ever offered stays valid for people who already picked it (archived items included), but a NEW pick must be an
   # item that is still on offer.
   validate :prize_still_offered, if: :prize_key_changed?
+  validate :project_kind_still_offered, if: :project_kind_changed?
   validates :project_kind, inclusion: { in: PROJECT_KINDS }, allow_nil: true
   validates :project_idea, length: { maximum: 500 }
-  validates :coding_time, format: { with: /\A([01]\d|2[0-3]):[0-5]\d\z/ }, allow_nil: true
+  validates :coding_time, format: { with: TIME_FORMAT }, allow_nil: true
+  validate :coding_times_are_times
   validates :time_zone, inclusion: { in: ->(_) { ActiveSupport::TimeZone.all.map(&:name) } }, allow_nil: true
   validates :referral_source, format: { with: Referral::FORMAT }, allow_nil: true
   validates :coding_days, numericality: { in: 0..127, only_integer: true }
   validates :onboarding_step, numericality: { in: 0..ONBOARDING_STEPS, only_integer: true }
 
+  before_validation :drop_unused_coding_times
   before_save :set_signed_up_on, if: :signed_up_on_open?
 
   # Admins are the Hack Club Auth ids in the ADMIN_HCA_UIDS env var (see AdminAllowlist). Checked server-side
@@ -47,13 +54,19 @@ class User < ApplicationRecord
 
   # Two simultaneous first logins both try to INSERT; the unique index rejects one, which then retries
   # and finds the winner's row instead of surfacing a 500.
-  def self.from_hca_claims!(claims, referral_source: nil)
+  # `draft` is what the visitor answered before signing in; it is copied onto a user who has not finished onboarding.
+  def self.from_hca_claims!(claims, referral_source: nil, draft: nil)
     attempts = 0
     begin
       user = find_or_initialize_by(hca_uid: claims.fetch("sub"))
       user.referral_source = referral_source if user.new_record?
       user.apply_hca_claims(claims)
-      user.save!
+      applied = !user.onboarded? && draft&.apply_to(user)
+      transaction do
+        user.save!
+        # The project step creates the first project for signed-in users; for a draft that happens here.
+        Project.sync_first_from_onboarding(user) if applied && user.project_kind
+      end
       user
     rescue ActiveRecord::RecordNotUnique
       retry if (attempts += 1) < 2
@@ -114,9 +127,36 @@ class User < ApplicationRecord
     self.coding_days = Array(names).sum { |name| (index = DAYS.index(name.to_s)) ? 1 << index : 0 }
   end
 
+  # Different times on some days: { "monday" => "17:00" }. Only days in User::DAYS are kept and a blank time means
+  # "the usual time", so it is dropped. Whether a time is a real HH:MM is left to validation (a wrong one is an error,
+  # like a wrong coding_time); a day that is not selected is dropped just before validation, so assignment order
+  # never matters. Takes a Hash or permitted Parameters; anything else is no overrides.
+  def coding_times=(value)
+    value = value.to_unsafe_h if value.respond_to?(:to_unsafe_h)
+    value = {} unless value.is_a?(Hash)
+    super(value.stringify_keys.slice(*DAYS).transform_values { |time| time.to_s.strip }.reject { |_, time| time.empty? })
+  end
+
+  # The time to remind on `day` ("monday"): that day's own time, else the usual coding_time (nil when neither is set).
+  def coding_time_for(day) = coding_times[day.to_s].presence || coding_time
+
   def prize = Prize.find(prize_key)
 
   private
+
+  def drop_unused_coding_times
+    self.coding_times = coding_times.slice(*coding_day_names) if coding_times.keys.any? { |day| coding_day_names.exclude?(day) }
+  end
+
+  def coding_times_are_times
+    errors.add(:coding_times, "must look like 17:30") unless coding_times.values.all? { |time| time.is_a?(String) && time.match?(TIME_FORMAT) }
+  end
+
+  def project_kind_still_offered
+    return if project_kind.nil? || errors.include?(:project_kind)
+
+    errors.add(:project_kind, "isn't offered any more: pick another") unless OFFERED_PROJECT_KINDS.include?(project_kind)
+  end
 
   def prize_still_offered
     return if prize_key.nil? || errors.include?(:prize_key)

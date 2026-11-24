@@ -1,6 +1,9 @@
 require "test_helper"
+require_relative "../support/hackatime_helper"
 
 class OnboardingTest < ActionDispatch::IntegrationTest
+  include HackatimeHelper
+  PRIZE_STEP_FOR_TEST = OnboardingsController::STEPS.index("prize")
   setup { OmniAuth.config.test_mode = true }
 
   teardown do
@@ -9,13 +12,24 @@ class OnboardingTest < ActionDispatch::IntegrationTest
   end
 
   def sign_in_as(user)
+    # Someone at the last step got there through the account step, which needs a Hackatime connection.
+    if user.persisted? && user.onboarding_step >= 6 && !user.onboarded? && user.hackatime_connection.nil?
+      connect_hackatime(user, uid: (9000 + user.id).to_s)
+    end
     OmniAuth.config.mock_auth[:hack_club] = OmniAuth::AuthHash.new(provider: "hack_club", uid: user.hca_uid, extra: { raw_info: {} })
     post "/auth/hack_club"
     follow_redirect!
   end
 
   def step(name, params = {})
+    connect_hackatime_for_session_user if name == "account"
     patch onboarding_step_path(name), params: { user: params }
+  end
+
+  # Hackatime is required to finish the account step, so a test that gets that far has the signed-in person connect first.
+  def connect_hackatime_for_session_user
+    user = User.find_by(id: session[:user_id])
+    connect_hackatime(user, uid: (9000 + user.id).to_s) if user && !user.onboarded? && user.hackatime_connection.nil?
   end
 
   def finish_through(user, last)
@@ -29,15 +43,6 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     user.reload
   end
 
-  test "requires login" do
-    get onboarding_path
-    assert_redirected_to root_path
-    get onboarding_step_path("prize")
-    assert_redirected_to root_path
-    patch onboarding_step_path("prize"), params: { user: { prize_key: "tshirt" } }
-    assert_redirected_to root_path
-  end
-
   test "unknown steps are not routable" do
     sign_in_as users(:new_user)
     get "/onboarding/nope"
@@ -48,7 +53,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     sign_in_as users(:new_user)
     get onboarding_path
     assert_redirected_to onboarding_step_path("prize")
-    users(:new_user).update!(onboarding_step: 2)
+    users(:new_user).update!(onboarding_step: 3)
     get onboarding_path
     assert_redirected_to onboarding_step_path("schedule")
   end
@@ -59,11 +64,12 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     get onboarding_step_path("prize")
     assert_response :success
-    assert_select "[aria-current=step]", /Prize/
+    assert_select "progress.onboarding-top__bar[value='2']"
 
     step("prize", prize_key: "tshirt")
     assert_redirected_to onboarding_step_path("project")
     follow_redirect!
+    assert_select ".transition--proof .transition__title", /Battletown T-shirt/ # the "others like you" moment plays over the next step
     assert_select ".onboarding-prize", /Battletown T-shirt/
 
     step("project", project_kind: "game", project_idea: "A farming game")
@@ -80,7 +86,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_equal "game", user.project_kind
     assert_equal 5, user.coding_days
     assert_equal "terra", user.referral_source
-    assert_equal 4, user.onboarding_step
+    assert_equal 6, user.onboarding_step
     assert_not user.onboarded?
 
     get onboarding_step_path("celebrate")
@@ -106,7 +112,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     step("project", project_kind: "game", project_idea: "x" * 501)
     assert_response :unprocessable_content
-    assert_equal 1, user.reload.onboarding_step
+    assert_equal 2, user.reload.onboarding_step
 
     finish_through(user, "project")
     step("schedule", coding_day_names: %w[monday], coding_time: "25:99", time_zone: "UTC")
@@ -115,7 +121,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     step("schedule", coding_day_names: %w[funday], coding_time: "18:00", time_zone: "UTC")
     assert_response :unprocessable_content
-    assert_equal 2, user.reload.onboarding_step
+    assert_equal 3, user.reload.onboarding_step
   end
 
   test "cannot skip ahead" do
@@ -134,7 +140,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "an existing referral source is never overwritten" do
     user = users(:new_user)
-    user.update!(referral_source: "haven", onboarding_step: 3)
+    user.update!(referral_source: "haven", onboarding_step: 5)
     sign_in_as user
 
     get onboarding_step_path("account")
@@ -144,20 +150,9 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_equal "haven", user.reload.referral_source
   end
 
-  test "the account step describes Hackatime as optional now, not as coming soon" do
-    users(:new_user).update!(onboarding_step: 3)
-    sign_in_as users(:new_user)
-
-    get onboarding_step_path("account")
-    assert_response :success
-    assert_no_match(/coming soon/i, response.body)
-    assert_select "h2", "Hackatime"
-    assert_select "p", /Connecting Hackatime is optional/
-  end
-
   test "unknown referral sources are rejected" do
     user = users(:new_user)
-    user.update!(onboarding_step: 3)
+    user.update!(onboarding_step: 5)
     sign_in_as user
 
     step("account", referral_source: "evilcorp")
@@ -167,7 +162,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the account step offers a normal how-did-you-hear list, optional and in order" do
     user = users(:new_user)
-    user.update!(onboarding_step: 3)
+    user.update!(onboarding_step: 5)
     sign_in_as user
 
     get onboarding_step_path("account")
@@ -183,7 +178,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "every generic referral source key can be saved" do
     ReferralSource.keys.each do |key|
-      user = User.create!(hca_uid: "ident!ref-#{key}", onboarding_step: 3)
+      user = User.create!(hca_uid: "ident!ref-#{key}", onboarding_step: 5)
       sign_in_as user
       step("account", referral_source: key)
       assert_redirected_to onboarding_step_path("celebrate"), key
@@ -193,7 +188,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "skipping the referral question is fine" do
     user = users(:new_user)
-    user.update!(onboarding_step: 3)
+    user.update!(onboarding_step: 5)
     sign_in_as user
 
     step("account", referral_source: "")
@@ -203,18 +198,18 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "an unknown referral source gets the friendly error" do
     user = users(:new_user)
-    user.update!(onboarding_step: 3)
+    user.update!(onboarding_step: 5)
     sign_in_as user
 
     step("account", referral_source: "bing_ads")
     assert_response :unprocessable_content
-    assert_select "[role=alert]", /How you found us/
+    assert_select "[role=alert]", /Pick one of the options in the list/
     assert_nil user.reload.referral_source
   end
 
   test "a generic referral source is summarised instead of the select" do
     user = users(:new_user)
-    user.update!(referral_source: "search", onboarding_step: 3)
+    user.update!(referral_source: "search", onboarding_step: 5)
     sign_in_as user
 
     get onboarding_step_path("account")
@@ -224,7 +219,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "completion is idempotent" do
     user = users(:new_user)
-    user.update!(onboarding_step: 4)
+    user.update!(onboarding_step: 6)
     sign_in_as user
 
     step("celebrate")
@@ -262,7 +257,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     step("prize", prize_key: "sticker_pack")
     assert_redirected_to dashboard_path
     assert_equal "sticker_pack", user.reload.prize_key
-    assert_equal 4, user.onboarding_step
+    assert_equal 6, user.onboarding_step
   end
 
   test "no prize is preselected for a new user" do
@@ -292,7 +287,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the celebration offers a sound toggle that starts on" do
     sign_in_as users(:new_user)
-    users(:new_user).update!(onboarding_step: 4)
+    users(:new_user).update!(onboarding_step: 6)
+    connect_hackatime(users(:new_user))
     get onboarding_step_path("celebrate")
     assert_response :success
 
@@ -304,7 +300,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the celebration loads no external media and the importmap stays same-origin" do
     sign_in_as users(:new_user)
-    users(:new_user).update!(onboarding_step: 4)
+    users(:new_user).update!(onboarding_step: 6)
+    connect_hackatime(users(:new_user))
     get onboarding_step_path("celebrate")
 
     assert_select "audio, video, source, embed, object, iframe", 0
@@ -317,20 +314,17 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   # -- restyle: progress semantics, labels, error summaries --------------------------------------------
 
-  test "every step says which step it is, in words and in a native progress bar" do
+  test "every step shows the quick-progress label and a native progress bar" do
     user = users(:new_user)
-    user.update!(onboarding_step: 4)
+    user.update!(onboarding_step: 6)
     sign_in_as user
 
-    OnboardingsController::STEPS.each_with_index do |name, index|
+    OnboardingsController::STEPS.reject { |name| OnboardingsController::SKIPPED_WHEN_SIGNED_IN.include?(name) }.each do |name|
+      index = OnboardingsController::STEPS.index(name)
       get onboarding_step_path(name)
       assert_response :success
-      assert_select "nav[aria-label='Onboarding progress']" do
-        assert_select "#onboarding-progress-label", /Step #{index + 1} of 5/
-        assert_select "progress.progress__bar[max='5'][value='#{index + 1}'][aria-labelledby='onboarding-progress-label']"
-        assert_select "ol li", 5
-        assert_select "[aria-current=step]", 1
-      end
+      assert_select ".onboarding-top #onboarding-progress-label", OnboardingsHelper::STEP_COPY.fetch(name)[:progress]
+      assert_select ".onboarding-top progress.onboarding-top__bar[max='7'][value='#{index + 1}'][aria-labelledby='onboarding-progress-label']"
       assert_select "h1", 1
     end
   end
@@ -348,15 +342,15 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the form fields have visible labels" do
     user = users(:new_user)
-    user.update!(onboarding_step: 3)
+    user.update!(onboarding_step: 5)
     sign_in_as user
 
     get onboarding_step_path("project")
     assert_select "legend", "What kind of project?"
     assert_select "label[for=user_project_idea]", /Got an idea/
     assert_select "textarea#user_project_idea[aria-describedby=project-idea-count]"
-    assert_select "#project-idea-count", /0\/500/
-    assert_select ".toggle input.toggle__input[type=radio][name='user[project_kind]']", OnboardingsHelper::PROJECT_KINDS.size
+    assert_select "#project-idea-count", /0 of 500 characters/
+    assert_select ".toggle input.toggle__input[type=radio][name='user[project_kind]']", User::OFFERED_PROJECT_KINDS.size
 
     get onboarding_step_path("schedule")
     assert_select "legend", "Which days do you want to code?"
@@ -370,19 +364,19 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "an invalid step shows a summary that links to the field, and marks the field invalid" do
     user = users(:new_user)
-    user.update!(onboarding_step: 2)
+    user.update!(onboarding_step: 3)
     sign_in_as user
 
     step("schedule", coding_day_names: %w[monday], coding_time: "18:00", time_zone: "Mars/Olympus")
     assert_response :unprocessable_content
     assert_select ".onboarding__errors[role=alert][tabindex='-1'][data-onboarding-step-target=errors]" do
-      assert_select "a[href='#user_time_zone']", /Time zone/
+      assert_select "a[href='#user_time_zone']", /Choose your time zone from the list/
     end
     assert_select "select#user_time_zone[aria-invalid=true][aria-describedby=user_time_zone-error]"
-    assert_select "#user_time_zone-error.field__error", /Time zone/
+    assert_select "#user_time_zone-error.field__error", /Choose your time zone from the list/
 
     step("schedule", coding_time: "18:00", time_zone: "UTC")
-    assert_select ".onboarding__errors a[href='#user_day_monday']", /Days/
+    assert_select ".onboarding__errors a[href='#user_day_monday']", "Pick at least one day"
     assert_select "fieldset[aria-describedby=days-error] #days-error"
   end
 
@@ -390,12 +384,12 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     user = users(:new_user)
     sign_in_as user
     step("prize")
-    assert_select ".onboarding__errors a[href='#user_prize_key_#{Prize.paid.first.key}']", /Prize can't be blank/
+    assert_select ".onboarding__errors a[href='#user_prize_key_#{Prize.paid.first.key}']", "Pick a prize to continue"
     assert_select "#user_prize_key_#{Prize.paid.first.key}"
 
     finish_through(user, "prize")
     step("project")
-    assert_select ".onboarding__errors a[href='#user_project_kind_game']", /Project type can't be blank/
+    assert_select ".onboarding__errors a[href='#user_project_kind_game']", "Pick a kind of project"
     assert_select "#user_project_kind_game"
   end
 
@@ -406,27 +400,24 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "input.choice__input + .choice__body", Prize.paid.size
   end
 
-  test "the account step shows a status pill and, once onboarded, links to the Hackatime page" do
+  test "the account step asks for Hackatime, and once onboarded links to the Hackatime page" do
     user = users(:new_user)
-    user.update!(onboarding_step: 3, verification_status: "needs_submission")
+    user.update!(onboarding_step: 5)
     sign_in_as user
 
     get onboarding_step_path("account")
-    assert_select ".check .badge", "Not verified yet"
-    assert_select "a[href='https://auth.hackclub.com'][target=_blank][rel~=noopener]", "Verify with Hack Club"
+    assert_select "#hackatime-check .badge", "Required"
     assert_select "a[href='#{hackatime_path}']", 0
-    assert_select "p", /Connecting Hackatime is optional/
 
-    user.update!(onboarded_at: Time.current, verification_status: "verified")
+    connect_hackatime(user)
+    user.update!(onboarded_at: Time.current)
     get onboarding_step_path("account")
-    assert_select ".check .badge", "Verified"
-    assert_select "a[href='https://auth.hackclub.com']", 0
-    assert_select "p a[href='#{hackatime_path}']"
+    assert_select "#hackatime-check .badge", "Connected"
   end
 
   test "the schedule step explains when Slack is not linked" do
     user = users(:new_user)
-    user.update!(onboarding_step: 2, slack_id: nil)
+    user.update!(onboarding_step: 3, slack_id: nil)
     sign_in_as user
     get onboarding_step_path("schedule")
     assert_select "[role=note]", /isn't linked to a Slack account/
@@ -438,17 +429,418 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the celebration summarises the plan, says Every day for all seven and keeps the controls" do
     user = users(:new_user)
-    user.update!(onboarding_step: 4, prize_key: "tshirt", project_kind: "game", coding_days: 127, coding_time: "18:30", time_zone: "UTC")
+    user.update!(onboarding_step: 6, prize_key: "tshirt", project_kind: "game", coding_days: 127, coding_time: "18:30", time_zone: "UTC")
     sign_in_as user
     get onboarding_step_path("celebrate")
 
     assert_select "dl.celebration__summary" do
       assert_select "dd", /Battletown T-shirt/
       assert_select "dd", "Game"
-      assert_select "dd", /Every day at 18:30, UTC/
+      assert_select "dd", /Every day at 6:30 pm, UTC/
     end
     assert_select ".onboarding-prize", 0
     assert_select "button.celebration__sound[aria-pressed=true]", /Sound\s+on/
     assert_select "form[action='#{onboarding_step_path("celebrate")}'] button", "Enter Battletown"
+  end
+
+  # -- before sign-in: age gate, session draft, sign-up, social proof ------------------------------------
+
+  def anonymous_through(last)
+    steps = [
+      [ "age", { age_group: "teen" } ],
+      [ "prize", { prize_key: "tshirt" } ],
+      [ "project", { project_kind: "game", project_idea: "A farming game" } ],
+      [ "schedule", { coding_day_names: %w[monday friday], coding_time: "18:30", time_zone: "UTC" } ]
+    ]
+    steps.each { |name, params| step(name, params); break if name == last }
+  end
+
+  test "visitors start onboarding without an account, at the age question" do
+    get onboarding_path
+    assert_redirected_to onboarding_step_path("age")
+    follow_redirect!
+    assert_response :success
+    assert_select "h1", "How old are you?"
+    assert_select "button[name='user[age_group]'][value=teen]", /teen aged 13–18/
+    assert_select "button[name='user[age_group]'][value=adult]", /not 13–18/
+  end
+
+  test "onboarding has no header, no Sign in or Dev login buttons and no footer for visitors: the progress strip is the top" do
+    get onboarding_step_path("age")
+    assert_select ".site-header", 0
+    assert_select "form[action='/auth/hack_club']", 0
+    assert_select "form[action='/dev_login']", 0
+    assert_select ".site-footer", 0
+    assert_select ".onboarding-page .onboarding-top"
+  end
+
+  test "a signed-in person still onboarding keeps a header with Sign out, but no footer" do
+    sign_in_as users(:new_user)
+    get onboarding_step_path("prize")
+    assert_select ".site-header form[action='/logout']"
+    assert_select ".site-footer", 0
+  end
+
+  test "the sign-up step links to the terms and the privacy policy, since there is no footer to do it" do
+    anonymous_through("schedule")
+    get onboarding_step_path("signup")
+    assert_select ".onboarding__panel a[href='#{terms_path}']", "Terms"
+    assert_select ".onboarding__panel a[href='#{privacy_path}']", "Privacy Policy"
+  end
+
+  test "the progress bar and back button sit at the top" do
+    get onboarding_step_path("age")
+    assert_select ".onboarding-top progress.onboarding-top__bar[max='7'][value='1']"
+    assert_select ".onboarding-top a.onboarding-top__back[href='#{root_path}']"
+
+    anonymous_through("age")
+    get onboarding_step_path("prize")
+    assert_select "progress.onboarding-top__bar[value='2']"
+    assert_select "a.onboarding-top__back[href='#{onboarding_step_path("age")}']"
+  end
+
+  test "the welcome splash plays once per visit and is left out when signed in" do
+    get onboarding_step_path("age")
+    assert_select ".transition--welcome[data-turbo-temporary]", /Welcome to/
+    assert_select ".transition--welcome img.transition__logo"
+    get onboarding_step_path("age")
+    assert_select ".transition", 0
+
+    reset!
+    sign_in_as users(:new_user)
+    get onboarding_step_path("prize")
+    assert_select ".transition", 0
+  end
+
+  test "someone who is not a teen is told kindly and cannot continue" do
+    step("age", age_group: "adult")
+    assert_response :unprocessable_content # Turbo only shows form responses that redirect or carry an error status
+    assert_select "h1", /just for teens/
+    get onboarding_step_path("prize")
+    assert_redirected_to onboarding_step_path("age")
+    step("age", age_group: "nonsense")
+    assert_select "h1", /just for teens/
+    patch onboarding_step_path("age"), params: { user: "abc" }
+    assert_response :unprocessable_content
+    patch onboarding_step_path("age")
+    assert_response :unprocessable_content
+  end
+
+  test "the Slack-not-linked note is only for signed-in users, never for visitors who have no account yet" do
+    anonymous_through("project")
+    get onboarding_step_path("schedule")
+    assert_response :success
+    assert_select "[role=note]", 0
+  end
+
+  test "signing in does not erase the schedule an unfinished account already has" do
+    user = User.create!(hca_uid: "ident!returning", coding_days: 31, coding_time: "07:15", time_zone: "UTC", onboarding_step: 3)
+    anonymous_through("prize")
+    sign_in_as user
+    user.reload
+    assert_equal [ 31, "07:15", "UTC", "tshirt" ], [ user.coding_days, user.coding_time, user.time_zone, user.prize_key ]
+  end
+
+  test "a prize archived between picking it and signing in does not break the sign-in" do
+    anonymous_through("schedule")
+    ShopItem.find_by!(key: "tshirt").update!(active: false)
+    Prize.reload!
+    assert_nothing_raised { sign_in_as User.new(hca_uid: "ident!late") }
+    user = User.find_by!(hca_uid: "ident!late")
+    assert_nil user.prize_key
+    assert_equal [ "game", "18:30", PRIZE_STEP_FOR_TEST ], [ user.project_kind, user.coding_time, user.onboarding_step ] # the rest is kept
+    follow_redirect!
+    assert_redirected_to onboarding_step_path("prize") # and they pick another prize
+  ensure
+    ShopItem.find_by(key: "tshirt")&.update!(active: true)
+    Prize.reload!
+  end
+
+  test "visitors cannot skip ahead or reach the signed-in steps" do
+    get onboarding_step_path("schedule")
+    assert_redirected_to onboarding_step_path("age")
+    anonymous_through("schedule")
+    %w[account celebrate].each do |name|
+      get onboarding_step_path(name)
+      assert_redirected_to onboarding_step_path("signup")
+    end
+    step("celebrate")
+    assert_redirected_to onboarding_step_path("signup")
+  end
+
+  test "bad answers are rejected before sign-in too" do
+    step("age", age_group: "teen")
+    step("prize", prize_key: "nope")
+    assert_response :unprocessable_content
+    step("prize", prize_key: "tshirt")
+    step("project", project_kind: "spaceship")
+    assert_response :unprocessable_content
+    step("project", project_kind: "game", project_idea: "x" * 501)
+    assert_response :unprocessable_content
+    get onboarding_step_path("schedule")
+    assert_redirected_to onboarding_step_path("project")
+  end
+
+  test "answers live in the session until sign-in: no user is created, the sign-up step summarises them" do
+    assert_no_difference [ "User.count", "Project.count" ] do
+      anonymous_through("schedule")
+    end
+    get onboarding_step_path("signup")
+    assert_response :success
+    assert_select ".celebration__summary", /Battletown T-shirt/
+    assert_select ".celebration__summary", /Game/
+    assert_select ".celebration__summary", /Monday and Friday at 6:30 pm, UTC/
+    assert_select "form[action='/auth/hack_club'][method=post][data-turbo=false] button", "Sign up with Hack Club"
+  end
+
+  test "signing in at the end carries the answers onto the new account, creates the first project and goes to the account step" do
+    get "/haven"
+    anonymous_through("schedule")
+    sign_in_as User.new(hca_uid: "ident!fresh")
+    follow_redirect!
+    assert_redirected_to onboarding_step_path("account")
+
+    user = User.find_by!(hca_uid: "ident!fresh")
+    assert_equal "tshirt", user.prize_key
+    assert_equal "game", user.project_kind
+    assert_equal "A farming game", user.project_idea
+    assert_equal 17, user.coding_days
+    assert_equal "18:30", user.coding_time
+    assert_equal "UTC", user.time_zone
+    assert_equal "haven", user.referral_source
+    assert_equal 5, user.onboarding_step
+    assert_not user.onboarded?
+    assert_equal [ "game" ], user.projects.map(&:kind)
+
+    step("account", referral_source: "")
+    assert_redirected_to onboarding_step_path("celebrate")
+    step("celebrate")
+    assert_redirected_to dashboard_path
+    assert user.reload.onboarded?
+  end
+
+  test "someone with an account who signs in mid-onboarding goes to the dashboard and the draft changes nothing" do
+    step("age", age_group: "teen")
+    step("prize", prize_key: "sticker_pack") # the fixture's own account has tshirt and game
+    step("project", project_kind: "website", project_idea: "A different idea")
+    onboarded = users(:onboarded)
+    before = onboarded.attributes.slice("prize_key", "project_kind", "project_idea", "coding_days", "coding_time", "onboarding_step", "onboarded_at")
+    assert_no_difference "Project.count" do
+      OmniAuth.config.mock_auth[:hack_club] = OmniAuth::AuthHash.new(provider: "hack_club", uid: onboarded.hca_uid, extra: { raw_info: {} })
+      post "/auth/hack_club"
+      follow_redirect!
+    end
+    assert_redirected_to dashboard_path
+    assert_equal before, onboarded.reload.attributes.slice(*before.keys)
+    assert_equal "tshirt", onboarded.prize_key
+  end
+
+  test "signing in with nothing answered starts a new account at the prize step" do
+    sign_in_as User.new(hca_uid: "ident!newcomer")
+    follow_redirect!
+    assert_redirected_to onboarding_step_path("prize")
+    assert_equal 0, User.find_by!(hca_uid: "ident!newcomer").onboarding_step
+  end
+
+  test "signing in part-way keeps the answers so far and resumes after them" do
+    anonymous_through("prize")
+    sign_in_as User.new(hca_uid: "ident!partway")
+    assert_equal "tshirt", User.find_by!(hca_uid: "ident!partway").prize_key
+    follow_redirect!
+    assert_redirected_to onboarding_step_path("project")
+  end
+
+  test "a signed-in user never sees the age or sign-up steps" do
+    sign_in_as users(:new_user)
+    get onboarding_step_path("age")
+    assert_redirected_to onboarding_step_path("prize")
+    users(:new_user).update!(onboarding_step: 4)
+    get onboarding_step_path("signup")
+    assert_redirected_to onboarding_step_path("account")
+    get onboarding_step_path("account")
+    assert_select "a.onboarding-top__back[href='#{onboarding_step_path("schedule")}']"
+  end
+
+  test "after the prize and project steps an others-like-you transition plays over the next step, without a screen of its own" do
+    anonymous_through("age")
+    step("prize", prize_key: "tshirt")
+    assert_redirected_to onboarding_step_path("project") # straight to the next step: no page to click through
+    follow_redirect!
+    assert_response :success
+    assert_select ".transition--proof[data-turbo-temporary][aria-hidden=true] .transition__title", /Hardly anyone has chosen the Battletown T-shirt yet/ # a handful of people is never quoted as a number
+    assert_select ".transition__badge", /🏷️|Battletown T-shirt|👕/
+    assert_select "p.onboarding-note", /Hardly anyone has chosen the Battletown T-shirt yet/ # the same words for screen readers and reduced motion
+    assert_select ".transition-enter .onboarding-top" # the step waits underneath, then rises in
+    assert_select "progress.onboarding-top__bar[value='3']"
+    assert_select "h1", "What are you making?"
+
+    get onboarding_step_path("project") # it plays once: reloading or going back never replays it
+    assert_select ".transition", 0
+    assert_select "p.onboarding-note", 0
+
+    step("project", project_kind: "app")
+    assert_redirected_to onboarding_step_path("schedule")
+    follow_redirect!
+    assert_select ".transition--proof .transition__title", /one of the first to build an app here/
+    assert_select ".transition__badge", /📱/
+  end
+
+  test "once enough others picked the same thing the transitions quote the number, without counting you" do
+    User.update_all(prize_key: nil, project_kind: nil) # the fixtures' own picks would add to the count
+    OnboardingProof::MIN_OTHERS.times { |i| User.create!(hca_uid: "ident!peer#{i}", prize_key: "tshirt", project_kind: "game") }
+    anonymous_through("age")
+    step("prize", prize_key: "tshirt")
+    follow_redirect!
+    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the Battletown T-shirt too!"
+    step("project", project_kind: "game")
+    follow_redirect!
+    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other teens are building a game too!"
+
+    # A signed-in user is in the count already, so they are not their own "other".
+    user = User.create!(hca_uid: "ident!me", onboarding_step: 1)
+    reset!
+    sign_in_as user
+    step("prize", prize_key: "tshirt")
+    follow_redirect!
+    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the Battletown T-shirt too!"
+  end
+
+  test "the transition is only for someone still onboarding, never for editing a finished profile, and does not leak to other steps" do
+    sign_in_as users(:onboarded)
+    step("prize", prize_key: "sticker_pack")
+    assert_redirected_to dashboard_path
+    get onboarding_step_path("prize")
+    assert_select ".transition", 0
+
+    reset!
+    anonymous_through("age")
+    step("prize", prize_key: "tshirt")
+    get onboarding_step_path("prize") # not the step after the one just saved: the flag is dropped, not shown here
+    assert_select ".transition", 0
+    get onboarding_step_path("project")
+    assert_select ".transition", 0
+  end
+
+  test "a project idea made only of whitespace is saved as empty, and unknown formats are a 404" do
+    anonymous_through("prize")
+    step("project", project_kind: "game", project_idea: "  \n\t ")
+    assert_redirected_to onboarding_step_path("schedule")
+    get onboarding_step_path("project")
+    assert_select "textarea#user_project_idea", text: ""
+    get "/onboarding/age.json"
+    assert_response :not_found
+  end
+
+  test "the biggest ideas a visitor can keep fit in the session cookie all the way through sign-up" do
+    [ "x" * 500, "😀" * 300 ].each_with_index do |idea, i|
+      reset!
+      get "/haven" # the session also carries the referral slug
+      step("age", age_group: "teen")
+      step("prize", prize_key: "tshirt")
+      step("project", project_kind: "game", project_idea: idea)
+      assert_redirected_to onboarding_step_path("schedule"), "idea #{i}"
+      step("schedule", coding_day_names: User::DAYS, coding_time: "18:30", time_zone: "UTC")
+      assert_redirected_to onboarding_step_path("signup")
+      sign_in_as User.new(hca_uid: "ident!big#{i}")
+      assert_equal idea, User.find_by!(hca_uid: "ident!big#{i}").project_idea
+    end
+  end
+
+  test "an idea too big for the cookie is a friendly error, not a 500" do
+    step("age", age_group: "teen")
+    step("prize", prize_key: "tshirt")
+    step("project", project_kind: "game", project_idea: "😀" * 500)
+    assert_response :unprocessable_content
+    assert_select ".onboarding__errors", /too many emoji/
+  end
+
+  test "the splash and its skip live inside one controller, so the skip actually works; the step is not hidden by its own animation" do
+    get onboarding_step_path("age")
+    assert_select "section[data-controller~='onboarding-transition'] .transition[data-onboarding-transition-target=overlay][data-action='click->onboarding-transition#skip']"
+    assert_select "section[data-action*='turbo:before-cache@document->onboarding-transition#skip']"
+    # the entrance animation is on the content, a sibling of the overlay: if it wrapped the overlay, the splash would be invisible
+    assert_select ".transition .transition-enter", 0
+    assert_select ".onboarding-page__content.transition-enter"
+  end
+
+  test "the not-sure-yet transition reads well at a small count" do
+    anonymous_through("prize")
+    step("project", project_kind: "undecided")
+    follow_redirect!
+    assert_select ".transition__title", "Not sure yet? That's a fine way to start."
+  end
+
+  test "hardware is no longer offered, and a new pick of it is refused" do
+    anonymous_through("prize")
+    get onboarding_step_path("project")
+    assert_select "input[name='user[project_kind]']", User::OFFERED_PROJECT_KINDS.size
+    assert_select "input[name='user[project_kind]'][value=hardware]", 0
+    step("project", project_kind: "hardware")
+    assert_response :unprocessable_content
+    assert_select ".onboarding__errors", /Pick another kind of project/
+  end
+
+  test "the idea suggestions come right above the idea box, not after it" do
+    anonymous_through("prize")
+    get onboarding_step_path("project")
+    html = response.body
+    assert_operator html.index("onboarding-idea#fill"), :<, html.index("<textarea")
+    assert_operator html.index("<textarea"), :<, html.index("Continue")
+  end
+
+  test "a signed-out visitor sent here by a sign-in-to-continue redirect gets a Sign in; the landing page itself has none" do
+    get dashboard_path
+    assert_redirected_to root_path
+    follow_redirect!
+    assert_select ".site-header__account form[action='/auth/hack_club'] button", "Sign in"
+    get root_path
+    assert_select ".site-header__account form[action='/auth/hack_club']", 0
+  end
+
+  test "the progress strip says in visible text which step you are on, not just with colour" do
+    get onboarding_step_path("age")
+    assert_select ".onboarding-top #onboarding-progress-step", "Step 1 of 7"
+    assert_select "progress.onboarding-top__bar[aria-describedby=onboarding-progress-step]"
+    anonymous_through("age")
+    get onboarding_step_path("prize")
+    assert_select "#onboarding-progress-step", "Step 2 of 7"
+  end
+
+  test "the prize step is the blue podium panel, every card has the same structure, and hours are only a guide" do
+    anonymous_through("age")
+    get onboarding_step_path("prize")
+    assert_select ".onboarding__panel--blue"
+    assert_select ".choice-grid--prizes .choice", Prize.paid.size
+    assert_select ".choice-grid--prizes .choice .choice__art + .choice__plate .choice__name", Prize.paid.size
+    assert_select ".choice__meta", /\Aabout /, Prize.paid.size
+    assert_select "p.onboarding__hint--light", OnboardingDesignHelper::HOURS_NOTE
+  end
+
+  test "the progress label says something different at each step, always starting with 'onboarding progress'" do
+    labels = OnboardingsHelper::STEP_COPY.values.map { |copy| copy[:progress] }
+    assert_equal labels.size, labels.uniq.size
+    labels.each { |label| assert_match(/\Aonboarding progress \(.+\)\z/, label) }
+    get onboarding_step_path("age")
+    assert_select "#onboarding-progress-label", "onboarding progress (this will be quick, we promise)"
+    anonymous_through("age")
+    get onboarding_step_path("prize")
+    assert_select "#onboarding-progress-label", "onboarding progress (the fun part: picking a prize)"
+  end
+
+  test "an onboarded user editing a step sees it as editing, with the way back being the dashboard, and the dashboard and notifications link here" do
+    sign_in_as users(:onboarded)
+    get onboarding_step_path("schedule")
+    assert_select "#onboarding-progress-label", "editing your plan"
+    assert_select "a.onboarding-top__back[href='#{dashboard_path}']"
+
+    get dashboard_path
+    assert_select "a[href='#{onboarding_step_path("prize")}']", "Change prize"
+    get settings_notifications_path
+    assert_select "a[href='#{onboarding_step_path("schedule")}']", "your schedule"
+  end
+
+  test "the draft's steps line up with the controller's" do
+    assert_equal OnboardingsController::STEPS.index("signup"), OnboardingDraft::SIGNUP_STEP
+    assert_equal OnboardingsController::STEPS.size - 1, User::ONBOARDING_STEPS
   end
 end

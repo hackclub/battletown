@@ -1,4 +1,4 @@
-# One ball dropped in Plinko (docs/CONTRACT.md, "Plinko"). The slot and points are chosen by the server from `seed`
+# One ball dropped in Plinko (projects/battletown/specs/contract.md, "Plinko"). The slot and points are chosen by the server from `seed`
 # (Plinko::Board) and never change; rows are only ever created by Plinko::Drop. Holds no personal data beyond the user
 # reference and is deleted with the user by the database (ON DELETE CASCADE). Plinko never touches coins.
 class PlinkoDrop < ApplicationRecord

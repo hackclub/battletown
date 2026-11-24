@@ -7,6 +7,7 @@ Rails.application.configure do
   # Fixed Hackatime OAuth credentials, so a developer's real ones in .env are never used (or sent anywhere) by tests.
   config.x.hackatime.client_id = "test-client-id"
   config.x.hackatime.client_secret = "test-client-secret"
+  config.x.hackatime.sign_in_chain = false # a test that is about the chain turns it on
 
   # Fixed Hack Club Auth app credentials too (the address lookup revokes its token with them).
   config.x.hca.client_id = "test-hca-client-id"

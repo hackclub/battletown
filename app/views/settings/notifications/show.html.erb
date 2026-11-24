@@ -4,6 +4,7 @@
     <p class="eyebrow">Settings</p>
     <h1>Notifications</h1>
     <p class="lead notification-settings__lead">Battletown can send you a Slack message when something happens. Pick the ones you want. You can change this any time, and coding is never affected.</p>
+    <p class="lead notification-settings__lead">Your coding days and reminder time are on <%= link_to "your schedule", onboarding_step_path("schedule") %>.</p>
   </header>
 
   <% if current_user.slack_id.blank? %>

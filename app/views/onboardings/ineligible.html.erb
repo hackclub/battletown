@@ -1,0 +1,6 @@
+<%= render layout: "onboardings/frame", locals: { step: "age", title: "Battletown is just for teens", encouragement: "It's a Hack Club program for teens aged 13–18, so we can't sign you up. Younger than 13? We'd love to see you when you turn 13. Thanks for stopping by!" } do %>
+  <div class="onboarding__actions">
+    <%= link_to "Oops, I picked wrong", onboarding_step_path("age"), class: "btn btn--primary" %>
+    <%= link_to "Learn about Hack Club", "https://hackclub.com", class: "btn", rel: "noopener noreferrer" %>
+  </div>
+<% end %>

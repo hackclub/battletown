@@ -1,5 +1,5 @@
 module Game
-  # The returning-user bonus (feature flag `returning`, config/game.yml `returning:`; docs/CONTRACT.md).
+  # The returning-user bonus (feature flag `returning`, config/game.yml `returning:`; projects/battletown/specs/contract.md).
   #
   # A person is "coming back" on a local date when that date is a qualifying day (the 15-minute mark) and the days
   # between their previous qualifying day and this one, not counting either end, number at least `idle_days`. A person

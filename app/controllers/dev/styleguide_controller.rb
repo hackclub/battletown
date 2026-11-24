@@ -1,4 +1,4 @@
-# Development-only: the style guide. Every colour token, the type scale and every shared component (docs/CONTRACT.md,
+# Development-only: the style guide. Every colour token, the type scale and every shared component (projects/battletown/specs/contract.md,
 # "Design system") on one page, read from the real stylesheets, so a page can be built and checked against it.
 # No login needed. Outside development every request is a 404 (same as an unknown path); never reachable in test or
 # production.

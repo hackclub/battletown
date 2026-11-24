@@ -1,30 +1,35 @@
 <%= render layout: "onboardings/frame", locals: { step: "account" } do %>
+  <%# Hackatime is required: it is how coding time counts. It sits outside the form below because connecting is its own
+      form (a POST to Hackatime); the form holds the rest of the step and the Continue button. %>
+  <% connection = current_user.hackatime_connection %>
+  <% state = connection.nil? ? :missing : (connection.needs_reconnect? ? :reconnect : :connected) %>
+  <ul class="checks">
+    <li class="check card card--cream card--flat" id="hackatime-check">
+      <div class="check__head">
+        <h2 class="check__title">Hackatime</h2>
+        <% case state when :connected %>
+          <span class="badge badge--success">Connected</span>
+        <% when :reconnect %>
+          <span class="badge badge--warning">Needs reconnecting</span>
+        <% else %>
+          <span class="badge badge--warning">Required</span>
+        <% end %>
+      </div>
+      <% if state == :connected %>
+        <p>Hackatime is connected. Your coding time will count on its own.</p>
+      <% else %>
+        <p>Hackatime is the free tool that tracks the time you spend coding. It's how your hours count, so we need it before you start.</p>
+        <p class="muted small">You'll go to Hackatime, say yes, and come straight back here. We can only read, never change anything. We use how long you code each day, the names of your Hackatime projects and your Hackatime ID. We don't use or keep anything else, like your email.</p>
+        <div class="check__action">
+          <%= button_to (state == :reconnect ? "Reconnect Hackatime" : "Connect Hackatime"), "/auth/hackatime", method: :post, class: "btn btn--primary btn--lg", form: { data: { turbo: false } } %>
+        </div>
+      <% end %>
+    </li>
+  </ul>
+
   <%= form_with model: current_user, scope: :user, url: onboarding_step_path("account"), method: :patch do |f| %>
     <%= render "onboardings/errors" %>
-    <% status = current_user.verification_status %>
-    <% badge = OnboardingsHelper::VERIFICATION_BADGES.fetch(status) %>
     <ul class="checks">
-      <li class="check card card--cream card--flat check--<%= status %>">
-        <div class="check__head">
-          <h2 class="check__title">Identity verification</h2>
-          <span class="badge badge--<%= badge[:tone] %>"><%= badge[:label] %></span>
-        </div>
-        <p><%= OnboardingsHelper::VERIFICATION_COPY.fetch(status) %></p>
-        <% unless current_user.verification_verified? || current_user.verification_ineligible? %>
-          <p class="check__action"><%= link_to "Verify with Hack Club", "https://auth.hackclub.com", class: "btn btn--sm", target: "_blank", rel: "noopener noreferrer" %> <span class="muted small">(opens in a new tab)</span></p>
-        <% end %>
-      </li>
-      <li class="check card card--cream card--flat">
-        <div class="check__head">
-          <h2 class="check__title">Hackatime</h2>
-          <span class="badge badge--muted">Optional</span>
-        </div>
-        <% if current_user.onboarded? %>
-          <p>Connecting Hackatime is optional. <%= link_to "Connect it on the Hackatime page", hackatime_path %> any time.</p>
-        <% else %>
-          <p>Connecting Hackatime is optional, and you can do it any time after this step: open Settings in the header, then Hackatime.</p>
-        <% end %>
-      </li>
       <li class="check card card--cream card--flat">
         <h2 class="check__title">How you found us</h2>
         <% if current_user.referral_source_in_database.present? %>
@@ -38,6 +43,9 @@
         <% end %>
       </li>
     </ul>
-    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+    <%# Continue shows once Hackatime works (the server refuses without it too). Someone editing their plan later always has it. %>
+    <% if state == :connected || current_user.onboarded? %>
+      <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+    <% end %>
   <% end %>
 <% end %>

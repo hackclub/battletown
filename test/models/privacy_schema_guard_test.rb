@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../support/every_table_rows"
 
-# Guards the data-deletion promise (docs/PRIVACY_API.md): Privacy::Deleter deletes the users row and relies on the
+# Guards the data-deletion promise (projects/battletown/specs/privacy-api.md): Privacy::Deleter deletes the users row and relies on the
 # database to cascade to everything about that person, and counts what each table lost. So a table that points at
 # users must cascade, and a column that looks like it identifies a person must be covered by such a foreign key or be
 # listed here, with the reason, as deliberately not personal. A new table that breaks this fails the suite until it
@@ -73,6 +73,12 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
 
   test "the users table has the identifiers the subject finder matches on" do
     assert_equal %w[email hca_uid slack_id], (User.column_names & %w[email hca_uid slack_id]).sort
+  end
+
+  test "a person's schedule (days, usual time, different times for some days) lives only on the users row, which is deleted whole" do
+    holders = app_tables.select { |table| (connection.columns(table).map(&:name) & %w[coding_days coding_time coding_times]).any? }
+    assert_equal [ "users" ], holders
+    assert_equal %w[coding_days coding_time coding_times], (User.column_names & %w[coding_days coding_time coding_times]).sort
   end
 
   test "every table referencing users is counted when a user is deleted" do

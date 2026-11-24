@@ -1,9 +1,11 @@
 module Notifications
   # Pure reminder arithmetic: no database, no network. Works on anything that responds to `coding_days`
-  # (bitmask, Monday = 1 .. Sunday = 64), `coding_time` ("HH:MM") and `time_zone` (an ActiveSupport::TimeZone name).
+  # (bitmask, Monday = 1 .. Sunday = 64), `coding_time` ("HH:MM") and `time_zone` (an ActiveSupport::TimeZone name),
+  # and optionally `coding_times` ({ "monday" => "17:00" }, a different time for some days).
   #
-  # A reminder is due on every selected local weekday at the local wall-clock `coding_time` in the user's zone.
-  # Anything missing or invalid (no days, no time, unknown zone) yields nil: we never guess UTC.
+  # A reminder is due on every selected local weekday at that day's local wall-clock time in the user's zone: its entry
+  # in `coding_times`, else the usual `coding_time`. A selected day with no valid time gets no reminder; anything missing
+  # or invalid overall (no days, no usable time, unknown zone) yields nil: we never guess UTC.
   #
   # Daylight saving rules (each selected local day yields exactly one reminder):
   # - Spring-forward gap (the wall-clock time does not exist, e.g. 02:30 on 2027-03-14 in New York): the reminder
@@ -24,16 +26,17 @@ module Notifications
 
     # The next UTC Time strictly after `after` at which the user's daily reminder is due, or nil.
     def due_at(user, after:)
-      zone, days, hour, minute = schedule_for(user)
+      zone, times = schedule_for(user)
       return nil unless zone
 
       after = after.to_time
       first_date = after.in_time_zone(zone).to_date - LOOKBACK_DAYS
       (0..(LOOKBACK_DAYS + LOOKAHEAD_DAYS)).each do |offset|
         date = first_date + offset
-        next unless days.anybits?(1 << (date.cwday - 1))
+        time = times[date.cwday]
+        next unless time
 
-        instant = instant_for(zone, date, hour, minute)
+        instant = instant_for(zone, date, *time)
         return instant if instant > after
       end
       nil
@@ -75,18 +78,24 @@ module Notifications
       transitions.min_by { |transition| (transition.at.to_time - local).abs }.at.to_time.utc
     end
 
-    # Returns [zone, days, hour, minute], or nil for any missing or invalid input.
+    # Returns [zone, times], or nil for any missing or invalid input. `times` maps each selected weekday (Date#cwday,
+    # Monday = 1) that has a valid time to [hour, minute].
     def schedule_for(user)
       days = user.coding_days
       return nil unless days.is_a?(Integer) && days.between?(1, 127)
 
-      match = TIME_FORMAT.match(user.coding_time.to_s)
-      return nil unless match
-
       zone = lookup_zone(user.time_zone)
       return nil unless zone
 
-      [ zone, days, match[1].to_i, match[2].to_i ]
+      overrides = user.try(:coding_times)
+      overrides = {} unless overrides.is_a?(Hash)
+      times = User::DAYS.each_with_index.filter_map do |day, index|
+        next unless days.anybits?(1 << index)
+
+        match = TIME_FORMAT.match(overrides[day].to_s) || TIME_FORMAT.match(user.coding_time.to_s)
+        [ index + 1, [ match[1].to_i, match[2].to_i ] ] if match
+      end.to_h
+      [ zone, times ] if times.any?
     end
 
     def lookup_zone(name)

@@ -19,7 +19,7 @@
     </div>
 
     <% if @connection.nil? %>
-      <p>Connecting is optional: you can keep coding and logging time without it. With it, your coding time counts toward the boss automatically.</p>
+      <p>Connect Hackatime so your coding time counts toward the boss, your streak and your ships automatically.</p>
       <div class="hackatime__actions">
         <%= button_to "Connect Hackatime", "/auth/hackatime", method: :post, class: "btn btn--primary btn--lg", form: { data: { turbo: false } } %>
       </div>

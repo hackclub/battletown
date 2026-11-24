@@ -2,7 +2,7 @@ require "net/http"
 require "json"
 
 module Hackatime
-  # Talks to the Hackatime API on behalf of one connected user (docs/HACKATIME.md). Responsibilities:
+  # Talks to the Hackatime API on behalf of one connected user (projects/battletown/specs/hackatime.md). Responsibilities:
   # - refresh an expired token with the refresh token, serialised with a row lock so two requests never both refresh;
   # - mark the connection `needs_reconnect` when Hackatime rejects the credentials (and never retry blindly);
   # - map 429, 5xx, timeouts and network failures to RetryableError so a caller can try again later;

@@ -53,7 +53,7 @@ class MerchTrack::ClaimTest < ActiveSupport::TestCase
     end
   end
 
-  # The eligibility gate guards every prize, not only coin purchases: a merch claim is a prize (docs/CONTRACT.md, "Eligibility gate").
+  # The eligibility gate guards every prize, not only coin purchases: a merch claim is a prize (projects/battletown/specs/contract.md, "Eligibility gate").
   test "with the eligibility gate on, someone who cannot spend is refused too, and nothing is created" do
     with_feature(:eligibility_gate) do
       @user.update_columns(ysws_eligible: false, verification_checked_at: Time.current)

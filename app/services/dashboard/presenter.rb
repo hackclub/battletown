@@ -38,7 +38,7 @@ module Dashboard
     HACKATIME_COPY = {
       connected: [ "Connected", "Your coding time counts toward the boss automatically." ],
       needs_reconnect: [ "Needs reconnecting", "Hackatime stopped accepting our access, so your time isn't syncing right now. Connect again to pick up where you left off." ],
-      not_connected: [ "Not connected", "Connect Hackatime and your coding time counts toward the boss automatically. It is optional: you can keep coding without it." ]
+      not_connected: [ "Not connected", "Connect Hackatime so your coding time counts toward the boss automatically." ]
     }.freeze
 
     attr_reader :user, :now

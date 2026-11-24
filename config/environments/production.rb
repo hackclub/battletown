@@ -6,7 +6,7 @@ Rails.application.configure do
   unless ENV["SECRET_KEY_BASE_DUMMY"].present?
     missing = %w[ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
                  ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT].select { |name| ENV[name].blank? }
-    raise "Missing environment variables: #{missing.join(", ")} (Active Record encryption keys, see docs/DEPLOY.md)" if missing.any?
+    raise "Missing environment variables: #{missing.join(", ")} (Active Record encryption keys, see projects/battletown/runbooks/deploy.md)" if missing.any?
   end
 
   # Settings specified here will take precedence over those in config/application.rb.
@@ -62,7 +62,7 @@ Rails.application.configure do
   # config.active_job.queue_adapter = :solid_queue
 
   # Email (Notifications::Email, behind the Flipper flag `email`). SMTP only when the environment describes a complete
-  # transport (SMTP_ADDRESS and MAIL_FROM, see config/email_transport.rb and docs/DEPLOY.md). Without it Rails would
+  # transport (SMTP_ADDRESS and MAIL_FROM, see config/email_transport.rb and projects/battletown/runbooks/deploy.md). Without it Rails would
   # try localhost:25, so the :test method is used with deliveries switched off (nothing is kept in memory or sent),
   # and the email dispatcher refuses to mark anything as sent.
   if (smtp = EmailTransport.smtp_settings)

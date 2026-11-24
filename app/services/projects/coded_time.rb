@@ -1,6 +1,6 @@
 module Projects
   # Hours coded on a project, for the staff views only: the net ledger seconds of the owner's entries whose Hackatime
-  # project is linked to the project, on counted dates only (the sign-up cutoff in docs/CONTRACT.md, "Hours ledger"),
+  # project is linked to the project, on counted dates only (the sign-up cutoff in projects/battletown/specs/contract.md, "Hours ledger"),
   # floored at zero. This is the live total, not what a ship has already covered. Read-only.
   module CodedTime
     WEEK_START = :friday # weeks run Friday to Thursday, like the weekly boss

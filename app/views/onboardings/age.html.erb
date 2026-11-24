@@ -1,0 +1,8 @@
+<%= render layout: "onboardings/frame", locals: { step: "age" } do %>
+  <%= form_with url: onboarding_step_path("age"), method: :patch, scope: :user do |f| %>
+    <div class="age-choices">
+      <%= f.button "I'm a teen aged 13–18!", type: :submit, name: "user[age_group]", value: "teen", class: "age-choice" %>
+      <%= f.button "I'm not 13–18", type: :submit, name: "user[age_group]", value: "adult", class: "age-choice" %>
+    </div>
+  <% end %>
+<% end %>
