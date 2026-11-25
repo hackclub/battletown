@@ -22,7 +22,7 @@ class OnboardingDraftTest < ActiveSupport::TestCase
     d = OnboardingDraft.new(session)
     d.assign_attributes(prize_key: "tshirt", onboarding_step: 2)
     assert d.save
-    assert_equal %w[coding_days coding_time coding_times onboarding_step prize_key project_idea project_kind time_zone], session[OnboardingDraft::SESSION_KEY].keys.sort
+    assert_equal %w[coding_days coding_time coding_times onboarding_step pace_minutes prize_key project_idea project_kind time_zone], session[OnboardingDraft::SESSION_KEY].keys.sort
     assert_equal "tshirt", OnboardingDraft.new(session).prize_key
     assert_equal "tshirt", OnboardingDraft.new(session).prize_key_in_database
   end
@@ -36,6 +36,26 @@ class OnboardingDraftTest < ActiveSupport::TestCase
     user = User.new(hca_uid: "ident!x", coding_days: 3, coding_time: "07:00", onboarding_step: 3)
     assert draft("prize_key" => "tshirt", "onboarding_step" => 2).apply_to(user)
     assert_equal [ "tshirt", 3, "07:00", 3 ], [ user.prize_key, user.coding_days, user.coding_time, user.onboarding_step ]
+  end
+
+  test "apply_to copies the pace, and leaves the account's alone when the draft has none" do
+    user = User.new(hca_uid: "ident!pace", pace_minutes: 30)
+    assert draft("prize_key" => "tshirt", "onboarding_step" => 2).apply_to(user)
+    assert_equal 30, user.pace_minutes
+
+    assert draft("prize_key" => "tshirt", "pace_minutes" => 120, "onboarding_step" => 2).apply_to(user)
+    assert_equal 120, user.pace_minutes
+  end
+
+  test "a pace that is not offered makes the draft invalid and is never saved" do
+    session = {}
+    d = OnboardingDraft.new(session)
+    d.assign_attributes(pace_minutes: 7)
+    assert_not d.save
+    assert d.errors.of_kind?(:pace_minutes, :inclusion)
+    assert_empty session
+
+    assert_not draft("prize_key" => "tshirt", "pace_minutes" => 7, "onboarding_step" => 2).apply_to(User.new(hca_uid: "ident!bad"))
   end
 
   test "apply_to unlocks the step after sign-up for a complete draft, and refuses an unstarted or archived one" do

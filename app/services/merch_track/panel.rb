@@ -13,8 +13,8 @@ module MerchTrack
     end
 
     def self.shown_boss(today)
-      Boss.covering(today).first ||
-        Boss.where(ends_on: (today - Bosses::Config.current.afterglow_days)...today).chronological.last
+      Boss.without_art_content.covering(today).first ||
+        Boss.without_art_content.where(ends_on: (today - Bosses::Config.current.afterglow_days)...today).chronological.last
     end
     private_class_method :shown_boss
 

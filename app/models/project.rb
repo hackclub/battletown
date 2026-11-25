@@ -9,6 +9,8 @@ class Project < ApplicationRecord
   GUIDE_KEYS = %w[sd playground].freeze # nil for none; guides themselves are not built yet
   MAX_PER_USER = 10
   NAME_RANGE = 1..60
+  TODOS_MAX = 10 # things to work on this commit; the page offers one empty line at a time
+  TODO_MAX = 120
   IDEA_MAX = 500
   URL_MAX = 300
   DANGLING_TAIL = /(?:[\s,;:\-]+(?:a|an|the|in|of|on|to|and|or|for|with|where|that|is|are))*[\s,;:\-]*\z/i # a cut-off title should not end on "in"
@@ -40,6 +42,7 @@ class Project < ApplicationRecord
   validate :demo_url_is_https
   validate :within_project_limit, on: :create
   validate :archived_cannot_be_active
+  validate :todos_are_short
 
   scope :live, -> { where(status: "active") }
   scope :archived, -> { where(status: "archived") }
@@ -52,6 +55,28 @@ class Project < ApplicationRecord
 
   REVIEW_STATUSES.each do |name|
     define_method(:"review_#{name}?") { review_status == name }
+  end
+
+  # Replaces the to-do list from form entries (`{ "1" => { "body" => "...", "done" => "1" }, "2" => ... }` or an array of those hashes):
+  # taken in the order of the numbers (the page numbers its lines as it adds them, so they may have gaps), blanks dropped, each cut
+  # at TODO_MAX characters, `done` a real boolean, at most TODOS_MAX kept. Only the first MAX_ENTRIES lines are looked at.
+  MAX_ENTRIES = 50
+
+  def self.clean_todos(entries)
+    list = if entries.respond_to?(:key?)
+      entries.keys.select { |key| key.to_s.match?(/\A\d{1,6}\z/) }.sort_by(&:to_i).first(MAX_ENTRIES).map { |key| entries[key] }
+    else
+      Array(entries).first(MAX_ENTRIES)
+    end
+    list.filter_map do |entry|
+      entry = entry.respond_to?(:to_unsafe_h) ? entry.to_unsafe_h : entry
+      next unless entry.respond_to?(:[])
+
+      body = entry["body"].to_s.squish.first(TODO_MAX)
+      next if body.empty?
+
+      { "body" => body, "done" => ActiveModel::Type::Boolean.new.cast(entry["done"]) == true }
+    end.first(TODOS_MAX)
   end
 
   # A title for a project the user has not named: the first sentence of the idea, whole when it is short, else cut
@@ -206,5 +231,12 @@ class Project < ApplicationRecord
 
   def archived_cannot_be_active
     errors.add(:active, "project cannot be archived") if active? && status_archived?
+  end
+
+  def todos_are_short
+    list = todos
+    return if list.is_a?(Array) && list.size <= TODOS_MAX && list.all? { |item| item.is_a?(Hash) && item["body"].is_a?(String) && item["body"].length.between?(1, TODO_MAX) }
+
+    errors.add(:todos, "are not valid")
   end
 end

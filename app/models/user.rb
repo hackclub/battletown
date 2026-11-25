@@ -6,6 +6,10 @@ class User < ApplicationRecord
   DAYS = %w[monday tuesday wednesday thursday friday saturday sunday].freeze
   TIME_FORMAT = /\A([01]\d|2[0-3]):[0-5]\d\z/
   ONBOARDING_STEPS = 6 # index of the last step in OnboardingsController::STEPS
+  # How long someone pledges to code on each coding day: the pace the dashboard's prize check is measured against (like Save Point's
+  # daily pace). `pace_minutes` stays nil until they choose; PACE_DEFAULT is assumed meanwhile.
+  PACES = [ 15, 30, 45, 60, 90, 120, 180, 240 ].freeze
+  PACE_DEFAULT = 60
 
   # Deleted by the database (ON DELETE CASCADE), so the data-deletion API removes the Hackatime tokens too.
   has_one :hackatime_connection, dependent: nil
@@ -43,6 +47,7 @@ class User < ApplicationRecord
   validates :time_zone, inclusion: { in: ->(_) { ActiveSupport::TimeZone.all.map(&:name) } }, allow_nil: true
   validates :referral_source, format: { with: Referral::FORMAT }, allow_nil: true
   validates :coding_days, numericality: { in: 0..127, only_integer: true }
+  validates :pace_minutes, inclusion: { in: PACES }, allow_nil: true
   validates :onboarding_step, numericality: { in: 0..ONBOARDING_STEPS, only_integer: true }
 
   before_validation :drop_unused_coding_times
@@ -89,6 +94,9 @@ class User < ApplicationRecord
   end
 
   def onboarded? = onboarded_at.present?
+
+  # The daily pace in minutes: the chosen one, else the default.
+  def pace = pace_minutes || PACE_DEFAULT
 
   # The "no email at all" switch (Notifications::Email, behind the `email` flag): set by the settings page and by the
   # one-click unsubscribe link in every email.

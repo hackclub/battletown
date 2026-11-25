@@ -2,7 +2,8 @@ module Ships
   # Staff rejection of a submitted ship, under `ship.with_lock` with the status checked again. The reason (a preset
   # and/or free text, at most 300 characters in all) is shown to the teen. The window is not consumed: a rejected
   # ship's hours are free again, so the project can be fixed and shipped as a NEW ship for the same window.
-  # Emits `ship_rejected.battletown` (ship_id only) after the change is saved.
+  # Emits `ship_rejected.battletown` (ship_id only) after the change is saved. The weekly boss is not re-checked: a rejected
+  # ship stops counting as damage, which can only lower it, and a recorded defeat is never cleared.
   module Reject
     class Invalid < ArgumentError; end
 

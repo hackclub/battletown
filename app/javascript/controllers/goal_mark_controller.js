@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Places the 15-minute mark on the daily goal bar on the dashboard. The mark sits at percent / 100 of the bar's
-// width. Styles cannot be inline under the CSP, so the position is set as a custom property through the style API
-// (allowed), and the mark only shows once it is placed. Without JavaScript the bar and its words are all there is.
+// Places a tick on the daily goal bar on the dashboard. The tick sits at percent / 100 of the bar's width. Styles cannot be
+// inline under the CSP, so the position is set as a custom property through the style API (allowed), and the tick only
+// shows once it is placed. Without JavaScript the bar and its words are all there is.
 export default class extends Controller {
   static values = { percent: Number }
 

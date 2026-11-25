@@ -22,6 +22,13 @@
       <%= onboarding_field_error(:coding_time, id: "user_coding_time") %>
     </div>
 
+    <div class="field onboarding__field <%= "field--invalid" if onboarding_errors(:pace_minutes).any? %>">
+      <%= f.label :pace_minutes, "How long will you code on those days?" %>
+      <%= f.select :pace_minutes, pace_options, { selected: subject.pace }, aria: onboarding_aria(:pace_minutes, id: "user_pace_minutes", hint: "pace-hint") %>
+      <p class="field__hint" id="pace-hint">This is the pace your prize check on the dashboard uses. You can change it any time.</p>
+      <%= onboarding_field_error(:pace_minutes, id: "user_pace_minutes") %>
+    </div>
+
     <%# Optional: a different time on some days. Without JS all seven rows show; onboarding-times hides the unselected days. %>
     <details class="day-times onboarding__field" <%= "open" if subject.coding_times.any? || subject.errors.key?(:coding_times) %>>
       <summary class="day-times__summary">Different time on some days? <span class="day-times__change">Set times by day</span></summary>

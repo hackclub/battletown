@@ -7,7 +7,7 @@ class MerchClaim < ApplicationRecord
   STATUSES = %w[requested fulfilled cancelled].freeze
 
   belongs_to :user
-  belongs_to :boss
+  belongs_to :boss, -> { without_art_content } # the staff queue and the claim never need the picture bytes
 
   validates :item_key, presence: true, length: { maximum: 60 }
   validates :item_name, presence: true, length: { maximum: 100 }

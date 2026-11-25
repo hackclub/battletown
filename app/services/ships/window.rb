@@ -3,7 +3,7 @@ module Ships
   #
   # It is the net seconds of the user's ledger entries whose `hackatime_project` is one of the Hackatime projects
   # linked to the project, never before the user's first counted date (`Hours::Days.first_counted_date`: hours coded
-  # before signing up earn no coins). Coverage belongs to the Hackatime project name, not to the project it is linked
+  # before signing up earn no coins) or the program's project time cutoff (`ships.project_time_from`, see `first_date`). Coverage belongs to the Hackatime project name, not to the project it is linked
   # to now: each name counts from the local date AFTER the window end of the user's last ship that still counts
   # (submitted or approved: a rejected or withdrawn ship gives its window back) and covered that name
   # (`ships.hackatime_projects`), whichever project that ship was on, or from the beginning when there is none. So
@@ -31,12 +31,18 @@ module Ships
 
     module_function
 
-    def call(project)
+    # The first local date whose time counts on a project: the person's first counted date, or the program's project time cutoff
+    # (ships.project_time_from) when that is later.
+    def first_date(user, config: Ships::Config.current)
+      [ Hours::Days.first_counted_date(user), config.project_time_from ].compact.max
+    end
+
+    def call(project, config: Ships::Config.current)
       names = project.hackatime_links.order(:hackatime_project).pluck(:hackatime_project)
       return build({}, names) if names.empty?
 
       covered = covered_until(project, names)
-      entries = HourEntry.where(user_id: project.user_id, local_date: Hours::Days.first_counted_date(project.user)..)
+      entries = HourEntry.where(user_id: project.user_id, local_date: first_date(project.user, config: config)..)
       entries = names.map do |name|
         scope = entries.where(hackatime_project: name)
         covered[name] ? scope.where("local_date > ?", covered[name]) : scope

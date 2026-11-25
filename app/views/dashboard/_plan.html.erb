@@ -1,0 +1,32 @@
+<%# locals: (plan:) -%>
+<%# What they are working on this commit: their lines, then one empty line. When the empty line gets words a new empty line appears
+    under it (todo-autosave, from the template below), up to the limit. A rejected ship's reviewer note comes first. It saves
+    itself once JavaScript runs; without it the Save button is the way, and the page after a save shows the next empty line. -%>
+<section id="dash-plan" class="stage__plan plan" aria-labelledby="dash-plan-title" data-controller="todo-autosave"
+         data-todo-autosave-limit-value="<%= plan.limit %>">
+  <h2 id="dash-plan-title" class="plan__title">What are you working on today?</h2>
+
+  <% if plan.reviewer_note %>
+    <p class="plan__review"><strong>Your last ship needs changes:</strong> <%= plan.reviewer_note %></p>
+  <% end %>
+
+  <% if plan.editable %>
+    <%= form_with url: dashboard_todos_path, method: :patch, class: "plan__form", data: { todo_autosave_target: "form" } do %>
+      <div class="plan__lines" data-todo-autosave-target="lines">
+        <% plan.items.each do |item| %>
+          <%= render "dashboard/plan_line", slot: item.slot, body: item.body, done: item.done %>
+        <% end %>
+      </div>
+      <%# A blank line for the page's script to copy when the last line is filled in; inert until then (a template's fields are not in the form). -%>
+      <template data-todo-autosave-target="template">
+        <%= render "dashboard/plan_line", slot: "__SLOT__", body: "", done: false %>
+      </template>
+      <div class="plan__bottom">
+        <%= button_tag "Save", type: "submit", class: "btn btn--primary", data: { todo_autosave_target: "save" } %>
+        <p class="plan__status" role="status" data-todo-autosave-target="status"></p>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="plan__empty">Add a project and you can say what you are working on.</p>
+  <% end %>
+</section>

@@ -46,23 +46,4 @@ class OnboardingProjectStepTest < ActionDispatch::IntegrationTest
     submit_idea("a" * 501)
     assert_response :unprocessable_content
   end
-
-  test "the dashboard does not put a full stop after a name that already ends in an ellipsis" do
-    OmniAuth.config.test_mode = true
-    user = users(:onboarded)
-    OmniAuth.config.mock_auth[:hack_club] = OmniAuth::AuthHash.new(provider: "hack_club", uid: user.hca_uid, extra: { raw_info: {} })
-    post "/auth/hack_club"
-    follow_redirect!
-    project = Project.create!(user: user, name: "A tool that automates something annoying I do…", kind: "tool")
-
-    get dashboard_path
-    assert_select ".dash-step strong", project.name
-    assert_no_match(/…\.|…<\/strong>\./, response.body)
-    project.update!(name: "Space Farm")
-    get dashboard_path
-    assert_select ".dash-step", /Your project is set up: Space Farm\./
-  ensure
-    OmniAuth.config.test_mode = false
-    OmniAuth.config.mock_auth[:hack_club] = nil
-  end
 end

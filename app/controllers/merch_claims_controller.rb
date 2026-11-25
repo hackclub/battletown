@@ -6,7 +6,7 @@ class MerchClaimsController < ApplicationController
   before_action { require_feature!(:merch_track) }
 
   def create
-    boss = Boss.find_by(id: params[:boss_id]) or raise ActionController::RoutingError, "Not Found"
+    boss = Boss.without_art_content.find_by(id: params[:boss_id]) or raise ActionController::RoutingError, "Not Found"
     result = MerchTrack::Claim.call(user: current_user, boss: boss)
     notice = result.created ? "Claimed: #{result.claim.item_name}. The team will message you on Slack to arrange delivery." : "You've already claimed this reward."
     redirect_to back_path, notice: notice

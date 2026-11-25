@@ -13,7 +13,8 @@ module Ships
   #
   # Staff can never approve their own ship (`OwnShip`, a kind of Invalid, so the friendly message reaches the admin).
   #
-  # Emits `ship_approved.battletown` (ship_id only) after the transaction commits.
+  # Emits `ship_approved.battletown` (ship_id only) after the transaction commits. The weekly boss is not re-checked: the hours
+  # on the ship now count as approved, which can only lower the damage, and a recorded defeat is never cleared.
   module Approve
     class Invalid < ArgumentError; end
 

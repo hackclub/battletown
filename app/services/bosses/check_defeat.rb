@@ -1,8 +1,9 @@
 module Bosses
-  # Marks a boss defeated when its damage has reached its health. Safe to call as often as you like, from any
-  # number of threads:
+  # Marks a boss defeated when its damage (the hours on the ships submitted in its week) has reached its health. Safe to
+  # call as often as you like, from any number of threads:
   #
-  # - the work happens inside `boss.with_lock`, so concurrent callers take turns;
+  # - the work happens inside a row lock on the boss (read without its picture bytes, which `boss.with_lock` would reload), so
+  #   concurrent callers take turns;
   # - the write is a conditional UPDATE ... WHERE defeated_at IS NULL, so `defeated_at` is set exactly once;
   # - nothing here ever clears it, so a later correction that lowers the damage cannot un-defeat the boss.
   #
@@ -10,57 +11,43 @@ module Bosses
   class CheckDefeat
     def self.call(boss) = new(boss).call
 
-    # Called from HourEntry after commit: checks every boss whose week covers that local date. The ledger write has
-    # already committed, so a failure here must never fail it; the damage is derived, not stored, so the next entry
-    # catches up. Inside `batched` the date is only noted and checked when the batch ends.
-    def self.for_date(date)
-      pending = ActiveSupport::IsolatedExecutionState[:bosses_check_defeat_dates]
-      return pending << date if pending
+    # Called after a ship is submitted (the only change that can raise the damage; a withdrawal, approval or rejection can only
+    # lower it, and a defeat is never cleared, so those do not call this): checks the boss whose week the ship's `submitted_at`
+    # falls in (UTC date, see Bosses::Damage). The ship change has already committed, so a failure here must never fail it;
+    # the damage is derived, not stored, so the next ship catches up.
+    def self.for_ship(ship)
+      return unless ship.submitted_at
 
-      check_dates([ date ])
-    end
-
-    # Defers the per-entry checks made inside the block to one check per boss when the outermost block ends (also
-    # when it raises: entries committed before the error still count). Summing a boss week costs the same for one
-    # entry as for thousands, so bulk writers (Hours::Sync, the hours:import and hackatime:sync tasks) wrap their
-    # loops in this instead of summing the week again after every entry. Per thread; nesting is a no-op.
-    def self.batched
-      return yield if ActiveSupport::IsolatedExecutionState[:bosses_check_defeat_dates]
-
-      ActiveSupport::IsolatedExecutionState[:bosses_check_defeat_dates] = Set.new
-      begin
-        yield
-      ensure
-        dates = ActiveSupport::IsolatedExecutionState.delete(:bosses_check_defeat_dates)
-        check_dates(dates)
-      end
-    end
-
-    def self.check_dates(dates)
-      return if dates.empty?
-
-      Boss.where(defeated_at: nil).where(starts_on: ..dates.max, ends_on: dates.min..).find_each do |boss|
-        call(boss) if dates.any? { |date| boss.range.cover?(date) }
-      end
+      date = ship.submitted_at.utc.to_date
+      Boss.without_art_content.where(defeated_at: nil).covering(date).find_each { |boss| call(boss) }
     rescue StandardError => error
       Rails.logger.error("bosses.check_defeat failed error=#{error.class}")
     end
-    private_class_method :check_dates
 
     def initialize(boss)
       @boss = boss
     end
 
     def call
-      @boss.with_lock do
-        next false if @boss.defeated_at.present?
-        next false unless BossMath.defeated?(Damage.for(@boss), @boss.hp_seconds)
+      Boss.transaction do
+        locked = Boss.without_art_content.lock.find(@boss.id)
+        next false if locked.defeated_at.present?
+        next false unless BossMath.defeated?(Damage.for(locked), locked.hp_seconds)
 
         now = Time.current
-        recorded = Boss.where(id: @boss.id, defeated_at: nil).update_all(defeated_at: now, updated_at: now) == 1
-        @boss.reload if recorded
+        recorded = Boss.where(id: locked.id, defeated_at: nil).update_all(defeated_at: now, updated_at: now) == 1
+        refresh(Boss.without_art_content.find(locked.id)) if recorded
         recorded
       end
+    end
+
+    private
+
+    # Shows the caller's record the defeat, without reloading it (a reload would read the picture bytes).
+    def refresh(fresh)
+      @boss.defeated_at = fresh.defeated_at
+      @boss.updated_at = fresh.updated_at
+      @boss.clear_attribute_changes(%w[defeated_at updated_at])
     end
   end
 end

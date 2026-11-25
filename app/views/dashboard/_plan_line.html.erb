@@ -1,0 +1,9 @@
+<%# locals: (slot:, body:, done:) -%>
+<%# One line of the to-do list: a round tick and a box to write in. -%>
+<div class="plan__item" data-todo-autosave-target="line">
+  <%= check_box_tag "todos[#{slot}][done]", "1", done, id: "todo-done-#{slot}", class: "plan__check", aria: { label: "Done: item #{slot}" },
+                    data: { action: "change->todo-autosave#save" } %>
+  <%= label_tag "todo-body-#{slot}", "Thing you are working on, number #{slot}", class: "visually-hidden" %>
+  <%= text_field_tag "todos[#{slot}][body]", body, id: "todo-body-#{slot}", class: "plan__input", maxlength: Project::TODO_MAX, placeholder: "Add something to work on", autocomplete: "off",
+                     data: { action: "input->todo-autosave#typed change->todo-autosave#save" } %>
+</div>

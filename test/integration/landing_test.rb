@@ -60,7 +60,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".signpost h3", text: "Get your prize"
     assert_select ".signpost__num[aria-hidden='true']", 3
     assert_select ".signpost__board--1 p", text: "Build your project, and count your hours"
-    assert_select ".signpost__board--2 p", text: /Ship your project to deal damage to the boss, and get coins/
+    assert_select ".signpost__board--2 p", text: /Ship your project to hit the boss with your hours, and get coins/
     assert_select ".signpost__board--3 p", text: /When the boss is defeated, collect your winnings, and claim a prize from the shop/
   end
 
@@ -108,7 +108,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".fight__health progress.fight__bar[max='100'][aria-labelledby='landing-boss-health'][aria-describedby='landing-boss-label']", 1
     assert_select "#landing-boss-health", text: "Boss health"
     assert_select "#landing-boss-label.fight__label"
-    assert_select ".fight__text p", text: /Each boss has a health bar measured in hours of coding\. Everyone who participates contributes hours to defeat the boss/
+    assert_select ".fight__text p", text: /Each boss has a health bar measured in hours of coding\. Every time someone ships a project, its hours hit the boss, so ship together to defeat it/
     assert_select "#final-title", text: /Ready to join/
   end
 
@@ -121,9 +121,10 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "the boss bar reads the current boss's aggregate health and nothing about people" do
     today = Hours::Days.today("UTC")
-    make_boss(starts_on: today - 1, ends_on: today + 5, hp_seconds: 100 * HOUR)
+    make_boss(starts_on: friday_on_or_before(today), hp_seconds: 100 * HOUR)
     user = User.create!(hca_uid: "ident!private", display_name: "Private Person")
-    add_hours(user, today, 25 * HOUR)
+    add_hours(user, today, 50 * HOUR) # coding alone does not hurt the boss
+    ship_damage(user, 25 * HOUR, on: Time.current)
     get "/"
     assert_select ".fight progress[value='75']"
     assert_select ".fight__label", text: "75 of 100 hours left"

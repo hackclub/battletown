@@ -114,3 +114,8 @@
 
 /* A revealed shipping address (staff, one response only). */
 .admin-address { margin: 0 0 var(--space-4); font-style: normal; overflow-wrap: anywhere; }
+
+/* /admin/bosses: a small picture beside each boss and the picture shown on the edit form. The boss art is a cut-out, so it sits on the card colour. */
+.admin-boss-thumb { display: block; width: auto; height: 3.5rem; max-width: 5rem; object-fit: contain; }
+.admin-boss-art { display: block; width: auto; height: auto; max-width: 100%; max-height: 12rem; object-fit: contain; }
+.admin-boss-notice { margin: 0; }

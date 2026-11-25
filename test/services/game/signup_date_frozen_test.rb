@@ -22,7 +22,12 @@ class Game::SignupDateFrozenTest < ActiveSupport::TestCase
   end
 
   def counted_now(user, project)
-    { first: Hours::Days.first_counted_date(user.reload), damage: Bosses::Damage.for(@boss), window: Ships::Window.call(project).seconds }
+    { first: Hours::Days.first_counted_date(user.reload), window: Ships::Window.call(project).seconds }
+  end
+
+  # Ships the project's window in the boss week. The ship carries the window, so this is what the boss takes.
+  def ship_window(project)
+    Ships::Submit.call(project: project, attributes: ship_attrs, submit: true, now: Time.utc(2026, 11, 16, 12))
   end
 
   test "moving west after sign-up never counts the back-filled day before it" do
@@ -33,10 +38,13 @@ class Game::SignupDateFrozenTest < ActiveSupport::TestCase
     code(user, SIGNUP, HOUR)
 
     before = counted_now(user, project)
-    assert_equal({ first: SIGNUP, damage: HOUR, window: HOUR }, before)
+    assert_equal({ first: SIGNUP, window: HOUR }, before)
+    assert_equal 0, Bosses::Damage.for(@boss), "coding alone does not hurt the boss"
 
     user.update!(time_zone: "International Date Line West")
     assert_equal before, counted_now(user, project)
+    ship_window(project)
+    assert_equal HOUR, Bosses::Damage.for(@boss)
   end
 
   test "moving east after sign-up never drops the sign-up day" do
@@ -47,10 +55,13 @@ class Game::SignupDateFrozenTest < ActiveSupport::TestCase
     code(user, AFTER, HOUR)
 
     before = counted_now(user, project)
-    assert_equal({ first: SIGNUP, damage: 3 * HOUR, window: 3 * HOUR }, before)
+    assert_equal({ first: SIGNUP, window: 3 * HOUR }, before)
+    assert_equal 0, Bosses::Damage.for(@boss), "coding alone does not hurt the boss"
 
     user.update!(time_zone: "Nuku'alofa")
     assert_equal before, counted_now(user, project)
+    ship_window(project)
+    assert_equal 3 * HOUR, Bosses::Damage.for(@boss)
   end
 
   test "a new account takes the sign-up date in the zone it was created with" do

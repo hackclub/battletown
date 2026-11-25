@@ -1,0 +1,103 @@
+<%# locals: (d:) -%>
+<%# The boss's health along the top, the prize, the boss with the fighters around it, the daily goal, the to-do list, then the
+    ship button. See show.html.erb. -%>
+<% boss = d.boss %>
+<% stage = d.stage %>
+<% prize = d.prize %>
+<% project = d.project %>
+<section class="stage on-map stage--<%= boss.state.to_s.dasherize %>" aria-labelledby="stage-title">
+  <%# The prize box and the pace check stand at the left of the boss, or, with no boss, under the message. -%>
+  <% pace = d.prize_pace %>
+  <% prize_link = capture do %>
+    <% if prize %>
+      <div class="stage__prize-area">
+        <%= link_to shop_path, class: "stage__prize" do %>
+          <span class="stage__prize-label">Prize</span>
+          <span class="stage__prize-box" aria-hidden="true">
+            <% if prize.image.present? %><%= image_tag prize.image, alt: "", class: "stage__prize-image" %><% else %><span class="stage__prize-emoji"><%= prize.emoji %></span><% end %>
+          </span>
+          <span class="visually-hidden"><%= prize.name %>, <%= prize.free ? "free" : prize.progress_text %>. Open the shop.</span>
+        <% end %>
+        <% if pace %>
+          <div class="stage__pace stage__pace--<%= pace.state.to_s.dasherize %>">
+            <p class="stage__pace-badge"><%= pace.badge %></p>
+            <p class="stage__pace-line"><%= pace.to_go %><%= " #{pace.bonus}" if pace.bonus %>.</p>
+            <% if pace.plan %><p class="stage__pace-plan"><%= pace.plan %>. <%= link_to "Change pace", onboarding_step_path("schedule") %></p><% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="stage__top">
+    <% if boss.state == :none %>
+      <p class="stage__none"><%= boss.upcoming_text || "No boss right now." %></p>
+      <%= prize_link %>
+    <% else %>
+      <div class="progress progress--boss stage__health">
+        <label for="stage-boss-health" class="visually-hidden"><%= boss.boss_name %>, weekly boss, health</label>
+        <progress id="stage-boss-health" class="progress__bar stage__bar" max="100" value="<%= boss.health_percent %>" aria-describedby="stage-boss-summary"><%= boss.health_text %></progress>
+        <span class="progress__text visually-hidden"><%= boss.health_text %></span>
+        <p id="stage-boss-summary" class="visually-hidden"><%= boss.summary %></p>
+        <%# The two plates that hang under the bar, as on any fighting game's health bar: the boss's name and what is left. Said once for assistive tech, above. -%>
+        <div class="stage__plates" aria-hidden="true">
+          <span class="stage__plate stage__plate--name"><span class="stage__plate-text"><%= boss.boss_name %></span></span>
+          <span class="stage__plate"><span class="stage__plate-text"><%= boss.health_text %></span></span>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <% if boss.state != :none %>
+    <%= prize_link %>
+    <% art_path, art_width, art_height = boss.stage_art %>
+    <div class="stage__arena">
+      <%# One anonymous circle per person who coded today (at most 12), around the boss: stand-ins for the fighters' avatars. Decoration; the headcount is said in words. -%>
+      <ul class="stage__crowd" aria-hidden="true">
+        <% [ boss.community_active_today.to_i, 12 ].min.times do %><li class="stage__fan"></li><% end %>
+      </ul>
+      <%# The built-in cut-out has empty space above the boss; the page trims it so the boss stands close under the health bar. -%>
+      <%= image_tag art_path, alt: boss.art_alt, class: class_names("stage__art", "stage__art--cutout": art_path.start_with?("design/")), width: art_width, height: art_height %>
+      <p class="visually-hidden"><%= boss.community_text %> <%= boss.contributed_text %> <%= "Boss defeated." if boss.state == :defeated %><%= " The boss got away this week." if boss.state == :escaped %></p>
+    </div>
+  <% end %>
+
+  <%= render "dashboard/goal", d: d %>
+  <%= render "dashboard/plan", plan: d.plan %>
+
+  <div class="stage__next">
+    <%# What to do next, said once in words for assistive tech (the ship button below is the whole message for everyone else). -%>
+    <h2 id="stage-title" class="visually-hidden"><%= stage.headline %></h2>
+
+    <div class="stage__actions">
+      <% case stage.cta %>
+      <% when :ship %>
+        <%= link_to stage.cta_label, new_project_ship_path(project.id), class: "btn btn--primary btn--lg stage__cta" %>
+      <% when :continue %>
+        <%= link_to stage.cta_label, edit_ship_path(project.ship.id), class: "btn btn--primary btn--lg stage__cta" %>
+      <% when :view %>
+        <%= link_to stage.cta_label, ship_path(project.ship.id), class: "btn btn--primary btn--lg stage__cta" %>
+      <% when :add_project %>
+        <%= link_to stage.cta_label, new_project_path, class: "btn btn--primary btn--lg stage__cta" %>
+      <% when :link %>
+        <%= link_to stage.cta_label, link_project_path(project.id), class: "btn btn--primary btn--lg stage__cta" %>
+      <% else %>
+        <button type="button" class="btn btn--primary btn--lg stage__cta" disabled aria-describedby="stage-reason"><%= stage.cta_label %></button>
+      <% end %>
+    </div>
+    <% if stage.reason %><p id="stage-reason" class="stage__reason"><%= stage.reason %></p><% end %>
+    <%# Development only: add coded time to the active project (counts toward a ship) without Hackatime. -%>
+    <% if Rails.env.development? %>
+      <%= form_with url: dev_hours_path, method: :post, class: "stage__dev" do %>
+        <%= hidden_field_tag :local_date, d.today_date.iso8601, id: nil %>
+        <%= hidden_field_tag :return_to, "dashboard", id: nil %>
+        <%= hidden_field_tag :for_active_project, "1", id: nil %>
+        <span class="stage__dev-label">dev · add time</span>
+        <% [ 15, 30, 60 ].each do |minutes| %>
+          <%= button_tag "+#{minutes} min", type: "submit", name: "minutes", value: minutes, class: "btn btn--sm btn--ghost stage__dev-button" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+</section>

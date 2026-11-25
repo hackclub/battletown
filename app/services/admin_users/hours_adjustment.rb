@@ -3,7 +3,7 @@ module AdminUsers
   # rows are never edited. Bounded to config `admin_users.max_adjust_minutes` (24 hours at most) a time, dated from the person's
   # first counted day to their tomorrow, and a day can never be taken below zero or pushed past 24 hours. Hours::Credit does not
   # clamp adjustments to the 12-hour daily cap (they are operator corrections), so the confirm page warns when one goes past it.
-  # Days that already settled into a streak result are NOT recomputed: only boss damage and later totals move.
+  # Days that already settled into a streak result are NOT recomputed: only later totals move. The boss is untouched: its damage is the hours on shipped ships, not the ledger.
   class HoursAdjustment < Adjustment
     attribute :date, :string
     attribute :minutes, :string

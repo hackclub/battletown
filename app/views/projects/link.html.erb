@@ -1,0 +1,63 @@
+<% content_for :title, "Link Hackatime" %>
+<div class="container projects projects--narrow stack">
+  <header class="page-header">
+    <h1>Link your Hackatime projects</h1>
+    <p class="lead">Time you log on them counts toward shipping <%= @project.name_was.presence || "this project" %>.</p>
+  </header>
+
+  <div class="card">
+    <%= form_with url: link_project_path(@project), method: :patch, class: "projects-form stack" do %>
+      <% if @error %>
+        <div class="alert alert--danger projects-errors" role="alert"><p class="alert__title"><%= @error %></p></div>
+      <% end %>
+
+      <div class="field">
+        <%= label_tag "project_name", "Project name" %>
+        <%= text_field_tag "project[name]", @project.name, id: "project_name", class: "input", maxlength: Project::NAME_RANGE.max, required: true, autocomplete: "off" %>
+      </div>
+
+      <% if @options_ok && @options.any? %>
+        <%# A dropdown of the Hackatime projects they have coded on: tick as many as belong to this project, search to narrow
+            the list. Without JavaScript the list is simply open and every box works. -%>
+        <div class="field multi" data-controller="multi-select">
+          <span class="multi__label" id="hackatime-projects-label">Hackatime projects</span>
+          <details class="multi__box" data-multi-select-target="box">
+            <summary class="input multi__summary" aria-labelledby="hackatime-projects-label" data-multi-select-target="summary">Choose projects</summary>
+            <div class="multi__panel">
+              <input type="search" class="input multi__filter" id="hackatime-filter" placeholder="Search your Hackatime projects" autocomplete="off" hidden
+                     aria-label="Search your Hackatime projects" aria-controls="hackatime-options" data-multi-select-target="filter" data-action="input->multi-select#filter keydown.enter->multi-select#ignoreEnter">
+              <fieldset class="multi__options" id="hackatime-options" aria-describedby="hackatime-projects-hint">
+                <legend class="visually-hidden">Hackatime projects</legend>
+                <% @options.each_with_index do |name, index| %>
+                  <label class="multi__option" for="hackatime-option-<%= index %>" data-multi-select-target="option" data-name="<%= name.downcase %>">
+                    <%= check_box_tag "hackatime_link[hackatime_projects][]", name, Array(@chosen).include?(name), id: "hackatime-option-#{index}", class: "multi__check", data: { action: "change->multi-select#count", label: name } %>
+                    <span class="multi__name"><%= name %></span>
+                  </label>
+                <% end %>
+              </fieldset>
+              <p class="multi__none" hidden data-multi-select-target="empty">No project matches your search.</p>
+            </div>
+          </details>
+          <p class="field__hint" id="hackatime-projects-hint" aria-live="polite" data-multi-select-target="status">Pick every Hackatime project that belongs to this one.</p>
+        </div>
+      <% else %>
+        <div class="field">
+          <%= label_tag "hackatime_project", "Hackatime project" %>
+          <%= text_field_tag "hackatime_link[hackatime_project]", Array(@chosen).first, id: "hackatime_project", class: "input", maxlength: HackatimeLink::NAME_MAX, required: true, autocomplete: "off", aria: { describedby: "hackatime-project-hint" } %>
+          <p class="field__hint" id="hackatime-project-hint">
+            <% if @options_ok %>
+              We didn't find a Hackatime project to pick yet. Code with Hackatime running, then come back, or type its name exactly as it shows on Hackatime.
+            <% else %>
+              We couldn't load your Hackatime projects just now. Type the name exactly as it shows on Hackatime.
+            <% end %>
+          </p>
+        </div>
+      <% end %>
+
+      <div class="projects-actions">
+        <%= button_tag "Link it", type: "submit", class: "btn btn--primary btn--lg" %>
+        <%= link_to "Cancel", dashboard_path, class: "btn btn--ghost" %>
+      </div>
+    <% end %>
+  </div>
+</div>

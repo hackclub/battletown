@@ -4,8 +4,9 @@ require_relative "../../support/bosses_helper"
 require_relative "../../support/ships_test_support"
 
 # Hours dated before the local date a person signed up on stay in the ledger but count for nothing in the game; the
-# sign-up date itself counts fully. One rule (Hours::Days.first_counted_date) for boss damage, streaks, coins and the
-# dashboard, so a newcomer's backfilled hours never land on the community boss.
+# sign-up date itself counts fully. One rule (Hours::Days.first_counted_date) for ship windows (and so boss damage, which
+# is the hours on submitted ships), streaks, coins and the dashboard, so a newcomer's backfilled hours never land on the
+# community boss.
 class Game::SignupCutoffTest < ActiveSupport::TestCase
   include CoinsHelper
   include BossesHelper
@@ -25,6 +26,7 @@ class Game::SignupCutoffTest < ActiveSupport::TestCase
     code(@user, SIGNUP, HOUR)
     code(@user, AFTER, 30 * 60)
     add_hours(@veteran, BEFORE, 900)
+    ship_damage(@veteran, 900, on: BEFORE)
   end
 
   test "the first counted date is the sign-up date in the user's zone" do
@@ -37,6 +39,8 @@ class Game::SignupCutoffTest < ActiveSupport::TestCase
   end
 
   test "boss damage counts the sign-up day and later, never the day before" do
+    assert_equal 900, Bosses::Damage.for(@boss), "coding alone does not hurt the boss, only the veteran's ship does"
+    ship_newcomer_window
     assert_equal HOUR + (30 * 60) + 900, Bosses::Damage.for(@boss)
     assert_equal({ SIGNUP => HOUR, AFTER => 30 * 60 }, Hours::Totals.seconds_by_date(@user, BEFORE..AFTER))
     assert_equal 0, Hours::Totals.seconds_for_date(@user, BEFORE)
@@ -47,13 +51,17 @@ class Game::SignupCutoffTest < ActiveSupport::TestCase
 
   test "pre-sign-up hours cannot defeat the boss" do
     @boss.update_columns(hp_seconds: HOUR + (30 * 60) + 900 + 1)
-    assert_not Bosses::CheckDefeat.call(@boss), "the raw ledger is well past the health, the counted damage is not"
+    ship_newcomer_window
+    assert HourEntry.sum(:seconds) > @boss.hp_seconds, "the raw ledger is well past the health, the counted damage is not"
+    assert_equal HOUR + (30 * 60) + 900, Bosses::Damage.for(@boss)
+    assert_nil @boss.reload.defeated_at
 
-    add_hours(@user, AFTER + 1, 1)
+    Bosses::CheckDefeat.for_ship(ship_damage(@veteran, 1, on: AFTER + 1))
     assert @boss.reload.defeated_at.present?
   end
 
   test "the boss card counts the user's own damage from the sign-up day" do
+    ship_newcomer_window
     presenter = Bosses::Presenter.new(user: @user, today: AFTER + 1)
     assert_equal HOUR + (30 * 60), presenter.contributed_seconds_this_week
   end
@@ -69,6 +77,7 @@ class Game::SignupCutoffTest < ActiveSupport::TestCase
   end
 
   test "the dashboard's live streak and today numbers ignore the day before" do
+    ship_newcomer_window(at: Time.utc(2026, 11, 15, 11))
     dashboard = Dashboard::Presenter.new(user: @user, now: Time.utc(2026, 11, 15, 12))
     assert_equal 30 * 60, dashboard.today.seconds
     assert_equal 2, dashboard.quick_streak.days, "the sign-up day and today, not the day before"
@@ -109,13 +118,20 @@ class Game::SignupCutoffTest < ActiveSupport::TestCase
   test "days_before_signup_counted lets earlier days count, the same way everywhere" do
     with_hours_config(days_before_signup_counted: 1) do
       assert_equal BEFORE, Hours::Days.first_counted_date(@user)
-      assert_equal (2 * HOUR) + HOUR + (30 * 60) + 900, Bosses::Damage.for(@boss)
       assert_equal 2 * HOUR, Hours::Totals.seconds_for_date(@user, BEFORE)
       assert_equal BEFORE, Ships::Window.call(@project).start_date
+      ship_newcomer_window
+      assert_equal (2 * HOUR) + HOUR + (30 * 60) + 900, Bosses::Damage.for(@boss)
     end
   end
 
   private
+
+  # Ships everything the newcomer's project holds, during the boss week. What the ship carries is the window, so the hours
+  # before the sign-up date are never on it.
+  def ship_newcomer_window(at: Time.utc(2026, 11, 16, 12))
+    Ships::Submit.call(project: @project, attributes: ship_attrs, submit: true, now: at)
+  end
 
   def with_hours_config(**changes)
     original = Hours::Config.current

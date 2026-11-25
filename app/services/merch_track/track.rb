@@ -15,7 +15,7 @@ module MerchTrack
     # Everything the track page lists: one row per boss week with its item, plus a row (boss nil) for each of the first
     # `week_items` weeks that has no boss yet, so the whole track is visible from the start.
     def weeks(config: Config.current)
-      bosses = Boss.chronological.to_a
+      bosses = Boss.without_art_content.chronological.to_a
       rows = bosses.each_with_index.filter_map do |boss, index|
         item = config.item_for(index)
         Week.new(number: index + 1, boss: boss, item: item) if item

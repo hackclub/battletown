@@ -11,9 +11,13 @@ class Rack::Attack
   # in the TRUSTED_PROXIES env var, otherwise all visitors share the proxy's address.
   # The address lookup at checkout (POST /auth/hack_club_address) has its own per-person limit below: counting it here too would let
   # a classroom behind one address block each other from ordering.
-  # The path as the router and OmniAuth will read it: lower case (OmniAuth matches its paths case-insensitively), repeated slashes
-  # squeezed. A throttle that matches the raw path is walked around by changing the case or adding a slash.
-  def self.path_of(req) = req.path.downcase.squeeze("/")
+  # The path as the router and OmniAuth will read it: percent-escapes decoded (Rails routes /admin/bosses/%31 to id 1), lower case
+  # (OmniAuth matches its paths case-insensitively), repeated slashes squeezed. A throttle that matches the raw path is walked
+  # around by changing the case, adding a slash or escaping a character.
+  def self.path_of(req) = Rack::Utils.unescape_path(req.path).scrub.downcase.squeeze("/")
+
+  # A file upload form: Rack parses multipart/mixed and multipart/related bodies into params just like multipart/form-data.
+  def self.multipart?(req) = req.media_type.to_s.start_with?("multipart/")
 
   throttle("auth/ip", limit: 10, period: 1.minute) do |req|
     path = path_of(req)
@@ -69,7 +73,7 @@ class Rack::Attack
   SIZE_RULE = "ship-images/size".freeze
 
   def self.ship_upload?(req)
-    (req.post? || req.patch? || req.put?) && req.path.match?(SHIP_FORM_PATH) && req.media_type == "multipart/form-data"
+    (req.post? || req.patch? || req.put?) && path_of(req).match?(SHIP_FORM_PATH) && multipart?(req)
   end
 
   blocklist(SIZE_RULE) do |req|
@@ -83,7 +87,7 @@ class Rack::Attack
   SHOP_SIZE_RULE = "admin-shop/size".freeze
 
   def self.shop_upload?(req)
-    (req.post? || req.patch? || req.put?) && req.path.match?(ADMIN_SHOP_PATH) && req.media_type == "multipart/form-data"
+    (req.post? || req.patch? || req.put?) && path_of(req).match?(ADMIN_SHOP_PATH) && multipart?(req)
   end
 
   blocklist(SHOP_SIZE_RULE) do |req|
@@ -91,7 +95,23 @@ class Rack::Attack
   end
 
   throttle("admin-shop/ip", limit: 60, period: 1.minute) do |req|
-    req.ip if req.path.match?(ADMIN_SHOP_PATH) && !req.get? && !req.head?
+    req.ip if path_of(req).match?(ADMIN_SHOP_PATH) && !req.get? && !req.head?
+  end
+
+  # Boss pictures (/admin/bosses, config/game.yml `boss_art:`): the same early size check and per-address write limit as the shop.
+  ADMIN_BOSS_PATH = %r{\A/{0,3}admin/bosses(?:/[a-z0-9_]*)*/?\z}
+  BOSS_SIZE_RULE = "admin-bosses/size".freeze
+
+  def self.boss_upload?(req)
+    (req.post? || req.patch? || req.put?) && path_of(req).match?(ADMIN_BOSS_PATH) && multipart?(req)
+  end
+
+  blocklist(BOSS_SIZE_RULE) do |req|
+    boss_upload?(req) && (req.content_length.nil? || req.content_length.to_i > Bosses::ArtConfig.current.max_request_bytes)
+  end
+
+  throttle("admin-bosses/ip", limit: 60, period: 1.minute) do |req|
+    req.ip if path_of(req).match?(ADMIN_BOSS_PATH) && !req.get? && !req.head?
   end
 
   self.blocklisted_responder = lambda do |request|
@@ -102,6 +122,9 @@ class Rack::Attack
     elsif request.env["rack.attack.matched"] == SHOP_SIZE_RULE
       [ 413, { "content-type" => "text/plain; charset=utf-8" },
         [ "That picture is too big. The limit is #{ShopItems::Config.current.max_upload_bytes / 1_000_000.0} MB.\n" ] ]
+    elsif request.env["rack.attack.matched"] == BOSS_SIZE_RULE
+      [ 413, { "content-type" => "text/plain; charset=utf-8" },
+        [ "That picture is too big. The limit is #{Bosses::ArtConfig.current.max_upload_bytes / 1_000_000.0} MB.\n" ] ]
     else
       [ 403, { "content-type" => "text/plain; charset=utf-8" }, [ "Forbidden\n" ] ]
     end

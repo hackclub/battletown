@@ -11,7 +11,7 @@ class OnboardingsController < ApplicationController
     "age" => [],
     "prize" => [ :prize_key ],
     "project" => %i[project_kind project_idea],
-    "schedule" => [ :coding_time, :time_zone, { coding_day_names: [], coding_times: User::DAYS } ],
+    "schedule" => [ :coding_time, :time_zone, :pace_minutes, { coding_day_names: [], coding_times: User::DAYS } ],
     "account" => [ :referral_source ]
   }.freeze
 
@@ -134,6 +134,7 @@ class OnboardingsController < ApplicationController
     user.valid?
     REQUIRED.fetch(@step, []).each { |attribute| user.errors.add(attribute, :blank) if user[attribute].blank? }
     user.errors.add(:coding_days, :blank) if @step == "schedule" && user.coding_days.zero? # worded by OnboardingsHelper
+    user.errors.add(:pace_minutes, :inclusion) if @step == "schedule" && pace_not_a_whole_number?(user) && !user.errors.of_kind?(:pace_minutes, :inclusion)
     user.errors.add(:referral_source, :inclusion) if user.referral_source && !ReferralSource.find(user.referral_source)
     return false if user.errors.any?
 
@@ -147,6 +148,12 @@ class OnboardingsController < ApplicationController
     end
     user.errors.add(:project_idea, :not_saved, message: "We couldn't save your project just now. Please try again.") if !saved && user.errors.empty?
     saved
+  end
+
+  # An integer column quietly turns "15.5" into 15 and "15abc" into 15; only a plain whole number is an answer.
+  def pace_not_a_whole_number?(user)
+    raw = user.pace_minutes_before_type_cast
+    raw.is_a?(String) && raw.present? && !raw.match?(/\A\d+\z/)
   end
 
   def after_save_path

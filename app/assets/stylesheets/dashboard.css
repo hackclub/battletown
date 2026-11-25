@@ -1,189 +1,325 @@
-/* The signed-in home page (app/views/dashboard/**), in the Battletown look. The boss card (bosses.css) is the hero, then
-   white `.card`s on the sky page; this file only writes what the shared components (components.css) do not: the page
-   grid, the Today layout with the 15-minute mark, the streak cards, the coin, the first-run checklist.
-   Meaning is always carried by text (headlines, sentences, "Reached"/"Freeze ready"), never by colour or icon alone;
-   icons are aria-hidden decoration. Tokens only. */
-.dashboard { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
-.dashboard > * { min-width: 0; margin: 0; }
-
-.dashboard__header { margin-bottom: 0; }
-.dashboard__date { margin: 0; }
-
-.dashboard .dashboard__heading { margin-bottom: var(--space-3); color: var(--color-ink-blue); font-size: var(--text-xl); }
-
-/* Wide screens: the boss spans the top, Today and the streaks follow, then the project and coins side by side. The
-   DOM order is the phone order (boss, Today, project, streaks, coins, Hackatime, prize). */
-@media (min-width: 64rem) {
-  .dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); align-items: start; }
-  .dashboard__header, .dash-returning, .boss-card, .dash-today, .dashboard__streaks { grid-column: 1 / -1; }
-  .dash-project, .dash-coins, .dash-hackatime, .dash-prize { order: 1; }
-  .dash-project { grid-row: span 2; }
-  .dash-coins, .dash-hackatime { grid-column: 2; }
+/* The signed-in home page (app/views/dashboard/**), drawn from the whiteboard sketch and nothing else: the boss's health bar across
+   the top, your prize at the left and the daily goal at the right (the same distance from each edge), the boss in the middle with
+   the people who coded today around it, the to-do list, then one progress bar and the ship button. It is the landing's "Fight
+   together" map (a blue band, the river behind), edge to edge under the navbar, so `.on-map` swaps text, link and focus colours to
+   cream. Everything meaningful is also said in words (the headline, the bar's text, hidden labels); the circles, dashes, ticks and
+   the health plates are decoration (aria-hidden). Tokens only. Motion is off for reduced motion. */
+.dashboard {
+  /* The map runs edge to edge under the navbar: it is the page, not a card on it. The page's own padding is taken back. */
+  margin-block: calc(var(--space-8) * -1);
 }
-@media (min-width: 48rem) and (max-width: 63.999rem) {
-  .dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); align-items: start; }
-  .dashboard__header, .dash-returning, .boss-card, .dash-today, .dashboard__streaks, .dash-project { grid-column: 1 / -1; }
-  .dash-project, .dash-coins, .dash-hackatime, .dash-prize { order: 1; }
+@media (min-width: 48rem) { .dashboard { margin-block: calc(var(--space-12) * -1); } }
+
+.stage {
+  /* Content stays in the page's column; the blue runs to both edges. */
+  --edge: max(var(--space-4), calc((100vw - var(--container-width)) / 2 + var(--space-4)));
+  --bar-h: clamp(3rem, 1.75rem + 3.4vw, 5rem); /* the boss's health bar: big, across the whole top */
+  --below-bar: calc(var(--space-6) + var(--bar-h) + 3.5rem); /* where the prize and the daily goal start: under the bar and its plates */
+  --side: var(--space-12); /* how far the prize and the daily goal stand in from their screen edge: the same on both sides */
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  min-height: calc(100svh - 6rem);
+  padding: var(--space-6) var(--edge) var(--space-8);
+  align-content: start;
+  overflow: hidden;
+  background-color: var(--color-map);
+  color: var(--color-bg);
 }
-@media (min-width: 48rem) { .dash-prize { grid-column: 1 / -1; } }
-
-.dashboard h3 { margin-top: 0; }
-
-/* Panels */
-.dash-panel { min-width: 0; }
-@media (min-width: 40rem) { .dash-panel { padding: var(--space-8); } }
-.dashboard .dash-panel__title { margin-bottom: var(--space-3); font-size: var(--text-xl); }
-
-.dash-muted { color: var(--color-text-muted); }
-.dash-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); margin-bottom: 0; }
-.dash-more { margin-top: var(--space-4); }
-
-/* Coins: the balance as a big number beside a gold coin */
-.dash-big { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); margin-bottom: var(--space-3); font-size: var(--text-lg); }
-.dash-big strong { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 400; letter-spacing: var(--tracking-heading); line-height: 1; }
-.dash-big__label { color: var(--color-text-muted); }
-.dash-coin {
-  flex: none;
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
-  border: 3px solid var(--color-sign-yellow-edge);
-  border-radius: var(--radius-full);
-  background: radial-gradient(circle at 35% 30%, var(--color-highlight) 0 45%, var(--color-sign-yellow) 46% 100%);
-  box-shadow: inset 0 -0.2rem 0 var(--color-sign-yellow-edge);
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("design/map-river.svg") 50% 0 / auto 140% no-repeat;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
 }
+.stage > * { min-width: 0; margin: 0; }
+@media (min-width: 48rem) { .stage { padding-block: var(--space-6) var(--space-12); gap: var(--space-8); } }
 
-/* Today: the goal bar and its mark on the left, the two checks and the projected bonus on the right */
-.dash-today__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; }
-@media (min-width: 48rem) { .dash-today__grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-8); } }
-
-.dash-callout { margin-bottom: var(--space-6); }
-/* The welcome-back banner sits in the dashboard grid, which already spaces its children */
-.dashboard > .dash-returning { margin: 0; }
-
-.dash-steps { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
-.dash-step { display: flex; gap: var(--space-3); align-items: baseline; }
-.dash-step__mark {
-  flex: none;
-  display: inline-grid;
-  place-items: center;
-  inline-size: 1.75rem;
-  block-size: 1.75rem;
-  border: 2px solid var(--color-ink-brown);
-  border-radius: var(--radius-full);
-  background: var(--color-bg);
+/* The health bar runs almost the whole width of the screen, leaving the page's column but keeping its slanted ends in view so it
+   still reads as a health bar; the boss's name and what is left hang under it on two plates. */
+.stage__top { display: grid; gap: var(--space-4); margin-inline: calc(var(--edge) * -1 + var(--space-6)); }
+.stage .stage__bar { height: var(--bar-h); }
+.stage__health { width: 100%; }
+.stage__none { margin: 0 var(--space-6); font-size: var(--text-lg); }
+.stage__plates { display: flex; justify-content: space-between; gap: var(--space-4); margin-top: calc(var(--space-2) * -1); padding-inline: var(--space-12); pointer-events: none; }
+.stage__plate {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  max-width: 45%;
+  padding: var(--space-1) var(--space-8);
+  color: var(--color-primary-contrast);
   font-family: var(--font-display);
-  line-height: 1;
-  transform: translateY(0.3rem);
+  font-size: var(--text-md);
+  line-height: 1.3;
 }
-.dash-step--done .dash-step__mark { background: var(--color-success); border-color: var(--color-success); color: var(--color-bg); }
+/* The plate itself must not clip (its slanted outline sticks out of its box): only the words inside are cut short. */
+.stage__plate-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stage__plate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 3px solid var(--color-hp-outline);
+  background: var(--color-hp-fill);
+  transform: skewX(-15deg);
+}
 
-/* A labelled native <progress> with its numbers in text under it. progress--goal is the Figma goal bar (13:11). */
-.dash-meter { margin-bottom: 0; }
-.dash-meter__label { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
-.dash-meter__text { margin: var(--space-1) 0 0; }
-.dash-meter__track { position: relative; padding-block: var(--space-2) var(--space-6); }
-.dash-meter__bar { height: 2.5rem; }
-.dash-meter__mark { display: none; }
-.dash-meter__track.is-marked .dash-meter__mark {
+/* Prize and daily goal. Narrow screens: one column, the prize above the boss and the goal under it. From tablet up the boss keeps
+   the middle column with the prize at the left and the goal at the right. On a very wide screen both leave the grid and stand
+   in the corners, the same distance from their edge, level with each other, under the health bar. */
+@media (min-width: 64rem) {
+  .stage {
+    grid-template-columns: 19rem minmax(0, 1fr) 19rem;
+    grid-template-areas: "top top top" "prize arena goal" "plan plan plan" "next next next";
+  }
+  .stage__top { grid-area: top; }
+  .stage > .stage__prize-area { grid-area: prize; }
+  .stage__arena { grid-area: arena; }
+  .stage__goal { grid-area: goal; align-self: start; }
+  .stage__plan { grid-area: plan; }
+  .stage__next { grid-area: next; }
+}
+@media (min-width: 102rem) {
+  .stage > .stage__prize-area, .stage > .stage__goal {
+    grid-area: auto;
+    position: absolute;
+    inset-block-start: var(--below-bar);
+    z-index: 3;
+  }
+  .stage > .stage__prize-area { inset-inline-start: var(--side); }
+  .stage > .stage__goal { inset-inline-end: var(--side); inline-size: 19rem; }
+}
+
+.stage__prize-area { display: grid; gap: var(--space-3); align-content: start; justify-items: start; justify-self: start; align-self: start; max-width: 15rem; }
+.stage__prize { display: grid; justify-items: center; gap: var(--space-1); justify-self: start; color: var(--color-bg); text-decoration: none; }
+.stage__prize-label { font-family: var(--font-display); font-size: var(--text-lg); line-height: 1; }
+.stage__prize-box {
+  display: grid;
+  place-items: center;
+  inline-size: 5.5rem;
+  block-size: 5.5rem;
+  overflow: hidden;
+  border: 4px solid var(--color-ink-blue);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+.stage__prize:hover .stage__prize-box { border-color: var(--color-bg); }
+.stage__prize:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 4px; border-radius: var(--radius-md); }
+.stage__prize-image { inline-size: 100%; block-size: 100%; object-fit: contain; }
+.stage__prize-emoji { font-size: var(--text-3xl); line-height: 1; }
+
+/* Whether the prize is on pace, beside the prize box: a word badge, the time to go with the bonus, the plan. */
+.stage__pace { display: grid; gap: var(--space-1); align-content: start; }
+.stage__pace p { margin: 0; }
+.stage__pace-badge {
+  justify-self: start;
+  padding: 0.1rem var(--space-3);
+  border: 3px solid var(--color-bg);
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  line-height: 1.3;
+}
+.stage__pace--on-track .stage__pace-badge, .stage__pace--reached .stage__pace-badge { background: var(--color-success); border-color: var(--color-success); color: var(--color-bg); }
+.stage__pace--behind .stage__pace-badge { background: var(--color-highlight); border-color: var(--color-sign-yellow-edge); color: var(--color-text); }
+.stage__pace-line { font-weight: 700; }
+.stage__pace-plan { font-size: var(--text-sm); }
+
+/* The arena: the boss in the middle on its ground shadow, the fighters (small circles) around it, a few dashes of damage
+   falling toward the health bar. */
+.stage__arena { position: relative; display: grid; justify-items: center; align-items: end; padding-top: var(--space-2); }
+.stage__arena::before {
+  content: "";
+  position: absolute;
+  inset-inline: 18%;
+  bottom: -2%;
+  z-index: 0;
+  height: 20%;
+  background: url("design/boss-shadow.svg") center / 100% 100% no-repeat;
+  mix-blend-mode: soft-light;
+}
+/* Staff upload their own pictures, so the shape is not known: cap both sides (never stretched, never scaled up past its own size). */
+.stage__art { position: relative; z-index: 1; display: block; width: auto; max-width: min(100%, 19rem); max-height: min(30rem, 80vh); height: auto; object-fit: contain; }
+@media (min-width: 48rem) { .stage__art { max-width: min(100%, 29rem); } }
+.stage__art--cutout { margin-top: -2.5rem; }
+@media (min-width: 48rem) { .stage__art--cutout { margin-top: -4.5rem; } }
+.stage--escaped .stage__art { opacity: 0.75; }
+.stage--defeated .stage__art { filter: grayscale(0.7); }
+
+.stage__crowd { position: absolute; inset: 0; z-index: 2; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+.stage__fan {
+  --size: 2rem;
+  --x: 50%;
+  --y: 50%;
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-block-start: var(--y);
+  inline-size: var(--size);
+  block-size: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  border: 3px solid var(--color-bg);
+  border-radius: var(--radius-full);
+  background: var(--fan, var(--color-highlight));
+  box-shadow: 0 0.2rem 0 var(--color-ink-blue);
+}
+@media (min-width: 48rem) { .stage__fan { --size: 2.75rem; } }
+/* Twelve places, six on each side, none over the boss. Colours are decoration only. */
+.stage__fan:nth-child(1)  { --x: 8%;  --y: 18%; --fan: var(--color-highlight); }
+.stage__fan:nth-child(2)  { --x: 20%; --y: 8%;  --fan: var(--color-cta); }
+.stage__fan:nth-child(3)  { --x: 6%;  --y: 48%; --fan: var(--color-sky); }
+.stage__fan:nth-child(4)  { --x: 19%; --y: 34%; --fan: var(--color-success-bg); }
+.stage__fan:nth-child(5)  { --x: 10%; --y: 78%; --fan: var(--color-cta); }
+.stage__fan:nth-child(6)  { --x: 24%; --y: 64%; --fan: var(--color-highlight); }
+.stage__fan:nth-child(7)  { --x: 92%; --y: 20%; --fan: var(--color-sky); }
+.stage__fan:nth-child(8)  { --x: 80%; --y: 8%;  --fan: var(--color-highlight); }
+.stage__fan:nth-child(9)  { --x: 94%; --y: 50%; --fan: var(--color-cta); }
+.stage__fan:nth-child(10) { --x: 81%; --y: 36%; --fan: var(--color-success-bg); }
+.stage__fan:nth-child(11) { --x: 90%; --y: 80%; --fan: var(--color-highlight); }
+.stage__fan:nth-child(12) { --x: 76%; --y: 66%; --fan: var(--color-sky); }
+
+/* The daily goal, straight on the map: no card, cream text. */
+.goal-card { color: var(--color-bg); }
+.stage .goal-card__title { margin: 0 0 var(--space-3); font-size: var(--text-lg); text-shadow: 0 0.06em 0 var(--color-ink-blue); }
+.goal-card__track { position: relative; padding-block: var(--space-1) var(--space-16); }
+.stage .goal-card__bar { height: 2rem; }
+.goal-card__text { margin: 0; color: var(--color-bg); font-size: var(--text-sm); }
+.goal-card__meter--done .goal-card__bar::-webkit-progress-value { background: var(--color-success); }
+.goal-card__meter--done .goal-card__bar::-moz-progress-bar { background: var(--color-success); }
+.goal-tick { display: none; }
+.goal-tick.is-marked {
   display: block;
   position: absolute;
-  inset-block: 0 var(--space-6);
+  inset-block: 0 var(--space-16);
   inset-inline-start: calc(var(--mark) * 1%);
-  inline-size: 0.3rem;
-  margin-inline-start: -0.15rem;
-  background: var(--color-ink-brown);
+  inline-size: 0.25rem;
+  margin-inline-start: -0.125rem;
+  background: var(--color-bg);
   border-radius: var(--radius-full);
   pointer-events: none;
 }
-.dash-meter__mark-label {
+.goal-tick__label {
   position: absolute;
   inset-block-start: 100%;
   inset-inline-start: 50%;
   transform: translateX(-50%);
   margin-top: var(--space-1);
-  color: var(--color-ink-brown);
+  color: var(--color-bg);
   font-size: var(--text-sm);
   font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
   white-space: nowrap;
 }
+.goal-tick--ship .goal-tick__label { inset-inline-start: auto; inset-inline-end: 0; transform: none; text-align: end; }
+/* The quick and commit labels would collide on a narrow bar: the commit one drops a line. */
+.goal-tick--commit .goal-tick__label { margin-top: var(--space-8); }
 
-.dash-checks { display: grid; gap: var(--space-2); margin: 0 0 var(--space-4); padding: 0; list-style: none; }
-.dash-check { display: flex; gap: var(--space-2); align-items: baseline; }
-.dash-check__mark { flex: none; inline-size: 1.25em; text-align: center; color: var(--color-text-muted); }
-.dash-check--done { font-weight: 700; }
-.dash-check--done .dash-check__mark { color: var(--color-success); }
-
-.dash-bonus {
-  margin: 0;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--color-sky);
-  color: var(--color-ink-blue);
-  font-weight: 700;
-}
-
-/* Streaks: two cards side by side from tablet up, a gentle tint per state */
-.dashboard__streak-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
-@media (min-width: 40rem) { .dashboard__streak-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); } }
-
-.dash-streak { display: flex; gap: var(--space-4); align-items: flex-start; min-width: 0; }
-@media (min-width: 40rem) { .dash-streak { padding: var(--space-8); } }
-.dash-streak__icon {
-  flex: none;
+/* The one thing to work on this commit, on a frosted panel: a round tick to finish it and a line to write on. */
+.plan {
+  justify-self: center;
   display: grid;
-  place-items: center;
-  inline-size: 3.5rem;
-  block-size: 3.5rem;
+  gap: var(--space-4);
+  width: min(100%, 40rem);
+  padding: var(--space-6);
+  border: 3px solid color-mix(in srgb, var(--color-bg) 55%, transparent);
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--color-ink-blue) 45%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.stage .plan__title { margin: 0; font-size: var(--text-lg); letter-spacing: var(--tracking-heading); text-shadow: 0 0.06em 0 var(--color-ink-blue); }
+.plan__review { margin: 0; padding-inline-start: var(--space-4); border-inline-start: 4px solid var(--color-highlight); }
+.plan__form { display: grid; gap: var(--space-3); }
+.plan__lines { display: grid; gap: var(--space-3); }
+.plan__item { display: flex; gap: var(--space-4); align-items: center; }
+.plan__check {
+  flex: none;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  margin: 0;
+  border: 3px solid var(--color-bg);
   border-radius: var(--radius-full);
-  background: var(--color-surface-raised);
-  font-size: var(--text-xl);
-  line-height: 1;
+  background: transparent;
+  cursor: pointer;
 }
-.dash-streak__main { min-width: 0; flex: 1; }
-.dash-streak__main > :last-child { margin-bottom: 0; }
-.dashboard .dash-streak__title { margin-bottom: var(--space-1); color: var(--color-text-muted); font-family: var(--font-body); }
-.dash-streak__count { margin-bottom: var(--space-2); font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: var(--tracking-heading); line-height: var(--leading-tight); }
-.dash-streak__count strong { font-weight: 400; }
-.dash-streak--active { border-bottom-color: var(--color-progress); }
-.dash-streak--active .dash-streak__icon { background: var(--color-highlight); }
-.dash-streak--frozen { border-bottom-color: var(--color-secondary); background: var(--color-bg); }
-.dash-streak--frozen .dash-streak__icon { background: var(--color-sky); }
-.dash-streak--broken .dash-streak__icon { background: var(--color-success-bg); }
+.plan__check:checked { border-color: var(--color-success); background: var(--color-success); }
+.plan__check:checked::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0.7rem;
+  inset-block-start: 0.28rem;
+  inline-size: 0.5rem;
+  block-size: 1rem;
+  border: solid var(--color-bg);
+  border-width: 0 3px 3px 0;
+  transform: rotate(40deg);
+}
+.plan__check:focus-visible, .plan__input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.plan__input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap-size);
+  padding: var(--space-2) var(--space-1);
+  border: 0;
+  border-bottom: 3px dashed color-mix(in srgb, var(--color-bg) 65%, transparent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-bg);
+  font: inherit;
+  font-size: var(--text-lg);
+  box-shadow: none;
+}
+.plan__input::placeholder { color: color-mix(in srgb, var(--color-bg) 75%, transparent); opacity: 1; }
+.plan__input:not(:placeholder-shown) { border-bottom-style: solid; }
+.plan__check:checked + .plan__input { text-decoration: line-through; opacity: 0.8; }
+.plan__bottom .btn[hidden] { display: none; }
+.plan__bottom { display: flex; gap: var(--space-4); align-items: center; justify-content: space-between; }
+.plan__status { margin: 0; font-size: var(--text-sm); }
+.plan__empty { margin: 0; }
 
-.dash-facts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; list-style: none; font-size: var(--text-sm); }
-.dash-facts > li:not(.badge) { flex-basis: 100%; color: var(--color-text-muted); }
-.dash-facts .badge { white-space: normal; }
+/* What to do next: the headline, the one bar, the ship button */
+.stage__next { display: grid; justify-items: center; gap: var(--space-3); text-align: center; }
+.stage__actions { margin-top: var(--space-2); }
+.stage__cta { min-width: 14rem; }
+.stage__cta[disabled] {
+  --btn-bg: color-mix(in srgb, var(--color-bg) 22%, var(--color-map));
+  --btn-fg: color-mix(in srgb, var(--color-bg) 70%, var(--color-map));
+  --btn-border: color-mix(in srgb, var(--color-bg) 35%, var(--color-map));
+  --btn-edge: transparent;
+  border-style: dashed;
+  box-shadow: none;
+  opacity: 1;
+  cursor: not-allowed;
+}
+.stage__reason { max-width: 30rem; margin: 0; font-size: var(--text-sm); }
+.stage__dev { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; justify-content: center; margin-top: var(--space-4); padding: var(--space-2) var(--space-3); border: 2px dashed color-mix(in srgb, var(--color-bg) 50%, transparent); border-radius: var(--radius-md); }
+.stage__dev-label { font-size: var(--text-sm); font-weight: 700; }
 
-/* Project, ships */
-.dashboard .dash-project__name { margin-bottom: var(--space-1); font-size: var(--text-xl); }
-.dash-project__meta { color: var(--color-text-muted); }
-.dash-project__window { margin-bottom: 0; }
-.dash-reason { margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--color-surface-raised); }
-.dash-ship { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 2px solid var(--color-border); }
-.dash-ship__line { margin-bottom: var(--space-2); }
-.dash-ship__reason { font-weight: 700; }
-
-/* Hackatime, prize */
-.dash-hackatime__status { margin-bottom: var(--space-3); }
-.dash-hackatime--needs-reconnect { border-bottom-color: var(--color-danger); }
-.dash-prize__name { margin-bottom: var(--space-4); }
-.dash-prize__emoji { font-size: var(--text-xl); }
-.dash-prize .dash-muted { color: var(--color-card-title); }
-.dash-prize .progress__label, .dash-prize .progress__text { color: var(--color-bg); }
-.dash-prize .progress__bar { border-color: var(--color-bg); }
-
-/* The prize card is a full-width shop card from tablet up: the story on the left, the bar on the right. */
-@media (min-width: 48rem) {
-  .dash-prize {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas: "title title" "name meter" "note meter" "act meter";
-    column-gap: var(--space-8);
-    align-items: start;
+@media (prefers-reduced-motion: no-preference) {
+  .stage__fan { animation: stage-bob 2.6s ease-in-out infinite; }
+  .stage__fan:nth-child(even) { animation-delay: -1.3s; }
+  /* Dashes of damage falling toward the boss's bar, only while the boss is still in the fight. */
+  .stage--in-progress .stage__arena::after {
+    content: "";
+    position: absolute;
+    inset: 0 30%;
+    z-index: 0;
+    background: repeating-linear-gradient(100deg, transparent 0 1.4rem, color-mix(in srgb, var(--color-bg) 70%, transparent) 1.4rem 1.6rem);
+    -webkit-mask: linear-gradient(to bottom, transparent, #000 25%, transparent 80%);
+    mask: linear-gradient(to bottom, transparent, #000 25%, transparent 80%);
+    opacity: 0.5;
+    animation: stage-hits 1.8s linear infinite;
+    pointer-events: none;
   }
-  .dash-prize > .dash-panel__title { grid-area: title; }
-  .dash-prize > .dash-prize__name { grid-area: name; }
-  .dash-prize > .dash-meter { grid-area: meter; align-self: center; }
-  .dash-prize > .dash-prize__note { grid-area: note; }
-  .dash-prize > .dash-actions { grid-area: act; }
 }
+@keyframes stage-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.35rem); } }
+@keyframes stage-hits { from { background-position: 0 0; } to { background-position: 3rem 0; } }

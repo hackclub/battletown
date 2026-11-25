@@ -4,14 +4,31 @@
     <p class="admin-back"><%= link_to "Back to the admin dashboard", admin_root_path %></p>
     <header class="page-header">
       <h1>Weekly bosses</h1>
-      <p class="admin-dashboard__note">One boss per week, Friday to Thursday. Damage is the sum of everyone's raw coded time on the boss's local dates. Health can be changed until a boss starts; names and art any time. Aggregate numbers only.</p>
+      <p class="admin-dashboard__note">One boss per week, Friday to Thursday. Damage is the coded hours on the ships people submit during the boss's week (Friday to Thursday, UTC dates), so coding alone does not hurt the boss; a ship counts once it is submitted or approved, at its approved hours. Health can be changed until a boss starts; names and pictures any time. Aggregate numbers only.</p>
     </header>
+
+    <% if @missing_current_week %>
+      <p class="alert alert--warning admin-boss-notice" role="status">
+        <strong>This week, from <%= @missing_current_week.strftime("%A %-d %B") %>, has no boss.</strong>
+        It has already started, so it can't be added here. Ask a developer if it needs one.
+      </p>
+    <% end %>
+
+    <% if @missing_week %>
+      <p class="alert alert--warning admin-boss-notice" role="status">
+        <strong>No boss is set for the week of <%= @missing_week.strftime("%A %-d %B") %>.</strong>
+        <%= link_to "Add one.", new_admin_boss_path %>
+      </p>
+    <% end %>
+
+    <p><%= link_to "Add next week's boss", new_admin_boss_path, class: "btn btn--primary" %></p>
 
     <%= table_region("Bosses") do %>
       <table class="table table--zebra admin-table">
         <caption>Bosses</caption>
         <thead>
           <tr>
+            <th scope="col"><span class="visually-hidden">Picture</span></th>
             <th scope="col">Boss</th>
             <th scope="col">Dates</th>
             <th scope="col" class="num admin-table__num">Health (hours)</th>
@@ -23,6 +40,7 @@
         <tbody>
           <% @bosses.each do |boss| %>
             <tr>
+              <td><%= image_tag boss.art_path, alt: boss.art_alt_text, class: "admin-boss-thumb", loading: "lazy" %></td>
               <th scope="row"><%= boss.name %></th>
               <td><%= boss.starts_on.strftime("%a %-d %b") %> to <%= boss.ends_on.strftime("%a %-d %b %Y") %></td>
               <td class="num admin-table__num"><%= number_with_delimiter(boss.hp_hours) %></td>

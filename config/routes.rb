@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   root "landing#show"
 
   get "dashboard", to: "dashboard#show"
+  patch "dashboard/todos", to: "dashboard_todos#update", as: :dashboard_todos
   get "onboarding", to: "onboardings#show", format: false
   scope "onboarding/:step", constraints: { step: Regexp.union(OnboardingsController::STEPS) }, format: false do
     get "", to: "onboardings#step", as: :onboarding_step
@@ -16,6 +17,8 @@ Rails.application.routes.draw do
       patch :activate
       patch :archive
       patch :unarchive
+      get :link # the short page: just the name and the Hackatime project
+      patch :link, action: :save_link
     end
     resources :hackatime_links, only: %i[create destroy]
     resources :ships, only: %i[new create]
@@ -34,6 +37,8 @@ Rails.application.routes.draw do
   post "shop/sticker", to: "sticker_claims#create", as: :shop_sticker
   # An item's picture. Public (the landing page shows it too), same-origin, cached privately and revalidated by ETag.
   get "shop/items/:key/image", to: "shop_item_images#show", as: :shop_item_image, format: false, constraints: { key: /[a-z0-9_]{1,60}/ }
+  # A boss's own picture (a staff upload). Public (the landing page and dashboard show the boss), same-origin, cached privately and revalidated by ETag.
+  get "bosses/:id/art", to: "boss_arts#show", as: :boss_art, format: false, constraints: { id: /\d+/ }
   scope "shop" do
     resources :orders, only: %i[index show create] do
       member do
@@ -131,6 +136,13 @@ Rails.application.routes.draw do
     resource :boss, only: :show, controller: "bosses"
     resource :coins, only: :create, controller: "coins"
     resource :styleguide, only: :show, controller: "styleguide"
+    # The dashboard's event simulator panel: simulated players "sim!..." that ship, and the numbers back (JSON, development only).
+    resource :simulator, only: [], controller: "simulator" do
+      get :status, action: :numbers
+      post :create_players
+      post :ship
+      post :reset
+    end
   end
 
   # The feature-flag console (Flipper UI): admins only, a plain 404 for everyone else. Keep it above the /:ref catch-all.
@@ -160,7 +172,8 @@ Rails.application.routes.draw do
     constraints Features::Constraint.new(:email) do
       resource :email, only: :show, controller: "email_notifications"
     end
-    resources :bosses, only: %i[index edit update]
+    # Weekly bosses: list, add (a Friday week and an optional picture upload), edit. Dates never change; no delete.
+    resources :bosses, only: %i[index new create edit update], format: false
     constraints Features::Constraint.new(:nps) do
       get "nps", to: "nps#index", as: :nps
       post "nps/:id/reveal", to: "nps#reveal", as: :nps_reveal, constraints: { id: /\d+/ }

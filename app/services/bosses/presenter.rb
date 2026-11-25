@@ -1,7 +1,7 @@
 module Bosses
   # Everything the boss card shows, as plain values (no ActiveRecord objects leak into the view).
   #
-  #   presenter = Bosses::Presenter.new(user: current_user)           # "today" is the user's own local date
+  #   presenter = Bosses::Presenter.new(user: current_user)           # "today" is the UTC date: a boss week is the same instant for everybody
   #   presenter = Bosses::Presenter.new(user: current_user, today: Date.new(2026, 11, 16))
   #   render "bosses/card", presenter: presenter
   #
@@ -12,10 +12,13 @@ module Bosses
   #   :escaped      a boss that ended within `afterglow_days` and was not beaten. No penalty
   #   :none         before the first boss, between bosses, after the last
   #
-  # Only aggregates about the community are ever exposed (how many people coded today), plus the CURRENT user's own
-  # total. Nobody else's name, avatar, id or damage is read, let alone shown.
+  # Damage is what people SHIP: the coded hours on the ships submitted during the boss week (Bosses::Damage). Coding alone
+  # never hurts the boss. Only aggregates about the community are ever exposed (the damage total and how many people coded
+  # today, which is who is working, not who has hit), plus the CURRENT user's own shipped total.
+  # Nobody else's name, avatar, id or damage is read, let alone shown.
   class Presenter
-    # Facts the presenter works from. `boss` is nil for :none; `damage` is the community total in seconds.
+    # Facts the presenter works from. `boss` is nil for :none; `damage` is the community's ship damage in seconds,
+    # `user_seconds` the viewer's own ship seconds in the week.
     Facts = Data.define(:today, :boss, :damage, :user_seconds, :active_today, :upcoming_on, :previous_escaped_name)
 
     # How long after a boss starts a gentle "last week's boss got away" note is shown on the new boss's card.
@@ -53,7 +56,7 @@ module Bosses
     def self.pluralize(count, word) = "#{count} #{word}#{'s' unless count == 1}"
 
     def initialize(user: nil, today: nil, facts: nil)
-      @facts = facts || gather(user, today || Hours::Days.today(user))
+      @facts = facts || gather(user, today || Hours::Days.today("UTC"))
     end
 
     def state
@@ -70,14 +73,19 @@ module Bosses
 
     def art_path = boss&.art_path
 
-    def art_alt = boss && Boss::ARTS.fetch(boss.art_key)
+    # The boss's own alt text for an uploaded picture, else the built-in picture's, else "The boss, <name>".
+    def art_alt = boss&.art_alt_text
 
-    # What the card draws: the placeholder illustration is shown as the designer's cut-out of the same boss (no
-    # background), so it can stand on the map. Presentation only; the stored art key is untouched.
+    # What the card draws when the boss has no picture of its own: the placeholder illustration is shown as the designer's
+    # cut-out of the same boss (no background), so it can stand on the map. Presentation only; the stored art key is untouched.
     CUTOUT_ART = { "placeholder" => [ "design/boss-weekly.webp", 1000, 965 ] }.freeze
 
-    # [path, width, height] of the picture for the card.
-    def stage_art = (boss && CUTOUT_ART[boss.art_key]) || [ art_path, 480, 376 ]
+    # [path, width, height] of the picture for the card: the uploaded picture at its own size, else the built-in one.
+    def stage_art
+      return [ art_path, boss.art_width, boss.art_height ] if boss&.art?
+
+      (boss && CUTOUT_ART[boss.art_key]) || [ art_path, 480, 376 ]
+    end
 
     # Percent of the health that has been dealt (integer floor, 0 to 100) and the same as a fraction.
     def damage_percent = boss ? BossMath.percent(damage, boss.hp_seconds) : 0
@@ -140,7 +148,8 @@ module Bosses
       end
     end
 
-    # Own contribution only: the current user's raw coded seconds in the boss week (0 when there is none).
+    # Own contribution only: the seconds on the current user's own submitted or approved ships in the boss week (0 when
+    # there are none). Coding that has not been shipped is not a hit.
     def contributed_seconds_this_week = @facts.user_seconds
 
     def contributed_text
@@ -150,17 +159,19 @@ module Bosses
       if seconds.positive?
         "#{week_over? ? "You dealt" : "You've dealt"} #{self.class.human_duration(seconds)} of damage#{' this week' unless week_over?}."
       elsif state == :in_progress || (state == :defeated && !week_over?)
-        "Code for 15 minutes to land your first hit."
+        "Ship a project to land your first hit."
       end
     end
 
-    # Whether the user coded enough in the boss week to wear the Boss slayer badge. Only when the boss fell.
+    # Whether the user shipped enough in the boss week to wear the Boss slayer badge (`boss.slayer_seconds` of ship seconds).
+    # Only when the boss fell.
     def user_slayer? = state == :defeated && contributed_seconds_this_week >= Config.current.slayer_seconds
 
     # The boss is down, the user has not earned the badge yet and the week is still on: they can still get it.
     def slayer_still_possible? = state == :defeated && !user_slayer? && in_week?
 
-    # How many people coded at least 15 minutes on the user's local today. A count, never a list.
+    # How many people coded at least 15 minutes on the user's local today (who is working, not who has shipped; it
+    # drives the fighter circles). A count, never a list.
     def community_active_today = @facts.active_today
 
     def community_text
@@ -207,12 +218,12 @@ module Bosses
     end
 
     def gather(user, today)
-      boss = Boss.covering(today).first
-      boss ||= Boss.where(ends_on: (today - Config.current.afterglow_days)...today).order(ends_on: :desc).first
+      boss = Boss.without_art_content.covering(today).first
+      boss ||= Boss.without_art_content.where(ends_on: (today - Config.current.afterglow_days)...today).order(ends_on: :desc).first
       return empty_facts(today) unless boss
 
       Facts.new(today: today, boss: boss, damage: Damage.for(boss),
-                user_seconds: Hours::Totals.seconds_by_date(user, boss.range).values.sum,
+                user_seconds: Damage.for_user(boss, user),
                 active_today: Hours::Totals.active_user_count(today), upcoming_on: nil,
                 previous_escaped_name: previous_escaped_name_for(boss, today))
     end
@@ -225,7 +236,7 @@ module Bosses
     def previous_escaped_name_for(boss, today)
       return unless today >= boss.starts_on && today < boss.starts_on + PREVIOUS_NOTE_DAYS
 
-      previous = Boss.find_by(ends_on: boss.starts_on - 1)
+      previous = Boss.without_art_content.find_by(ends_on: boss.starts_on - 1)
       previous.name if previous && previous.defeated_at.nil? && !BossMath.defeated?(Damage.for(previous), previous.hp_seconds)
     end
   end

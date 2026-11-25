@@ -11,7 +11,7 @@
     <% if adjustment.settled_day? %>
       <div class="alert alert--warning admin-warning" role="note">
         <p class="alert__title admin-warning__title">That day has already settled</p>
-        <p>The streak and coins for <%= adjustment.local_date.strftime("%-d %b") %> were fixed when it settled and will not change. Boss damage and total hours will.</p>
+        <p>The streak and coins for <%= adjustment.local_date.strftime("%-d %b") %> were fixed when it settled and will not change. Total hours will.</p>
       </div>
     <% end %>
     <% if adjustment.past_daily_cap? %>

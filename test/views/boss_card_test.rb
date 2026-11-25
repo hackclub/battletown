@@ -1,8 +1,10 @@
 require "test_helper"
 require_relative "../support/bosses_helper"
+require_relative "../support/ship_images_helper"
 
 class BossCardTest < ActionView::TestCase
   include BossesHelper
+  include ShipImagesHelper
 
   MONDAY = Date.new(2026, 11, 16)
 
@@ -19,7 +21,7 @@ class BossCardTest < ActionView::TestCase
   end
 
   test "in progress: a labelled native progress with the text alternative and same-origin art with alt text" do
-    add_hours(@other, FRIDAY, 310 * HOUR)
+    ship_damage(@other, 310 * HOUR, on: FRIDAY)
     card
 
     assert_select "section.boss-card--in-progress[aria-labelledby='boss-card-title'] h2#boss-card-title", "Boss 1"
@@ -32,7 +34,18 @@ class BossCardTest < ActionView::TestCase
     assert_select "[style]", 0, "no inline styles (CSP)"
     assert_select "script", 0
     assert_match(/4 days left, ends Thursday/, rendered)
-    assert_match(/Everyone's coding chips away/, rendered)
+    assert_match(/Every ship takes a bite out of it/, rendered)
+  end
+
+  test "a boss with its own picture shows it from the same origin, at its own size, with its own alt text" do
+    @boss.attach_art(ShipImages::Processor.call(upload_file(png_bytes(64, 32)), config: Bosses::ArtConfig.current))
+    @boss.art_alt = "A boss wearing <b>a big</b> hat"
+    @boss.save!
+    card
+
+    assert_select "img.boss-card__art[src=?][width='64'][height='32']", @boss.art_path, 1
+    assert_select "img.boss-card__art[alt=?]", "A boss wearing <b>a big</b> hat"
+    assert_select "img.boss-card__art b", 0, "the alt text is escaped"
   end
 
   test "the card is a map band with the health bar as a shared progress and a state badge in words" do
@@ -50,10 +63,10 @@ class BossCardTest < ActionView::TestCase
       250 * HOUR => [ "50% left", "50", /\ABoss at 50% health/ ],
       (500 * HOUR) - 60 => [ "1% left", "1", /\ABoss at 1% health, less than an hour to go/ ],
       (500 * HOUR) + 60 => [ "0% left", "0", /\ABoss defeated\./ ] }.each do |seconds, (label, value, summary)|
-      HourEntry.delete_all
+      Ship.delete_all
       Boss.update_all(defeated_at: nil)
       @rendered = self.class.content_class.new(+"")
-      add_hours(@other, FRIDAY, seconds) if seconds.positive?
+      ship_damage(@other, seconds, on: FRIDAY) if seconds.positive?
       card
 
       assert_select ".boss-card__percent", { count: 1, text: label }, "#{seconds} seconds"
@@ -64,8 +77,8 @@ class BossCardTest < ActionView::TestCase
   end
 
   test "defeated: a role=status banner, overkill, an empty bar, and the slayer badge for a contributor" do
-    add_hours(@user, FRIDAY, 20 * 60)
-    add_hours(@other, FRIDAY, (500 * HOUR) + HOUR)
+    ship_damage(@user, 20 * 60, on: FRIDAY)
+    ship_damage(@other, (500 * HOUR) + HOUR, on: FRIDAY)
     card
 
     assert_select "section.boss-card--defeated"
@@ -77,16 +90,16 @@ class BossCardTest < ActionView::TestCase
   end
 
   test "defeated without enough time: no badge, a hint while the week is on" do
-    add_hours(@user, FRIDAY, 899)
-    add_hours(@other, FRIDAY, 600 * HOUR)
+    ship_damage(@user, 899, on: FRIDAY)
+    ship_damage(@other, 600 * HOUR, on: FRIDAY)
     card
 
     assert_select ".boss-card__badge", 0
-    assert_select ".boss-card__days", text: /Code for 15 minutes before the week ends to earn the Boss slayer badge/
+    assert_select ".boss-card__days", text: /Ship a project before the week ends to earn the Boss slayer badge/
   end
 
   test "escaped: supportive copy and no banner" do
-    add_hours(@other, FRIDAY, 100 * HOUR)
+    ship_damage(@other, 100 * HOUR, on: FRIDAY)
     render partial: "bosses/card", locals: { presenter: Bosses::Presenter.new(user: @user, today: THURSDAY + 2) }
 
     assert_select "section.boss-card--escaped"
@@ -114,7 +127,8 @@ class BossCardTest < ActionView::TestCase
 
   test "no other user's name, email, Slack id, auth id or user id leaks, only aggregates" do
     add_hours(@other, MONDAY, 3_600)
-    add_hours(@other, FRIDAY, 50 * HOUR)
+    ship_damage(@other, 50 * HOUR, on: FRIDAY)
+    ship_damage(@user, 900, on: MONDAY)
     add_hours(@user, MONDAY, 900)
 
     presenter = Bosses::Presenter.new(user: @user, today: MONDAY)

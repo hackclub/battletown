@@ -1,0 +1,17 @@
+<%# locals: (d:) -%>
+<%# The daily goal card: today's minutes on one bar, with ticks at the quick mark, the commit mark and the goal (where you ship). -%>
+<% today = d.today %>
+<section id="dash-goal" class="stage__goal goal-card" aria-labelledby="dash-goal-title">
+  <h2 id="dash-goal-title" class="goal-card__title">Daily goal</h2>
+  <div class="<%= class_names("progress progress--goal goal-card__meter", "goal-card__meter--done": today.goal_met) %>">
+    <label for="dash-today-progress" class="visually-hidden">Minutes coded today</label>
+    <%# The ticks are drawn where they fall on the bar: a Stimulus controller on each sets its position (no inline style under the CSP). -%>
+    <div class="goal-card__track">
+      <progress id="dash-today-progress" class="progress__bar goal-card__bar" max="<%= today.progress_max %>" value="<%= today.progress_value %>" aria-describedby="dash-today-text"><%= today.progress_text %></progress>
+      <% d.stage.ticks.each do |tick| %>
+        <span class="goal-tick goal-tick--<%= tick.key %>" data-controller="goal-mark" data-goal-mark-percent-value="<%= tick.percent %>" aria-hidden="true"><span class="goal-tick__label"><%= tick.label %></span></span>
+      <% end %>
+    </div>
+    <p id="dash-today-text" class="progress__text goal-card__text"><%= today.meter_text %></p>
+  </div>
+</section>
