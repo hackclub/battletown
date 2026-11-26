@@ -20,12 +20,14 @@
     <%# The idea box comes with its starters right above it: tap one and it fills the box below, or joins what is already there. %>
     <div class="field onboarding__field <%= "field--invalid" if onboarding_errors(:project_idea).any? %>">
       <%= f.label :project_idea, "Got an idea? (optional)" %>
-      <p class="field__hint" id="idea-presets-label">Need a spark? Tap one to start from it, or write your own.</p>
-      <ul class="chips" aria-labelledby="idea-presets-label">
-        <% OnboardingsHelper::IDEA_PRESETS.each do |preset| %>
-          <li><button type="button" class="chip" data-action="onboarding-idea#fill" data-onboarding-idea-text-param="<%= preset %>"><%= preset %></button></li>
-        <% end %>
-      </ul>
+      <details class="sparks">
+        <summary class="sparks__summary" id="idea-presets-label">Need a spark? Tap one to start from it, or write your own.</summary>
+        <ul class="chips" aria-labelledby="idea-presets-label">
+          <% OnboardingsHelper::IDEA_PRESETS.each do |preset| %>
+            <li><button type="button" class="chip" data-action="onboarding-idea#fill" data-onboarding-idea-text-param="<%= preset %>"><%= preset %></button></li>
+          <% end %>
+        </ul>
+      </details>
       <%# No maxlength attribute: a browser counts UTF-16 units and one line break, the server counts characters and the CRLF a
           form sends, so the counter (onboarding-idea) shows the real figure and the server stays the judge. %>
       <%= f.text_area :project_idea, rows: 3, placeholder: "A sentence is plenty.",

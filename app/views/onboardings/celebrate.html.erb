@@ -6,7 +6,6 @@
         <p class="celebration__lead">Welcome to Battletown<%= ", #{current_user.display_name}" if current_user.display_name.present? %>. Here's your plan:</p>
         <%= render "onboardings/summary", subject: current_user %>
       </div>
-      <%= image_tag "design/hero-character.webp", alt: "", class: "celebration__art", width: 900, height: 757, loading: "lazy" %>
     </div>
 
     <%= form_with url: onboarding_step_path("celebrate"), method: :patch do |f| %>

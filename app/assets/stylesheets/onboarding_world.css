@@ -1,6 +1,5 @@
 /*
- * The look of the onboarding pages: the same world as the landing page (the painted hero as the backdrop, the deep blue
- * map and podium prizes, big yellow display type, the chunky pink button) instead of a plain card on flat sky. Loaded
+ * The look of the onboarding pages: the same world as the landing page (the painted hero as the backdrop, big yellow display type, the chunky pink button) instead of a plain card on flat sky. Loaded
  * after onboarding.css, which keeps the layout and the form controls; this file only restyles. Contrast is chosen, not
  * hoped for (WCAG 2.2 AA): cream #fffef5 on navy #10285a is 14:1, yellow #ffd000 on royal #1456bd is 4.8:1 (large text
  * only), cream on royal 6.7:1, #a9dcff on the podium blue #1f3f93 6.9:1. Everything is under the CSP (no inline styles).
@@ -39,7 +38,6 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
   align-items: center;
   max-width: 48rem;
   padding: var(--space-3) var(--space-6) var(--space-3) var(--space-2);
-  border: 3px solid var(--ob-cream);
   border-radius: var(--radius-full);
   background: var(--ob-navy);
   box-shadow: 0 0.35rem 0 var(--ob-plate-edge);
@@ -48,9 +46,9 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
 .onboarding-top__back { border-color: var(--ob-cream); background: var(--ob-cream); color: var(--ob-navy); }
 .onboarding-top__back:hover { background: var(--ob-yellow); }
 .onboarding-top__back:focus-visible { outline-color: var(--ob-yellow); }
-.onboarding-top__progress { display: grid; gap: var(--space-2); }
-.onboarding-top__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 var(--space-3); }
-.onboarding-top__label { font-size: var(--text-sm); font-weight: 700; color: var(--ob-cream); }
+.onboarding-top__progress { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: var(--space-2); }
+.onboarding-top__head { display: flex; flex-wrap: nowrap; align-items: baseline; justify-content: space-between; gap: 0 var(--space-3); }
+.onboarding-top__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-sm); font-weight: 700; color: var(--ob-cream); }
 .onboarding-top__step { font-family: var(--font-display); font-size: var(--text-base); letter-spacing: -0.02em; color: var(--ob-yellow); white-space: nowrap; }
 .onboarding-top__bar {
   -webkit-appearance: none;
@@ -59,7 +57,7 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
   width: calc(100% - 0.5rem);
   height: 1.375rem;
   margin-inline: 0.25rem;
-  border: 3px solid var(--ob-cream);
+  border: 3px solid var(--color-hp-outline);
   border-radius: 0;
   background: var(--color-hp-empty);
   transform: skewX(-15deg);
@@ -92,67 +90,6 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
 }
 .onboarding__encouragement { font-size: var(--text-lg); }
 
-/* ---- The blue map panel (the prize step): the landing's prizes section ---- */
-.onboarding__panel--blue { background: var(--ob-royal); color: var(--ob-cream); box-shadow: 0 0.6rem 0 var(--ob-plate-edge), 0 1.4rem 2.2rem rgb(16 40 90 / 0.3); }
-.onboarding__panel--blue .onboarding__header h1 { color: var(--ob-yellow); }
-.onboarding__panel--blue .onboarding__title { background: none; padding: 0; margin: 0; }
-.onboarding__panel--blue .onboarding__encouragement { color: var(--ob-cream); }
-.onboarding__panel--blue .onboarding-prize { background: var(--ob-navy); color: var(--ob-cream); }
-.onboarding__panel--blue .onboarding-prize__label, .onboarding__panel--blue .onboarding-prize__hours { color: #d7e6ff; }
-.onboarding__hint--light { color: var(--ob-cream); font-size: var(--text-sm); }
-.onboarding__panel--blue :where(a) { color: #a9dcff; }
-.onboarding__panel--blue .alert { color: var(--color-text); }
-
-/* ---- Prize podiums: the item stands on a rounded block with its name on the front, like the landing's shelf ---- */
-.onboarding__panel--blue .choice-grid--prizes { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 1.5rem 1rem; }
-@media (min-width: 40rem) { .onboarding__panel--blue .choice-grid--prizes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.onboarding__panel--blue .choice__body {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: none;
-  box-shadow: none;
-  color: var(--ob-cream);
-  text-align: center;
-}
-.onboarding__panel--blue .choice__art {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  height: 5.5rem;
-  margin: 0 0 -1.9rem;
-  padding: 0;
-  background: none;
-}
-.onboarding__panel--blue .choice__image { width: auto; max-width: 80%; max-height: 5.5rem; object-fit: contain; filter: drop-shadow(0 0.35rem 0 rgb(3 4 94 / 0.35)); }
-.onboarding__panel--blue .choice__emoji { font-size: 4rem; line-height: 1; filter: drop-shadow(0 0.35rem 0 rgb(3 4 94 / 0.35)); }
-.onboarding__panel--blue .choice__plate {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 2.4rem var(--space-3) var(--space-4);
-  border-radius: 1.4rem;
-  background: var(--ob-plate);
-  box-shadow: 0 0.4rem 0 var(--ob-plate-edge);
-}
-.onboarding__panel--blue .choice__name { color: #a9dcff; font-size: 1.125rem; line-height: 1.15; letter-spacing: -0.02em; overflow-wrap: anywhere; }
-.onboarding__panel--blue .choice__meta { background: var(--ob-yellow); color: var(--ob-navy); }
-.onboarding__panel--blue .choice__desc { color: #d7e6ff; font-size: var(--text-sm); line-height: 1.3; }
-.onboarding__panel--blue .choice:hover .choice__body { transform: translateY(-0.2rem); }
-/* chosen: the ring wraps the whole podium (see onboarding.css), the plate lights up and the item hops */
-.onboarding__panel--blue .choice__input:checked + .choice__body .choice__plate { background: #2f5fd0; }
-.onboarding__panel--blue .choice__input:checked + .choice__body::after { top: 3.4rem; right: 0.5rem; }
-@media (prefers-reduced-motion: no-preference) {
-  .onboarding__panel--blue .choice__input:checked + .choice__body .choice__art { animation: ob-hop 0.45s cubic-bezier(0.2, 1.6, 0.4, 1); }
-}
-@keyframes ob-hop { 0% { transform: translateY(0) scale(1); } 40% { transform: translateY(-0.9rem) scale(1.12) rotate(-4deg); } 100% { transform: none; } }
-.onboarding__panel--blue .choice:has(.choice__input:checked) { box-shadow: 0 0 0 0.25rem var(--ob-royal), 0 0 0 0.5rem var(--ob-yellow); }
-
 /* ---- The chunky pink button, as on the landing page ---- */
 .onboarding-page .btn--primary.btn--lg {
   gap: 0.36em;
@@ -176,20 +113,27 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
   .onboarding-page .btn--primary.btn--lg:active { translate: 0 0.04em; }
 }
 
-/* ---- The age question: two chunky choices ---- */
-.age-choice {
-  border-color: var(--ob-navy);
-  border-radius: 1.5rem;
-  box-shadow: 0 0.4rem 0 var(--ob-navy);
-  font-size: var(--text-xl);
-  letter-spacing: -0.02em;
+/* Not ready yet (a choice is still to make): not pink, so no pink label has to pass as dimmed. The sky-soft face with the navy
+   label is 8.3:1; no raised edge and no arrow, so it also reads as "not yet" without color. */
+.onboarding-page .btn--primary.btn--lg[aria-disabled="true"],
+.onboarding-page .btn--primary.btn--lg[aria-disabled="true"]:hover,
+.onboarding-page .btn--primary.btn--lg[aria-disabled="true"]:active {
+  background: var(--color-sky-soft);
+  box-shadow: none;
+  color: var(--color-navy);
+  opacity: 1;
+  translate: none;
+  cursor: not-allowed;
 }
+.onboarding-page .btn--primary.btn--lg[aria-disabled="true"]::after { content: none; }
+
+/* ---- The age question: two chunky choices (look in onboarding.css: no outline, edge in the face's own darker shade) ---- */
+.age-choice { border-radius: 1.5rem; font-size: var(--text-xl); letter-spacing: -0.02em; }
 @media (prefers-reduced-motion: no-preference) {
-  .age-choice { transition: transform 120ms ease, box-shadow 120ms ease; }
-  .age-choice:hover { transform: translateY(-0.2rem); box-shadow: 0 0.6rem 0 var(--ob-navy); }
-  .age-choice:active { transform: translateY(0.2rem); box-shadow: 0 0.2rem 0 var(--ob-navy); }
+  .age-choice { transition: transform 120ms ease, background-color 120ms ease; }
+  .age-choice:hover { transform: translateY(-0.2rem); }
+  .age-choice:active { transform: translateY(0.2rem); }
 }
-.age-choice:hover { border-color: var(--ob-pink); }
 
 /* ---- Different times on some days: one compact row per day (the day on the left, a short time field on the right) ---- */
 .day-times__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-1) var(--space-4); }
@@ -216,16 +160,15 @@ body:has(.onboarding-page) { height: 100vh; height: 100dvh; min-height: 0; }
 body:has(.onboarding-page) .page { min-height: 0; }
 body:has(.onboarding-page) .site-header__inner { padding-block: var(--space-1); }
 body:has(.onboarding-page) .site-header__logo { width: auto; height: clamp(1.75rem, 5vh, 2.75rem); }
-.onboarding-page:has(.onboarding__panel--blue) { --ob-fit-width: 72rem; }
 body:has(.onboarding-page) .page { display: flex; flex-direction: column; padding-block: 0; }
 body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .onboarding-page__content { flex: 1; display: flex; flex-direction: column; gap: var(--ob-pad); min-height: 0; }
 .onboarding-top { flex: none; max-width: var(--ob-fit-width); padding-block: clamp(0.25rem, 1vh, 0.75rem); }
 .onboarding-top__label { font-size: var(--text-sm); }
 .onboarding-top__bar { height: clamp(1rem, 2.4vh, 1.375rem); }
-.onboarding { flex: 1; display: flex; flex-direction: column; min-height: 0; max-width: var(--ob-fit-width); }
+.onboarding { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; max-width: var(--ob-fit-width); } /* the panel hugs its content and sits in the middle of the room under the strip */
 .onboarding__panel {
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
   gap: var(--ob-gap);
   padding: clamp(0.75rem, 2.6vh, 2rem) clamp(0.875rem, 3vw, 2.5rem);
@@ -249,19 +192,18 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   .onboarding__actions { position: static; margin-inline: 0; padding: 0; border: 0; background: none; }
   .onboarding__actions > .btn--primary { flex: 1 1 auto; justify-content: center; }
 }
-.onboarding__hint, .onboarding__hint--light { margin: 0; font-size: var(--text-sm); line-height: 1.3; }
+.onboarding__hint { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.3; }
 .onboarding__note { margin: 0; }
 
 /* ---- Age: the two big choices share the room under the heading ---- */
-.onboarding__panel > form:has(.age-choices) { flex: 1; }
-.age-choices { flex: 1; min-height: 0; grid-template-rows: minmax(0, 1fr); gap: var(--ob-gap); }
-@media (max-width: 39.99rem) { .age-choices { grid-template-rows: repeat(2, minmax(0, 1fr)); } }
-.age-choice { min-height: 0; padding: var(--space-3); max-height: 14rem; align-self: center; width: 100%; height: 100%; font-size: clamp(1.25rem, 3.2vh, 1.75rem); }
+.onboarding__panel > form:has(.age-choices) { flex: none; }
+.age-choices { flex: none; grid-template-rows: auto; gap: var(--ob-gap); }
+.age-choice { min-height: clamp(5rem, 20vh, 10rem); padding: var(--space-3); width: 100%; font-size: clamp(1.25rem, 3.2vh, 1.75rem); }
 
 /* ---- Prize: nine short cards (emoji on a block at the left, the words at the right) filling the room under the heading.
    3 x 3 on a wide window, 2 columns on a phone; the one-line descriptions only where there is room for them ---- */
-.onboarding__panel--blue > form > .onboarding__fieldset { flex: 1; min-height: min-content; display: flex; flex-direction: column; gap: var(--ob-gap); }
-.onboarding__panel--blue .choice-grid--prizes {
+.onboarding__panel > form > .onboarding__fieldset:has(.choice-grid--prizes) { flex: 1; min-height: min-content; display: flex; flex-direction: column; gap: var(--ob-gap); }
+.choice-grid--prizes {
   flex: 1;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(min-content, 1fr));
@@ -270,20 +212,22 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   margin: -0.5rem;
 }
 
-.onboarding__panel--blue .choice__body {
+.choice-grid--prizes .choice__body {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   column-gap: clamp(0.375rem, 1.2vw, 0.875rem);
   height: 100%;
   box-sizing: border-box;
+  margin: 0;
   padding: clamp(0.25rem, 1.1vh, 0.625rem) clamp(0.375rem, 1vw, 0.875rem);
   border-radius: clamp(0.875rem, 2.2vh, 1.4rem);
-  background: var(--ob-plate);
-  box-shadow: 0 0.3rem 0 var(--ob-plate-edge);
+  background: var(--color-surface-raised);
+  box-shadow: inset 0 -0.3rem 0 var(--color-cream-edge);
+  color: var(--color-text);
   text-align: left;
 }
-.onboarding__panel--blue .choice__art {
+.choice-grid--prizes .choice__art {
   --art: clamp(2.25rem, 8.5vh, 6.5rem);
   grid-row: 1;
   width: var(--art);
@@ -291,11 +235,11 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   min-height: 0;
   margin: 0;
   border-radius: clamp(0.625rem, 1.6vh, 1rem);
-  background: var(--ob-royal);
+  background: var(--color-bg);
 }
-.onboarding__panel--blue .choice__image { max-height: 80%; max-width: 80%; filter: none; }
-.onboarding__panel--blue .choice__emoji { font-size: calc(var(--art) * 0.7); filter: none; }
-.onboarding__panel--blue .choice__plate {
+.choice-grid--prizes .choice__image { max-height: 80%; max-width: 80%; filter: none; }
+.choice-grid--prizes .choice__emoji { font-size: calc(var(--art) * 0.7); filter: none; }
+.choice-grid--prizes .choice__plate {
   grid-row: 1;
   display: flex;
   flex-direction: column;
@@ -307,19 +251,19 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   background: none;
   box-shadow: none;
 }
-.onboarding__panel--blue .choice__name { font-size: clamp(0.875rem, 2.2vh, 1.125rem); line-height: 1.12; overflow-wrap: break-word; }
-.onboarding__panel--blue .choice__meta { padding: 0 var(--space-2); font-size: var(--text-sm); line-height: 1.35; }
-.onboarding__panel--blue .choice__desc { display: none; font-size: var(--text-sm); line-height: 1.25; }
-@media (min-width: 60rem) and (min-height: 44rem), (min-width: 40rem) and (min-height: 56rem) { .onboarding__panel--blue .choice__desc { display: block; } }
+.choice-grid--prizes .choice__name { color: var(--color-ink-blue); font-size: clamp(0.875rem, 2.2vh, 1.125rem); line-height: 1.12; overflow-wrap: break-word; }
+.choice-grid--prizes .choice__meta { padding: 0 var(--space-2); font-size: var(--text-sm); line-height: 1.35; }
+.choice-grid--prizes .choice__desc { display: none; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.25; }
+@media (min-width: 60rem) and (min-height: 44rem), (min-width: 40rem) and (min-height: 56rem) { .choice-grid--prizes .choice__desc { display: block; } }
 /* A phone: three narrow columns, so each card stacks (emoji, name, hours) and is centered */
 @media (max-width: 39.99rem) {
-  .onboarding__panel--blue .choice-grid--prizes { gap: 0.375rem; padding: 0.375rem; margin: -0.375rem; }
-  .onboarding__panel--blue .choice__body { grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; row-gap: 0.125rem; padding: 0.375rem 0.25rem; text-align: center; }
-  .onboarding__panel--blue .choice__art { --art: 2.5rem; grid-row: auto; background: none; }
-  .onboarding__panel--blue .choice__plate { grid-row: auto; align-items: center; }
-  .onboarding__panel--blue .choice__name { font-size: var(--text-sm); }
-  .onboarding__panel--blue .choice__meta { align-self: center; padding: 0 var(--space-2); border-radius: 0.75rem; font-size: var(--text-sm); line-height: 1.2; text-align: center; }
-  .onboarding__panel--blue .choice__input:checked + .choice__body::after { top: 0.125rem; right: 0.125rem; width: 1.25rem; height: 1.25rem; font-size: 0.75rem; }
+  .choice-grid--prizes { gap: 0.375rem; padding: 0.375rem; margin: -0.375rem; }
+  .choice-grid--prizes .choice__body { grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; row-gap: 0.125rem; padding: 0.375rem 0.25rem; text-align: center; }
+  .choice-grid--prizes .choice__art { --art: 2.5rem; grid-row: auto; background: none; }
+  .choice-grid--prizes .choice__plate { grid-row: auto; align-items: center; }
+  .choice-grid--prizes .choice__name { font-size: var(--text-sm); }
+  .choice-grid--prizes .choice__meta { align-self: center; padding: 0 var(--space-2); border-radius: 0.75rem; font-size: var(--text-sm); line-height: 1.2; text-align: center; }
+  .choice-grid--prizes .choice__input:checked + .choice__body::after { top: 0.125rem; right: 0.125rem; width: 1.25rem; height: 1.25rem; font-size: 0.75rem; }
   .onboarding-page.container { padding-inline: 0.5rem; }
   .onboarding__panel { padding-inline: 0.75rem; }
   .onboarding-top { padding-inline: 0.25rem 0.75rem; }
@@ -329,44 +273,50 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   .toggle-group.days { gap: 2px; }
 }
 .onboarding__pair .field { align-content: start; }
-.onboarding__panel--blue .choice__input:checked + .choice__body { background: #2f5fd0; }
-.onboarding__panel--blue .choice__input:checked + .choice__body .choice__plate { background: none; }
-.onboarding__panel--blue .choice__input:checked + .choice__body::after { top: 0.25rem; right: 0.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.875rem; }
-.onboarding__panel--blue .choice:has(.choice__input:checked) { border-radius: clamp(0.875rem, 2.2vh, 1.4rem); }
-.onboarding__panel--blue .choice:hover .choice__body { transform: none; }
-.onboarding__panel--blue .onboarding__hint--light { flex: none; }
+.choice-grid--prizes .choice__input:checked + .choice__body { background: var(--color-yellow); box-shadow: inset 0 -0.3rem 0 var(--color-yellow-edge); }
+.choice-grid--prizes .choice__input:checked + .choice__body .choice__desc { color: var(--color-text); }
+.choice-grid--prizes .choice__input:checked + .choice__body .choice__meta { background: var(--color-bg); }
+.choice-grid--prizes .choice__input:checked + .choice__body .choice__plate { background: none; }
+.choice-grid--prizes .choice__input:checked + .choice__body::after { top: 0.25rem; right: 0.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.875rem; }
+.choice-grid--prizes .choice:has(.choice__input:checked) { border-radius: clamp(0.875rem, 2.2vh, 1.4rem); }
+.choice-grid--prizes .choice:hover .choice__body { transform: none; }
+.onboarding__hint { flex: none; }
 
 /* "Working toward": a slim line; on a wide window it sits at the right of the heading row instead of taking a row of its own */
 .onboarding-prize { padding: var(--space-1) var(--space-3); font-size: var(--text-sm); }
 .onboarding-prize strong { font-size: var(--text-sm); }
 .onboarding__panel { position: relative; }
 
-/* ---- Project and schedule: a wider panel on a wide window, so the form can sit in two columns ---- */
-@media (min-width: 60rem) {
-  .onboarding-page:has(.chips), .onboarding-page:has(.days) { --ob-fit-width: 64rem; }
-}
+/* Two widths in all: narrow (48rem) for the one-column steps, wide (64rem) for the prize grid and the two-column schedule */
+.onboarding-page:has(.choice-grid--prizes), .onboarding-page:has(.days) { --ob-fit-width: 64rem; }
 .toggle-group--kinds .toggle__label { font-size: clamp(1rem, 2.4vh, 1.25rem); }
 .onboarding__legend { margin: 0 0 var(--space-2); font-size: clamp(1rem, 2.4vh, 1.25rem); }
 
-/* project: the idea box fills what is left; the spark chips are 44px tall, two to a row on a phone, one column beside the box on a wide window */
-.onboarding__field:has(.chips) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-.onboarding__field:has(.chips) textarea { flex: 1; min-height: 3.5rem; height: auto; resize: none; }
-.onboarding__field:has(.chips) > label { font-size: clamp(1rem, 2.4vh, 1.25rem); }
+/* project: the idea box takes what is left; the five spark chips sit behind the "Need a spark?" line, opening as a small card over the box */
+.onboarding__field:has(.sparks) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--space-1); position: relative; }
+.onboarding__field:has(.sparks) textarea { flex: 1; min-height: clamp(4.5rem, 14vh, 9rem); height: auto; resize: none; }
+.onboarding__field:has(.sparks) > label { font-size: clamp(1rem, 2.4vh, 1.25rem); }
+.sparks__summary { display: flex; align-items: flex-start; padding-block: 0.6rem; gap: var(--space-2); min-height: var(--tap-size); color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 500; cursor: pointer; list-style: none; }
+.sparks__summary::-webkit-details-marker { display: none; }
+.sparks__summary::before { content: "\25B8" / ""; flex: none; color: var(--color-link); font-size: var(--text-base); line-height: 1.4; }
+.sparks[open] > .sparks__summary::before { content: "\25BE" / ""; }
+.sparks__summary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; border-radius: var(--radius-sm); }
+.sparks[open] > .chips {
+  position: absolute;
+  inset-inline: 0;
+  z-index: 5;
+  margin-top: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-md);
+}
 .chips { gap: var(--space-1) var(--space-2); }
 .chip { min-height: 2.75rem; padding: var(--space-1) var(--space-3); line-height: 1.2; }
-@media (max-width: 59.99rem) {
+@media (max-width: 39.99rem) {
   .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .chips li { display: flex; }
   .chips .chip { width: 100%; }
-}
-@media (min-width: 60rem) {
-  .onboarding__field:has(.chips) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto auto; column-gap: var(--space-6); row-gap: var(--space-1); }
-  .onboarding__field:has(.chips) > label, .onboarding__field:has(.chips) > .field__hint:not(.onboarding__counter) { grid-column: 1 / -1; }
-  .onboarding__field:has(.chips) > .field__hint:last-child { grid-column: 2; }
-  .onboarding__field:has(.chips) > .chips { grid-column: 1; grid-row: 3 / span 3; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; align-self: start; display: flex; }
-  .onboarding__field:has(.chips) > textarea { grid-column: 2; grid-row: 3; }
-  .onboarding__field:has(.chips) > .field__error { grid-column: 2; }
-  .onboarding__field:has(.chips) > .onboarding__counter { grid-column: 2; grid-row: 4; text-align: start; }
 }
 
 /* schedule: tighter pills and rows; time and pace side by side from phone width up */
@@ -444,3 +394,17 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 @media (max-width: 39.99rem) { .toggle-group.days { gap: 2px; } }
 @media (max-width: 39.99rem) { .onboarding__actions > .btn--primary { min-height: 3rem; } }
 @media (max-width: 39.99rem) { .onboarding__panel { padding-block: 0.5rem; } }
+
+/* ==========================================================================================================
+   Taste pass: no dark or cream outlines on UI parts. Fields separate by a white fill and a thin darker shade of their own
+   fill; cards by a peach fill (--color-surface-raised); links are one color on cream. Focus rings stay.
+   ========================================================================================================== */
+.onboarding-page :is(input:not([type="checkbox"], [type="radio"], [type="hidden"]), textarea, select) {
+  border-color: var(--color-border);
+  background-color: var(--color-surface);
+}
+.onboarding-page .field--invalid :is(input, textarea, select),
+.onboarding-page :is(input, textarea, select)[aria-invalid="true"] { border-color: var(--color-danger); }
+.onboarding-page a:not(.btn, .onboarding-top__back) { color: var(--color-link); text-decoration: underline; text-underline-offset: 0.15em; }
+.onboarding-page a:not(.btn, .onboarding-top__back):hover { color: var(--color-link-hover); }
+.onboarding-page .check .field > label { font-weight: 700; }

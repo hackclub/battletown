@@ -828,14 +828,15 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "#onboarding-progress-step", "Step 2 of 7"
   end
 
-  test "the prize step is the blue podium panel, every card has the same structure, and hours are only a guide" do
+  test "the prize step uses the same cream panel as its siblings, every card has the same structure, and hours are only a guide" do
     anonymous_through("age")
     get onboarding_step_path("prize")
-    assert_select ".onboarding__panel--blue"
+    assert_select ".onboarding__panel"
+    assert_select ".onboarding__panel--blue", count: 0
     assert_select ".choice-grid--prizes .choice", Prize.paid.size
     assert_select ".choice-grid--prizes .choice .choice__art + .choice__plate .choice__name", Prize.paid.size
     assert_select ".choice__meta", /\Aabout /, Prize.paid.size
-    assert_select "p.onboarding__hint--light", OnboardingDesignHelper::HOURS_NOTE
+    assert_select "p.onboarding__hint", OnboardingDesignHelper::HOURS_NOTE
   end
 
   test "the progress label says something different at each step, always starting with 'onboarding progress'" do
