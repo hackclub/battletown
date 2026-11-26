@@ -108,12 +108,11 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_no_match(/Private Person|ident!private/, response.body)
   end
 
-  test "who's locked in shows a real count only once it is worth showing" do
+  test "there is no separate fighter count line: the count lives in the button" do
+    add_users_until(60)
     get "/"
     assert_select ".final__proof", 0
-    add_users_until(LandingHelper::FIGHTER_COUNT_THRESHOLD)
-    get "/"
-    assert_select ".final__proof", text: /#{LandingHelper::FIGHTER_COUNT_THRESHOLD} fighters are locked in/
+    assert_no_match(/locked in/, response.body)
   end
 
   test "keeps the free sticker note" do

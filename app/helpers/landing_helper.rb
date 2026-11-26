@@ -17,8 +17,9 @@ module LandingHelper
     prize.image.presence || PRIZE_ART[prize.key]
   end
 
-  # "Who's locked in" only shows a real number once there are this many signed-up users.
-  FIGHTER_COUNT_THRESHOLD = 10
+  # A count of fighters is only shown once it is over 50 (Armand, 2026-11-26), so this is 51. On the landing page the count
+  # lives in the call to action (LandingController::FIGHTERS_LINE_MIN); onboarding's "have already joined" line uses this.
+  FIGHTER_COUNT_THRESHOLD = 51
   FIGHTER_COUNT_CACHE_KEY = "landing/fighter_count".freeze
   BOSS_CACHE_KEY = "landing/boss".freeze
 
@@ -33,11 +34,6 @@ module LandingHelper
     return "Join the fight" unless count
 
     safe_join([ "Join ", content_tag(:span, number_with_delimiter(count), class: "cta__count"), " other fighters" ])
-  end
-
-  # "Who's locked in": the real number once it is worth showing, otherwise nil (the landing shows nothing).
-  def locked_in_text(count = fighter_count)
-    "#{number_with_delimiter(count)} fighters are locked in." if count >= FIGHTER_COUNT_THRESHOLD
   end
 
   # The boss health bar on the "Fight together" map for a signed-out visitor. Aggregate only: the boss's health left
