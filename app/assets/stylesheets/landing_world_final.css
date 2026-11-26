@@ -1,0 +1,4 @@
+/* Band: final. Owned by the final band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+
+/* First cut. The wrapper's top is canvas y 8590. The shore piece is canvas y 8250..8900. */
+.landing .world--final .world__shore { left: 50%; top: calc(var(--wu) * -170); width: max(100%, var(--world-w)); translate: -50% 0; }

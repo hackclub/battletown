@@ -42,6 +42,7 @@
   </section>
 
   <section class="how" aria-labelledby="how-title">
+    <div class="world world--sky" aria-hidden="true"><%= render "landing/world/sky" %></div>
     <div class="how__inner">
       <h2 id="how-title" class="how__title">How it works</h2>
       <ol class="signpost">
@@ -67,6 +68,8 @@
   </section>
 
   <section class="blk fight" aria-labelledby="boss-title">
+    <div class="world world--cliff" aria-hidden="true"><%= render "landing/world/cliff" %></div>
+    <div class="world world--cave" aria-hidden="true"><%= render "landing/world/cave" %></div>
     <svg class="edge edge--a" viewBox="0 0 1440 240" preserveAspectRatio="none" aria-hidden="true">
       <path class="edge__fill" d="M-20,70 C380,36 900,96 1460,196 L1460,241 L-20,241 Z"/>
     </svg>
@@ -108,6 +111,7 @@
   </section>
 
   <section id="prizes" class="blk prizes" aria-labelledby="prizes-title">
+    <div class="world world--floor" aria-hidden="true"><%= render "landing/world/floor" %></div>
     <svg class="edge edge--hp" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
       <path class="edge__fill" d="M-30,110 C240,230 560,250 860,215 C1100,186 1300,150 1470,90 L1470,321 L-30,321 Z"/>
     </svg>
@@ -143,6 +147,7 @@
   </section>
 
   <section class="blk faq" aria-labelledby="faq-title">
+    <div class="world world--sand" aria-hidden="true"><%= render "landing/world/sand" %></div>
     <svg class="edge edge--c" viewBox="0 0 1440 200" preserveAspectRatio="none" aria-hidden="true">
       <path class="edge__fill" d="M-20,150 C300,172 600,46 900,62 C1150,76 1300,150 1460,118 L1460,201 L-20,201 Z"/>
       <path class="bank__face" d="M-20,150 C300,172 600,46 900,62 C1150,76 1300,150 1460,118 L1460,144 C1300,176 1150,102 900,88 C600,72 300,198 -20,176 Z"/>
@@ -187,6 +192,7 @@
   </section>
 
   <section id="join" class="blk final" aria-labelledby="final-title">
+    <div class="world world--final" aria-hidden="true"><%= render "landing/world/final" %></div>
     <svg class="edge edge--d" viewBox="0 0 1440 180" preserveAspectRatio="none" aria-hidden="true">
       <path class="bank__foam" d="M-20,50 C250,142 600,142 900,84 C1100,44 1300,36 1460,76"/>
       <path class="edge__fill" d="M-20,58 C250,150 600,150 900,92 C1100,52 1300,44 1460,84 L1460,181 L-20,181 Z"/>

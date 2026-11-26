@@ -1,0 +1,8 @@
+/* Band: cliff. Owned by the cliff band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+
+/* First cut. The wrapper's top is canvas y 2700. The cliff piece is canvas y 2290..3100, the path 2540..3440 at x 1330..1650. */
+.landing .world--cliff .world__cliff { left: calc(50% - var(--wu) * 788); top: calc(var(--wu) * -205); width: var(--world-w); }
+.landing .world--cliff .world__edge { top: calc(var(--wu) * -205); height: calc(var(--wu) * 405); }
+.landing .world--cliff .world__edge--left { left: 0; width: calc(50% - var(--wu) * 788 + 1px); }
+.landing .world--cliff .world__edge--right { right: 0; width: calc(50% - var(--wu) * 788 + 1px); }
+.landing .world--cliff .world__path { left: calc(50% - var(--wu) * 123); top: calc(var(--wu) * -80); width: calc(var(--wu) * 160); }

@@ -1,0 +1,4 @@
+/* Band: floor. Owned by the floor band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+
+/* First cut. The wrapper's top is canvas y 4750. The floor piece is canvas y 4650..5600. */
+.landing .world--floor .world__floor { left: 50%; top: calc(var(--wu) * -50); width: max(100%, var(--world-w)); translate: -50% 0; }

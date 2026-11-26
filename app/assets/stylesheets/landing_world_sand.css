@@ -1,0 +1,6 @@
+/* Band: sand. Owned by the sand band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+
+/* First cut. The wrapper's top is canvas y 6300. The sand piece is canvas y 5500..7100, shell 1 at x 2545 y 6453, shell 2 at x 260 y 7883. */
+.landing .world--sand .world__sand { left: 50%; top: calc(var(--wu) * -400); width: max(100%, var(--world-w)); translate: -50% 0; }
+.landing .world--sand .world__shell--1 { left: calc(50% + var(--wu) * 484); top: calc(var(--wu) * 76); width: calc(var(--wu) * 184); }
+.landing .world--sand .world__shell--2 { left: calc(50% - var(--wu) * 658); top: calc(var(--wu) * 1010); width: calc(var(--wu) * 170); }

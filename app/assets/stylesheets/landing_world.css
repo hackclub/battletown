@@ -1,0 +1,91 @@
+/*
+ * The painted world behind the landing page (Armand's painting, 2026-11-23). SHARED FILE: only the foundation edits it.
+ * Each band has its own stylesheet (landing_world_<band>.css), partial (app/views/landing/world/_<band>.html.erb) and
+ * image folder (app/assets/images/landing/world/<band>/). A band agent edits only those three. The page's components
+ * (hero, signpost, boss, prizes, FAQ, last call) are live HTML and are never part of the painting.
+ * Re-cut the art with script/export_landing_world.py. Propshaft loads this file before landing_world_<band>.css.
+ *
+ * BANDS, TOP TO BOTTOM, and where each one sits (the wrapper `.world.world--<band>` is an absolute box that fills
+ * its home section and is aria-hidden; the band places its art inside it and may overhang the section):
+ *   sky    home .how      pale sky and two clouds behind the signpost. Hero-to-sky is the existing hero swoosh.
+ *   cliff  home .fight    sky-to-clifftop seam, clifftop with its crack, the cliff face, the path from the signpost
+ *                         down to the cave rim, and the lower teal ground.
+ *   cave   home .fight    the dark rim seam, the purple wall with stacked pillars, down to the foot of the wall.
+ *   floor  home .prizes   wall-to-floor seam and the dark pebbled floor.
+ *   sand   home .faq      floor-to-sand seam, the sand, two shells.
+ *   final  home .final    sand-to-pale-blue seam and the flat pale blue (a painting can drop in here later).
+ *
+ * SEAM RULE: a seam between two bands belongs to the LOWER band, which overlaps UPWARD into the band above (its wrapper
+ * is later in the document, so it paints on top). Most it may reach up, in design px (1576 wide, see --wu):
+ *   cliff over sky   260    cave over cliff  (the cave never needs to: it only starts at the rim)
+ *   floor over cave  350    sand over floor  400    final over sand  200
+ * The band above must therefore keep painting plain base color under that overlap.
+ *
+ * DESIGN SPACE: the painting is 3152 x 9898 px, a 2x picture of a 1576 px wide page. One unit rules every piece:
+ * --wu, one painting CSS px, which is signpost width / 576, so it is 1px from 36rem + 1rem up and about 0.65px at
+ * 390. Place a piece by calc(var(--wu) * <painting px / 2>), horizontally from the page middle (left: 50%, the
+ * painting's middle x is 788). Narrower than the painting, a piece is cropped to its middle; wider, the band extends
+ * with its 16px edge slices (stretched) or flat base color. Section boundaries in painting canvas px (divide by 2 for
+ * --wu): .how bottom = .fight top = 2700, .fight bottom = .prizes top = 4750, .prizes bottom = .faq top = 6300,
+ * .faq bottom = .final top = 8590, .final bottom = 9898. Distances between them are the design heights; on phones
+ * the sections are taller or shorter, so anchor to the nearest boundary (top: for bands hanging from a top, bottom:
+ * for bands that rise from a bottom) and let the flat base color absorb the rest.
+ *
+ * BASE COLORS (sampled from the art, one custom property each; a band's first and last row match its neighbors):
+ *   sky:   --world-sky-top at the swoosh (the swoosh's own fill) fading to --world-sky-bottom at the horizon
+ *   cliff: --world-teal-top (clifftop), --world-teal-shade (shadow under the face), --world-teal (the lower ground,
+ *          which is also the .fight background down to the rim)
+ *   cave:  starts on --world-teal above the rim; its last row (the foot of the wall) is overpainted by the floor band
+ *   floor: --world-floor behind the pebbles; --world-floor-end where it meets the sand
+ *   sand:  --world-sand-top at its top fading to --world-sand (flat from the seam down to the final band)
+ *   final: --world-sand into --world-final (flat to the page end)
+ *
+ * Z-INDEX: sections are position: relative with no z-index. Wrappers are z-index 0 and come first in their section, so
+ * the section's content paints over them; a band wanting to cover a neighbor relies on document order. Content that
+ * must stay above every wrapper has z-index >= 1 (.fight__text, .arena, .prizes .wrap, .shelf, .faq__list, .final .wrap,
+ * .final__orpheus). The signpost keeps its z-index 2. A band never uses z-index above 0 and never above content.
+ *
+ * BREAKPOINTS (the page's own): phone < 48rem, tablet 48rem to 63.99rem, desktop >= 64rem.
+ * LAZY IMAGES: every band image is an <img loading="lazy" decoding="async"> with width and height, and a srcset of
+ * @a/@b/@c. A CSS background below the fold is also fine. Nothing here is high priority.
+ */
+
+.landing {
+  --wu: calc(min(100vw - 1rem, 36rem) / 576);
+  --world-w: calc(var(--wu) * 1576);
+  --world-sky-top: #9dc4fd;
+  --world-sky-bottom: #cfe3ee;
+  --world-teal-top: #67e9d7;
+  --world-teal-shade: #0898a7;
+  --world-teal: #11bcb3;
+  --world-floor: #1f1d7a;
+  --world-floor-end: #483e87;
+  --world-sand-top: #d3af6c;
+  --world-sand: #ebd583;
+  --world-final: #d0e5ef;
+}
+body:has(.landing) { background: var(--world-final); }
+
+/* The wrapper and its images. Bands position their own images; this only sets the defaults. */
+.landing .world { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.landing .world img { position: absolute; display: block; max-width: none; height: auto; }
+
+/* Flat grounds. Sections carry the color; the painting is laid over it. */
+.landing .slab > .in { background: none; }
+.landing .how { background: linear-gradient(to bottom, var(--world-sky-top), var(--world-sky-bottom)); }
+.landing .how__inner { position: relative; } /* later in the document than the wrapper, so it paints over it */
+.landing .fight { background: var(--world-teal); }
+.landing .prizes { background: var(--world-floor); }
+.landing .faq { background: linear-gradient(to bottom, var(--world-sand-top), var(--world-sand) calc(var(--wu) * 400)); }
+.landing .final { background: var(--world-final); }
+
+/* The old backdrop the painting replaces: scenery, curved edges, the dotted trail, the river stones and the boss's patch
+   of shade. (The shade keeps its box, because the arena is sized from it.) */
+.landing :is(.prop, .edge, .trail, .hop) { display: none !important; } /* !important: landing.css shows .prop.d again from 64rem */
+.landing .fight__shadow { visibility: hidden; }
+
+/* Text that sat on blue grounds sits on teal and sand now, so it needs dark ink (yellow on teal is 1.6:1, cream 2.3:1,
+   yellow on sand 1:1; navy on both is 5:1 or better). The painted navy floor keeps its yellow heading. */
+.landing .fight h2,
+.landing .fight__text p,
+.landing .faq h2 { color: var(--navy); }

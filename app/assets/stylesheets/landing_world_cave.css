@@ -1,0 +1,7 @@
+/* Band: cave. Owned by the cave band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+
+/* First cut. The wrapper's bottom is canvas y 4750 (the foot of the wall). The cave piece is canvas y 3080..4750. */
+.landing .world--cave .world__cave { left: calc(50% - var(--wu) * 788); bottom: 0; width: var(--world-w); }
+.landing .world--cave .world__edge { bottom: 0; height: calc(var(--wu) * 835); }
+.landing .world--cave .world__edge--left { left: 0; width: calc(50% - var(--wu) * 788 + 1px); }
+.landing .world--cave .world__edge--right { right: 0; width: calc(50% - var(--wu) * 788 + 1px); }

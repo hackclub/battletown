@@ -1,0 +1,6 @@
+/* Band: sky. Owned by the sky band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+
+/* First cut. The cloud's painting spot: canvas x 203..951 / 2078..2826, y 1851..2045 / 1985..2179; the wrapper's bottom is canvas y 2700. */
+.landing .world__cloud { width: calc(var(--wu) * 374); }
+.landing .world__cloud--left { left: calc(50% - var(--wu) * 687); bottom: calc(var(--wu) * 327); }
+.landing .world__cloud--right { left: calc(50% + var(--wu) * 251); bottom: calc(var(--wu) * 260); }
