@@ -32,7 +32,7 @@
    about 217 wu down, as in the painting. Phones and tablets have no room beside the path, so the text starts under its end. */
 .landing .fight .in { padding-top: calc(var(--wu) * 360 + 2.25rem); }
 @media (min-width: 48rem) {
-  .landing .fight .in { padding-top: calc(var(--wu) * 270); } /* tablets: the heading is wider relative to the room left of the curve, so a little lower, where the curve has moved right */
+  .landing .fight .in { padding-top: calc(var(--wu) * 300); } /* tablets: little room left of the path's curve, so the heading sits lower, where the curve has moved right */
   .landing .fight__text p { max-width: min(26rem, calc(50vw - var(--wu) * 115 - var(--side) - 1.25rem)); }
 }
 @media (min-width: 64rem) {
