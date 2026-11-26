@@ -55,7 +55,14 @@ body:has(.landing) .site-footer { position: absolute; z-index: 2; left: 0; right
 body:has(.landing) .site-footer__inner { flex-direction: column; align-items: flex-end; gap: var(--space-1); max-width: none; margin: 0; padding-inline: var(--side, 1.25rem); }
 body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 @media (max-width: 63.999rem) {
-  body:has(.landing) .site-footer__inner { align-items: flex-start; width: fit-content; max-width: calc(100% - 2 * var(--side)); margin: 0 var(--side) var(--space-4) auto; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--color-ink-blue); } /* cream on it is 8.4:1, and the cream focus ring is too */
+  /* Phones and tablets: no box and no overlap. The footer sits in flow under the last section, as small navy underlined links on the page-end sky. */
+  body:has(.landing) .site-footer { position: static; color: var(--navy); pointer-events: auto; padding-block: var(--space-2); }
+  body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); }
+  body:has(.landing) .site-footer__inner { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; column-gap: 1.25rem; row-gap: 0; }
+  body:has(.landing) .site-footer__inner > span { display: block; padding-block: 0.8rem; }
+  body:has(.landing) .site-footer nav { display: flex; flex-wrap: wrap; column-gap: 1.25rem; }
+  body:has(.landing) .site-footer nav a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+  body:has(.landing) .site-footer__inner > span a { padding-block: 0.8rem; margin-block: -0.8rem; }
 }
 @media (min-width: 64rem) {
   body:has(.landing) .site-footer { color: var(--navy); }
@@ -298,18 +305,22 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
      fades from the pillar's dark side at (770,1830), rgb(44,47,124). White on the front face is 4.83:1. */
   --stone-top: #b3b8e2; --stone-front: #606ac3; --stone-deep: #2c2f7c; --stone-text: #fff;
 }
-/* The floor is water and each stone stands in it: no shadow underneath. The front face ends in the waterline, an arc (the water meeting a round
-   stone), with a thin soft white foam line on it like the shore's, and below it the stone carries on a short way, darker and bluer, fading into the water. */
-.landing .prize::after { content: ""; position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 0.7rem; border-bottom: 3px solid rgb(255 255 255 / 0.8); border-radius: 0 0 50% 50% / 0 0 100% 100%;
-  box-shadow: 0 3px 5px -1px rgb(255 255 255 / 0.28); pointer-events: none; }
-.landing .prize:nth-child(2n)::after { height: 0.62rem; left: 1%; right: 0.5%; }
-.landing .prize:nth-child(3n)::after { height: 0.78rem; left: 0; right: 1.5%; }
-/* The block: the front face with the name on it, and a lighter top face lying on it. The front's bottom is the waterline arc, not a rounded corner. */
-.landing .prize::before { content: ""; position: absolute; z-index: -2; inset: 0; margin-top: 60%; border-radius: 0 0 50% 50% / 0 0 0.7rem 0.7rem; background: var(--stone-front); }
-.landing .prize__label { position: relative; margin-top: auto; padding: 0.5rem 0.5rem 1.15rem; }
-.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 40cqw; border-radius: 1.4rem 1.2rem 0.5rem 0.5rem / 1.4rem 1.2rem 0.4rem 0.4rem; background: var(--stone-top); }
-/* The submerged part: the same stone a little below the surface, darker and bluer, fading out into the water. */
-.landing .prize__label::after { content: ""; position: absolute; z-index: -3; left: 3%; right: 3%; top: calc(100% - 0.9rem); height: 2.4rem; border-radius: 0 0 50% 50%; background: linear-gradient(to bottom, rgb(44 47 124 / 0.85), rgb(44 47 124 / 0.35) 55%, rgb(44 47 124 / 0)); pointer-events: none; }
+/* The floor is water and each stone stands in it: no shadow underneath. The front face is the label, and its bottom is the base of a round stone, an
+   arc. Round it, a wider ripple ring: its near half is the soft white foam line in front of the stone (::after), a second, much fainter ring lies
+   outside it (::before, behind the stone). Below the waterline the stone carries on, darker and bluer, fading into the water (label::after). */
+.landing .prize::before { content: ""; position: absolute; z-index: -3; left: -15%; right: -15%; bottom: -0.6rem; height: 3rem; border: 2px solid rgb(255 255 255 / 0.2); border-radius: 50%; filter: blur(0.6px); pointer-events: none; }
+.landing .prize::after { content: ""; position: absolute; z-index: 1; left: -7%; right: -7%; bottom: -0.15rem; height: 2.1rem; border: 3px solid rgb(255 255 255 / 0.82); border-radius: 50%; box-shadow: 0 2px 6px rgb(255 255 255 / 0.3);
+  clip-path: inset(50% -4px -8px -4px); -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent); filter: blur(0.35px); pointer-events: none; }
+.landing .prize:nth-child(2n)::after { left: -6%; right: -8%; height: 1.95rem; }
+.landing .prize:nth-child(3n)::after { left: -8%; right: -6%; height: 2.25rem; }
+.landing .prize:nth-child(2n)::before { left: -13%; right: -17%; }
+.landing .prize:nth-child(3n)::before { left: -17%; right: -13%; }
+/* The front face (the label): level, with a waterline arc for its bottom edge and a fixed height so every stone in a row has the same top line. */
+.landing .prize__label { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 6.85rem; padding: 0.5rem 0.5rem 1.3rem; background: var(--stone-front); border-radius: 0 0 50% 50% / 0 0 0.9rem 0.9rem; }
+.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 40cqw; border-radius: 1.4rem 1.4rem 0 0; background: var(--stone-top); }
+/* The submerged part: the front face seen through water, a little narrower as it goes down, fading to nothing. */
+.landing .prize__label::after { content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: calc(100% - 0.9rem); height: 3.2rem; border-radius: 0 0 42% 42% / 0 0 100% 100%; background: linear-gradient(to bottom, rgb(88 98 190 / 0.68), rgb(88 98 190 / 0.34) 50%, rgb(88 98 190 / 0)); pointer-events: none; }
+@media (min-width: 40rem) { .landing .prize__label { min-height: 5.65rem; } }
 /* The prize stands in the middle of the block's top face, not on its front edge. */
 .landing .prize img { display: block; width: 56%; margin: 0 auto 16%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
 .landing .prize__emoji { display: flex; align-items: flex-end; justify-content: center; width: 84%; margin: 0 auto 12%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }

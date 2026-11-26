@@ -34,9 +34,9 @@
 /* Phones and tablets: the list fills the width, so the shells sit where it is not. The upper one peeks in from the right above the
    heading, the lower one from the left below the list, both cut by the window edge and never under text. */
 @media (max-width: 63.99rem) {
-  .landing .faq .slab > .in { padding-bottom: calc(var(--wu) * 230 + 8.5rem); }
-  .landing .world--sand .world__shell--1 { left: calc(100% - 4.25rem); top: 0.25rem; width: 5.5rem; }
-  .landing .world--sand .world__shell--2 { left: -2.25rem; top: auto; bottom: calc(var(--wu) * 240 + 0.5rem); width: 5.25rem; }
+  .landing .faq .slab > .in { padding-bottom: calc(var(--wu) * 230 + 3rem); }
+  .landing .world--sand .world__shell--1 { left: calc(100% - 4.7rem); top: 0.25rem; width: 5.5rem; }
+  .landing .world--sand .world__shell--2 { left: -0.9rem; top: auto; bottom: calc(var(--wu) * 150 + 0.5rem); width: 5.25rem; }
 }
 
 /* Even space above the FAQ heading and below its list (64rem up): the heading was 86 to 109 px under the shore curve and the list had

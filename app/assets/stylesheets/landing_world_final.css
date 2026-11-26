@@ -66,9 +66,9 @@
 /* The cloud bank under the fighter: three of the painted clouds, each placed once, scaled uniformly up (width from --ow, his width), overlapping along
    the bottom right corner in front of his cape hem. They paint after his image, so they cover his lower body. */
 .landing .final__bank { position: absolute; z-index: 1; height: auto; max-width: none; pointer-events: none; }
-.landing .final__bank--1 { right: calc(var(--ow) * -0.12); bottom: calc(var(--ow) * 0.01); width: calc(var(--ow) * 0.78); }
-.landing .final__bank--2 { right: calc(var(--ow) * 0.30); bottom: calc(var(--ow) * -0.01); width: calc(var(--ow) * 0.7); }
-.landing .final__bank--3 { right: calc(var(--ow) * 0.62); bottom: calc(var(--ow) * 0); width: calc(var(--ow) * 0.55); }
+.landing .final__bank--1 { right: calc(var(--ow) * -0.12); bottom: calc(var(--ow) * -0.035); width: calc(var(--ow) * 0.78); }
+.landing .final__bank--2 { right: calc(var(--ow) * 0.30); bottom: calc(var(--ow) * -0.04); width: calc(var(--ow) * 0.7); }
+.landing .final__bank--3 { right: calc(var(--ow) * 0.62); bottom: calc(var(--ow) * -0.04); width: calc(var(--ow) * 0.55); }
 
 /*
  * SLOT FOR A PAINTING (empty on purpose; a painting would replace the sky and clouds, keep the sand edge). To drop one in, add to _final.html.erb, after the water layer:
