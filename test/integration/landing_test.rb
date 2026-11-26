@@ -135,7 +135,7 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "keeps the free sticker note" do
     get "/"
-    assert_select ".hero__sticker", text: /Free sticker when you sign up/
+    assert_select ".hero__sticker", text: "free sticker when you sign up!"
   end
 
   test "every image has an alt attribute and decorative ones are empty" do
@@ -242,15 +242,34 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".site-nav, .site-header__nav", 0
   end
 
-  test "the hero notes are one card: three decorative stickers over the free-sticker words, for visitors and signed-in people alike" do
+  test "the hero has a pile of three decorative stickers over the free-sticker words, for visitors and signed-in people alike" do
     get "/"
-    assert_select ".hero .hero__notes .hero__stickers img.hero__sticker-img[alt='']", 3
-    assert_select ".hero .hero__notes p.hero__sticker", text: "Free sticker when you sign up"
+    assert_select ".hero .hero__pile .hero__stickers img.hero__sticker-img[alt='']", 3
+    assert_select ".hero .hero__pile p.hero__sticker", text: "free sticker when you sign up!"
+    assert_select ".hero__notes", 0
     sign_in_as users(:new_user)
     get "/"
-    assert_select ".hero .hero__notes .hero__stickers img.hero__sticker-img[alt='']", 3
-    assert_select ".hero .hero__notes p.hero__sticker", 1
-    assert_select ".hero__content > .hero__notes + *", 0 # nothing is left dangling inside the notes card's parent after it
+    assert_select ".hero .hero__pile .hero__stickers img.hero__sticker-img[alt='']", 3
+    assert_select ".hero .hero__pile p.hero__sticker", 1
+  end
+
+  def onboard_users_until(total)
+    (User.onboarded.count...total).each { |i| User.create!(hca_uid: "ident!done#{i}", display_name: "Done #{i}", onboarded_at: Time.current) }
+  end
+
+  test "the hero shows no fighter line with 50 or fewer onboarded users, and the count at 51 and up" do
+    onboard_users_until(50)
+    # people who have not finished onboarding do not count
+    add_users_until(User.count + 5)
+    get "/"
+    assert_select ".hero__fighters", 0
+    onboard_users_until(51)
+    get "/"
+    assert_select ".hero .hero__fighters", text: "Join 51 other fighters"
+    assert_select ".hero .hero__fighters .hero__fighters-count", text: "51"
+    onboard_users_until(1_234)
+    get "/"
+    assert_select ".hero__fighters-count", text: "1,234"
   end
 
   test "onboarded users are redirected to the dashboard" do
