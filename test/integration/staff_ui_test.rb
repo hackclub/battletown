@@ -39,7 +39,9 @@ class StaffUiTest < ActionDispatch::IntegrationTest
 
   test "Dev login is in the header of every page, so other pages show it once too" do
     in_env("development") do
-      get "/privacy"
+      get "/auth/failure" # sessions#failure redirects, with a notice, to the page that renders the header
+      follow_redirect!
+      assert_response :success
       assert_select "button", text: "Dev login", count: 1
     end
   end

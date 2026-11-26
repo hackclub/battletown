@@ -1,10 +1,13 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest # /manifest.json: name, icons and colours for "add to home screen"
 
   root "landing#show"
 
   get "dashboard", to: "dashboard#show"
   patch "dashboard/todos", to: "dashboard_todos#update", as: :dashboard_todos
+  # The live boss stage (signed in and onboarded): the fighters, the boss's health and the sentences, as JSON for boss_fighters_controller.js.
+  get "boss/fighters", to: "boss_fighters#show", as: :boss_fighters, format: false
   get "onboarding", to: "onboardings#show", format: false
   scope "onboarding/:step", constraints: { step: Regexp.union(OnboardingsController::STEPS) }, format: false do
     get "", to: "onboardings#step", as: :onboarding_step
@@ -50,8 +53,12 @@ Rails.application.routes.draw do
     end
   end
 
-  # Ships (signed in and onboarded only): a user sees and changes only their own; others' ids are a 404.
-  resources :ships, only: %i[index show edit update] do
+  # Ships (signed in and onboarded only): a user sees and changes only their own; others' ids are a 404. There is no list page:
+  # each project's ship history is on the projects page, and /ships (old bookmarks) sends people there through the controller,
+  # so the login and onboarding rules apply first. A 302, so a browser does not remember it if the page ever comes back;
+  # unnamed, so no `ships_path` helper exists.
+  get "ships", to: "ships#moved", as: nil, format: false
+  resources :ships, only: %i[show edit update] do
     member { patch :withdraw }
   end
 
@@ -61,10 +68,22 @@ Rails.application.routes.draw do
                                            constraints: { ship_id: /\d+/, position: /[1-3]/ }
   end
 
-  # Which Slack messages to receive (signed in and onboarded; only the current user's own switches).
+  # The one Settings page (signed in and onboarded; only the current user's own choices): Notifications (#notifications),
+  # Hackatime (#hackatime) and Profile (#profile). The old pages' addresses still work: GET /settings/notifications and GET /hackatime
+  # redirect here; PATCH /settings/notifications, DELETE /hackatime and the /auth/hackatime/* OAuth routes keep their own addresses
+  # and send people back here.
+  resource :settings, only: :show, controller: "settings", format: false
+  patch "settings/profile", to: "settings#update_profile", as: :settings_profile, format: false
   namespace :settings do
     resource :notifications, only: %i[show update]
   end
+
+  # Player profiles (signed in and onboarded). /players/:slug opens any player's page by its opaque address (anything
+  # else is one plain 404); /profile is my own page.
+  get "profile", to: "profiles#mine", as: :profile, format: false
+  get "players/:slug", to: "profiles#show", as: :player, format: false, constraints: { slug: %r{[^/]{1,64}} }
+  # The player's picture (the re-encoded Slack picture, SlackProfiles): signed in only, and one plain 404 for everything that is not a player with a picture.
+  get "players/:slug/avatar", to: "player_avatars#show", as: :player_avatar, format: false, constraints: { slug: %r{[^/]{1,64}} }
 
   # The weekly merch track (flag `merch_track`): the routes exist only while it is on, otherwise a plain 404.
   constraints Features::Constraint.new(:merch_track) do
@@ -115,8 +134,10 @@ Rails.application.routes.draw do
     end
   end
 
-  get "privacy", to: "pages#privacy"
-  get "terms", to: "pages#terms"
+  # Battletown has no terms or privacy text of its own (Legal::URL is Hack Club's global page). The old addresses stay as
+  # permanent redirects to that fixed address, so old links and old emails still work; nothing from the request is copied.
+  get "privacy", to: redirect(Legal::URL, status: 301), format: false
+  get "terms", to: redirect(Legal::URL, status: 301), format: false
 
   get "auth/:provider/callback", to: "sessions#create", constraints: { provider: "hack_club" }
   # Hackatime account linking, additive to sign-in: the callback never signs anyone in (HackatimeConnectionsController).
@@ -154,6 +175,10 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#show"
     resource :metrics, only: :show
+    # Analytics tables (visitor and participant funnels, per-day numbers, events, jobs, table sizes) and their CSV/JSON (.csv?report=daily).
+    # Aggregates only; the POST only drops the cached numbers.
+    resource :analytics, only: :show, controller: "analytics"
+    post "analytics/refresh", to: "analytics#refresh", as: :analytics_refresh, format: false
     # The audit trail (read-only) and user management. Writes live under users/:user_id and are throttled (rack_attack.rb).
     get "audit", to: "audit#index", as: :audit
     resources :users, only: %i[index show], constraints: { id: /\d{1,12}/ } do

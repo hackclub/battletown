@@ -15,13 +15,22 @@ module Bosses
     # lower it, and a defeat is never cleared, so those do not call this): checks the boss whose week the ship's `submitted_at`
     # falls in (UTC date, see Bosses::Damage). The ship change has already committed, so a failure here must never fail it;
     # the damage is derived, not stored, so the next ship catches up.
+    # Returns true when this ship's hours brought a boss down (Ships::Submit tells the live stage), false otherwise.
     def self.for_ship(ship)
-      return unless ship.submitted_at
+      return false unless ship.submitted_at
 
       date = ship.submitted_at.utc.to_date
-      Boss.without_art_content.where(defeated_at: nil).covering(date).find_each { |boss| call(boss) }
+      defeated = false
+      Boss.without_art_content.where(defeated_at: nil).covering(date).find_each do |boss|
+        next unless call(boss)
+
+        defeated = true
+        Analytics::Product.boss_defeated(boss, ship)
+      end
+      defeated
     rescue StandardError => error
       Rails.logger.error("bosses.check_defeat failed error=#{error.class}")
+      false
     end
 
     def initialize(boss)

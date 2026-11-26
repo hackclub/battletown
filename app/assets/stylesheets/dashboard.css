@@ -1,9 +1,10 @@
 /* The signed-in home page (app/views/dashboard/**), drawn from the whiteboard sketch and nothing else: the boss's health bar across
    the top, your prize at the left and the daily goal at the right (the same distance from each edge), the boss in the middle with
-   the people who coded today around it, the to-do list, then one progress bar and the ship button. It is the landing's "Fight
+   the people who coded in the last day around it, the to-do list, then one progress bar and the ship button. It is the landing's "Fight
    together" map (a blue band, the river behind), edge to edge under the navbar, so `.on-map` swaps text, link and focus colours to
-   cream. Everything meaningful is also said in words (the headline, the bar's text, hidden labels); the circles, dashes, ticks and
-   the health plates are decoration (aria-hidden). Tokens only. Motion is off for reduced motion. */
+   cream. Everything meaningful is also said in words (the headline, the bar's text, hidden labels, each fighter's label); the dashes,
+   ticks and the health plates are decoration (aria-hidden), the fighter circles are real (links and focusable, with a card).
+   Tokens only. Motion is off for reduced motion. */
 .dashboard {
   /* The map runs edge to edge under the navbar: it is the page, not a card on it. The page's own padding is taken back. */
   margin-block: calc(var(--space-8) * -1);
@@ -75,7 +76,7 @@
    in the corners, the same distance from their edge, level with each other, under the health bar. */
 @media (min-width: 64rem) {
   .stage {
-    grid-template-columns: 19rem minmax(0, 1fr) 19rem;
+    grid-template-columns: 15rem minmax(0, 1fr) 15rem; /* the boss's column is as wide as it can be: the ring of fighters needs the room */
     grid-template-areas: "top top top" "prize arena goal" "plan plan plan" "next next next";
   }
   .stage__top { grid-area: top; }
@@ -131,10 +132,42 @@
 .stage__pace-line { font-weight: 700; }
 .stage__pace-plan { font-size: var(--text-sm); }
 
-/* The arena: the boss in the middle on its ground shadow, the fighters (small circles) around it, a few dashes of damage
-   falling toward the health bar. */
-.stage__arena { position: relative; display: grid; justify-items: center; align-items: end; padding-top: var(--space-2); }
-.stage__arena::before {
+/* The arena: the boss in the middle on its ground shadow, the fighters (small circles) in a ring around it, a few dashes of damage
+   falling toward the health bar. The ring needs room around the boss's picture, so the arena pads itself by exactly that (--room) and
+   the picture takes what is left: the circles never leave the arena's own cell, so they never meet the prize, the goal or the plan.
+   --size-max is the biggest circle (size band 5); --ring is how far from the picture's edge the nearest circle's middle rests (half
+   that circle plus a little air, which is what a lunge travels); --room is the most any circle's outer edge is from the picture. On a
+   phone the ring runs above and below the boss (the sides have no room at that width); from 48rem it hugs the sides and the feet. The
+   arena also borrows half of the gap on each side (-1rem), so the boss is as big as it ever was. */
+.stage__arena {
+  --size-max: 2.6rem;
+  --ring: 2.1rem;
+  --room: 4.25rem;
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-items: end;
+  margin-inline: -1rem;
+  padding: calc(var(--room) + var(--space-2)) 0 var(--room);
+}
+@media (min-width: 48rem) {
+  .stage__arena { --size-max: 3.1rem; --ring: 2.45rem; --room: 4.8rem; padding: var(--space-2) var(--room) var(--room); }
+}
+/* The boss's picture box, and the frame everything is measured from: the circles' places are percentages of it plus a share of --ring
+   outside it (stage__fan--pN below), the lunge stops short of its edge. Staff upload their own pictures, so the shape is not known: the
+   box is never wider than 19rem (29rem from 48rem up) nor shorter than the minimum, whatever the picture (never stretched, never scaled
+   up past its own size). The picture stands on the bottom edge and is the box when it is big enough. */
+.stage__ring {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-items: end;
+  inline-size: min(100%, 19rem);
+  min-block-size: 15rem;
+}
+@media (min-width: 48rem) { .stage__ring { inline-size: min(100%, 29rem); min-block-size: 20rem; } }
+@media (min-width: 48rem) { .stage__ring--cutout { margin-top: -4.5rem; } }
+.stage__ring::before {
   content: "";
   position: absolute;
   inset-inline: 18%;
@@ -144,44 +177,183 @@
   background: url("design/boss-shadow.svg") center / 100% 100% no-repeat;
   mix-blend-mode: soft-light;
 }
-/* Staff upload their own pictures, so the shape is not known: cap both sides (never stretched, never scaled up past its own size). */
-.stage__art { position: relative; z-index: 1; display: block; width: auto; max-width: min(100%, 19rem); max-height: min(30rem, 80vh); height: auto; object-fit: contain; }
-@media (min-width: 48rem) { .stage__art { max-width: min(100%, 29rem); } }
-.stage__art--cutout { margin-top: -2.5rem; }
-@media (min-width: 48rem) { .stage__art--cutout { margin-top: -4.5rem; } }
+.stage__art { position: relative; z-index: 1; display: block; width: auto; max-width: 100%; max-height: min(30rem, 80vh); height: auto; object-fit: contain; }
 .stage--escaped .stage__art { opacity: 0.75; }
 .stage--defeated .stage__art { filter: grayscale(0.7); }
 
+/* The fighters: everybody who coded in the last 24 hours (at most twelve), each a generated avatar (their initial on a colour taken
+   from their opaque profile address, or their Slack picture). Everybody is a link to their profile. Twelve places on arcs AROUND the boss's picture box (.stage__ring), none over it: on a phone two arcs, one above and one
+   below; from 48rem one that runs down the left side, round the feet and up the right side (the top stays clear for the health bar
+   and its plates). A place is a point on the box (--x, --y: percent of its width and height) pushed away from it by --nx and --ny
+   times --ring (a place in a corner is pushed along the diagonal), so a circle always rests at least one ring from the edge and the
+   arcs bulge where the numbers are bigger; --nd is how many rings it is from the box in all (the hypotenuse of --nx and --ny). --tx
+   and --ty are the direction it fights in (toward the boss, leaning toward its middle), --qx and --qy the way its small drift goes (across
+   that direction, never toward the boss). The size classes (s1 to s5) say how much they coded against the daily goal; the tier classes
+   how they hit the boss: hit-ship (they shipped: a big lunge and a spark), hit-code (they met the daily goal: a quick jab). Without
+   motion the tier is the ring (thicker, and yellow for a ship). Nothing here is measured in pixels of the picture: whatever the boss
+   looks like, the lunge ends short of the box. */
 .stage__crowd { position: absolute; inset: 0; z-index: 2; margin: 0; padding: 0; list-style: none; pointer-events: none; }
 .stage__fan {
   --size: 2rem;
   --x: 50%;
   --y: 50%;
+  --nx: 0; --ny: 0; --nd: 1; /* set per place below */
+  --tx: 1; --ty: 0; --qx: 0; --qy: 1;
+  /* Each person's own rhythm, so nobody moves in sync: the CSP has no style="" attributes, so the server (and the live controller) put one
+     class per step on the circle (stage__fan--da3, see Bosses::FighterMotion) and the sums are here. Start offset: da, db. Length of a
+     cycle, 2.4 s to 4.2 s: dc, de. Height of the idle bob: ba. How far the lunge reaches, and how far it drifts off the straight line: la, lb. */
+  --da: 0; --db: 0; --dc: 0; --de: 0; --ba: 1; --la: 4; --lb: 3;
+  --delay: calc(-1s * (var(--da) * 0.52 + var(--db) * 0.045)); /* negative: starts part-way through its cycle */
+  --dur: calc(2.4s + var(--dc) * 0.3s + var(--de) * 0.03s);
+  --bob: calc(0.22rem + var(--ba) * 0.12rem);
+  /* How far of the free distance to the box (--gap: from the circle's edge to the box's edge, straight along its way) the lunge covers: never all of it, so the
+     circle ends beside the boss and not on it. A shipper goes nearly all the way (0.7 to 0.945), someone on a steady pace about half of it (0.3 to 0.545). */
+  --gap: calc(var(--nd) * var(--ring) - var(--size) / 2);
+  --reach: calc(0.7 + var(--la) * 0.035);
+  --drift: calc((var(--lb) - 3) * 0.2rem);
   position: absolute;
-  inset-inline-start: var(--x);
-  inset-block-start: var(--y);
+  inset-inline-start: calc(var(--x) + var(--nx) * var(--ring));
+  inset-block-start: calc(var(--y) + var(--ny) * var(--ring));
   inline-size: var(--size);
   block-size: var(--size);
   margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  font-size: calc(var(--size) * 0.45);
+  pointer-events: auto;
+}
+.stage__fan--s1 { --size: 1.3rem; }
+.stage__fan--s2 { --size: 1.6rem; }
+.stage__fan--s3 { --size: 1.9rem; }
+.stage__fan--s4 { --size: 2.25rem; }
+.stage__fan--s5 { --size: 2.6rem; }
+@media (min-width: 48rem) {
+  .stage__fan--s1 { --size: 1.5rem; }
+  .stage__fan--s2 { --size: 1.9rem; }
+  .stage__fan--s3 { --size: 2.3rem; }
+  .stage__fan--s4 { --size: 2.7rem; }
+  .stage__fan--s5 { --size: 3.1rem; }
+}
+/* A phone: two arcs, above the boss and below it (a bow over the head, a smile under the feet), the middle ones filled first. */
+.stage__fan--p1  { --x: 40%; --y: 100%; --nx: 0; --ny: 1.4; --nd: 1.4; --tx: 0.1; --ty: -1; --qx: 1; --qy: 0; }
+.stage__fan--p2  { --x: 60%; --y: 100%; --nx: 0; --ny: 1.4; --nd: 1.4; --tx: -0.1; --ty: -1; --qx: 1; --qy: 0; }
+.stage__fan--p3  { --x: 40%; --y: 0%; --nx: 0; --ny: -1.4; --nd: 1.4; --tx: 0.1; --ty: 1; --qx: 1; --qy: 0; }
+.stage__fan--p4  { --x: 60%; --y: 0%; --nx: 0; --ny: -1.4; --nd: 1.4; --tx: -0.1; --ty: 1; --qx: 1; --qy: 0; }
+.stage__fan--p5  { --x: 22%; --y: 100%; --nx: 0; --ny: 1.2; --nd: 1.2; --tx: 0.28; --ty: -1; --qx: 1; --qy: 0; }
+.stage__fan--p6  { --x: 78%; --y: 100%; --nx: 0; --ny: 1.2; --nd: 1.2; --tx: -0.28; --ty: -1; --qx: 1; --qy: 0; }
+.stage__fan--p7  { --x: 22%; --y: 0%; --nx: 0; --ny: -1.2; --nd: 1.2; --tx: 0.28; --ty: 1; --qx: 1; --qy: 0; }
+.stage__fan--p8  { --x: 78%; --y: 0%; --nx: 0; --ny: -1.2; --nd: 1.2; --tx: -0.28; --ty: 1; --qx: 1; --qy: 0; }
+.stage__fan--p9  { --x: 6%; --y: 100%; --nx: 0; --ny: 1; --nd: 1; --tx: 0.44; --ty: -1; --qx: 1; --qy: 0; }
+.stage__fan--p10 { --x: 94%; --y: 100%; --nx: 0; --ny: 1; --nd: 1; --tx: -0.44; --ty: -1; --qx: 1; --qy: 0; }
+.stage__fan--p11 { --x: 6%; --y: 0%; --nx: 0; --ny: -1; --nd: 1; --tx: 0.44; --ty: 1; --qx: 1; --qy: 0; }
+.stage__fan--p12 { --x: 94%; --y: 0%; --nx: 0; --ny: -1; --nd: 1; --tx: -0.44; --ty: 1; --qx: 1; --qy: 0; }
+/* From 48rem: one arc down the left side, round the feet and up the right side, bulging a little where the picture is widest. The first
+   places filled are the middle ones, so a few fighters still make a balanced ring. */
+@media (min-width: 48rem) {
+  .stage__fan--p1  { --x: 0%; --y: 56%; --nx: -1.3; --ny: 0; --nd: 1.3; --tx: 1; --ty: -0.1; --qx: 0; --qy: 1; }
+  .stage__fan--p2  { --x: 100%; --y: 56%; --nx: 1.28; --ny: 0; --nd: 1.28; --tx: -1; --ty: -0.1; --qx: 0; --qy: 1; }
+  .stage__fan--p3  { --x: 40%; --y: 100%; --nx: 0; --ny: 1.32; --nd: 1.32; --tx: 0.1; --ty: -1; --qx: 1; --qy: 0; }
+  .stage__fan--p4  { --x: 60%; --y: 100%; --nx: 0; --ny: 1.26; --nd: 1.26; --tx: -0.1; --ty: -1; --qx: 1; --qy: 0; }
+  .stage__fan--p5  { --x: 0%; --y: 34%; --nx: -1.12; --ny: 0; --nd: 1.12; --tx: 1; --ty: 0.3; --qx: 0; --qy: 1; }
+  .stage__fan--p6  { --x: 100%; --y: 34%; --nx: 1.1; --ny: 0; --nd: 1.1; --tx: -1; --ty: 0.3; --qx: 0; --qy: 1; }
+  .stage__fan--p7  { --x: 0%; --y: 78%; --nx: -1.1; --ny: 0; --nd: 1.1; --tx: 1; --ty: -0.4; --qx: 0; --qy: 1; }
+  .stage__fan--p8  { --x: 100%; --y: 78%; --nx: 1.14; --ny: 0; --nd: 1.14; --tx: -1; --ty: -0.4; --qx: 0; --qy: 1; }
+  .stage__fan--p9  { --x: 20%; --y: 100%; --nx: 0; --ny: 1.02; --nd: 1.02; --tx: 0.35; --ty: -1; --qx: 1; --qy: 0; }
+  .stage__fan--p10 { --x: 80%; --y: 100%; --nx: 0; --ny: 1.02; --nd: 1.02; --tx: -0.35; --ty: -1; --qx: 1; --qy: 0; }
+  .stage__fan--p11 { --x: 0%; --y: 100%; --nx: -0.76; --ny: 0.76; --nd: 1.07; --tx: 0.7; --ty: -0.7; --qx: 0.7; --qy: 0.7; }
+  .stage__fan--p12 { --x: 100%; --y: 100%; --nx: 0.76; --ny: 0.76; --nd: 1.07; --tx: -0.7; --ty: -0.7; --qx: 0.7; --qy: -0.7; }
+}
+
+/* The steps of each person's rhythm (Bosses::FighterMotion::STEPS: how many of each). */
+.stage__fan--da0 { --da: 0; } .stage__fan--da1 { --da: 1; } .stage__fan--da2 { --da: 2; } .stage__fan--da3 { --da: 3; } .stage__fan--da4 { --da: 4; } .stage__fan--da5 { --da: 5; } .stage__fan--da6 { --da: 6; } .stage__fan--da7 { --da: 7; }
+.stage__fan--db0 { --db: 0; } .stage__fan--db1 { --db: 1; } .stage__fan--db2 { --db: 2; } .stage__fan--db3 { --db: 3; } .stage__fan--db4 { --db: 4; } .stage__fan--db5 { --db: 5; } .stage__fan--db6 { --db: 6; } .stage__fan--db7 { --db: 7; } .stage__fan--db8 { --db: 8; } .stage__fan--db9 { --db: 9; } .stage__fan--db10 { --db: 10; } .stage__fan--db11 { --db: 11; }
+.stage__fan--dc0 { --dc: 0; } .stage__fan--dc1 { --dc: 1; } .stage__fan--dc2 { --dc: 2; } .stage__fan--dc3 { --dc: 3; } .stage__fan--dc4 { --dc: 4; } .stage__fan--dc5 { --dc: 5; }
+.stage__fan--de0 { --de: 0; } .stage__fan--de1 { --de: 1; } .stage__fan--de2 { --de: 2; } .stage__fan--de3 { --de: 3; } .stage__fan--de4 { --de: 4; } .stage__fan--de5 { --de: 5; } .stage__fan--de6 { --de: 6; } .stage__fan--de7 { --de: 7; } .stage__fan--de8 { --de: 8; } .stage__fan--de9 { --de: 9; }
+.stage__fan--ba0 { --ba: 0; } .stage__fan--ba1 { --ba: 1; } .stage__fan--ba2 { --ba: 2; } .stage__fan--ba3 { --ba: 3; }
+.stage__fan--la0 { --la: 0; } .stage__fan--la1 { --la: 1; } .stage__fan--la2 { --la: 2; } .stage__fan--la3 { --la: 3; } .stage__fan--la4 { --la: 4; } .stage__fan--la5 { --la: 5; } .stage__fan--la6 { --la: 6; } .stage__fan--la7 { --la: 7; }
+.stage__fan--lb0 { --lb: 0; } .stage__fan--lb1 { --lb: 1; } .stage__fan--lb2 { --lb: 2; } .stage__fan--lb3 { --lb: 3; } .stage__fan--lb4 { --lb: 4; } .stage__fan--lb5 { --lb: 5; } .stage__fan--lb6 { --lb: 6; }
+
+/* Two classes: profiles.css (loaded after this file) styles .avatar with a border and sizes of its own. */
+.stage__fan .stage__fighter {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  box-sizing: border-box;
   border: 3px solid var(--color-bg);
   border-radius: var(--radius-full);
-  background: var(--fan, var(--color-highlight));
   box-shadow: 0 0.2rem 0 var(--color-ink-blue);
+  color: var(--color-text); /* black on the pastel, not the map's cream link colour (also on hover) */
+  text-decoration: none;
+  line-height: 1;
 }
-@media (min-width: 48rem) { .stage__fan { --size: 2.75rem; } }
-/* Twelve places, six on each side, none over the boss. Colours are decoration only. */
-.stage__fan:nth-child(1)  { --x: 8%;  --y: 18%; --fan: var(--color-highlight); }
-.stage__fan:nth-child(2)  { --x: 20%; --y: 8%;  --fan: var(--color-cta); }
-.stage__fan:nth-child(3)  { --x: 6%;  --y: 48%; --fan: var(--color-sky); }
-.stage__fan:nth-child(4)  { --x: 19%; --y: 34%; --fan: var(--color-success-bg); }
-.stage__fan:nth-child(5)  { --x: 10%; --y: 78%; --fan: var(--color-cta); }
-.stage__fan:nth-child(6)  { --x: 24%; --y: 64%; --fan: var(--color-highlight); }
-.stage__fan:nth-child(7)  { --x: 92%; --y: 20%; --fan: var(--color-sky); }
-.stage__fan:nth-child(8)  { --x: 80%; --y: 8%;  --fan: var(--color-highlight); }
-.stage__fan:nth-child(9)  { --x: 94%; --y: 50%; --fan: var(--color-cta); }
-.stage__fan:nth-child(10) { --x: 81%; --y: 36%; --fan: var(--color-success-bg); }
-.stage__fan:nth-child(11) { --x: 90%; --y: 80%; --fan: var(--color-highlight); }
-.stage__fan:nth-child(12) { --x: 76%; --y: 66%; --fan: var(--color-sky); }
+.stage__fan .stage__fighter:hover { color: var(--color-text); }
+/* Anonymous: a plain colour, no letter. */
+.stage__fan .stage__fighter--anonymous { background: var(--color-sky); }
+.stage__fan .stage__fighter:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+/* How they hit the boss, readable without any motion: a thicker ring for a steady pace, a thick yellow one for a ship. */
+.stage__fan--hit-code { --reach: calc(0.3 + var(--la) * 0.035); }
+.stage__fan--hit-code .stage__fighter { border-width: 4px; border-style: dashed; }
+.stage__fan--hit-ship .stage__fighter { border-width: 5px; border-color: var(--color-highlight); }
+/* You: an extra ring and a small label under the circle. */
+.stage__fan--you .stage__fighter { box-shadow: 0 0 0 3px var(--color-ink-blue), 0 0 0 6px var(--color-bg); }
+.stage__you {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: calc(100% - 0.75rem); /* over the circle's lower edge, so it hardly reaches the circle below */
+  translate: -50% 0;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-ink-blue);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1.3;
+  pointer-events: none;
+}
+
+/* The card on hover or keyboard focus (CSS only; the circle's aria-label says the same words, so the card is hidden from assistive tech). It opens toward the middle of the
+   arena from the side the circle is on, and above the circle for the bottom places, so it stays inside the stage. */
+.stage__tip {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 0;
+  z-index: 1;
+  display: none;
+  inline-size: max-content;
+  max-inline-size: min(12rem, 60vw);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-ink-blue);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: start;
+  box-shadow: var(--shadow-md);
+}
+.stage__tip > span { display: block; }
+.stage__tip > [hidden] { display: none; }
+.stage__tip-title { display: block; font-family: var(--font-display); font-size: var(--text-md); font-weight: 700; overflow-wrap: anywhere; }
+.stage__tip-hint { color: var(--color-ink-blue); font-weight: 700; }
+/* A phone: the right half of each arc opens its card to the left, the bottom arc opens it upward. */
+.stage__fan--p2 .stage__tip, .stage__fan--p4 .stage__tip, .stage__fan--p6 .stage__tip, .stage__fan--p8 .stage__tip,
+.stage__fan--p10 .stage__tip, .stage__fan--p12 .stage__tip { inset-inline-start: auto; inset-inline-end: 0; }
+.stage__fan--p1 .stage__tip, .stage__fan--p2 .stage__tip, .stage__fan--p5 .stage__tip, .stage__fan--p6 .stage__tip,
+.stage__fan--p9 .stage__tip, .stage__fan--p10 .stage__tip { inset-block-start: auto; inset-block-end: 100%; }
+/* From 48rem: the right side and the right half of the feet open to the left; the feet open upward. */
+@media (min-width: 48rem) {
+  .stage__fan--p1 .stage__tip, .stage__fan--p5 .stage__tip, .stage__fan--p7 .stage__tip, .stage__fan--p11 .stage__tip { inset-inline-start: 0; inset-inline-end: auto; }
+  .stage__fan--p2 .stage__tip, .stage__fan--p4 .stage__tip, .stage__fan--p6 .stage__tip, .stage__fan--p8 .stage__tip,
+  .stage__fan--p10 .stage__tip, .stage__fan--p12 .stage__tip { inset-inline-start: auto; inset-inline-end: 0; }
+  .stage__fan--p1 .stage__tip, .stage__fan--p2 .stage__tip, .stage__fan--p5 .stage__tip, .stage__fan--p6 .stage__tip,
+  .stage__fan--p9 .stage__tip, .stage__fan--p10 .stage__tip { inset-block-start: 100%; inset-block-end: auto; }
+  .stage__fan--p3 .stage__tip, .stage__fan--p4 .stage__tip, .stage__fan--p9 .stage__tip, .stage__fan--p10 .stage__tip,
+  .stage__fan--p11 .stage__tip, .stage__fan--p12 .stage__tip { inset-block-start: auto; inset-block-end: 100%; }
+}
+.stage__fan:hover, .stage__fan:has(.stage__fighter:focus-visible) { z-index: 1; }
+.stage__fan:hover .stage__tip, .stage__fan:has(.stage__fighter:focus-visible) .stage__tip { display: block; }
+/* Escape puts the card away until the pointer or focus goes to another circle (boss_fighters_controller.js; WCAG 1.4.13). */
+.stage__crowd[data-tips-hidden] .stage__fan .stage__tip { display: none; }
 
 /* The daily goal, straight on the map: no card, cream text. */
 .goal-card { color: var(--color-bg); }
@@ -305,13 +477,42 @@
 .stage__dev-label { font-size: var(--text-sm); font-weight: 700; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .stage__fan { animation: stage-bob 2.6s ease-in-out infinite; }
-  .stage__fan:nth-child(even) { animation-delay: -1.3s; }
-  /* Dashes of damage falling toward the boss's bar, only while the boss is still in the fight. */
-  .stage--in-progress .stage__arena::after {
+  .stage__bar--hit { animation: stage-bar-hit 600ms ease-out; }
+  /* A circle changing size, or taking another place, glides there; one arriving pops in, one leaving shrinks away. */
+  .stage__fan {
+    transition: inline-size 0.6s ease, block-size 0.6s ease, margin 0.6s ease, font-size 0.6s ease, inset-inline-start 0.6s ease, inset-block-start 0.6s ease;
+    animation: stage-bob var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  /* Only while the boss is still fighting. A shipper lunges at it, hard and slowly, with a spark where they land; someone who met the
+     daily goal jabs lightly and often. */
+  .stage--in-progress .stage__fan--hit-ship { animation: stage-lunge calc(var(--dur) * 1.25) ease-in-out infinite; animation-delay: var(--delay); }
+  .stage--in-progress .stage__fan--hit-code { animation: stage-jab calc(var(--dur) * 0.45) ease-in-out infinite; animation-delay: var(--delay); }
+  .stage--in-progress .stage__fan--hit-ship::after {
     content: "";
     position: absolute;
-    inset: 0 30%;
+    inset-block-start: calc(50% + var(--ty) * (var(--size) / 2 + 0.5rem));
+    inset-inline-start: calc(50% + var(--tx) * (var(--size) / 2 + 0.5rem));
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
+    translate: -50% -50%;
+    background: radial-gradient(circle, var(--color-bg) 0 20%, var(--color-highlight) 21% 45%, transparent 46%);
+    clip-path: polygon(50% 0, 62% 30%, 100% 38%, 70% 58%, 80% 100%, 50% 74%, 20% 100%, 30% 58%, 0 38%, 38% 30%);
+    pointer-events: none;
+    animation: stage-spark calc(var(--dur) * 1.25) ease-out infinite;
+    animation-delay: var(--delay);
+  }
+  /* Held still under a pointer or keyboard focus, so the link and its card never run away from a tap or a click (WCAG 2.2.2). */
+  .stage .stage__fan:hover, .stage .stage__fan:has(.stage__fighter:focus-visible),
+  .stage .stage__fan:hover::after, .stage .stage__fan:has(.stage__fighter:focus-visible)::after { animation-play-state: paused; }
+  /* A circle arriving pops in, one leaving shrinks away (after the rules above, so they win over a lunge). */
+  .stage .stage__fan--entering { animation: stage-pop 0.5s ease-out both; }
+  .stage .stage__fan--leaving { animation: stage-leave 0.4s ease-in both; pointer-events: none; }
+  /* Dashes of damage falling toward the boss's bar, only while the boss is still in the fight. */
+  .stage--in-progress .stage__ring::after {
+    content: "";
+    position: absolute;
+    inset: 0 22%;
     z-index: 0;
     background: repeating-linear-gradient(100deg, transparent 0 1.4rem, color-mix(in srgb, var(--color-bg) 70%, transparent) 1.4rem 1.6rem);
     -webkit-mask: linear-gradient(to bottom, transparent, #000 25%, transparent 80%);
@@ -321,5 +522,35 @@
     pointer-events: none;
   }
 }
-@keyframes stage-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.35rem); } }
+@keyframes stage-pop { from { transform: scale(0.2); opacity: 0; } 70% { transform: scale(1.15); } to { transform: scale(1); opacity: 1; } }
+@keyframes stage-leave { to { transform: scale(0.1); opacity: 0; } }
+/* Toward the boss and back, and never past its edge. --tx, --ty is this place's direction (the box's edge is across the one that is 1),
+   --gap how far the circle's own edge is from the box at rest, --reach (under 1, so the circle stops short of the edge: a shipper nearly
+   touches it, a steady pace jabs lightly) how much of that gap this person covers, --drift a small slide along the edge. */
+@keyframes stage-lunge {
+  0%, 55%, 100% { transform: translate(0, 0); }
+  68% { transform: translate(calc(var(--tx) * var(--gap) * -0.12), calc(var(--ty) * var(--gap) * -0.12)); }
+  80% { transform: translate(calc(var(--tx) * var(--gap) * var(--reach) + var(--qx) * var(--drift)), calc(var(--ty) * var(--gap) * var(--reach) + var(--qy) * var(--drift))); }
+  88% { transform: translate(calc(var(--tx) * var(--gap) * var(--reach) * 0.55 + var(--qx) * var(--drift) * 0.6), calc(var(--ty) * var(--gap) * var(--reach) * 0.55 + var(--qy) * var(--drift) * 0.6)); }
+}
+@keyframes stage-jab {
+  0%, 60%, 100% { transform: translate(0, 0); }
+  75% { transform: translate(calc(var(--tx) * var(--gap) * var(--reach) + var(--qx) * var(--drift) * 0.3), calc(var(--ty) * var(--gap) * var(--reach) + var(--qy) * var(--drift) * 0.3)); }
+}
+@keyframes stage-spark {
+  0%, 77% { opacity: 0; transform: scale(0.3); }
+  82% { opacity: 1; transform: scale(1.2); }
+  92%, 100% { opacity: 0; transform: scale(0.8); }
+}
+@keyframes stage-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--bob) * -1)); } }
 @keyframes stage-hits { from { background-position: 0 0; } to { background-position: 3rem 0; } }
+
+/* The boss took damage (boss_fighters_controller.js adds the class for a moment; the rule that plays it is in the reduced-motion block above): a
+   quick flash and shake of the health bar. Motion only. */
+@keyframes stage-bar-hit {
+  0%   { filter: brightness(2.2); transform: translateX(0); }
+  20%  { transform: translateX(-0.25rem); }
+  40%  { transform: translateX(0.25rem); }
+  60%  { filter: brightness(1.4); transform: translateX(-0.125rem); }
+  100% { filter: none; transform: translateX(0); }
+}

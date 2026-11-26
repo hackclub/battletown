@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include FeatureFlags
+  include Analytics::Controller
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   # A controller can opt a request out (`skip_browser_check?`): the email unsubscribe POST comes from mail providers
@@ -26,9 +27,13 @@ class ApplicationController < ActionController::Base
   def signed_in? = current_user.present?
 
   # Fixation-safe: always start a fresh session before attaching the user.
+  # The analytics visit token survives the reset (and is stamped with the person), so the trail before sign-up is theirs.
   def sign_in(user)
+    previous_token = analytics_token
     reset_session
     session[:user_id] = user.id
+    @current_user = user
+    analytics_link_visit(user, previous_token)
   end
 
   def require_login

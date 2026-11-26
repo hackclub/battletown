@@ -12,7 +12,8 @@ module Ships
   #   Ships::Submit.call(project: project, ship: draft, attributes: {...}, submit: true)   # continue a draft
   #
   # Emits `ship_submitted.battletown` (ship_id only) after the ship is saved as submitted, and then checks whether the hours
-  # just shipped brought down the weekly boss (Bosses::CheckDefeat.for_ship: shipping is what damages the boss).
+  # just shipped brought down the weekly boss (Bosses::CheckDefeat.for_ship: shipping is what damages the boss). Last of all it pushes the new
+  # state of the boss stage to every open dashboard (Bosses::Live), once the transaction is behind it.
   class Submit
     class Refused < StandardError; end
     class NoHackatimeLink < Refused; end
@@ -59,7 +60,9 @@ module Ships
       end
       if saved && @submit
         instrument
-        Bosses::CheckDefeat.for_ship(@ship)
+        defeated = Bosses::CheckDefeat.for_ship(@ship)
+        # After the transaction has committed, and it never fails the ship: Bosses::Live logs and swallows whatever goes wrong.
+        Bosses::Live.ship_submitted(@ship, defeated: defeated)
       end
       @ship
     rescue ActiveRecord::RecordNotUnique

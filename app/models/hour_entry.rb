@@ -22,6 +22,10 @@ class HourEntry < ApplicationRecord
   validates :note, length: { maximum: 200 }
   validates :created_by, format: { with: CREATED_BY_FORMAT }, allow_nil: true
 
+  # Coded time just arrived, so who is fighting the boss may have changed: tell the live stage (Bosses::Live, throttled, never raises) once
+  # the transaction has committed, never inside it.
+  after_commit(on: :create) { Bosses::Live.hours_changed }
+
   # Immutable once persisted (see above).
   def readonly? = persisted? || super
 end

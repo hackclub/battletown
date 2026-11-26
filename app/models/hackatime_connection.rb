@@ -24,8 +24,11 @@ class HackatimeConnection < ApplicationRecord
 
   def expired?(now: Time.current) = expires_at.present? && expires_at <= now + EXPIRY_SKEW
 
+  # The analytics event is for the moment a working link breaks, not for every failed sync after that.
   def mark_needs_reconnect!(code)
+    newly = !needs_reconnect?
     update!(needs_reconnect: true, last_error_code: code.to_s)
+    Analytics.track(:hackatime_needs_reconnect, user: user, code: last_error_code) if newly
   end
 
   def record_sync!(at: Time.current)

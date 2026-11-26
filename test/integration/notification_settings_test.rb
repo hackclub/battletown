@@ -29,7 +29,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
   # --- access ---
 
   test "signed-out visitors are sent home" do
-    get settings_notifications_path
+    get settings_path
     assert_redirected_to root_path
     patch settings_notifications_path, params: { preferences: { ship_approved: "0" } }
     assert_redirected_to root_path
@@ -38,7 +38,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
 
   test "people who have not finished onboarding are sent to onboarding" do
     sign_in_as(users(:new_user).tap { |user| user.update_columns(onboarded_at: nil, onboarding_step: 0) })
-    get settings_notifications_path
+    get settings_path
     assert_redirected_to onboarding_path
     patch settings_notifications_path, params: { preferences: { ship_approved: "0" } }
     assert_redirected_to onboarding_path
@@ -49,22 +49,23 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
 
   test "the welcome-back switch is listed only while the returning feature is on" do
     sign_in_as(@user)
-    get settings_notifications_path
+    get settings_path
     assert_select "input[name='preferences[returning_nudge]']", 0
     with_feature(:returning) do
-      get settings_notifications_path
+      get settings_path
       assert_select "input[type=checkbox][name='preferences[returning_nudge]'][checked]"
       assert_select "label[for=preferences_returning_nudge] .notification-settings__title", text: "Welcome-back nudge"
     end
   end
 
-  test "shows every kind with a plain label, all on by default, and a Save changes button" do
+  test "shows every kind with a plain label, all on by default, and a save button" do
     Flipper.enable(:nps) # a kind whose feature flag is off is hidden (next test)
     sign_in_as(@user)
-    get settings_notifications_path
+    get settings_path
     assert_response :success
-    assert_select "title", /Notifications/
-    assert_select "h1", "Notifications"
+    assert_select "title", /Settings/
+    assert_select "h1", "Settings"
+    assert_select "section#notifications h2", "Notifications"
     assert_select "form[action=?][method=post]", settings_notifications_path
     assert_select "input[name='_method'][value=patch]"
     (Notification::KINDS - %w[returning_nudge]).each do |kind|
@@ -72,21 +73,21 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
       assert_select "input[type=hidden][name='preferences[#{kind}]'][value='0']"
       assert_select "label[for=preferences_#{kind}] .notification-settings__title", text: Notifications::Config.current.label(kind)["title"]
     end
-    assert_select "input[type=submit][value='Save changes']"
+    assert_select "input[type=submit][value='Save notification settings']"
     assert_select ".notification-settings__note", count: 0
     assert_equal "no-store", response.headers["Cache-Control"]
   end
 
   test "the survey switch is hidden and cannot be stored while the nps flag is off, and shown while it is on" do
     sign_in_as(@user)
-    get settings_notifications_path
+    get settings_path
     assert_select "input[name='preferences[nps_prompt]']", count: 0
     assert_select "input[name='preferences[ship_approved]']"
     patch settings_notifications_path, params: { preferences: { nps_prompt: "0", ship_approved: "0" } }
     assert_equal [ "ship_approved" ], NotificationPreference.where(user_id: @user.id).pluck(:kind)
 
     with_feature(:nps) do
-      get settings_notifications_path
+      get settings_path
       assert_select "input[type=checkbox][name='preferences[nps_prompt]'][checked]"
       assert_select "label[for=preferences_nps_prompt] .notification-settings__title", text: "Quick survey"
       patch settings_notifications_path, params: { preferences: { nps_prompt: "0" } }
@@ -94,22 +95,23 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the header links to it for onboarded people" do
+  test "the header links to Settings, where it lives, for onboarded people" do
     sign_in_as(@user)
     get dashboard_path
-    assert_select "nav a[href=?]", settings_notifications_path, text: "Notifications"
+    assert_select "nav[aria-label=Main] a[href=?]", settings_path, text: "Settings"
+    assert_select "nav a[href=?]", settings_notifications_path, count: 0
   end
 
   test "tells people without a Slack id that nothing can be sent yet" do
     @user.update_columns(slack_id: nil)
     sign_in_as(@user)
-    get settings_notifications_path
+    get settings_path
     assert_select ".notification-settings__note", /isn't linked to a Slack account/
   end
 
   test "the page never shows the Slack id" do
     sign_in_as(@user)
-    get settings_notifications_path
+    get settings_path
     assert_no_match(/UTESTAAA1/, response.body)
   end
 
@@ -118,7 +120,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
   test "saving switches kinds off and on, with a friendly flash" do
     sign_in_as(@user)
     save(Notification::KINDS.index_with { "1" }.merge("ship_reminder" => "0", "link_question" => "0"))
-    assert_redirected_to settings_notifications_path
+    assert_redirected_to settings_path(anchor: "notifications")
     follow_redirect!
     assert_select ".flash--notice", /Saved/
     assert_select "input[name='preferences[ship_reminder]'][checked]", count: 0
@@ -145,7 +147,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
   test "each person sees their own choices" do
     Notifications::Preferences.update!(@other, "ship_approved" => "0")
     sign_in_as(@user)
-    get settings_notifications_path
+    get settings_path
     assert_select "input[name='preferences[ship_approved]'][checked]"
   end
 
@@ -178,7 +180,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
     original = Notifications::Scheduler.method(:schedule_next)
     Notifications::Scheduler.define_singleton_method(:schedule_next) { |*, **| raise "boom" }
     logs = capture_logs { save("ship_approved" => "0") }
-    assert_redirected_to settings_notifications_path
+    assert_redirected_to settings_path(anchor: "notifications")
     assert_not Notifications::Preferences.enabled?(@user, "ship_approved")
     assert_includes logs, "notifications.schedule_failed error=RuntimeError"
   ensure
@@ -193,7 +195,7 @@ class NotificationSettingsTest < ActionDispatch::IntegrationTest
     assert_response :redirect
     save("ship_mvp" => "1")
     assert_response :too_many_requests
-    get settings_notifications_path
+    get settings_path
     assert_response :success
   ensure
     Rack::Attack.cache.store.clear

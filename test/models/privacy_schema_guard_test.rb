@@ -16,7 +16,8 @@ class PrivacySchemaGuardTest < ActiveSupport::TestCase
   # the whole row goes with the person: order_addresses.user_id and address_offers.user_id cascade (the first test above).
   NOT_PERSONAL = {
     "order_addresses.phone_number" => "encrypted; the row cascades from users (order_addresses.user_id) and from the order",
-    "order_addresses.hca_address_id" => "an opaque Hack Club Auth address id, not an address; the row cascades from users"
+    "order_addresses.hca_address_id" => "an opaque Hack Club Auth address id, not an address; the row cascades from users",
+    "slack_profiles.display_name" => "the Slack display name of a player who uses it (sanitised, 30 characters); the row cascades from users (slack_profiles.user_id) and is wiped when the choice is turned off"
   }.freeze
 
   # Foreign keys to users that deliberately do NOT cascade, with the reason: the row is about someone else (the subject

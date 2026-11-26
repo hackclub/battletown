@@ -1,0 +1,86 @@
+<% content_for :title, (@profile.own? ? "My profile" : @profile.name) %>
+<div class="container profile stack stack--lg">
+  <header class="card profile__header">
+    <%= profile_avatar(@profile.initial, @profile.tone, size: :lg, url: @profile.avatar_url) %>
+    <div class="profile__who">
+      <h1 class="profile__name"><%= @profile.name %></h1>
+      <p class="profile__since"><%= @profile.since_text %></p>
+    </div>
+  </header>
+
+  <% if @profile.own? %>
+    <p class="alert alert--info profile__note" role="note">This is your profile as other players see it. Other players can see your name, projects and boss damage. <%= link_to "Change your name and picture in Settings", settings_path(anchor: "profile") %>.</p>
+  <% end %>
+
+  <section class="profile__section stack" aria-labelledby="profile-stats-heading">
+    <h2 id="profile-stats-heading">Boss damage</h2>
+    <dl class="profile__stats">
+      <div class="profile__stat">
+        <dt>This boss week<%= " (#{@profile.boss_name})" if @profile.boss_name %></dt>
+        <dd><%= ship_hours(@profile.week_damage_seconds) %></dd>
+      </div>
+      <div class="profile__stat">
+        <dt>All-time</dt>
+        <dd><%= ship_hours(@profile.all_time_damage_seconds) %></dd>
+      </div>
+      <div class="profile__stat">
+        <dt>Bosses slain</dt>
+        <dd><%= @profile.bosses_slain %></dd>
+      </div>
+      <div class="profile__stat">
+        <dt>15-minute streak</dt>
+        <dd><%= pluralize(@profile.streak_days, "day") %></dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="profile__section stack" aria-labelledby="profile-projects-heading">
+    <div class="profile__section-head">
+      <h2 id="profile-projects-heading">Projects</h2>
+      <%= link_to "Manage projects", projects_path, class: "btn" if @profile.own? %>
+    </div>
+    <% if @profile.projects.empty? %>
+      <p class="profile__empty"><%= @profile.own? ? "You have no projects yet." : "No projects to show yet." %></p>
+    <% else %>
+      <ul class="profile__projects">
+        <% @profile.projects.each do |project| %>
+          <% info = project_kind_info(project.kind) %>
+          <li class="card profile__project">
+            <h3 class="profile__project-name"><%= project.name %></h3>
+            <p class="profile__project-kind"><span aria-hidden="true"><%= info[:emoji] %></span> <%= info[:name] %></p>
+            <p class="profile__project-ships">
+              <%= profile_ships_text(project.ships_count) %>
+              <%= profile_ship_status(project.latest_status) if project.latest_status %>
+            </p>
+            <% if project.repo_url || project.demo_url %>
+              <ul class="profile__project-links">
+                <% if project.repo_url %><li><%= profile_external_link "GitHub", project.repo_url %></li><% end %>
+                <% if project.demo_url %><li><%= profile_external_link "Demo", project.demo_url %></li><% end %>
+              </ul>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+
+  <% if @profile.own? %>
+    <section class="profile__section stack" aria-labelledby="profile-ships-heading">
+      <h2 id="profile-ships-heading">My ships</h2>
+      <% if @profile.ships.empty? %>
+        <p class="profile__empty">No ships yet.</p>
+      <% else %>
+        <ul class="profile__ships">
+          <% @profile.ships.each do |ship| %>
+            <li class="profile__ship">
+              <%= link_to ship_path(ship.id) do %><%= ship.on.strftime("%b %-d, %Y") %><span class="visually-hidden"> ship of <%= ship.project_name %></span><% end %>
+              <span class="profile__ship-project"><%= ship.project_name %></span>
+              <%= profile_ship_status(ship.status) %>
+              <span class="profile__ship-hours"><%= ship_hours(ship.seconds) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </section>
+  <% end %>
+</div>

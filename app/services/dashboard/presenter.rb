@@ -60,7 +60,7 @@ module Dashboard
     # --- the weekly boss (render with the bosses/card partial) ---
 
     # The boss is picked by the UTC date, not the user's local one: a ship lands in the boss week of its UTC instant (Bosses::Damage).
-    def boss = @boss ||= Bosses::Presenter.new(user: user, today: Hours::Days.today("UTC", now: now))
+    def boss = @boss ||= Bosses::Presenter.new(user: user, today: Hours::Days.today("UTC", now: now), now: now)
 
     # --- today ---
 
@@ -370,7 +370,7 @@ module Dashboard
       balance = coins.total
       if chosen.free_signup? || chosen.coins.zero?
         return PrizePanel.new(name: chosen.name, emoji: chosen.emoji, image: chosen.image, price_coins: 0, price_text: "Free", hours_text: nil, balance: balance,
-                              progress_value: 0, progress_text: nil, message: "This one is free: claim it in the shop.", reached: true, free: true)
+                              progress_value: 0, progress_text: nil, message: "This one is free: claim it in the armoury.", reached: true, free: true)
       end
 
       value = [ balance, chosen.coins ].min

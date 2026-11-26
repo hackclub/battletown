@@ -1,3 +1,5 @@
+require_relative "bosses_helper"
+
 # Shared setup for the event simulator tests: a boss for this week, and the database counted as local whatever the
 # machine's own settings say (CI may reach Postgres by a host name).
 module DevSimulatorTestSupport

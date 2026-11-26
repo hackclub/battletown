@@ -20,7 +20,17 @@ module Orders
       @address_required = address_required
     end
 
+    # A refusal is counted after the transaction has rolled back (analytics never delays or changes the error the buyer sees).
     def call
+      place
+    rescue Shop::Error => error
+      Analytics::Product.purchase_refused(@user, @prize_key, error)
+      raise
+    end
+
+    private
+
+    def place
       @user.with_lock do
         fresh = new_order?
         raise TooManyOpen if fresh && waiting_count >= Config.current.max_open_requested
@@ -30,8 +40,6 @@ module Orders
         order
       end
     end
-
-    private
 
     def new_order? = !Order.exists?(user_id: @user.id, idempotency_key: @key.to_s)
 

@@ -91,8 +91,8 @@ test:
 # nothing else: Rails applies it to `primary`, and the `cache` entry below reuses it (its own connection pool
 # and migration path, db/cache_migrate, so db:prepare creates solid_cache_entries in the same database).
 # To move the cache to its own database set CACHE_DATABASE_URL; Rails applies it to `cache`.
-# Solid Queue and Solid Cable are not configured: the app defines no jobs (Active Job uses the in-process
-# :async adapter) and no channels (config/cable.yml uses :async). Add their entries here when that changes.
+# Solid Cable (config/cable.yml, the live boss stage) has the `cable` entry below. Solid Queue is not configured: Active Job uses the
+# in-process :async adapter. Add its entry here when that changes.
 production:
   primary: &primary_production
     <<: *default
@@ -103,5 +103,12 @@ production:
     <<: *primary_production
     migrations_paths: db/cache_migrate
 <% if ENV["DATABASE_URL"].present? && ENV["CACHE_DATABASE_URL"].blank? %>
+    url: <%= ENV["DATABASE_URL"] %>
+<% end %>
+  # Solid Cable's messages table: the same database by default (own migration path, like the cache), or CABLE_DATABASE_URL for a separate one.
+  cable:
+    <<: *primary_production
+    migrations_paths: db/cable_migrate
+<% if ENV["DATABASE_URL"].present? && ENV["CABLE_DATABASE_URL"].blank? %>
     url: <%= ENV["DATABASE_URL"] %>
 <% end %>

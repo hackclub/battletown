@@ -23,8 +23,8 @@ module Notifications
     # The one-click survey page (no login). The token is made by Nps::Token at send time.
     def feedback(token) = absolute(routes.feedback_path(token: token))
 
-    # Email only: the notification settings and the signed unsubscribe page (GET shows it, POST acts).
-    def settings = absolute(routes.settings_notifications_path)
+    # Email only: the notification settings (a section of the Settings page) and the signed unsubscribe page (GET shows it, POST acts).
+    def settings = absolute(routes.settings_path(anchor: "notifications"))
 
     def email_unsubscribe(token) = absolute(routes.email_unsubscribe_path(token: token))
 

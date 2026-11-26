@@ -1,0 +1,26 @@
+<% content_for :title, "Settings" %>
+<div class="container settings stack stack--lg">
+  <header class="page-header">
+    <h1>Settings</h1>
+    <p class="lead">Your messages, your Hackatime connection and your profile, all in one place.</p>
+    <nav aria-label="On this page" class="settings__jump">
+      <ul>
+        <li><a href="#notifications">Notifications</a></li>
+        <li><a href="#hackatime">Hackatime</a></li>
+        <li><a href="#profile">Profile</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section id="notifications" class="settings__section stack notification-settings" aria-labelledby="notifications-heading">
+    <%= render "settings/notifications" %>
+  </section>
+
+  <section id="hackatime" class="settings__section stack hackatime" aria-labelledby="hackatime-heading">
+    <%= render "settings/hackatime" %>
+  </section>
+
+  <section id="profile" class="settings__section stack" aria-labelledby="profile-heading">
+    <%= render "settings/profile" %>
+  </section>
+</div>

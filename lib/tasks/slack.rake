@@ -28,4 +28,30 @@ namespace :slack do
 
     puts "slack:self_test sent 1 message"
   end
+
+  desc "Fetch the Slack name and picture of players that are due (at most LIMIT, default 100, one at a time under Slack's limit)"
+  task refresh_profiles: :environment do
+    abort "slack:refresh_profiles: SLACK_BOT_TOKEN is not set, nothing was fetched." unless SlackProfiles.token?
+
+    limit = ENV.fetch("LIMIT", "100").to_i.clamp(1, 1000)
+    counts = Hash.new(0)
+    SlackProfiles.due_scope.limit(limit).each do |user|
+      outcome = SlackProfiles::Refresh.call(user)
+      counts[outcome.status] += 1
+      if outcome.status == :waiting || outcome.status == :ratelimited
+        warn "slack:refresh_profiles: Slack asked us to slow down; stopping, run it again later"
+        break
+      end
+      break if %i[missing_scope invalid_auth no_token].include?(outcome.status)
+
+      sleep 0.7 # about 85 a minute at most; Gate also holds the shared limit
+    end
+    puts "slack:refresh_profiles #{counts.map { |status, count| "#{status}=#{count}" }.join(' ').presence || 'nothing due'}"
+  end
+
+  desc "Counts of the Slack profile fetches by status (counts only, no names): bin/rails slack:profile_status"
+  task profile_status: :environment do
+    puts "slack:profile_status token=#{SlackProfiles.token? ? 'set' : 'missing'} with_slack_id=#{User.where.not(slack_id: [ nil, '' ]).count} " \
+         "due=#{SlackProfiles.due_scope.count} #{SlackProfile.group(:status).count.sort.map { |status, count| "#{status}=#{count}" }.join(' ')}"
+  end
 end

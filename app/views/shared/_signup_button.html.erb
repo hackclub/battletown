@@ -1,3 +1,4 @@
-<%# locals: (label: "Sign up with Hack Club", css: "btn btn--primary") -%>
+<%# locals: (label: "Sign up with Hack Club", css: "btn btn--primary", return_to: nil) -%>
 <%# Turbo is disabled: the OmniAuth redirect goes cross-origin, which fetch-based submits can't follow. -%>
-<%= button_to label, "/auth/hack_club", method: :post, class: css, form: { data: { turbo: false } } %>
+<%# return_to (optional) is a page on this site to come back to after signing in; the callback checks it (SignInReturn). -%>
+<%= button_to label, "/auth/hack_club", method: :post, class: css, params: (return_to ? { SignInReturn::PARAM => return_to } : {}), form: { data: { turbo: false } } %>

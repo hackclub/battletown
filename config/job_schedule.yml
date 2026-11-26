@@ -1,0 +1,23 @@
+# The scheduled rake tasks and how often each is meant to run (the cron table in the deploy runbook), read by JobSchedule to say which have gone
+# quiet: a task is stale when its last successful run is older than twice its interval. `interval_minutes` is the longest normal gap between two
+# runs. `flag` (a Features flag) means the cron job is only created once that flag is on: while it is off a task that never ran is "off", not stale.
+# Every name here is wrapped in JobRun.record in lib/tasks (test/models/job_schedule_test.rb checks that).
+jobs:
+  game:settle: { interval_minutes: 60 }
+  hackatime:sync: { interval_minutes: 60 }
+  quests:evaluate: { interval_minutes: 60, flag: quests }
+  returning:evaluate: { interval_minutes: 60, flag: returning }
+  team:pay_pending: { interval_minutes: 15, flag: team }
+  notifications:dispatch: { interval_minutes: 5 }
+  notifications:ship_reminders: { interval_minutes: 15 }
+  notifications:schedule_all: { interval_minutes: 1440 }
+  notifications:returning_nudges: { interval_minutes: 1440, flag: returning }
+  # Runs at 14:30, 18:30 and 22:30 UTC: the longest gap is 22:30 to 14:30 the next day.
+  notifications:nps_prompts: { interval_minutes: 960, flag: nps }
+  notifications:prune: { interval_minutes: 1440 }
+  nps:prune: { interval_minutes: 1440, flag: nps }
+  ship_images:prune: { interval_minutes: 1440, flag: ship_screenshots }
+  privacy:purge_tokens: { interval_minutes: 1440 }
+  orders:purge_addresses: { interval_minutes: 1440 }
+  orders:purge_address_offers: { interval_minutes: 1440 }
+  analytics:snapshot: { interval_minutes: 60 }

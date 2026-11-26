@@ -45,6 +45,7 @@ module Plinko
         slot = @board.slot_for(path)
         drop = PlinkoDrop.create!(user: @user, dropped_at: @now, local_date: Hours::Days.today(@user, now: @now), slot: slot,
                                   points: @board.points_for(slot), seed: seed, idempotency_key: @key)
+        Analytics::Product.plinko_dropped(drop)
         Result.new(drop: drop, replayed: false, path: path)
       end
     end

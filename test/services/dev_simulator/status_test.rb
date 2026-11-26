@@ -29,9 +29,21 @@ class DevSimulatorStatusTest < ActiveSupport::TestCase
     assert_equal "92% left", boss[:health_text]
     assert_equal "about 92 hours to go", boss[:hours_to_go_text]
     assert_equal 4, result[:players]
-    assert_equal 4, result[:people_coded_today]
-    assert_operator result[:simulated_minutes_today], :>=, 4 * 15
+    assert_equal 4, result[:people_coded]
+    assert_equal 4, result[:people_shipped]
+    assert_operator result[:simulated_minutes_24h], :>=, 4 * 15
+    assert_not_includes boss.keys, :arena_text, "the stage's own controller keeps the arena sentence"
     assert_equal 4, result[:simulated_ships_this_week]
+  end
+
+  test "counts only the last 24 hours: people and shippers" do
+    DevSimulator::Players.call(count: 3, today: utc_today)
+    DevSimulator::Ship.call(mode: "count", count: 1, today: utc_today, hours_min: 2, hours_max: 2)
+    HourEntry.where(user: DevSimulator.players).update_all(recorded_at: 25.hours.ago)
+
+    result = status
+    assert_equal [ 0, 0 ], [ result[:people_coded], result[:people_shipped] ]
+    assert_equal 0, result[:simulated_minutes_24h]
   end
 
   test "carries the last action's counts and nothing that names a person" do

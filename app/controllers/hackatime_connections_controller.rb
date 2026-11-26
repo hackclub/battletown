@@ -1,6 +1,7 @@
 # Hackatime account linking (projects/battletown/specs/hackatime.md). Additive to Hack Club Auth: the visitor must already be
 # signed in, and nothing here ever creates a user or starts a session. Connecting is a required step of onboarding (the
-# account step sends people here and takes them back); after that it is managed on /hackatime. It never blocks coding.
+# account step sends people here and takes them back); after that it is managed in the Hackatime section of the Settings page
+# (/settings#hackatime; GET /hackatime redirects there). It never blocks coding.
 class HackatimeConnectionsController < ApplicationController
   ALREADY_LINKED = "That Hackatime account is already connected to another Battletown account.".freeze
   # Revoking old tokens runs inside the request, so a slow Hackatime gets a short leash: all revoke calls together take
@@ -14,8 +15,9 @@ class HackatimeConnectionsController < ApplicationController
   before_action :require_onboarded, except: :create
   before_action :no_store
 
+  # The old Hackatime page: the connection now lives on the Settings page.
   def show
-    @connection = current_user.hackatime_connection
+    redirect_to settings_path(anchor: "hackatime")
   end
 
   # GET /auth/hackatime/callback. OmniAuth has already checked the state and exchanged the code by now.
@@ -28,25 +30,33 @@ class HackatimeConnectionsController < ApplicationController
     uid = auth&.provider.to_s == "hackatime" ? auth.uid.to_s : nil
     token = auth&.credentials&.token.to_s
     unless uid&.match?(HackatimeConnection::UID_FORMAT) && token.present?
+      track_event(:hackatime_link_failed, reason: "other")
       return redirect_to after_path, alert: "We couldn't connect to Hackatime. Please try again."
     end
 
     attributes = connection_attributes(auth, token)
     unless (HackatimeConnection::REQUIRED_SCOPES - attributes[:scopes].split).empty?
+      track_event(:hackatime_link_failed, reason: "scope")
       return redirect_to after_path, alert: "Hackatime didn't grant the access we need. Connect again and keep both permissions ticked."
     end
-    return redirect_to after_path, alert: ALREADY_LINKED if taken_by_someone_else?(uid)
+    if taken_by_someone_else?(uid)
+      track_event(:hackatime_link_failed, reason: "other")
+      return redirect_to after_path, alert: ALREADY_LINKED
+    end
 
     connection = current_user.hackatime_connection || current_user.build_hackatime_connection
+    first = connection.new_record? && !AnalyticsEvent.exists?(user_id: current_user.id, name: "hackatime_linked")
     # Tokens this replaces (a reconnect, maybe to another Hackatime account). One Hackatime handed back again is kept.
     replaced = [ connection.access_token, connection.refresh_token ].compact_blank - [ token, attributes[:refresh_token] ]
     connection.assign_attributes(attributes.merge(hackatime_uid: uid, connected_at: Time.current, needs_reconnect: false, last_error_code: nil))
     connection.save!
+    track_event(:hackatime_linked, first: first, from: Analytics::Journey.hackatime_from(current_user, chained: @chained))
     # After the save, as when disconnecting: they are no longer kept here, so Hackatime should drop them too. Never raises.
     revoke(replaced)
     redirect_to after_path, notice: "Hackatime connected."
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
     # Two accounts racing for the same Hackatime uid: the unique index decides, and nobody is told who the other is.
+    track_event(:hackatime_link_failed, reason: "other")
     redirect_to after_path, alert: ALREADY_LINKED
   end
 
@@ -57,18 +67,19 @@ class HackatimeConnectionsController < ApplicationController
       connection.destroy!
       # After the delete, so a slow or failing Hackatime can never keep the tokens here. Never raises.
       revoke(tokens)
+      track_event(:settings_saved, section: "hackatime")
     end
-    redirect_to hackatime_path, notice: "Hackatime disconnected.", status: :see_other
+    redirect_to settings_path(anchor: "hackatime"), notice: "Hackatime disconnected.", status: :see_other
   end
 
   private
 
-  # Where a connect attempt ends: back on the onboarding account step for someone still onboarding, else /hackatime.
+  # Where a connect attempt ends: back on the onboarding account step for someone still onboarding, else the Hackatime section of Settings.
   # Someone who is in and came here through the sign-in chain never asked to see the Hackatime page: back to the dashboard.
   def after_path
     return onboarding_step_path("account") unless current_user.onboarded?
 
-    @chained ? dashboard_path : hackatime_path
+    @chained ? dashboard_path : settings_path(anchor: "hackatime")
   end
 
   # Best effort and never raises (Hackatime::Client.revoke). A call's connect and read timeouts are each at most half of

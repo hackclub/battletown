@@ -1,0 +1,57 @@
+/* Player profiles (/profile, /players/:slug): the generated avatar, the stats and the project cards. Tokens only, except the
+   avatar colour pairs below (a decorative palette; every pair is black on a light fill, over 9:1). */
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border: 2px solid var(--color-ink-brown);
+  border-radius: 50%;
+  background: var(--avatar-bg, var(--color-highlight));
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+}
+/* A Slack picture (our own re-encoded copy, SlackProfiles) fills the circle in place of the initial. */
+.avatar__img { display: block; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; pointer-events: none; }
+.avatar--md { width: 2.5rem; height: 2.5rem; font-size: var(--text-lg); }
+.avatar--lg { width: 5rem; height: 5rem; font-size: var(--text-xl); }
+.avatar--tone-0 { --avatar-bg: #ffda37; }
+.avatar--tone-1 { --avatar-bg: #ff9ec4; }
+.avatar--tone-2 { --avatar-bg: #9fd8ff; }
+.avatar--tone-3 { --avatar-bg: #b7f0b1; }
+.avatar--tone-4 { --avatar-bg: #ffc18a; }
+.avatar--tone-5 { --avatar-bg: #d2b8ff; }
+.avatar--tone-6 { --avatar-bg: #8fe3d0; }
+.avatar--tone-7 { --avatar-bg: #f6a6a0; }
+.avatar--tone-8 { --avatar-bg: #c5d86d; }
+.avatar--tone-9 { --avatar-bg: #9db8ff; }
+.avatar--tone-10 { --avatar-bg: #f3c6e8; }
+.avatar--tone-11 { --avatar-bg: #e2c89b; }
+
+.profile { max-width: 56rem; }
+.profile > * { min-width: 0; }
+.profile__header { display: flex; align-items: center; gap: var(--space-4); }
+.profile__who { display: grid; gap: var(--space-1); min-width: 0; }
+.profile__name { margin: 0; overflow-wrap: anywhere; }
+.profile__since, .profile__note, .profile__empty { margin: 0; color: var(--color-text-muted); }
+.profile__note { color: inherit; }
+.profile__section > * { margin-block: 0; }
+.profile__section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.profile__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-4); margin: 0; }
+.profile__stat { display: grid; gap: var(--space-1); padding: var(--space-4); border: 2px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.profile__stat dt { color: var(--color-text-muted); font-size: var(--text-sm); }
+.profile__stat dd { margin: 0; font-family: var(--font-display); font-size: var(--text-xl); }
+.profile__projects { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 40rem) { .profile__projects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.profile__project > * { margin-block: 0; }
+.profile__project > * + * { margin-top: var(--space-2); }
+.profile__project-name { font-size: var(--text-lg); overflow-wrap: anywhere; }
+.profile__project-kind { color: var(--color-text-muted); font-weight: 700; }
+.profile__project-ships { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.profile__project-links, .profile__ships { display: flex; flex-wrap: wrap; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.profile__project-links a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
+.profile__ships { flex-direction: column; gap: var(--space-2); }
+.profile__ship { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.profile__ship-project, .profile__ship-hours { color: var(--color-text-muted); }

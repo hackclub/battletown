@@ -1,0 +1,170 @@
+# First-party analytics (projects/battletown/plans/analytics.md). The ONE allowlist: an event or a property that is not written
+# here cannot be stored (Analytics::Events raises in test and development and drops the event in production).
+#
+# A property is one of (never a free string, so nothing a person types can reach the table):
+#   bool
+#   { int: { min: 0, max: 7 } }          a whole number in the range
+#   { enum: [a, b, c] }                  one of these exact values (numbers stay numbers)
+#   { key: true } / { key: referral }    a catalogue key matching /\A[a-z0-9_]{1,60}\z/ (a prize or shop item key, a notification kind);
+#                                        `referral` also has to be a slug in config/referrals.yml
+# Every property is optional; an event keeps at most 8 and the row at most 400 bytes (a database check).
+#
+# Event names are internal and are never renamed to follow copy (the shop may be called the armoury; its events stay shop_*).
+# Nothing in this file or the tables it feeds is ever deleted on a schedule: there is no retention setting here, by design.
+shared:
+  buckets:
+    hours_bucket: &hours_bucket [ lt1, 1-2, 2-5, 5-10, 10plus ]
+    days_bucket: &days_bucket [ "1", 2-3, 4-6, 7-13, 14plus ]
+    nth: &nth [ "1", "2", 3plus ]
+    waited: &waited [ same_day, 1d, 2d, 3plus_d ]
+    pace_minutes: &pace_minutes [ 15, 30, 45, 60, 90, 120, 180, 240 ]
+    project_kind: &project_kind [ game, website, app, tool, hardware, undecided ]
+    hackatime_from: &hackatime_from [ onboarding, settings, other ]
+    channel: &channel [ slack_dm, email ]
+    onboarding_step: &onboarding_step [ age, prize, project, schedule, signup, account, celebrate ]
+
+  # Values of utm_source / utm_medium / utm_campaign that may be stored (lowercased); anything else is stored as the literal `other`.
+  # utm_content and utm_term are never stored. The path slugs in config/referrals.yml (/haven, /stardance, /terra) are the main
+  # channel attribution; add campaign names here before a campaign starts.
+  utm_sources: [ google, bing, duckduckgo, reddit, twitter, x, instagram, tiktok, youtube, discord, slack, github, hackclub, email, newsletter, haven, stardance, terra, poster, qr ]
+  utm_mediums: [ cpc, social, email, referral, organic, newsletter, banner, video, qr, flyer, post, dm ]
+  utm_campaigns: [ launch, prelaunch, boss_week, reminder ]
+
+  # Referring host -> kind. The host is looked up and discarded: neither it nor the URL is ever stored, only the kind.
+  # A host matches itself and its subdomains; the first kind that matches wins, so the Hack Club Slack comes before slack.com.
+  referrer_hosts:
+    hack_club: [ hackclub.com, hack.club, hackclub.slack.com ]
+    search: [ google.com, google.co.uk, google.ca, google.de, google.fr, google.es, google.co.in, google.com.au, google.com.br, bing.com, duckduckgo.com, ecosia.org, search.brave.com, yahoo.com, startpage.com, yandex.com, baidu.com ]
+    social: [ reddit.com, twitter.com, x.com, t.co, facebook.com, instagram.com, youtube.com, youtu.be, tiktok.com, discord.com, discord.gg, linkedin.com, slack.com, news.ycombinator.com, github.com ]
+
+  events:
+    # Visitor and account
+    landing_viewed: {}
+    referral_link_hit:
+      slug: { key: referral }
+    onboarding_step_viewed:
+      step: { enum: *onboarding_step }
+    onboarding_step_completed:
+      step: { enum: *onboarding_step }
+      prize_key: { key: true }
+      project_kind: { enum: *project_kind }
+      has_idea: bool
+      days_count: { int: { min: 0, max: 7 } }
+      pace_minutes: { enum: *pace_minutes }
+    onboarding_ineligible: {}
+    signup_started: {}
+    auth_failed:
+      strategy: { enum: [ hack_club, hackatime, hack_club_address ] }
+      reason: { enum: [ access_denied, other ] }
+    signed_up:
+      had_draft: bool
+    signed_in: {}
+    signed_out: {}
+    onboarding_completed: {}
+
+    # Hackatime and projects
+    hackatime_connect_started:
+      from: { enum: *hackatime_from }
+    hackatime_linked:
+      first: bool
+      from: { enum: *hackatime_from }
+    hackatime_link_failed:
+      reason: { enum: [ access_denied, scope, other ] }
+    hackatime_needs_reconnect:
+      code: { key: true }
+    project_created:
+      source: { enum: [ onboarding, projects_page ] }
+      project_kind: { enum: *project_kind }
+      nth: { enum: *nth }
+    project_linked:
+      method: { enum: [ manual, auto_repo, confirmed ] }
+    project_activated: {}
+    project_archived: {}
+    first_hours_credited: {}
+    quick_day_reached: {}
+    daily_goal_reached:
+      pace_minutes: { enum: *pace_minutes }
+    streak_extended:
+      days_bucket: { enum: *days_bucket }
+    streak_broken:
+      days_bucket: { enum: *days_bucket }
+    freeze_used:
+      days_bucket: { enum: *days_bucket }
+    pace_set:
+      pace_minutes: { enum: *pace_minutes }
+      source: { enum: [ onboarding, later ] }
+    todo_used:
+      items: { int: { min: 0, max: 10 } }
+
+    # Shipping, boss, shop
+    ship_form_viewed: {}
+    ship_submitted:
+      hours_bucket: { enum: *hours_bucket }
+      nth: { enum: *nth }
+      after_rejection: bool
+    ship_edited: {}
+    boss_hit:
+      boss_id: { int: { min: 1, max: 1000000 } }
+      hours_bucket: { enum: *hours_bucket }
+    boss_defeated:
+      boss_id: { int: { min: 1, max: 1000000 } }
+    ship_approved:
+      hours_bucket: { enum: *hours_bucket }
+      nth: { enum: *nth }
+      waited: { enum: *waited }
+    ship_rejected:
+      nth: { enum: *nth }
+      waited: { enum: *waited }
+    ship_withdrawn:
+      nth: { enum: *nth }
+    shop_viewed: {}
+    shop_item_viewed:
+      item_key: { key: true }
+    order_placed:
+      item_key: { key: true }
+      coins: { int: { min: 0, max: 100000 } }
+      kind: { enum: [ purchase, signup_sticker ] }
+    purchase_refused:
+      reason: { enum: [ insufficient_coins, eligibility, address_missing, out_of_stock, limit, other ] }
+      item_key: { key: true }
+    order_shipped:
+      actor_kind: { enum: &actor_kind [ staff, buyer, system ] }
+    order_fulfilled:
+      actor_kind: { enum: *actor_kind }
+    order_cancelled:
+      actor_kind: { enum: *actor_kind }
+    order_refunded:
+      actor_kind: { enum: *actor_kind }
+    merch_claimed:
+      item_key: { key: true }
+    address_lookup_started: {}
+    address_lookup_completed: {}
+
+    # Engagement, messages, other
+    notification_sent:
+      kind: { key: true }
+      channel: { enum: *channel }
+    notification_failed:
+      kind: { key: true }
+      channel: { enum: *channel }
+      code: { key: true }
+    notification_clicked:
+      kind: { key: true }
+      channel: { enum: *channel }
+    email_unsubscribed: {}
+    nps_answered:
+      score: { int: { min: 0, max: 10 } }
+      band: { enum: [ detractor, passive, promoter ] }
+      has_comment: bool
+    profile_viewed:
+      own: bool
+    slack_profile_fetched:
+      picture: bool
+    slack_profile_failed:
+      reason: { enum: [ missing_scope, invalid_auth, no_token, ratelimited, not_found, error, image_rejected ] }
+    settings_saved:
+      section: { enum: [ notifications, profile, schedule, hackatime ] }
+    quest_completed:
+      goal_key: { key: true }
+    team_joined: {}
+    plinko_dropped: {}

@@ -117,7 +117,10 @@ class Project < ApplicationRecord
       project = user.projects.build(kind: user.project_kind, idea: user.project_idea,
                                     name: default_name(kind: user.project_kind, idea: user.project_idea))
     end
-    project.save
+    created = project.new_record?
+    saved = project.save
+    Analytics.track(:project_created, user: user, source: "onboarding", project_kind: project.kind, nth: "1") if saved && created
+    saved
   end
 
   # A project with a ship waiting for review or already approved is kept (its history backs the coins); archive it instead.

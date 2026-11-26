@@ -1,0 +1,10 @@
+/* The Settings page (/settings): one page, three sections (#notifications, #hackatime, #profile). The sections reuse the notification
+   and Hackatime classes; this is the page frame. Tokens only. */
+.settings { max-width: 48rem; }
+.settings__section { scroll-margin-top: var(--space-6); }
+.settings__section > * { margin-block: 0; }
+.settings__jump ul { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
+.settings__jump a { display: inline-flex; align-items: center; min-height: var(--tap-size); font-weight: 700; }
+.settings__profile-form { display: grid; gap: var(--space-6); }
+.settings__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.settings__profile-form .field { margin: 0; }
