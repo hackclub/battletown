@@ -63,11 +63,12 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
     assert_select ".hero__signin-form", 0
   end
 
-  test "below 64rem the footer sits on a solid ink blue backing and from 64rem up it stays navy on the sky" do
+  test "the footer has no box at any width: below 64rem it sits in flow under the last section, navy on the sky" do
     below = CSS[/@media \(max-width: 63\.999rem\) \{(.*?)\n\}/m, 1]
     assert below, "a max-width 63.999rem block for the footer"
-    assert_match(/\.site-footer__inner \{[^}]*background: var\(--color-ink-blue\)/, below)
-    assert_match(/\.site-footer__inner \{[^}]*width: fit-content/, below)
+    assert_match(/\.site-footer \{[^}]*position: static/, below)
+    assert_match(/\.site-footer \{[^}]*color: var\(--navy\)/, below)
+    assert_no_match(/background: var\(--color-ink-blue\)/, below)
     wide = CSS[/@media \(min-width: 64rem\) \{\n  body:has\(\.landing\) \.site-footer \{(.*?)\n\}/m, 1]
     assert_match(/color: var\(--navy\)/, wide)
     assert_match(/outline-color: var\(--navy\)/, wide)
