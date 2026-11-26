@@ -118,9 +118,8 @@ save("cave", "cave-edge-r", cave.crop((W - 16, 0, W, cave.height)))
 save("floor", "floor", art.crop((0, 4650, W, 5600)))
 
 # 6. Sand: the end of the floor, the wavy shore and the sand down to where it is flat. Opaque. The sand band owns the
-#    floor-to-sand seam. And the sand into the pale blue of the last section, flat at both ends (final band).
+#    floor-to-sand seam. (The sand-to-blue shore of the final band is a CSS clip, not a piece: see landing_world_final.css.)
 save("sand", "sand", art.crop((0, 5500, W, 7100)))
-save("final", "shore", art.crop((0, 8250, W, 8900)))
 
 # 7. Shells: layers 25 and 26.
 for name, i in (("shell-1", 25), ("shell-2", 26)):

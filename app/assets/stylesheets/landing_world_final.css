@@ -1,4 +1,54 @@
 /* Band: final. Owned by the final band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
 
-/* First cut. The wrapper's top is canvas y 8590. The shore piece is canvas y 8250..8900. */
-.landing .world--final .world__shore { left: 50%; top: calc(var(--wu) * -170); width: max(100%, var(--world-w)); translate: -50% 0; }
+/*
+ * The shore: where the sand ends and the flat pale blue begins. In the painting it is a nearly straight, gently tilted
+ * soft edge, canvas y 8589 at the left falling to 8498 at the right (section top is 8590). It is drawn here as a CSS clip
+ * over a flat --world-final box, not as a raster, so it reaches both window edges at any width with nothing to smear.
+ * The box starts 80 design px above the section top, over the faq's flat sand (the contract allows 200), and runs to the
+ * page end. Above the edge it is transparent, so the sand shows through; below it, it is exactly --world-final, the same
+ * color as .final and the body. Past the painting's width the edge keeps going at a fading slope (to 500 design px each side, then flat), so no kink shows at 1920 or 2560.
+ * Polygon y values are design px below the box top (edge y offset from the section top + 80; the painting's edge is lifted 15 design px so it can keep sloping past its ends: below the section top the section's own blue would show).
+ */
+.landing .world--final .world__shore {
+  position: absolute; left: 0; right: 0; top: calc(var(--wu) * -80); bottom: 0;
+  background: var(--world-final);
+  clip-path: polygon(
+    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * 79),
+    calc(50% + var(--wu) * -788) calc(var(--wu) * 64.5),
+    calc(50% + var(--wu) * -638) calc(var(--wu) * 55),
+    calc(50% + var(--wu) * -488) calc(var(--wu) * 48),
+    calc(50% + var(--wu) * -338) calc(var(--wu) * 42),
+    calc(50% + var(--wu) * -188) calc(var(--wu) * 37),
+    calc(50% + var(--wu) * 0) calc(var(--wu) * 31.5),
+    calc(50% + var(--wu) * 162) calc(var(--wu) * 27.5),
+    calc(50% + var(--wu) * 312) calc(var(--wu) * 25),
+    calc(50% + var(--wu) * 512) calc(var(--wu) * 22.5),
+    calc(50% + var(--wu) * 712) calc(var(--wu) * 20.5),
+    calc(50% + var(--wu) * 787.5) calc(var(--wu) * 19),
+    max(100%, calc(50% + var(--wu) * 1288)) calc(var(--wu) * 16),
+    max(100%, calc(50% + var(--wu) * 1288)) 100%,
+    min(0px, calc(50% + var(--wu) * -1288)) 100%);
+}
+
+/*
+ * SLOT FOR A PAINTING (empty on purpose). To drop one in, add to _final.html.erb, after the shore div:
+ *   <%= image_tag "landing/world/final/final@c.webp", alt: "", class: "world__img world__final-art", width: 3152, height: 1308,
+ *         loading: "lazy", decoding: "async", srcset: { "landing/world/final/final@a.webp" => "1576w", ".../final@b.webp" => "2049w", ".../final@c.webp" => "3152w" }, sizes: "100vw" %>
+ * and uncomment this rule. The art is anchored to the page END (not the top), because the section's height changes with
+ * text wrapping and the last row should always touch the bottom. Paint it 3152 wide (the 1576 px page at 2x), canvas
+ * y 8590 to 9898 (1308 px tall), the same space as the unpainted area now. The section is only about 1000 canvas px tall at 1576 wide (the page ends near canvas y 9590, not 9898),
+ * so bottom anchoring crops the top ~300 px there: keep canvas y 8590..8900 flat --world-final (#d0e5ef) so it joins the shore, and the
+ * real subject in y 8900..9898 (its bottom 700 px is always visible; phones show more of the top). The last row flat too. Keep important shapes inside the middle 1000 px (canvas x 1076..2076):
+ * a 360 px phone shows only the middle ~600 design px, 1576 shows all of it, wider windows show it centered, and the
+ * edges beyond 1576 design px extend with flat --world-final. The fighter sits bottom right and text top left of center.
+ *
+ * .landing .world--final .world__final-art { left: 50%; bottom: 0; width: max(var(--world-w), 100%); height: auto; translate: -50% 0; }
+ */
+
+/*
+ * The page end. landing_world.css sets `body:has(.landing) { background: var(--world-final) }`, but --world-final is
+ * declared on .landing, a child of body, so at body it is undefined and the declaration is invalid: the body (and the
+ * canvas behind it) painted white below the last section whenever the window is taller than the page (body is
+ * min-height 100vh and the footer sits at its bottom). The fallback below makes it resolve; it is the same #d0e5ef.
+ */
+body:has(.landing) { background: var(--world-final, #d0e5ef); }
