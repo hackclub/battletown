@@ -6,9 +6,15 @@
  * smoothly lighter to purple (no step), then the haze fades it to --world-floor-end at the section's bottom edge. */
 .landing .world--floor { --floor-haze: calc(var(--wu) * 330); }
 
-.landing .world--floor .floor__col { position: absolute; top: 0; bottom: 0; left: calc(50% - var(--world-w) / 2); width: var(--world-w); }
-.landing .world--floor .floor__col--left { left: calc(50% - var(--world-w) * 1.5); scale: -1 1; }
-.landing .world--floor .floor__col--right { left: calc(50% + var(--world-w) / 2); scale: -1 1; }
+/* The cave band slides the painting left on narrow windows (--world-cx = the painting x at the window's middle). The wall-foot
+   piece must use the same mapping or the pillar base shows twice. Same definition as landing_world_cave.css, repeated so this
+   band works alone; the foundation hoists it into landing_world.css and then these two rules can go. */
+.landing { --world-cx: calc(var(--wu) * 788); }
+@media (max-width: 63.99rem) { .landing { --world-cx: max(calc(var(--wu) * 788), calc(var(--wu) * 1393 - 50vw)); } }
+
+.landing .world--floor .floor__col { position: absolute; top: 0; bottom: 0; left: calc(50% - var(--world-cx, calc(var(--wu) * 788))); width: var(--world-w); }
+.landing .world--floor .floor__col--left { left: calc(50% - var(--world-cx, calc(var(--wu) * 788)) - var(--world-w)); scale: -1 1; }
+.landing .world--floor .floor__col--right { left: calc(50% - var(--world-cx, calc(var(--wu) * 788)) + var(--world-w)); scale: -1 1; }
 
 .landing .world--floor .floor__top { left: 0; top: calc(var(--wu) * -25); width: var(--world-w); height: calc(var(--wu) * 600); }
 
