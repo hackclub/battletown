@@ -107,12 +107,51 @@ PATH_X0, PATH_X1, PATH_Y0, PATH_Y1 = 1330, 1650, 2540, 3440
 path = layer_full(30).crop((PATH_X0, PATH_Y0, PATH_X1, PATH_Y1))
 save("cliff", "path", path)
 
-# 4. Cave: the rim and the wall with its pillars, down to the floor line. Opaque (the cave band can mask above the rim).
-CAVE_Y0, CAVE_Y1 = 3080, 4750
-cave = art.crop((0, CAVE_Y0, W, CAVE_Y1))
+# 4. Cave: the rim and the wall with its pillars, cut from the art layers themselves (7 dark band, 8 gray rim stripe,
+#    10 brushed dark edge, 13 wall, 15/16/22 crack and pillar shadow) with real transparency above the rim: the teal
+#    ground (layer 9) is left out, and the piece is cut away wherever layer 9 is opaque, so the cliff band's teal shows
+#    through. Canvas y CAVE_Y0..CAVE_Y1, CAVE_Y1 = the bottom of the .fight section. The floor band covers the last
+#    350 design px. Wider than the canvas the wall continues as flat horizontal rows sampled from the outermost columns
+#    (smoothed, so no grain streaks); the piece's own last EDGE_FADE columns blend into those rows so there is no seam.
+CAVE_Y0, CAVE_Y1, EDGE_FADE = 3080, 4750, 64
+wall = Image.new("RGBA", (W, psd.height), (0, 0, 0, 0))
+for i in (7, 8, 10, 13, 15, 16, 22):
+    wall.alpha_composite(layer_full(i))
+wall = np.array(wall.crop((0, CAVE_Y0, W, CAVE_Y1))).astype(np.float64)
+teal = np.array(layer_full(9).getchannel("A").crop((0, CAVE_Y0, W, CAVE_Y1))).astype(np.float64) / 255
+alpha = wall[:, :, 3] / 255 * (1 - teal)
+pm = np.dstack([wall[:, :, :3] / 255 * alpha[:, :, None], alpha])  # premultiplied RGBA, 0..1
+
+
+def edge_rows(cols):
+    """The wall's rows at one edge: mean of 24 columns, smoothed down the rows (gaussian, sigma 2.5), premultiplied."""
+    prof = pm[:, cols].mean(axis=1)
+    k = np.exp(-0.5 * (np.arange(-8, 9) / 2.5) ** 2)
+    k /= k.sum()
+    pad = np.pad(prof, ((8, 8), (0, 0)), mode="edge")
+    return np.stack([np.convolve(pad[:, c], k, mode="valid") for c in range(4)], axis=1)
+
+
+def unpremultiply(a):
+    out = np.zeros_like(a)
+    al = a[:, :, 3:4]
+    out[:, :, :3] = np.divide(a[:, :, :3], al, out=np.zeros_like(a[:, :, :3]), where=al > 1e-4)
+    out[:, :, 3] = a[:, :, 3]
+    return Image.fromarray((np.clip(out, 0, 1) * 255 + 0.5).astype(np.uint8), "RGBA")
+
+
+# the very edge has a dark sliver, so the rows are sampled a little inside it
+rows_l, rows_r = edge_rows(slice(16, 40)), edge_rows(slice(W - 40, W - 16))
+for x in range(EDGE_FADE):
+    t = x / (EDGE_FADE - 1)
+    t = t * t * (3 - 2 * t)  # smoothstep: 0 inside, 1 at the very edge
+    pm[:, W - EDGE_FADE + x] = pm[:, W - EDGE_FADE + x] * (1 - t) + rows_r * t
+    pm[:, EDGE_FADE - 1 - x] = pm[:, EDGE_FADE - 1 - x] * (1 - t) + rows_l * t
+cave = unpremultiply(pm)
 save("cave", "cave", cave)
-save("cave", "cave-edge-l", cave.crop((0, 0, 16, cave.height)))
-save("cave", "cave-edge-r", cave.crop((W - 16, 0, W, cave.height)))
+for side, rows in (("l", rows_l), ("r", rows_r)):  # one row-flat strip, 4 px wide, stretched by the browser
+    strip = unpremultiply(np.repeat(rows[:, None, :], 4, axis=1))
+    save("cave", f"cave-edge-{side}", strip)
 
 # 5. Floor: the pebbled floor under the wall, from a little above the wall's foot (the floor band owns that seam).
 save("floor", "floor", art.crop((0, 4650, W, 5600)))
