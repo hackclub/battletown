@@ -277,39 +277,31 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   .landing .arena { right: calc(var(--side) - 2.5rem); bottom: calc(var(--edge-hp) * 0.5); --boss-w: 80%; }
   .landing .fight__health { left: 22%; right: 8%; }
 }
-/* ---- Prizes: each one stands on a rounded blue block with its name on the darker front band (Armand's mockup, 2026-11-11). ---- */
+/* ---- Prizes: each one sits on its own low stone in the floor, with its name and hours as plain white text on the floor below it. ---- */
 .landing .prizes { --bg: var(--royal); --next: var(--edge-c); }
 .landing .prizes h2 { color: var(--yellow); }
-.landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 1.5rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
+.landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 2rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
 .landing .prize {
-  position: relative; isolation: isolate; container-type: inline-size; flex: none; display: flex; flex-direction: column; width: calc((100% - var(--gap)) / 2); max-width: 13rem;
-  border-radius: 1.4rem 1.4rem 0 0; text-align: center;
-  /* Stone colors sampled from the painted cave (art-only-1576.jpg): the top face is the stepping stones' lit top at (792,1769) and (840,1850),
-     rgb(179,184,226) / rgb(179,183,231); the front face is the cliff's shaded lower rock at (1300,2050..2250), rgb(96,106,195); the submerged part
-     fades from the pillar's dark side at (770,1830), rgb(44,47,124). White on the front face is 4.83:1. */
-  --stone-top: #b3b8e2; --stone-front: #606ac3; --stone-deep: #2c2f7c; --stone-text: #fff;
+  position: relative; isolation: isolate; container-type: inline-size; flex: none; display: flex; flex-direction: column; align-items: center; width: calc((100% - var(--gap)) / 2); max-width: 13rem;
+  text-align: center;
+  /* Stone colors sampled from the painted floor (art-only-1576.jpg): the lit top of the stepping stones, #b3b7e6, and the mid-violet under their front edge, #4c56b5. */
+  --stone-top: #b3b7e6; --stone-lip: #4c56b5; --stone-text: #fff; --sw: 90%; --sh: 3.8rem; --dy: 0rem;
+  margin-top: var(--dy);
 }
-/* The floor is water and each stone stands in it: no shadow underneath. The front face is the label, and its bottom is the base of a round stone, an
-   arc. Round it, a wider ripple ring: its near half is the soft white foam line in front of the stone (::after), a second, much fainter ring lies
-   outside it (::before, behind the stone). Below the waterline the stone carries on, darker and bluer, fading into the water (label::after). */
-.landing .prize::before { content: ""; position: absolute; z-index: -3; left: -15%; right: -15%; bottom: -0.6rem; height: 3rem; border: 2px solid rgb(255 255 255 / 0.2); border-radius: 50%; filter: blur(0.6px); pointer-events: none; }
-.landing .prize::after { content: ""; position: absolute; z-index: 1; left: -7%; right: -7%; bottom: -0.15rem; height: 2.1rem; border: 3px solid rgb(255 255 255 / 0.82); border-radius: 50%; box-shadow: 0 2px 6px rgb(255 255 255 / 0.3);
-  clip-path: inset(50% -4px -8px -4px); -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent); filter: blur(0.35px); pointer-events: none; }
-.landing .prize:nth-child(2n)::after { left: -6%; right: -8%; height: 1.95rem; }
-.landing .prize:nth-child(3n)::after { left: -8%; right: -6%; height: 2.25rem; }
-.landing .prize:nth-child(2n)::before { left: -13%; right: -17%; }
-.landing .prize:nth-child(3n)::before { left: -17%; right: -13%; }
-/* The front face (the label): level, with a waterline arc for its bottom edge and a fixed height so every stone in a row has the same top line. */
-.landing .prize__label { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 6.85rem; padding: 0.5rem 0.5rem 1.3rem; background: var(--stone-front); border-radius: 0 0 50% 50% / 0 0 0.9rem 0.9rem; }
-.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 40cqw; border-radius: 1.4rem 1.4rem 0 0; background: var(--stone-top); }
-/* The submerged part: the front face seen through water, a little narrower as it goes down, fading to nothing. */
-.landing .prize__label::after { content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: calc(100% - 0.9rem); height: 3.2rem; border-radius: 0 0 42% 42% / 0 0 100% 100%; background: linear-gradient(to bottom, rgb(88 98 190 / 0.68), rgb(88 98 190 / 0.34) 50%, rgb(88 98 190 / 0)); pointer-events: none; }
-@media (min-width: 40rem) { .landing .prize__label { min-height: 5.65rem; } }
-/* The prize stands in the middle of the block's top face, not on its front edge. */
-.landing .prize img { display: block; width: 56%; margin: 0 auto 16%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
-.landing .prize__emoji { display: flex; align-items: flex-end; justify-content: center; width: 84%; margin: 0 auto 12%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }
+/* The stone is low and flat: one pale top face with a thin lip in a darker violet under its front edge. The prize stands on it; its lower part overlaps the stone. */
+.landing .prize::before { content: ""; order: 2; width: var(--sw); height: var(--sh); margin-top: calc(var(--sh) * -0.55); box-sizing: border-box; border-radius: 50%; border-bottom: 0.4rem solid var(--stone-lip); background: var(--stone-top); }
+.landing .prize img, .landing .prize__emoji { order: 1; position: relative; z-index: 1; }
+.landing .prize img { display: block; width: 54%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
+.landing .prize__emoji { display: flex; align-items: flex-end; justify-content: center; width: 54%; aspect-ratio: 5 / 4; font-size: 20cqw; line-height: 1; }
+.landing .prize__label { order: 3; margin-top: 0.6rem; padding-inline: 0.25rem; }
 .landing .prize h3 { color: var(--stone-text); font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
 .landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.8125rem; line-height: 1.2; overflow-wrap: anywhere; }
+/* Hand-laid stones: a little narrower or wider, one a touch lower. */
+.landing .prize:nth-child(5n + 1) { --sw: 94%; }
+.landing .prize:nth-child(5n + 2) { --sw: 86%; --dy: 0.5rem; }
+.landing .prize:nth-child(5n + 3) { --sw: 92%; }
+.landing .prize:nth-child(5n + 4) { --sw: 88%; --dy: 0.4rem; }
+.landing .prize:nth-child(5n) { --sw: 96%; }
 @media (min-width: 40rem) {
   .landing .shelf { --gap: 1.25rem; }
   .landing .prize { width: calc((100% - 2 * var(--gap)) / 3); }
