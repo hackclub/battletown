@@ -306,7 +306,30 @@ save("floor", "floor-tile", tile_img)
 
 # 6. Sand: the end of the floor, the wavy shore and the sand down to where it is flat. Opaque. The sand band owns the
 #    floor-to-sand seam. (The sand-to-blue shore of the final band is a CSS clip, not a piece: see landing_world_final.css.)
-save("sand", "sand", art.crop((0, 5500, W, 7100)))
+# The sand piece is cut along the shore's curve: transparent above it (the floor band's pebbles show through), opaque sand
+# below, ending in the flat sand color. Canvas y 5700..7300.
+# --- sand-cut-begin
+def sand_cut(art_img, y0=5700, y1=7300):
+    a = np.asarray(art_img.convert("RGB")).astype(float)[y0:y1]
+    t = np.clip((a[:, :, 0] - a[:, :, 2] + 20) / 123.0, 0, 1)  # 0 on the lavender floor, 1 on sand
+    full_rows = np.argmax(t > 0.99, axis=0)  # first solid sand row per column
+    pad = np.pad(full_rows, 30, mode="edge")  # a dark fleck can hide the curve in a column: follow its neighbors instead
+    full_rows = np.minimum(full_rows, np.array([int(np.median(pad[i:i + 61])) + 1 for i in range(len(full_rows))]))
+    rgb = a.copy()
+    alpha = np.ones_like(t)
+    for x in range(a.shape[1]):
+        f = int(full_rows[x])
+        rgb[:f, x] = a[min(f + 6, a.shape[0] - 1), x]
+        alpha[:max(f - 3, 0), x] = 0
+        alpha[max(f - 3, 0):f, x] = t[max(f - 3, 0):f, x]
+        for y in range(f + 1, min(f + 60, a.shape[0])):  # the art has a few dark pebble flecks just under the curve
+            if t[y, x] < 0.9:
+                rgb[y, x] = rgb[y - 1, x]
+    out_img = np.dstack([rgb, alpha * 255]).clip(0, 255).astype(np.uint8)
+    return Image.fromarray(out_img, "RGBA")
+# --- sand-cut-end
+save("sand", "sand", sand_cut(art))
+save("final", "shore", art.crop((0, 8250, W, 8900)))
 
 # 7. Shells: layers 25 and 26.
 for name, i in (("shell-1", 25), ("shell-2", 26)):

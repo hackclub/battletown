@@ -1,6 +1,44 @@
 /* Band: sand. Owned by the sand band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
 
-/* First cut. The wrapper's top is canvas y 6300. The sand piece is canvas y 5500..7100, shell 1 at x 2545 y 6453, shell 2 at x 260 y 7883. */
-.landing .world--sand .world__sand { left: 50%; top: calc(var(--wu) * -400); width: max(100%, var(--world-w)); translate: -50% 0; }
-.landing .world--sand .world__shell--1 { left: calc(50% + var(--wu) * 484); top: calc(var(--wu) * 76); width: calc(var(--wu) * 184); }
-.landing .world--sand .world__shell--2 { left: calc(50% - var(--wu) * 658); top: calc(var(--wu) * 1010); width: calc(var(--wu) * 170); }
+/* The section itself is transparent: its top part is where the floor band's pebbles show above the shore curve, so the
+   flat sand lives in the stage below the piece instead. The wrapper may overhang upward (into .prizes) but is clipped
+   at the sides and the bottom, where the final band takes over. */
+/* Windows wider than the painting scale the shore up, so its low right end dips below the top of this section, where
+   .prizes no longer paints behind it. A strip in the color .prizes is painted in (flat --world-floor) keeps that wedge
+   from showing the page behind; it is as tall as the curve can dip (about 18vw), and the piece covers it below the curve.
+   The min-height keeps the section as tall as the scaled piece's wash (the piece is 48vw - 300px tall from the section
+   top), so the section's end never cuts it. */
+.landing .faq { background: linear-gradient(var(--world-floor), var(--world-floor)) top / 100% 20vw no-repeat; min-height: calc(48vw - 300px); }
+.landing .world--sand { clip-path: inset(-100vh 0 0 0); }
+
+/* The stage is the sand piece (canvas y 5700..7300, so 300 design px above the section top) at the piece's own scale:
+   at least the section's width, and never narrower than the painting's width times --wu. Wider windows scale it up
+   evenly (it is smooth art), narrower ones show its middle. Under it, flat --world-sand, which is the piece's last row. */
+.landing .world--sand .sand__stage { position: absolute; left: 50%; top: calc(var(--wu) * -300); width: max(100%, var(--world-w)); translate: -50% 0; }
+.landing .world--sand .sand__img { position: static; width: 100%; height: auto; }
+/* Until the (lazy) piece has loaded, show flat sand below where the curve can reach (it is above 36% of the piece's height)
+   instead of the page behind. The piece is opaque below the curve, so once it loads this is hidden. */
+.landing .world--sand .sand__stage { background: linear-gradient(to bottom, transparent 38%, var(--world-sand-top) 38%, var(--world-sand) 85%); }
+.landing .world--sand .sand__stage::after { content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 2px); height: 1500px; background: var(--world-sand); }
+
+/* Shells: beside the FAQ list on desktop, from the page middle +484 and -658 as in the painting. The upper one hangs from the
+   section top; the lower one rises from the section bottom, because our section is shorter than the painted one. Narrower
+   windows keep them on screen at the edges. */
+.landing .world--sand .world__shell--1 { left: min(calc(50% + var(--wu) * 484), calc(100% - 6rem)); top: calc(var(--wu) * 76); width: calc(var(--wu) * 184); }
+.landing .world--sand .world__shell--2 { left: max(calc(50% - var(--wu) * 658), -3rem); top: auto; bottom: calc(var(--wu) * 330); width: calc(var(--wu) * 170); }
+
+/* The heading sits on the sand above the list, at the content column's left edge, as in the painting. landing.css
+   hung it off the old river bank with a negative top. */
+.landing .faq__head { position: relative; left: auto; top: auto; translate: none; margin-bottom: 1.5rem; }
+
+/* The section's own height: sand under the list for the final band's overlap (it reaches up 200 design px), plus on
+   phones room for the lower shell. */
+.landing .faq .slab > .in { padding-bottom: calc(var(--wu) * 230 + 2.5rem); }
+
+/* Phones and tablets: the list fills the width, so the shells sit where it is not. The upper one peeks in from the right above the
+   heading, the lower one from the left below the list, both cut by the window edge and never under text. */
+@media (max-width: 63.99rem) {
+  .landing .faq .slab > .in { padding-bottom: calc(var(--wu) * 230 + 8.5rem); }
+  .landing .world--sand .world__shell--1 { left: calc(100% - 4.25rem); top: 0.25rem; width: 6.5rem; }
+  .landing .world--sand .world__shell--2 { left: -2.25rem; top: auto; bottom: calc(var(--wu) * 240 + 0.5rem); width: 6.25rem; }
+}
