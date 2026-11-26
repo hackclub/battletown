@@ -27,9 +27,9 @@
    above the bottom of .how. The signpost's boards are wider than a phone, so each cloud may only use the sky beside the boards
    (the left one hangs from the boards' left edge, the right one starts where the painting has it): on a narrower window it shrinks
    to fit that room, and it is gone where there is almost none (phones and small tablets), instead of being cut in half. */
-.landing .world__cloud--left { display: none; right: calc(50% + var(--wu) * 312.5); bottom: calc(var(--wu) * 327); width: min(calc(var(--wu) * 374), max(0px, calc(50% - var(--wu) * 312.5 - 12px))); }
-.landing .world__cloud--right { display: none; left: calc(50% + var(--wu) * 251); bottom: calc(var(--wu) * 260); width: min(calc(var(--wu) * 374), max(0px, calc(50% - var(--wu) * 251 - 12px))); }
-@media (min-width: 54rem) { .landing .world__cloud { display: block; } }
+.landing .world .world__cloud--left { display: none; right: calc(50% + var(--wu) * 312.5); bottom: calc(var(--wu) * 327); width: min(calc(var(--wu) * 374), max(0px, calc(50% - var(--wu) * 312.5 - 12px))); }
+.landing .world .world__cloud--right { display: none; left: calc(50% + var(--wu) * 251); bottom: calc(var(--wu) * 260); width: min(calc(var(--wu) * 374), max(0px, calc(50% - var(--wu) * 251 - 12px))); }
+@media (min-width: 54rem) { .landing .world .world__cloud { display: block; } }
 
 /* The signpost's pole foot stands on the clifftop at the top of the path, 69 wu above the bottom of .how in the painting (canvas y 2562).
    The signpost's own box ends about 9 wu below the foot, so this much room under it: */
