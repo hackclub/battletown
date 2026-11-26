@@ -4,10 +4,11 @@
    flat sand lives in the stage below the piece instead. The wrapper may overhang upward (into .prizes) but is clipped
    at the sides and the bottom, where the final band takes over. */
 /* Windows wider than the painting scale the shore up, so its low right end dips below the top of this section, where
-   .prizes no longer paints behind it. A strip in the floor's end color (the contract's color where floor meets sand) keeps
-   that wedge from showing the page behind. It is as tall as the curve can dip (about 18vw), and the piece covers it
-   below the curve. */
-.landing .faq { background: linear-gradient(var(--world-floor-end), var(--world-floor-end)) top / 100% 20vw no-repeat; }
+   .prizes no longer paints behind it. A strip in the color .prizes is painted in (flat --world-floor) keeps that wedge
+   from showing the page behind; it is as tall as the curve can dip (about 18vw), and the piece covers it below the curve.
+   The min-height keeps the section as tall as the scaled piece's wash (the piece is 48vw - 300px tall from the section
+   top), so the section's end never cuts it. */
+.landing .faq { background: linear-gradient(var(--world-floor), var(--world-floor)) top / 100% 20vw no-repeat; min-height: calc(48vw - 300px); }
 .landing .world--sand { clip-path: inset(-100vh 0 0 0); }
 
 /* The stage is the sand piece (canvas y 5700..7300, so 300 design px above the section top) at the piece's own scale:
