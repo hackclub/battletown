@@ -59,7 +59,7 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
     }.each do |label, href|
       assert_select "footer.site-footer nav[aria-label='Legal'] a[href='#{href}'][rel='noopener noreferrer']", text: label
     end
-    assert_select "footer.site-footer .site-footer__credit", text: "made with <3 by @armand and @amber"
+    assert_select "footer.site-footer .site-footer__credit", text: "made with <3 by @amber and @armand"
     assert_select "footer.site-footer .site-footer__credit a[href='https://hackclub.enterprise.slack.com/team/U07ABEP916X'][target='_blank'][rel='noopener']", text: "@armand"
     assert_select "footer.site-footer .site-footer__credit a[href='https://hackclub.enterprise.slack.com/team/U054VC2KM9P'][target='_blank'][rel='noopener']", text: "@amber"
     assert_select ".hero__signin-form", 0
