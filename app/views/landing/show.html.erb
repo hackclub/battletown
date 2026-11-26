@@ -25,11 +25,8 @@
       <div class="hero__content">
         <h1 id="landing-title" class="hero__logo"><%= image_tag "design/logo.svg", alt: "Battletown", width: 579, height: 329 %></h1>
         <p class="hero__tagline">Build projects, <span>get gear</span></p>
-        <div class="hero__actions">
+        <div class="<%= class_names("hero__actions", "hero__actions--count": @onboarded_fighters) %>">
           <%= render "landing/cta" %>
-          <% if @onboarded_fighters %>
-            <p class="hero__fighters">Join <span class="hero__fighters-count"><%= number_with_delimiter(@onboarded_fighters) %></span> other fighters</p>
-          <% end %>
           <%# Three of Hack Club's own stickers as one fanned pile, with the words that explain them across its foot. They are
               decoration (the words carry the meaning), so their alt is empty. %>
           <div class="hero__pile">
@@ -38,9 +35,8 @@
               <%= image_tag "landing/sticker-enjoy-hack-club.svg", alt: "", class: "hero__sticker-img hero__sticker-img--red", width: 586, height: 311 %>
               <%= image_tag "landing/sticker-stay-determined.svg", alt: "", class: "hero__sticker-img hero__sticker-img--black", width: 399, height: 173 %>
             </div>
-            <p class="hero__sticker"><span>free sticker</span> when you sign up!</p>
+            <p class="hero__sticker"><span>free sticker!</span></p>
           </div>
-          <p class="hero__sticker">Free sticker when you sign up</p>
         </div>
       </div>
     </div>

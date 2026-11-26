@@ -1,19 +1,14 @@
 require "test_helper"
 
 class LandingHelperTest < ActionView::TestCase
-  test "says join the fight below the threshold" do
-    assert_equal "Join the fight", join_cta_label(0)
-    assert_equal "Join the fight", join_cta_label(LandingHelper::FIGHTER_COUNT_THRESHOLD - 1)
+  test "the call to action says join the fight with no count" do
+    assert_equal "Join the fight", join_cta_label(nil)
+    assert_equal "Join the fight", join_cta_label
   end
 
-  test "quotes the real count from the threshold up" do
-    assert_equal "Join 10 other fighters", join_cta_label(10)
-    assert_equal "Join 1,234 other fighters", join_cta_label(1234)
-  end
-
-  test "uses the real user count by default" do
-    (User.count...LandingHelper::FIGHTER_COUNT_THRESHOLD).each { |i| User.create!(hca_uid: "ident!helper#{i}") }
-    assert_equal "Join #{User.count} other fighters", join_cta_label
+  test "it quotes the count in a pill when given one" do
+    assert_equal 'Join <span class="cta__count">51</span> other fighters', join_cta_label(51)
+    assert_equal 'Join <span class="cta__count">1,234</span> other fighters', join_cta_label(1234)
   end
 
   test "the threshold is ten" do

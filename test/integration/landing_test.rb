@@ -80,23 +80,6 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_no_match(/Already have an account/, response.body)
   end
 
-  test "the call to action only quotes a fighter count once it reaches the threshold" do
-    threshold = LandingHelper::FIGHTER_COUNT_THRESHOLD
-    assert_operator User.count, :<, threshold
-    get "/"
-    assert_select "a.cta .cta__label", text: "Join the fight", count: 2
-    assert_select "a.cta .cta__label", text: /other fighters/, count: 0
-
-    add_users_until(threshold - 1)
-    get "/"
-    assert_select "a.cta .cta__label", text: "Join the fight", count: 2
-
-    add_users_until(threshold)
-    get "/"
-    assert_select "a.cta .cta__label", text: "Join #{threshold} other fighters", count: 2
-    assert_select "a.cta .cta__label", text: "Join the fight", count: 0
-  end
-
   test "the boss health is a native progress bar with a text label" do
     get "/"
     assert_select ".fight__health progress.fight__bar[max='100'][aria-labelledby='landing-boss-health'][aria-describedby='landing-boss-label']", 1
@@ -135,7 +118,7 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "keeps the free sticker note" do
     get "/"
-    assert_select ".hero__sticker", text: "free sticker when you sign up!"
+    assert_select ".hero__sticker", text: "free sticker!"
   end
 
   test "every image has an alt attribute and decorative ones are empty" do
@@ -245,7 +228,7 @@ class LandingTest < ActionDispatch::IntegrationTest
   test "the hero has a pile of three decorative stickers over the free-sticker words, for visitors and signed-in people alike" do
     get "/"
     assert_select ".hero .hero__pile .hero__stickers img.hero__sticker-img[alt='']", 3
-    assert_select ".hero .hero__pile p.hero__sticker", text: "free sticker when you sign up!"
+    assert_select ".hero .hero__pile p.hero__sticker", text: "free sticker!"
     assert_select ".hero__notes", 0
     sign_in_as users(:new_user)
     get "/"
@@ -257,19 +240,21 @@ class LandingTest < ActionDispatch::IntegrationTest
     (User.onboarded.count...total).each { |i| User.create!(hca_uid: "ident!done#{i}", display_name: "Done #{i}", onboarded_at: Time.current) }
   end
 
-  test "the hero shows no fighter line with 50 or fewer onboarded users, and the count at 51 and up" do
+  test "both Join the fight buttons are plain with 50 or fewer onboarded users, and quote the count from 51" do
     onboard_users_until(50)
-    # people who have not finished onboarding do not count
-    add_users_until(User.count + 5)
+    add_users_until(User.count + 5) # people who have not finished onboarding do not count
     get "/"
-    assert_select ".hero__fighters", 0
+    assert_select "a.cta .cta__label", text: "Join the fight", count: 2
+    assert_select ".cta__count", 0
     onboard_users_until(51)
     get "/"
-    assert_select ".hero .hero__fighters", text: "Join 51 other fighters"
-    assert_select ".hero .hero__fighters .hero__fighters-count", text: "51"
+    assert_select "a.cta .cta__label", text: "Join 51 other fighters", count: 2
+    assert_select ".hero a.cta .cta__label .cta__count", text: "51"
+    assert_select "a.cta .cta__label", text: "Join the fight", count: 0
     onboard_users_until(1_234)
     get "/"
-    assert_select ".hero__fighters-count", text: "1,234"
+    assert_select ".hero .cta__count", text: "1,234"
+    assert_select ".hero a.cta[href='/onboarding']", 1
   end
 
   test "onboarded users are redirected to the dashboard" do
