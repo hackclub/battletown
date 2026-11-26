@@ -151,13 +151,19 @@ save("cave", "cave", cave)
 # 5. Floor (floor band): the painted wall foot and the painted pebble floor, both unaltered pixels of the painting.
 #    floor-top is the wall-to-floor seam at the painting's own scale: transparent above the wall's bottom edge (the cave piece
 #    paints the same pixels there), opaque down to FADE0, then fading to transparent by FADE1 over the floor-fill piece.
-#    floor-fill is the real painted floor (canvas y FILL_Y0..FILL_Y1, above the highest point of the shore), drawn once, never
-#    mirrored, never repeated: CSS sizes it uniformly to cover the section (see landing_world_floor.css). Anchored to canvas y 4750.
+#    floor-tile is the painted floor's own cell shapes (the pebble layer, 20) at the painting's scale, one continuous column of real
+#    cells from canvas y 4750 to TILE_Y1 (the layer runs far below the shore, under the sand, so there is a lot of it), in two flat tones
+#    taken from the painting where the floor meets the sand. Its last TILE_B rows are cross-faded with the real rows just above its top
+#    (canvas y 4750-TILE_B..4750), so it repeats down with no seam and no mirror. Brightness is NOT in the tile: CSS puts one smooth
+#    gradient over the whole section (landing_world_floor.css), from the wall's shadow tone to the tone at the sand.
+#    Anchored to canvas y 4750 = .prizes top.
+l20 = layer_full(20).getchannel("A")
 l18 = np.asarray(layer_full(18).getchannel("A"))
 art_rgb = art.convert("RGB")
 F_Y0, F_Y1 = 4700, 5200          # top piece rows (canvas)
 FADE0, FADE1 = 4960, 5120        # top piece opaque until FADE0, transparent from FADE1
-FILL_Y0, FILL_Y1 = 4750, 5790    # fill rows: all floor, no sand, across the whole width
+TILE_Y0, TILE_Y1, TILE_B = 4750, 7440, 380   # tile rows, and the wrap-blend height (14% of the tile)
+TILE_GAP, TILE_PEB = (102, 93, 170), (68, 60, 137)  # the painting's two floor tones just above the sand (rows 5700-5780)
 
 
 def smooth(t):
@@ -177,7 +183,14 @@ top = np.minimum(edge - 6, 4735)
 alpha = 255 * smooth((ys[:, None] - (top[None, :] - 10)) / 16)
 alpha = alpha * (1 - smooth((ys[:, None] - FADE0) / (FADE1 - FADE0)))
 save("floor", "floor-top", Image.fromarray(np.dstack([O, alpha]).clip(0, 255).astype(np.uint8), "RGBA"))
-save("floor", "floor-fill", art_rgb.crop((0, FILL_Y0, W, FILL_Y1)))
+pm_all = np.clip((140.0 - np.asarray(l20.filter(ImageFilter.GaussianBlur(0.7)), dtype=np.float32)) / 80.0, 0, 1)  # pebble coverage 0..1
+H_T = TILE_Y1 - TILE_Y0
+cells = pm_all[TILE_Y0 - TILE_B:TILE_Y1]                      # TILE_B rows above the top, then the tile's rows
+tile_m = cells[TILE_B:].copy()
+w_t = smooth((np.arange(TILE_B, dtype=np.float32) + 0.5) / TILE_B)[:, None]
+tile_m[H_T - TILE_B:] = tile_m[H_T - TILE_B:] * (1 - w_t) + cells[:TILE_B] * w_t   # last rows fade into the rows above the top
+tile = np.array(TILE_GAP, np.float32) * (1 - tile_m[..., None]) + np.array(TILE_PEB, np.float32) * tile_m[..., None]
+save("floor", "floor-tile", Image.fromarray(tile.clip(0, 255).astype(np.uint8), "RGB"))
 
 # 6. Sand: the end of the floor, the wavy shore and the sand down to where it is flat. Opaque. The sand band owns the
 #    floor-to-sand seam. (The sand-to-blue shore of the final band is a CSS clip, not a piece: see landing_world_final.css.)

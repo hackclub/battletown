@@ -1,11 +1,8 @@
 /* Band: floor. Owned by the floor band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css.
  *
  * The wrapper's top is canvas y 4750. Anchors (canvas y -> wu from the top): the top piece starts at 4700 (-25wu) and ends at 5900
- * (125wu); the painted floor (floor-fill) lies under it. The top piece is opaque from just above the wall's bottom edge and transparent
- * above it, so it covers only what it must of the cave band, with the same pixels. The floor is drawn as dark navy under the wall,
- * smoothly lighter to purple (no step), then the haze fades it to --world-floor-end at the section's bottom edge. */
-.landing .world--floor { --floor-haze: calc(var(--wu) * 330); }
-
+ * (125wu); the floor tile lies under it. The top piece is opaque from just above the wall's bottom edge and transparent
+ * above it, so it covers only what it must of the cave band, with the same pixels. */
 .landing .world--floor { clip-path: inset(-100vh 0 0 0); } /* no horizontal overhang; the top may reach up over the cave seam */
 
 /* The cave band slides the painting left on narrow windows (--world-cx, from landing_world.css = the painting x at the window's middle);
@@ -18,17 +15,18 @@
 }
 .landing .world--floor .floor__top { left: 0; top: calc(var(--wc) * -25); width: var(--cave-w); height: calc(var(--wc) * 250); }
 
-/* The real painted floor, drawn once: sized uniformly to cover the section (never mirrored, repeated or stretched), top-anchored so it
-   meets floor-top. Tall sections show it larger. floor-top paints over its first rows and fades out into it. */
+/* The floor at the painting's own scale (1 painting px = 1 world unit, like the cave wall). floor-tile is his real pebble-cell shapes, one
+   continuous 1345 wu column (canvas y 4750 to 7440, un-mirrored), cross-faded at its seam so it repeats down without one; a section taller
+   than that repeats it once. Its brightness is flat. ONE smooth brightness gradient (.floor__shade, multiplied over it) goes from the wall's
+   shadow tone at the top to the tone the painting has where the floor meets the sand. floor-top paints over the first rows and fades out. */
+.landing .world--floor .floor__col { isolation: isolate; }
 .landing .world--floor .floor__tile {
   position: absolute; left: 0; right: 0; top: 0; bottom: 0;
-  background: var(--world-floor) image-set(url("landing/world/floor/floor-fill@a.webp") 1x, url("landing/world/floor/floor-fill@b.webp") 1.3x, url("landing/world/floor/floor-fill@c.webp") 2x) center top / cover no-repeat;
+  background: var(--world-floor) image-set(url("landing/world/floor/floor-tile@a.webp") 1x, url("landing/world/floor/floor-tile@b.webp") 1.3x, url("landing/world/floor/floor-tile@c.webp") 2x) 0 0 / var(--cave-w) calc(var(--wc) * 1345) repeat-y;
 }
-
-/* The haze: pebbles and ground melt into the one flat color the sand band starts from. */
-.landing .world--floor .floor__haze {
-  position: absolute; left: 0; right: 0; bottom: 0; height: var(--floor-haze);
-  background: linear-gradient(to bottom, rgb(72 62 135 / 0), rgb(72 62 135 / 0.35) 40%, rgb(72 62 135 / 0.78) 75%, var(--world-floor-end));
+.landing .world--floor .floor__shade {
+  position: absolute; left: 0; right: 0; top: 0; bottom: 0; mix-blend-mode: multiply;
+  background: linear-gradient(to bottom, rgb(74 79 194) 0.0%, rgb(78 83 195) 5.0%, rgb(90 94 199) 10.0%, rgb(107 111 205) 15.0%, rgb(128 132 212) 20.0%, rgb(152 155 220) 25.0%, rgb(177 179 229) 30.0%, rgb(201 202 237) 35.0%, rgb(222 223 244) 40.0%, rgb(239 240 250) 45.0%, rgb(251 251 254) 50.0%, rgb(255 255 255) 55.0%, rgb(255 255 255) 100%);
 }
 
 /* The section: tall enough for the painting (775wu) and the heading, with room above the heading for the pillar's foot. */
