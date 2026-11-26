@@ -1,15 +1,8 @@
-<%# Final band (owner: final agent): the sea. The shore is a CSS clip with a waterline (wet sand, foam), the water is flat color, and the sky band's cloud and the sand band's shells are reused, flipped and half-sunk, so no new image bytes load. See landing_world_final.css, which also documents the empty slot for a future painting. -%>
-<% %w[wet1 wet2 wet3 foam1 foam2 water].each do |layer| %>
+<%# Final band (owner: final agent): night ground. The sand edge is a CSS clip over the site's ink blue, with a thin darker-sand shade under the lip. The only decoration is the logo's four-point sparkle, one inline symbol reused, so no image bytes load. Each star's place is a class in landing_world_final.css (the CSP forbids style attributes). See that file, which also documents the empty slot for a future painting. -%>
+<% %w[shade ground].each do |layer| %>
   <div class="world__shore shore--<%= layer %>"></div>
 <% end %>
-<% cloud_srcset = { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" } %>
-<svg class="sea__svg" aria-hidden="true" focusable="false"><filter id="sea-smear" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="5 1.6"/></filter></svg>
-<div class="sea__reflect">
-  <% %w[a b c d].each do |id| %>
-    <%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "sea__cloud sea__cloud--#{id}", width: 748, height: 194, loading: "lazy", decoding: "async", srcset: cloud_srcset, sizes: "(min-width: 48rem) 27vw, 1px" %>
-  <% end %>
-</div>
-<%= image_tag "landing/world/sand/shell-1@c.webp", alt: "", class: "sea__shell sea__shell--1", width: 368, height: 301, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/sand/shell-1@a.webp" => "184w", "landing/world/sand/shell-1@b.webp" => "239w", "landing/world/sand/shell-1@c.webp" => "368w" }, sizes: "6vw" %>
-<%= image_tag "landing/world/sand/shell-2@c.webp", alt: "", class: "sea__shell sea__shell--2", width: 341, height: 327, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/sand/shell-2@a.webp" => "170w", "landing/world/sand/shell-2@b.webp" => "222w", "landing/world/sand/shell-2@c.webp" => "341w" }, sizes: "5.2vw" %>
+<svg class="night__defs" aria-hidden="true" focusable="false"><symbol id="night-star" viewBox="0 0 100 100"><path d="M50 0C52 31 69 48 100 50C69 52 52 69 50 100C48 69 31 52 0 50C31 48 48 31 50 0Z"/></symbol></svg>
+<% (1..9).each do |n| %>
+  <svg class="night__star night__star--<%= n %>" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#night-star"/></svg>
+<% end %>
