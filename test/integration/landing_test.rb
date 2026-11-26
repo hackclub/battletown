@@ -72,18 +72,12 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".site-header", text: /Sign in/, count: 0
   end
 
-  test "visitors get a small sign-in link under the hero button for the account they already have, signed-in users do not" do
-    original = ActionController::Base.allow_forgery_protection
-    ActionController::Base.allow_forgery_protection = true
+  test "the hero has no sign-in line: the one way in is the Join the fight button" do
     get "/"
-    assert_select ".hero form[action='/auth/hack_club'][method='post'][data-turbo='false']", 1 do
-      assert_select "input[name='authenticity_token'][type='hidden']", 1
-      assert_select "button.hero__signin", "Sign in"
-      assert_select "span", "Already have an account?"
-    end
-    assert_select "form[action='/auth/hack_club']", 1 # only that one: the page has no other sign-in control
-  ensure
-    ActionController::Base.allow_forgery_protection = original
+    assert_select ".hero__signin-form, button.hero__signin", 0
+    assert_select "form[action='/auth/hack_club']", 0
+    assert_select ".hero a.cta", 1
+    assert_no_match(/Already have an account/, response.body)
   end
 
   test "the call to action only quotes a fighter count once it reaches the threshold" do
@@ -248,14 +242,14 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".site-nav, .site-header__nav", 0
   end
 
-  test "the hero notes are one balanced card for visitors and for signed-in people, with the sign-in line only for visitors" do
+  test "the hero notes are one card: three decorative stickers over the free-sticker words, for visitors and signed-in people alike" do
     get "/"
-    assert_select ".hero .hero__notes .hero__sticker", 1
-    assert_select ".hero .hero__notes form.hero__signin-form button.hero__signin", 1
+    assert_select ".hero .hero__notes .hero__stickers img.hero__sticker-img[alt='']", 3
+    assert_select ".hero .hero__notes p.hero__sticker", text: "Free sticker when you sign up"
     sign_in_as users(:new_user)
     get "/"
-    assert_select ".hero .hero__notes .hero__sticker", 1
-    assert_select ".hero__signin-form", 0
+    assert_select ".hero .hero__notes .hero__stickers img.hero__sticker-img[alt='']", 3
+    assert_select ".hero .hero__notes p.hero__sticker", 1
     assert_select ".hero__content > .hero__notes + *", 0 # nothing is left dangling inside the notes card's parent after it
   end
 

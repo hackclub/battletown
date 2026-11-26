@@ -52,7 +52,7 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
     get "/"
     assert_select "footer.site-footer .site-footer__inner > span", text: "A Hack Club program"
     assert_select "footer.site-footer nav[aria-label='Legal'] a", 2
-    assert_select ".hero form.hero__signin-form button.hero__signin", 1
+    assert_select ".hero__signin-form", 0
   end
 
   test "below 64rem the footer sits on a solid ink blue backing and from 64rem up it stays navy on the sky" do
@@ -64,11 +64,6 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
     assert_match(/color: var\(--navy\)/, wide)
     assert_match(/outline-color: var\(--navy\)/, wide)
     assert_no_match(/background: var\(--color-ink-blue\)/, wide)
-  end
-
-  test "the sign-in link has a navy focus ring" do
-    assert_match(/outline: 3px solid var\(--navy\)/, rule(".landing .hero__signin:focus-visible"))
-    assert_no_match(/--color-focus/, rule(".landing .hero__signin:focus-visible"))
   end
 
   test "the call to action can wrap and never drops below 24px" do

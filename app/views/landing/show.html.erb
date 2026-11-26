@@ -26,15 +26,15 @@
         <h1 id="landing-title" class="hero__logo"><%= image_tag "design/logo.svg", alt: "Battletown", width: 579, height: 329 %></h1>
         <p class="hero__tagline">Build projects, <span>get gear</span></p>
         <%= render "landing/cta" %>
-        <%# Two quiet lines under the button, so "Join the fight" stays the one call to action. The second is for people who
-            already have an account: signing in is a POST, so only the words "Sign in" are the (link-looking) button. %>
+        <%# Three of Hack Club's own stickers, tilted like they were stuck on, with the words that explain them. They are
+            decoration (the words carry the meaning), so their alt is empty. %>
         <div class="hero__notes">
-          <p class="hero__sticker"><span aria-hidden="true">🎁</span> Free sticker when you sign up</p>
-          <% unless signed_in? %>
-            <%= form_with url: "/auth/hack_club", method: :post, class: "hero__signin-form", data: { turbo: false } do %>
-              <span>Already have an account?</span> <%= button_tag "Sign in", type: :submit, class: "hero__signin" %>
-            <% end %>
-          <% end %>
+          <div class="hero__stickers" aria-hidden="true">
+            <%= image_tag "landing/sticker-stay-determined.svg", alt: "", class: "hero__sticker-img", width: 399, height: 173 %>
+            <%= image_tag "landing/sticker-enjoy-hack-club.svg", alt: "", class: "hero__sticker-img", width: 586, height: 311 %>
+            <%= image_tag "landing/sticker-hack-macintosh.svg", alt: "", class: "hero__sticker-img", width: 335, height: 432 %>
+          </div>
+          <p class="hero__sticker">Free sticker when you sign up</p>
         </div>
       </div>
     </div>
