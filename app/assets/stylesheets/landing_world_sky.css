@@ -1,6 +1,36 @@
-/* Band: sky. Owned by the sky band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+/* Band: sky. Owned by the sky band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css.
+ *
+ * The painted sky is sky@*.webp: canvas y 1498..2700 (601 wu tall), bottom edge on the bottom of .how, 1576 wu wide, centered. It is
+ * opaque, but fades out over 100 wu at each side, where the .sky__edge gradients (the painting's own edge colors, blurred) carry it
+ * past the painting's width. The whole .sky__paint layer fades in from nothing over its first 120 px, so the hero's flat blue
+ * (#9dc4fd) runs into the painting with no line, however tall .how turns out. Below the swoosh the wrapper clips the paint at
+ * the top of .how. The sky continues under the clifftop (the cliff band covers it), so the bottom of .how is never seen as sky.
+ * The pole foot of the signpost is the one thing that must land on the cliff band's art: see .how__inner below. */
 
-/* First cut. The cloud's painting spot: canvas x 203..951 / 2078..2826, y 1851..2045 / 1985..2179; the wrapper's bottom is canvas y 2700. */
-.landing .world__cloud { width: calc(var(--wu) * 374); }
-.landing .world__cloud--left { left: calc(50% - var(--wu) * 687); bottom: calc(var(--wu) * 327); }
-.landing .world__cloud--right { left: calc(50% + var(--wu) * 251); bottom: calc(var(--wu) * 260); }
+.landing .world--sky { overflow: hidden; }
+.landing .sky__paint {
+  position: absolute; inset: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 120px); mask-image: linear-gradient(to bottom, transparent, #000 120px);
+}
+.landing .world__sky { left: 50%; bottom: 0; width: calc(var(--wu) * 1576); margin-left: calc(var(--wu) * -788); }
+.landing .sky__edge { position: absolute; bottom: 0; height: calc(var(--wu) * 601); width: max(0px, calc(50% - var(--wu) * 688)); }
+.landing .sky__edge--left {
+  left: 0;
+  background: linear-gradient(to bottom, #a3c6ef 0%, #a3c6ef 12.5%, #a3c7f0 16.6%, #a1c8f3 20.8%, #a7ccf3 25%, #b7d6f2 29.1%, #c2ddf0 33.3%, #bedbf0 37.4%, #c2dcee 41.6%, #c6deeb 45.8%, #c3deec 49.9%, #bedeee 54.1%, #c4dfec 58.2%, #cce1eb 62.4%, #cce0eb 66.6%, #cfe3ec 70.7%, #d5e6ed 74.9%, #d6e7ed 79%, #dae9ed 83.2%, #dce9ec 87.4%, #dfebed 91.5%, #e0edef 95.7%, #d3e6ef 99.8%);
+}
+.landing .sky__edge--right {
+  right: 0;
+  background: linear-gradient(to bottom, #a3c6ef 0%, #a3c6ef 12.5%, #b8d5ee 16.6%, #c7dfed 20.8%, #cbe2ed 25%, #cae2ed 29.1%, #bdddee 33.3%, #bedeed 37.4%, #c5e0ec 41.6%, #c5dfec 45.8%, #c8e1ed 49.9%, #d0e4ed 54.1%, #d4e5ed 58.2%, #d6e7ef 62.4%, #d4e7ef 66.6%, #d0e5ef 70.7%, #d0e5ef 74.9%, #d4e7ef 79%, #dfedf0 83.2%, #d3e7ef 87.4%, #d0e5ef 91.5%, #d0e5ef 95.7%, #d0e5ef 99.8%);
+}
+
+/* Clouds, at the painting's spots: canvas x 203..951 and 2078..2826, y 1851..2045 and 1985..2179, so their bottoms are 327 and 260 wu
+   above the bottom of .how. The signpost's boards are wider than a phone, so each cloud may only use the sky beside the boards
+   (the left one hangs from the boards' left edge, the right one starts where the painting has it): on a narrower window it shrinks
+   to fit that room, and it is gone where there is almost none (phones and small tablets), instead of being cut in half. */
+.landing .world__cloud--left { display: none; right: calc(50% + var(--wu) * 312.5); bottom: calc(var(--wu) * 327); width: min(calc(var(--wu) * 374), max(0px, calc(50% - var(--wu) * 312.5 - 12px))); }
+.landing .world__cloud--right { display: none; left: calc(50% + var(--wu) * 251); bottom: calc(var(--wu) * 260); width: min(calc(var(--wu) * 374), max(0px, calc(50% - var(--wu) * 251 - 12px))); }
+@media (min-width: 54rem) { .landing .world__cloud { display: block; } }
+
+/* The signpost's pole foot stands on the clifftop at the top of the path, 69 wu above the bottom of .how in the painting (canvas y 2562).
+   The signpost's own box ends about 9 wu below the foot, so this much room under it: */
+.landing .how__inner { padding-bottom: calc(var(--wu) * 60); }

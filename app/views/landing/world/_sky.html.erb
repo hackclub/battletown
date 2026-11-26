@@ -1,5 +1,13 @@
-<%# Sky band (owner: sky agent). Decorative; the wrapper in show.html.erb is aria-hidden. First cut: the cloud, used twice. -%>
-<%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "world__img world__cloud world__cloud--left", width: 748, height: 194, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" }, sizes: "100vw" %>
-<%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "world__img world__cloud world__cloud--right", width: 748, height: 194, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" }, sizes: "100vw" %>
+<%# Sky band (owner: sky agent). Decorative; the wrapper in show.html.erb is aria-hidden. The painted sky fades in from the hero's flat blue at the top
+    and out to its own edge colors at the sides, where two edge gradients carry it past the painting's width. Then the cloud, used twice. -%>
+<div class="sky__paint">
+  <span class="sky__edge sky__edge--left"></span>
+  <span class="sky__edge sky__edge--right"></span>
+  <%= image_tag "landing/world/sky/sky@c.webp", alt: "", class: "world__img world__sky", width: 3152, height: 1202, loading: "lazy", decoding: "async",
+        srcset: { "landing/world/sky/sky@a.webp" => "1576w", "landing/world/sky/sky@b.webp" => "2049w", "landing/world/sky/sky@c.webp" => "3152w" },
+        sizes: "(min-width: 37rem) 1576px, calc((100vw - 1rem) * 1576 / 576)" %>
+</div>
+<% cloud_srcset = { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" } %>
+<% cloud_sizes = "(min-width: 87rem) 374px, calc(50vw - 324px)" %>
+<%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "world__img world__cloud world__cloud--left", width: 748, height: 194, loading: "lazy", decoding: "async", srcset: cloud_srcset, sizes: cloud_sizes %>
+<%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "world__img world__cloud world__cloud--right", width: 748, height: 194, loading: "lazy", decoding: "async", srcset: cloud_srcset, sizes: cloud_sizes %>
