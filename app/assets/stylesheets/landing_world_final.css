@@ -60,7 +60,7 @@
 /* x from the page middle, y from the top of the section */
 .landing .world--final .sea__cloud--a { --op: 0.5; }
 .landing .world--final .sea__cloud--b { --op: 0.55; left: calc(50% + var(--wu) * -705); top: calc(var(--wu) * 320); width: calc(var(--wu) * 320); }
-.landing .world--final .sea__cloud--c { --op: 0.45; left: calc(50% + var(--wu) * -300); top: calc(var(--wu) * 410); width: calc(var(--wu) * 240); }
+.landing .world--final .sea__cloud--c { --op: 0.45; left: calc(50% + var(--wu) * -300); top: calc(var(--wu) * 340); width: calc(var(--wu) * 240); }
 .landing .world--final .sea__cloud--d { --op: 0.5; left: calc(50% + var(--wu) * 400); top: calc(var(--wu) * 30); width: calc(var(--wu) * 360); }
 @media (min-width: 48rem) {
   .landing .world--final .sea__cloud--a { display: block; left: calc(50% + var(--wu) * -100); top: calc(var(--wu) * 20); width: calc(var(--wu) * 420); }
