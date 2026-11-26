@@ -76,7 +76,9 @@
 }
 /* From 1576px the whole painting scales up to fill the width: one painting, enlarged, never extended, stretched or mirrored. */
 @media (min-width: 1576px) {
-  .landing { --wu: calc(100vw / 1576); }
+  /* --wc is set to --wu here on purpose: Firefox evaluates the narrow-window min() above a little low at wide widths (1786 px of cave art in a
+     1800 px window, 12 px of teal showing on each side), and from 1576px the shrink branch can never win anyway. */
+  .landing { --wu: calc((100vw + 8px) / 1576); --wc: var(--wu); } /* +8px: the world is 4px wider than the window on each side, so a rounding error can never show the background */
 }
 body:has(.landing) { background: var(--world-final); }
 
