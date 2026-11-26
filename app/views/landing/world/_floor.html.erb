@@ -5,7 +5,7 @@
 <% [ "mid", "left", "right" ].each do |side| %>
   <div class="floor__col floor__col--<%= side %>">
     <div class="floor__tile"></div>
-    <%= image_tag "landing/world/floor/floor-top@c.webp", alt: "", class: "world__img floor__top", width: 3152, height: 1200, loading: "lazy", decoding: "async",
+    <%= image_tag "landing/world/floor/floor-top@c.webp", alt: "", class: "world__img floor__top", width: 3152, height: 1200, loading: "lazy", decoding: "sync",
           srcset: { "landing/world/floor/floor-top@a.webp" => "1576w", "landing/world/floor/floor-top@b.webp" => "2049w", "landing/world/floor/floor-top@c.webp" => "3152w" }, sizes: "100vw" %>
   </div>
 <% end %>
