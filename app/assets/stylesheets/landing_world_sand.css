@@ -25,7 +25,7 @@
    section top; the lower one rises from the section bottom, because our section is shorter than the painted one. Narrower
    windows keep them on screen at the edges. */
 .landing .world--sand .world__shell--1 { left: min(calc(50% + var(--wu) * 484), calc(100% - 6rem)); top: calc(var(--wu) * 76); width: calc(var(--wu) * 184); }
-.landing .world--sand .world__shell--2 { left: max(calc(50% - var(--wu) * 658), 0px); top: auto; bottom: calc(var(--wu) * 330); width: calc(var(--wu) * 170); }
+.landing .world--sand .world__shell--2 { left: max(calc(50% - var(--wu) * 658), -3rem); top: auto; bottom: calc(var(--wu) * 330); width: calc(var(--wu) * 170); }
 
 /* The heading sits on the sand above the list, at the content column's left edge, as in the painting. landing.css
    hung it off the old river bank with a negative top. */
