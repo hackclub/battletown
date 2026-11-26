@@ -42,26 +42,26 @@
 .landing .world--final .shore--water { --o: 5; background: linear-gradient(to bottom, var(--sea-top), var(--sea-deep)); }
 
 /*
- * Reflections. A box over the water (below the section's own content) holds the sky band's cloud flipped upside down, at low
- * opacity. One ripple mask on the box breaks every reflection with the same horizontal gaps, as on real water: two repeating
- * gradients with different periods (10 and 18 px) that only line up every 90 px, so the gaps do not look ruled. Positions
- * are design px from the page middle (--wu), so the picture scales like the other bands. On phones there are no clouds (the section is a
- * narrow column of heading, button and fighter, and a small smear beside the heading read as a rendering bug); the waterline and
- * the water gradient stay.
+ * Reflections. Each is the sky band's cloud turned upside down in calm water: squashed to 65% height (reflections are
+ * foreshortened), smeared sideways a little by an SVG blur that is stronger across than down (filter #sea-smear, in the
+ * partial), and faded out downward by its own mask. Each mask also has one soft, uneven break at its own height (--b), as if a
+ * ripple passed through; no ruled pattern. Positions are design px from the page middle (--wu), so the picture scales like the
+ * other bands; the two lower clouds hang from the section bottom, because the section's height does not scale with --wu. On
+ * phones there are no clouds (the section is a narrow column of heading, button and fighter); the waterline and the water
+ * gradient stay.
  */
-.landing .world--final .sea__reflect {
-  position: absolute; inset: 0; overflow: hidden;
-  -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 9px, transparent 9px 10px), repeating-linear-gradient(to bottom, #000 0 16px, transparent 16px 18px);
-  mask-image: repeating-linear-gradient(to bottom, #000 0 9px, transparent 9px 10px), repeating-linear-gradient(to bottom, #000 0 16px, transparent 16px 18px);
-  -webkit-mask-composite: source-in; mask-composite: intersect;
+.landing .world--final .sea__reflect { position: absolute; inset: 0; overflow: hidden; }
+.landing .world--final .sea__svg { position: absolute; width: 0; height: 0; }
+.landing .world--final .sea__cloud {
+  position: absolute; display: none; height: auto; max-width: none; transform: scaleY(-0.65); opacity: var(--op, 0.6); filter: url(#sea-smear);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0, #000 26%, #000 calc(var(--b, 50%) - 5%), rgba(0, 0, 0, 0.3) var(--b, 50%), #000 calc(var(--b, 50%) + 6%), rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0, #000 26%, #000 calc(var(--b, 50%) - 5%), rgba(0, 0, 0, 0.3) var(--b, 50%), #000 calc(var(--b, 50%) + 6%), rgba(0, 0, 0, 0.55) 72%, transparent 100%);
 }
-.landing .world--final .sea__cloud { position: absolute; display: none; height: auto; max-width: none; transform: scaleY(-1); opacity: var(--op, 0.4); filter: blur(1.6px);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), #000 35%, rgba(0, 0, 0, 0.2)); mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), #000 35%, rgba(0, 0, 0, 0.2)); }
-/* x from the page middle, y from the top of the section */
-.landing .world--final .sea__cloud--a { --op: 0.5; }
-.landing .world--final .sea__cloud--b { --op: 0.55; left: calc(50% + var(--wu) * -705); top: calc(var(--wu) * 320); width: calc(var(--wu) * 320); }
-.landing .world--final .sea__cloud--c { --op: 0.45; left: calc(50% + var(--wu) * -300); top: calc(var(--wu) * 340); width: calc(var(--wu) * 240); }
-.landing .world--final .sea__cloud--d { --op: 0.5; left: calc(50% + var(--wu) * 400); top: calc(var(--wu) * 30); width: calc(var(--wu) * 360); }
+/* x from the page middle; y from the top of the section (a, d) or the bottom of it (b, c) */
+.landing .world--final .sea__cloud--a { --op: 0.7; --b: 52%; }
+.landing .world--final .sea__cloud--b { --op: 0.7; --b: 40%; left: calc(50% + var(--wu) * -705); bottom: calc(var(--wu) * 150); width: calc(var(--wu) * 320); }
+.landing .world--final .sea__cloud--c { --op: 0.6; --b: 58%; left: calc(50% + var(--wu) * -300); bottom: calc(var(--wu) * 60); width: calc(var(--wu) * 240); }
+.landing .world--final .sea__cloud--d { --op: 0.65; --b: 46%; left: calc(50% + var(--wu) * 400); top: calc(var(--wu) * 30); width: calc(var(--wu) * 360); }
 @media (min-width: 48rem) {
   .landing .world--final .sea__cloud--a { display: block; left: calc(50% + var(--wu) * -100); top: calc(var(--wu) * 20); width: calc(var(--wu) * 420); }
   .landing .world--final .sea__cloud--b, .landing .world--final .sea__cloud--c, .landing .world--final .sea__cloud--d { display: block; }

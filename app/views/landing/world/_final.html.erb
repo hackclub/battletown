@@ -3,6 +3,7 @@
   <div class="world__shore shore--<%= layer %>"></div>
 <% end %>
 <% cloud_srcset = { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" } %>
+<svg class="sea__svg" aria-hidden="true" focusable="false"><filter id="sea-smear" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="5 1.6"/></filter></svg>
 <div class="sea__reflect">
   <% %w[a b c d].each do |id| %>
     <%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "sea__cloud sea__cloud--#{id}", width: 748, height: 194, loading: "lazy", decoding: "async", srcset: cloud_srcset, sizes: "(min-width: 48rem) 27vw, 1px" %>
