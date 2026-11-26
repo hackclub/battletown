@@ -46,8 +46,9 @@
  * Reflections. A box over the water (below the section's own content) holds the sky band's cloud flipped upside down, at low
  * opacity. One ripple mask on the box breaks every reflection with the same horizontal gaps, as on real water: two repeating
  * gradients with different periods (10 and 18 px) that only line up every 90 px, so the gaps do not look ruled. Positions
- * are design px from the page middle (--wu), so the picture scales like the other bands. On phones fewer and smaller clouds, and
- * none beside the heading. Past the painting's width (1700 px and up) more clouds carry the water on instead of stretching anything.
+ * are design px from the page middle (--wu), so the picture scales like the other bands. On phones there are no clouds (the section is a
+ * narrow column of heading, button and fighter, and a small smear beside the heading read as a rendering bug); the waterline and
+ * the water gradient stay. Past the painting's width (1700 px and up) more clouds carry the water on instead of stretching anything.
  */
 .landing .world--final .sea__reflect {
   position: absolute; inset: 0; overflow: hidden;
@@ -55,15 +56,16 @@
   mask-image: repeating-linear-gradient(to bottom, #000 0 9px, transparent 9px 10px), repeating-linear-gradient(to bottom, #000 0 16px, transparent 16px 18px);
   -webkit-mask-composite: source-in; mask-composite: intersect;
 }
-.landing .world--final .sea__cloud { position: absolute; display: none; height: auto; max-width: none; transform: scaleY(-1); opacity: var(--op, 0.4); }
+.landing .world--final .sea__cloud { position: absolute; display: none; height: auto; max-width: none; transform: scaleY(-1); opacity: var(--op, 0.4); filter: blur(1.6px);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), #000 35%, rgba(0, 0, 0, 0.2)); mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), #000 35%, rgba(0, 0, 0, 0.2)); }
 /* x from the page middle, y from the top of the section */
-.landing .world--final .sea__cloud--a { --op: 0.6; display: block; left: calc(100% - 8.5rem); top: 1.25rem; width: 7.5rem; }
-.landing .world--final .sea__cloud--b { --op: 0.5; left: calc(50% + var(--wu) * -705); top: calc(var(--wu) * 320); width: calc(var(--wu) * 320); }
-.landing .world--final .sea__cloud--c { --op: 0.4; left: calc(50% + var(--wu) * -300); top: calc(var(--wu) * 410); width: calc(var(--wu) * 240); }
+.landing .world--final .sea__cloud--a { --op: 0.5; }
+.landing .world--final .sea__cloud--b { --op: 0.55; left: calc(50% + var(--wu) * -705); top: calc(var(--wu) * 320); width: calc(var(--wu) * 320); }
+.landing .world--final .sea__cloud--c { --op: 0.45; left: calc(50% + var(--wu) * -300); top: calc(var(--wu) * 410); width: calc(var(--wu) * 240); }
 .landing .world--final .sea__cloud--d { --op: 0.5; left: calc(50% + var(--wu) * 400); top: calc(var(--wu) * 30); width: calc(var(--wu) * 360); }
 .landing .world--final .sea__cloud--e { --op: 0.45; left: calc(50% + var(--wu) * -1010); top: calc(var(--wu) * 70); width: calc(var(--wu) * 320); }
 @media (min-width: 48rem) {
-  .landing .world--final .sea__cloud--a { left: calc(50% + var(--wu) * -100); top: calc(var(--wu) * 20); width: calc(var(--wu) * 420); }
+  .landing .world--final .sea__cloud--a { display: block; left: calc(50% + var(--wu) * -100); top: calc(var(--wu) * 20); width: calc(var(--wu) * 420); }
   .landing .world--final .sea__cloud--b, .landing .world--final .sea__cloud--c { display: block; }
 }
 @media (min-width: 1700px) { .landing .world--final .sea__cloud--d, .landing .world--final .sea__cloud--e { display: block; } }
