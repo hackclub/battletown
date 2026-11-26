@@ -20,10 +20,11 @@
 .landing .world--sand .sand__stage { background: linear-gradient(to bottom, transparent 38%, var(--world-sand-top) 38%, var(--world-sand) 85%); }
 .landing .world--sand .sand__stage::after { content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 2px); height: 1500px; background: var(--world-sand); }
 
-/* Shells: beside the FAQ list on desktop (painting: shell 1 at design x 1272, shell 2 at x 130, from the page middle
-   +484 and -658). Narrower than that they stay on screen at the edges. */
+/* Shells: beside the FAQ list on desktop, from the page middle +484 and -658 as in the painting. The upper one hangs from the
+   section top; the lower one rises from the section bottom, because our section is shorter than the painted one. Narrower
+   windows keep them on screen at the edges. */
 .landing .world--sand .world__shell--1 { left: min(calc(50% + var(--wu) * 484), calc(100% - 6rem)); top: calc(var(--wu) * 76); width: calc(var(--wu) * 184); }
-.landing .world--sand .world__shell--2 { left: max(calc(50% - var(--wu) * 658), 0px); top: calc(var(--wu) * 791); width: calc(var(--wu) * 170); }
+.landing .world--sand .world__shell--2 { left: max(calc(50% - var(--wu) * 658), 0px); top: auto; bottom: calc(var(--wu) * 330); width: calc(var(--wu) * 170); }
 
 /* The heading sits on the sand above the list, at the content column's left edge, as in the painting. landing.css
    hung it off the old river bank with a negative top. */
