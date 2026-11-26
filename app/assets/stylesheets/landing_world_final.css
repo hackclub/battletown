@@ -60,6 +60,10 @@
   .landing .world--final .island__cloud--a { display: none; }
   .landing .world--final .island__cloud--b, .landing .world--final .island__cloud--c { display: block; }
 }
+/* Between 60rem and 80rem the middle cloud would sit behind the fighter's head, so only the right one shows. */
+@media (min-width: 60rem) and (max-width: 79.99rem) {
+  .landing .world--final .island__cloud--c { display: none; }
+}
 
 /*
  * SLOT FOR A PAINTING (empty on purpose; a painting would replace the sky and clouds, keep the sand edge). To drop one in, add to _final.html.erb, after the water layer:
