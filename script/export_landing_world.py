@@ -162,11 +162,8 @@ k = 41
 pad = np.pad(edge, k // 2, mode="edge")
 edge = np.array([np.median(pad[i:i + k]) for i in range(W)]).astype(int)
 top = np.minimum(edge - 6, 4735)
-alpha = np.zeros((F_Y1 - F_Y0, W), np.float32)
-for x in range(W):
-    alpha[max(0, top[x] - F_Y0):, x] = 1
-alpha = np.asarray(Image.fromarray((alpha * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2))).astype(np.float32)
-alpha[top.max() - F_Y0 + 30:] = 255
+# a 16-row ramp (not a hard edge), so any rounding difference with the cave piece's identical pixels cannot show as a line
+alpha = 255 * smooth((np.arange(F_Y0, F_Y1, dtype=np.float32)[:, None] - (top[None, :] - 10)) / 16)
 piece = np.dstack([rgb, alpha]).clip(0, 255).astype(np.uint8)
 top_img = Image.fromarray(piece, "RGBA")
 
