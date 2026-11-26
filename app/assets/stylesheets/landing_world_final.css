@@ -19,7 +19,7 @@
   position: absolute; left: 0; right: 0; top: calc(var(--wu) * -80); bottom: 0;
   background: var(--sea-top);
   clip-path: polygon(
-    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * (74 + var(--o, 0))),
+    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * (79 + var(--o, 0))),
     calc(50% + var(--wu) * -788) calc(var(--wu) * (64.5 + var(--o, 0))),
     calc(50% + var(--wu) * -638) calc(var(--wu) * (55 + var(--o, 0))),
     calc(50% + var(--wu) * -488) calc(var(--wu) * (48 + var(--o, 0))),
