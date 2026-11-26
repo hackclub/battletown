@@ -13,19 +13,19 @@
 /* ---- Page chrome: the header floats over the hero, and the page ends on the last section's sky ---- */
 body:has(.landing) {
   --sky: #9dc4fd;
-  --blue: #1472d5;
-  --blue-shade: #1662c7;
+  --blue: var(--color-blue);
+  --blue-shade: var(--color-blue-edge);
   --royal: #1456bd;
   --royal-shade: #0e3f91;
-  --navy: #10285a;
-  --navy-shade: #0a1a40;
+  --navy: var(--color-navy);
+  --navy-shade: var(--color-navy-edge);
   --navy-lift: #1b3a7a;
-  --yellow: #ffd000;
-  --yellow-shade: #dc9700;
-  --pink: #ff4797;
-  --pink-shade: #ff2d84;
-  --pink-deep: #e62978;
-  --cream: #fffef5;
+  --yellow: var(--color-yellow);
+  --yellow-shade: var(--color-yellow-edge);
+  --pink: var(--color-pink);
+  --pink-shade: var(--color-pink-edge);
+  --pink-deep: var(--color-pink-deep);
+  --cream: var(--color-bg);
   --cream-shade: #e9dcc0;
   --display: var(--font-display);
   --body: var(--font-body);
@@ -118,7 +118,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .cta:has(.cta__count) { font-size: clamp(1.25rem, 6.2vw, 1.625rem); } /* a longer label: smaller on phones so it stays on one line */
 .landing .cta:has(.cta__count) .cta__label { white-space: nowrap; }
 .landing .cta__count { /* the count in the button: the page's blue, white number, a lighter top edge, no outline */
-  display: inline-block; padding: 0.04em 0.4em 0.1em; border-radius: 999px; background: var(--blue); color: #fff; white-space: nowrap;
+  display: inline-block; padding: 0.04em 0.4em 0.1em; border-radius: 999px; background: var(--blue); color: var(--cream); white-space: nowrap;
   box-shadow: inset 0 0.07em 0 rgb(255 255 255 / 0.3); font-variant-numeric: tabular-nums;
 }
 .landing .cta svg { width: 0.87em; height: 0.875em; overflow: visible; flex: none; }
@@ -147,9 +147,9 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 /* the tagline's own text treatment (cream fill, royal-blue stroke, yellow accent) is shared with the free-sticker tag */
 .landing :is(.hero__tagline, .hero__sticker) {
   color: var(--cream); letter-spacing: -0.05em;
-  -webkit-text-stroke: 0.16em #0563de; paint-order: stroke fill;
+  -webkit-text-stroke: 0.16em var(--blue); paint-order: stroke fill;
 }
-.landing :is(.hero__tagline, .hero__sticker) span { color: #ffda37; }
+.landing :is(.hero__tagline, .hero__sticker) span { color: var(--yellow); }
 .landing .hero__swoosh { position: relative; z-index: 1; display: block; width: 100%; height: auto; margin-top: calc(100% * -234 / 1440); margin-bottom: -1px; }
 @media (min-width: 48rem) {
   .landing .hero { --swoosh-height: 14rem; --swoosh-overlap: 9.5rem; }
@@ -255,17 +255,17 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .fight h2 { color: var(--yellow); } /* every heading on a blue ground is yellow */
 .landing .fight__text p { max-width: min(26rem, 76%); margin-top: 1.25rem; }
 .landing .arena { position: absolute; z-index: 1; right: -6vw; bottom: calc(var(--edge-hp) * 0.38); width: var(--aw); --boss-w: 74%; }
-.landing .fight__shadow { display: block; width: 100%; height: auto; fill: #0f5fc0; }
+.landing .fight__shadow { display: block; width: 100%; height: auto; fill: var(--color-blue-edge); }
 /* The bar is the real boss's health (a native progress element: pink is health left). Its label sits on top, un-skewed. */
 .landing .fight__health {
   position: absolute; left: 18%; right: 14%; bottom: calc(var(--aw) * 0.92); margin: 0;
-  border: 0.25rem solid #fff; background: #7a1d42; color: var(--cream); transform: skewX(-24deg);
+  border: 0.25rem solid var(--color-hp-outline); background: var(--color-hp-empty); color: var(--cream); transform: skewX(-24deg);
   font: 400 clamp(0.8rem, 1.5vw, 1.05rem)/1.2 var(--display); letter-spacing: -0.03em;
 }
-.landing .fight__bar { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; appearance: none; background: #7a1d42; color: #d0306f; }
-.landing .fight__bar::-webkit-progress-bar { background: #7a1d42; }
-.landing .fight__bar::-webkit-progress-value { background: #d0306f; } /* a little deeper than Armand's #ec5898: the cream label on it is 4.8:1, not 3.2:1 */
-.landing .fight__bar::-moz-progress-bar { background: #d0306f; }
+.landing .fight__bar { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; appearance: none; background: var(--color-hp-empty); color: var(--color-hp-fill); }
+.landing .fight__bar::-webkit-progress-bar { background: var(--color-hp-empty); }
+.landing .fight__bar::-webkit-progress-value { background: var(--color-hp-fill); } /* the one pink, same as the dashboard bar; cream label 3.14:1 */
+.landing .fight__bar::-moz-progress-bar { background: var(--color-hp-fill); }
 .landing .fight__label { position: relative; margin: 0; padding: 0.3em 1.4em; }
 .landing .fight__label span { display: inline-block; transform: skewX(24deg); }
 .landing .fight__boss { position: absolute; left: calc(56% - var(--boss-w) / 2); bottom: 41%; width: var(--boss-w); max-width: none; height: auto; pointer-events: none; }

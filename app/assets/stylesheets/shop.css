@@ -17,7 +17,7 @@
   border-radius: var(--radius-xl);
   background: var(--color-map);
 }
-.shop-balance--locked { border: 3px dashed var(--color-bg); border-bottom: var(--border-chunky) solid var(--color-card-blue); }
+.shop-balance--locked { border: 3px solid transparent; border-bottom: var(--border-chunky) solid var(--color-card-blue); }
 .shop-balance > * { position: relative; margin: 0; }
 .shop-balance__art { display: none; position: absolute; right: var(--space-8); bottom: var(--space-4); width: 9rem; height: auto; }
 .shop-balance__title { font-size: var(--text-lg); }
@@ -62,9 +62,9 @@
 .shop-item__description { flex: 1; margin: 0; }
 .shop-item__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; }
 .shop-item__price { padding: 0 var(--space-4); border-radius: var(--radius-full); background: var(--color-bg); color: var(--color-ink-blue); font-family: var(--font-display); font-size: var(--text-lg); line-height: 1.6; font-variant-numeric: tabular-nums; }
-.shop-item .btn--primary { --btn-border: var(--color-bg); }
+.shop-item .btn--primary { --btn-border: var(--color-primary); }
 /* A button you cannot press yet stays fully readable: dashed cream outline instead of a washed-out fill. */
-.shop-item .btn:disabled { --btn-bg: transparent; --btn-fg: var(--color-bg); --btn-border: var(--color-bg); --btn-edge: transparent; border-style: dashed; opacity: 1; }
+.shop-item .btn:disabled { --btn-bg: rgb(255 254 245 / 0.16); --btn-fg: var(--color-bg); --btn-border: transparent; --btn-edge: transparent; opacity: 1; }
 
 /* Confirmation */
 .shop-confirm { display: flex; flex-direction: column; gap: var(--space-3); }

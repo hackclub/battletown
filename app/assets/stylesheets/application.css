@@ -45,7 +45,7 @@
   code, kbd, samp { font-family: var(--font-mono); font-size: 0.9em; }
   hr { height: 0; margin-block: var(--space-6); border: 0; border-top: 2px solid var(--color-border); }
 
-  /* Links: dark raspberry (AA on sky and cream), underlined so they never rely on colour alone. */
+  /* Links: dark raspberry text (the pink's AA text shade, on sky and cream), underlined so they never rely on colour alone. */
   a {
     color: var(--color-link);
     text-decoration-line: underline;
@@ -212,7 +212,7 @@
     gap: var(--space-1);
     min-width: 12rem;
     padding: var(--space-2);
-    border: 2px solid var(--color-ink-blue);
+    border: 2px solid var(--color-surface-raised);
     border-radius: var(--radius-md);
     background: var(--color-bg);
     box-shadow: var(--shadow-md);

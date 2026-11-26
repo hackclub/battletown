@@ -20,7 +20,7 @@
   inline-size: 100%;
   max-inline-size: 2.75rem;
   aspect-ratio: 1;
-  border: 2px solid var(--color-ink-brown);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-full);
   background: var(--color-surface);
   color: var(--color-ink-brown);

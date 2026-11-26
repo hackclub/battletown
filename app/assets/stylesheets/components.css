@@ -14,8 +14,8 @@
   .btn {
     --btn-bg: var(--color-bg);
     --btn-fg: var(--color-ink-blue);
-    --btn-border: var(--color-ink-blue);
-    --btn-edge: var(--color-cta-edge);
+    --btn-border: var(--btn-bg); /* no outline: the border is the face's own color, so the edge below is the only rim */
+    --btn-edge: var(--color-cream-edge);
     --btn-edge-size: 0.2em;
     display: inline-flex;
     align-items: center;
@@ -42,16 +42,15 @@
   .btn:hover { color: var(--btn-fg); filter: brightness(1.06); }
   .btn:active { --btn-edge-size: 0.1em; transform: translateY(0.08em); }
 
-  /* Primary: raspberry fill (AA at any size). Use for the one main action of a form or card. */
+  /* Primary: the pink face, cream label, the pink's own darker edge. Use for the one main action of a form or card. */
   .btn--primary {
     --btn-bg: var(--color-primary);
     --btn-fg: var(--color-primary-contrast);
     --btn-border: var(--color-primary);
-    --btn-edge: var(--edge-shade);
+    --btn-edge: var(--color-pink-edge);
   }
 
-  /* Large / CTA: the Figma pink CTA (151:271). 24px display type is "large text", the only size where cream on this
-     pink passes (3.1:1). Do not use the pink face for smaller labels. */
+  /* Large / CTA: the Figma pink CTA (151:271), the same pink as .btn--primary (cream label 3.14:1, the owner's choice). */
   .btn--lg, .btn--cta {
     --btn-edge-size: 0.1667em;
     min-height: 3.5rem;
@@ -64,7 +63,7 @@
     --btn-bg: var(--color-cta);
     --btn-fg: var(--color-primary-contrast);
     --btn-border: var(--color-cta);
-    --btn-edge: var(--color-cta-press);
+    --btn-edge: var(--color-pink-edge);
   }
   .btn--lg:active, .btn--cta:active { --btn-edge-size: 0.08em; }
 
@@ -199,10 +198,10 @@
     min-width: var(--tap-size);
     min-height: var(--tap-size);
     padding: 0.3em 1em 0.4em;
-    border: 2px solid var(--color-ink-blue);
+    border: 2px solid var(--color-bg); /* the face's own color: no outline */
     border-radius: var(--radius-full);
     background: var(--color-bg);
-    box-shadow: inset 0 -0.2em 0 var(--color-cta-edge);
+    box-shadow: inset 0 -0.2em 0 var(--color-cream-edge);
     color: var(--color-ink-blue);
     font-family: var(--font-display);
     line-height: 1.2;
@@ -211,7 +210,7 @@
   .toggle__input:checked + .toggle__label {
     border-color: var(--color-primary);
     background: var(--color-primary);
-    box-shadow: inset 0 -0.2em 0 var(--edge-shade);
+    box-shadow: inset 0 -0.2em 0 var(--color-pink-edge);
     color: var(--color-primary-contrast);
   }
   .toggle__input:checked + .toggle__label::before { content: "\2713" / ""; }
@@ -250,11 +249,11 @@
 
   /* Chunky blue card (the shop / prize card, 156:665): face, extruded base, product image and a pale-blue title. */
   .card--chunky {
-    margin-bottom: 0.6rem;
-    border-bottom-width: 0;
+    margin-bottom: 0;
+    border-bottom: 0.6rem solid var(--color-card-blue-edge); /* the extruded base is a darker-shade border edge, not an offset shadow */
     border-radius: var(--radius-card);
     background: var(--color-card-blue);
-    box-shadow: var(--shadow-card-edge);
+    box-shadow: none;
     --color-focus: var(--color-bg);
     --color-link: var(--color-card-title);
     --color-text-muted: var(--color-card-title);
@@ -322,7 +321,7 @@
   .badge {
     --badge-bg: var(--color-surface-raised);
     --badge-fg: var(--color-ink-brown);
-    --badge-border: var(--color-ink-brown);
+    --badge-border: var(--badge-bg);
     display: inline-flex;
     align-items: center;
     gap: 0.35em;
@@ -336,11 +335,11 @@
     line-height: 1.6;
     white-space: nowrap;
   }
-  .badge--primary, .badge--active { --badge-bg: var(--color-primary); --badge-fg: var(--color-primary-contrast); --badge-border: var(--color-primary); }
-  .badge--info { --badge-bg: var(--color-ink-blue); --badge-fg: var(--color-bg); --badge-border: var(--color-ink-blue); }
+  .badge--primary, .badge--active { --badge-bg: var(--color-primary); --badge-fg: var(--color-primary-contrast); }
+  .badge--info { --badge-bg: var(--color-ink-blue); --badge-fg: var(--color-bg); }
   .badge--success { --badge-bg: var(--color-success-bg); --badge-fg: var(--color-success-ink); --badge-border: var(--color-success); }
   .badge--danger { --badge-bg: var(--color-danger-bg); --badge-fg: var(--color-danger-ink); --badge-border: var(--color-danger); }
-  .badge--warning { --badge-bg: var(--color-warning-bg); --badge-fg: var(--color-warning-ink); --badge-border: var(--color-warning-ink); }
+  .badge--warning { --badge-bg: var(--color-warning-bg); --badge-fg: var(--color-warning-ink); --badge-border: var(--color-yellow-edge); }
   .badge--muted { --badge-bg: var(--color-surface); --badge-fg: var(--color-text-muted); --badge-border: var(--color-border); }
 }
 
@@ -364,9 +363,10 @@
     display: block;
     width: 100%;
     height: 1.5rem;
-    border: 3px solid var(--color-ink-brown);
+    border: 3px solid var(--progress-track); /* its own track color, so there is no dark outline; the soft inset shadow gives it depth */
     border-radius: var(--radius-full);
     background: var(--progress-track);
+    box-shadow: inset 0 2px 3px rgb(16 40 90 / 0.18);
     overflow: hidden;
   }
   .progress__bar::-webkit-progress-bar { background: var(--progress-track); }
@@ -382,13 +382,14 @@
   /* Prize: blue on cream. */
   .progress--prize { --progress-fill: var(--color-secondary); --progress-track: var(--color-bg); }
 
-  /* Boss health (152:545): a parallelogram skewed -15deg, pink fill = health left, dark = health lost, 4px white outline.
+  /* Boss health (152:545): a parallelogram skewed -15deg, pink fill = health left, deep pink = health lost, rimmed in the deep pink.
      The label sits above the bar (its own row), unskewed. */
   .progress--boss { --progress-fill: var(--color-hp-fill); --progress-track: var(--color-hp-empty); }
   .progress--boss .progress__bar {
     height: 2.25rem;
-    border: 4px solid var(--color-hp-outline);
+    border: 4px solid var(--color-hp-outline); /* the deep pink of the track, not white */
     border-radius: 0;
+    box-shadow: none;
     transform: skewX(-15deg);
   }
   .progress--boss .progress__bar::-webkit-progress-value { border-radius: 0; }
@@ -465,7 +466,7 @@
     justify-items: center;
     gap: var(--space-3);
     padding: var(--space-12) var(--space-6);
-    border: 3px dashed var(--color-ink-blue);
+    border: 3px dashed color-mix(in srgb, var(--color-navy) 30%, var(--color-bg));
     border-radius: var(--radius-lg);
     background: var(--color-bg);
     text-align: center;

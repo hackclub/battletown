@@ -12,7 +12,7 @@
   padding: var(--space-6) var(--space-4) var(--space-16);
   overflow: hidden;
   border-radius: var(--radius-xl);
-  border-bottom: var(--border-chunky) solid var(--color-ink-blue);
+  border-bottom: var(--border-chunky) solid var(--color-blue-edge);
   background-color: var(--color-map);
   color: var(--color-bg);
 }
@@ -82,7 +82,7 @@
   margin-bottom: var(--space-3);
   font-size: clamp(2rem, 1.2rem + 3.6vw, var(--text-3xl));
   letter-spacing: var(--tracking-display);
-  text-shadow: 0 0.06em 0 var(--color-ink-blue);
+  text-shadow: 0 0.06em 0.3em rgb(10 26 64 / 0.45);
 }
 .boss-card__lead { max-width: 32rem; font-size: var(--text-lg); }
 
