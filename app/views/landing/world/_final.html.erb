@@ -1,2 +1,14 @@
-<%# Final band (owner: final agent): the shore into the flat pale blue of the last call. The shore is a CSS clip (see landing_world_final.css), which also documents the empty slot for a future painting. -%>
-<div class="world__shore"></div>
+<%# Final band (owner: final agent): the sea. The shore is a CSS clip with a waterline (wet sand, foam), the water is flat color, and the sky band's cloud and the sand band's shells are reused, flipped and half-sunk, so no new image bytes load. See landing_world_final.css, which also documents the empty slot for a future painting. -%>
+<% %w[wet1 wet2 wet3 foam1 foam2 water].each do |layer| %>
+  <div class="world__shore shore--<%= layer %>"></div>
+<% end %>
+<% cloud_srcset = { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" } %>
+<div class="sea__reflect">
+  <% %w[a b c d e].each do |id| %>
+    <%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "sea__cloud sea__cloud--#{id}", width: 748, height: 194, loading: "lazy", decoding: "async", srcset: cloud_srcset, sizes: "300px" %>
+  <% end %>
+</div>
+<%= image_tag "landing/world/sand/shell-1@c.webp", alt: "", class: "sea__shell sea__shell--1", width: 368, height: 301, loading: "lazy", decoding: "async",
+      srcset: { "landing/world/sand/shell-1@a.webp" => "184w", "landing/world/sand/shell-1@b.webp" => "239w", "landing/world/sand/shell-1@c.webp" => "368w" }, sizes: "92px" %>
+<%= image_tag "landing/world/sand/shell-2@c.webp", alt: "", class: "sea__shell sea__shell--2", width: 341, height: 327, loading: "lazy", decoding: "async",
+      srcset: { "landing/world/sand/shell-2@a.webp" => "170w", "landing/world/sand/shell-2@b.webp" => "222w", "landing/world/sand/shell-2@c.webp" => "341w" }, sizes: "80px" %>
