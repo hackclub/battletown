@@ -3,18 +3,17 @@
 /* The section itself is transparent: its top part is where the floor band's pebbles show above the shore curve, so the
    flat sand lives in the stage below the piece instead. The wrapper may overhang upward (into .prizes) but is clipped
    at the sides and the bottom, where the final band takes over. */
-/* Windows wider than the painting scale the shore up, so its low right end dips below the top of this section, where
-   .prizes no longer paints behind it. A strip in the color .prizes is painted in (flat --world-floor) keeps that wedge
-   from showing the page behind; it is as tall as the curve can dip (about 18vw), and the piece covers it below the curve.
-   The min-height keeps the section as tall as the scaled piece's wash (the piece is 48vw - 300px tall from the section
-   top), so the section's end never cuts it. */
-.landing .faq { background: linear-gradient(var(--world-floor), var(--world-floor)) top / 100% 20vw no-repeat; min-height: calc(48vw - 300px); }
+/* Wider than the painting, the piece scales up, and its low right end would dip below the top of this section, where .prizes
+   stops painting behind it. So the stage also rises as the window widens (the 0.2 term below, see .sand__stage): the curve's right
+   end stays above the section top, inside the floor band's own painted area, and nothing here needs a backing strip. The
+   min-height keeps the section as tall as the scaled piece's wash, so the section's end never cuts it. */
+.landing .faq { background: none; min-height: 31vw; }
 .landing .world--sand { clip-path: inset(-100vh 0 0 0); }
 
 /* The stage is the sand piece (canvas y 5700..7300, so 300 design px above the section top) at the piece's own scale:
    at least the section's width, and never narrower than the painting's width times --wu. Wider windows scale it up
    evenly (it is smooth art), narrower ones show its middle. Under it, flat --world-sand, which is the piece's last row. */
-.landing .world--sand .sand__stage { position: absolute; left: 50%; top: calc(var(--wu) * -300); width: max(100%, var(--world-w)); translate: -50% 0; }
+.landing .world--sand .sand__stage { position: absolute; left: 50%; top: calc(var(--wu) * -300 - max(0px, 100vw - 1576px) * 0.2); width: max(100%, var(--world-w)); translate: -50% 0; }
 .landing .world--sand .sand__img { position: static; width: 100%; height: auto; }
 /* Until the (lazy) piece has loaded, show flat sand below where the curve can reach (it is above 36% of the piece's height)
    instead of the page behind. The piece is opaque below the curve, so once it loads this is hidden. */
