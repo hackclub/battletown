@@ -1,8 +1,15 @@
-<%# Final band (owner: final agent): the teal ground again under the sand's shore, with the cliff band's painted path (same files, lower stretch only) leading to the call to action. The shore is a CSS clip, see landing_world_final.css, which also documents the empty slot for a future painting. -%>
-<% %w[shade ground].each do |layer| %>
-  <div class="world__shore shore--<%= layer %>"></div>
-<% end %>
-<div class="ground__path">
-  <%= image_tag "landing/world/cliff/path@c.webp", alt: "", width: 300, height: 880, loading: "lazy", decoding: "async",
-        srcset: { "landing/world/cliff/path@a.webp" => "150w", "landing/world/cliff/path@b.webp" => "195w", "landing/world/cliff/path@c.webp" => "300w" }, sizes: "(min-width: 48rem) 240px, 104px" %>
+<%# Final band (owner: final agent): the island's edge over painted sky. The sky and clouds are the sky band's own files, the underside is a cut of the painting's cliff face (island@*), and the shore is a CSS clip, see landing_world_final.css, which also documents the empty slot for a future painting. -%>
+<% sky_sizes = "(min-width: 37rem) 1576px, calc((100vw - 1rem) * 1576 / 576)" %>
+<div class="world__shore shore--air">
+  <%= image_tag "landing/world/sky/sky@c.webp", alt: "", class: "island__sky", width: 3152, height: 1202, loading: "lazy", decoding: "async",
+        srcset: { "landing/world/sky/sky@a.webp" => "1576w", "landing/world/sky/sky@b.webp" => "2049w", "landing/world/sky/sky@c.webp" => "3152w" }, sizes: sky_sizes %>
+  <% cloud_srcset = { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" } %>
+  <% %w[a b c].each do |id| %>
+    <%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "island__cloud island__cloud--#{id}", width: 748, height: 194, loading: "lazy", decoding: "async", srcset: cloud_srcset, sizes: "(min-width: 48rem) 300px, 130px" %>
+  <% end %>
+  <div class="island__haze"></div>
+</div>
+<div class="world__shore shore--face">
+  <%= image_tag "landing/world/final/island@c.webp", alt: "", class: "island__face", width: 3151, height: 330, loading: "lazy", decoding: "async",
+        srcset: { "landing/world/final/island@a.webp" => "1576w", "landing/world/final/island@b.webp" => "2048w", "landing/world/final/island@c.webp" => "3151w" }, sizes: sky_sizes %>
 </div>

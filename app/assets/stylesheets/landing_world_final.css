@@ -1,23 +1,30 @@
 /* Band: final. Owned by the final band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
 
 /*
- * THE BEACH CLIMBS BACK ONTO THE GROUND. The last section is the world's own teal ground again (--world-teal, #11bcb3, flat, as the
- * lower ground above the cave is painted), under the sand's tilted shore, with a band of --world-teal-shade under the sand's lip like
- * the shadow under the cliff face. The yellow path, last seen arriving at the cave rim, comes back out of the sand and leads down
- * to the call to action and the fighter. Nothing is new art: the path is the cliff band's own painted piece (same files), cropped to
- * its lower, ground-level stretch and only scaled evenly; the shore is a CSS clip; the ground is flat color.
+ * THE ISLAND'S EDGE. BattleTown is an island in the sky: the page began under painted sky, and here the beach reaches the island's
+ * edge, with open painted sky and clouds below it. Everything is the painting's own pixels:
+ *   - the sky is the sky band's piece (sky@*.webp, same files), unflipped and unscaled except by --wu, anchored to the section's
+ *     BOTTOM (its bright haze sits at the page end), faded in at its top over the painting's own flat top blue (#a3c6ef, the
+ *     piece's top rows are that flat color) and faded out over its last 90 px into the pale haze color (#d0e5ee, the piece's
+ *     corner color) so the page end matches the body in a tall window;
+ *   - two of the sky band's clouds (cloud@*.webp, same files), unflipped, at new spots; one on phones;
+ *   - the island's underside is real face of the painting's cliff (island@*.webp, cut by script/export_landing_world.py): two
+ *     level stretches of the gray face with its dark lip, joined where the painting has a step, scaled by one factor to the
+ *     painting's width and turned to follow the shore's tilt.
+ * Where it is flat: only the sky's top blue between the sand edge and the start of the painted sky (the painting's own flat top
+ * rows), which is up to about 60 design px on desktop and more on phones, where the section is taller than the piece (the piece
+ * is not stretched or repeated).
  *
  * The shore: the painting's nearly straight, gently tilted edge (canvas y 8589 at the left falling to 8498 at the right; the section
- * top is 8590), traced as a polygon. The shade layer is that polygon, the ground layer the same polygon moved down 9 design px, so a
- * 9 px band of shade shows under the lip. The boxes start 80 design px above the section top, over the faq's flat sand (the contract
- * allows 200), and run to the page end. The box is wider than the painting and the edge keeps going at a fading slope (500 design px
- * each side, then flat), in case --wu is ever 1px at a wider window; when --wu is 100vw / 1576 the painting fills the window and
- * this is never seen. The edge is lifted 15 design px from the painting so it can keep sloping past its ends.
+ * top is 8590), traced as a polygon. Every box below uses it as its clip, so nothing shows above the sand's edge. The boxes start 80
+ * design px above the section top, over the faq's flat sand (the contract allows 200), and run to the page end. The box is wider than
+ * the painting and the edge keeps going at a fading slope (500 design px each side, then flat), in case --wu is ever 1px at a wider
+ * window; when --wu is 100vw / 1576 the painting fills the window and this is never seen. The edge is lifted 15 design px from the
+ * painting so it can keep sloping past its ends.
  */
 .landing .world--final .world__shore {
   --o: 0;
   position: absolute; left: 0; right: 0; top: calc(var(--wu) * -80); bottom: 0;
-  background: var(--world-teal);
   clip-path: polygon(
     min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * (79 + var(--o, 0))),
     calc(50% + var(--wu) * -788) calc(var(--wu) * (64.5 + var(--o, 0))),
@@ -35,33 +42,38 @@
     max(100%, calc(50% + var(--wu) * 1288)) 100%,
     min(0px, calc(50% + var(--wu) * -1288)) 100%);
 }
-.landing .world--final .shore--shade { --o: 0; background: var(--world-teal-shade); }
-.landing .world--final .shore--ground { --o: 9; background: var(--world-teal); }
+.landing .world--final .shore--air { background: #a3c6ef; overflow: hidden; }
+.landing .world--final .shore--face { background: none; }
 
-/*
- * The path: the lower stretch of the cliff band's path piece (300 x 880 px; its top 41% is the steps down the cliff face, which is
- * left out). --pw is the visible width in design px, capped at 300 css px so the piece is never blown up on very wide windows (the
- * section's height does not scale with --wu). It starts at the sand edge a little left of the page middle, where the ragged painted
- * end tucks into the sand, and curves right and down toward the fighter, clear of the heading (which ends left of the middle on
- * tablets and up) and the button. On phones the heading fills the width, so the path hugs the right edge instead, shorter, and ends
- * above the cape.
- */
-.landing .world--final .ground__path { position: absolute; left: calc(100% - 7rem); top: calc(var(--wu) * -62); --pw: 6.5rem; width: var(--pw); height: calc(var(--pw) * 1.731); overflow: hidden; }
-.landing .world--final .ground__path img { position: absolute; left: 0; top: calc(var(--pw) * -1.203); width: 100%; height: auto; max-width: none; }
+/* The sky piece, 1576 wu wide and 601 tall, hanging from the bottom of the section; it fades in over its first 140 wu. */
+.landing .world--final .island__sky { position: absolute; left: 50%; bottom: 0; width: calc(var(--wu) * 1576); height: auto; max-width: none; translate: -50% 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 calc(var(--wu) * 140)); mask-image: linear-gradient(to bottom, transparent, #000 calc(var(--wu) * 140)); }
+/* The last 90 px fade into the pale haze color the body also has. */
+.landing .world--final .island__haze { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: #d0e5ee;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000); mask-image: linear-gradient(to bottom, transparent, #000); }
+/* Clouds: x is design px from the page middle, y from the top of the box (which is 80 wu above the section). One on phones, right of the heading. */
+.landing .world--final .island__cloud { position: absolute; display: none; height: auto; max-width: none; }
+.landing .world--final .island__cloud--a { display: block; left: calc(50% + var(--wu) * 170); top: calc(var(--wu) * 190); width: calc(var(--wu) * 200); }
+.landing .world--final .island__cloud--b { left: calc(50% + var(--wu) * 470); top: calc(var(--wu) * 120); width: calc(var(--wu) * 300); }
+.landing .world--final .island__cloud--c { left: calc(50% + var(--wu) * -50); top: calc(var(--wu) * 215); width: calc(var(--wu) * 250); }
 @media (min-width: 48rem) {
-  .landing .world--final .ground__path { --pw: min(calc(var(--wu) * 240), 300px); left: calc(50% - var(--wu) * 40 - var(--pw) * 0.28); top: calc(var(--wu) * -50); }
+  .landing .world--final .island__cloud--a { display: none; }
+  .landing .world--final .island__cloud--b, .landing .world--final .island__cloud--c { display: block; }
 }
 
+/* The island's underside: 1576 wu wide, its top lip a little above the shore's edge so the shore's clip trims it to the edge. */
+.landing .world--final .island__face { position: absolute; left: 50%; top: calc(var(--wu) * -6); width: calc(var(--wu) * 1576); height: auto; max-width: none; translate: -50% 0; }
+
 /*
- * SLOT FOR A PAINTING (empty on purpose; a painting would replace the path, so delete .ground__path and its markup with it). To drop one in, add to _final.html.erb, after the water layer:
+ * SLOT FOR A PAINTING (empty on purpose; a painting would replace the sky and clouds, keep or drop the island strip). To drop one in, add to _final.html.erb, after the water layer:
  *   <%= image_tag "landing/world/final/final@c.webp", alt: "", class: "world__img world__final-art", width: 3152, height: 1308,
  *         loading: "lazy", decoding: "async", srcset: { "landing/world/final/final@a.webp" => "1576w", ".../final@b.webp" => "2049w", ".../final@c.webp" => "3152w" }, sizes: "100vw" %>
  * and uncomment this rule. The art is anchored to the page END (not the top), because the section's height changes with
  * text wrapping and the last row should always touch the bottom. Paint it 3152 wide (the 1576 px page at 2x), canvas
  * y 8590 to 9898 (1308 px tall). The section is only about 1000 canvas px tall at 1576 wide (the page ends near canvas y 9590,
- * not 9898), so bottom anchoring crops the top ~300 px there: keep canvas y 8590..8900 flat #11bcb3 (--world-teal) so it joins the shore, and
+ * not 9898), so bottom anchoring crops the top ~300 px there: keep canvas y 8590..8900 flat the sky's top blue #a3c6ef so it joins the shore, and
  * the real subject in y 8900..9898 (its bottom 700 px is always visible; phones show more of the top). The last row flat
- * (#11bcb3 too, which the body also paints below the page). Keep important shapes inside the middle
+ * (#d0e5ee, the haze's pale edge, which the body also paints below the page). Keep important shapes inside the middle
  * 1000 px (canvas x 1076..2076): a 360 px phone shows only the middle ~600 design px, 1576 shows all of it, wider windows
  * show it centered, and the edges beyond 1576 design px extend with flat color. The fighter sits bottom right and text top
  * left of center.
@@ -73,9 +85,7 @@
  * The page end. landing_world.css sets `body:has(.landing) { background: var(--world-final) }`, but --world-final is
  * declared on .landing, a child of body, so at body it is undefined and the declaration is invalid: the body (and the
  * canvas behind it) painted white below the last section whenever the window is taller than the page (body is
- * min-height 100vh and the footer sits at its bottom). Here it is the world's teal, flat, the same as the ground, so
- * nothing steps at the page end.
+ * min-height 100vh and the footer sits at its bottom). Here it is the pale haze color #d0e5ee (the sky piece's own
+ * corner color), and the sky fades into it over the last 90 px, so nothing steps at the page end.
  */
-body:has(.landing) { background: #11bcb3; }
-/* The section's own flat color is the same teal, so a rounded-off row at the bottom of the ground can never show a different line (landing_world.css paints it pale blue). */
-.landing .final { background: var(--world-teal); }
+body:has(.landing) { background: #d0e5ee; }
