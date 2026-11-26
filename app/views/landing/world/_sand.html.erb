@@ -2,7 +2,7 @@
 <div class="sand__stage">
   <%= image_tag "landing/world/sand/sand@c.webp", alt: "", class: "world__img sand__img", width: 3152, height: 1600, loading: "lazy", decoding: "async",
         srcset: { "landing/world/sand/sand@a.webp" => "1576w", "landing/world/sand/sand@b.webp" => "2049w", "landing/world/sand/sand@c.webp" => "3152w" },
-        sizes: "max(100vw, min(273.6vw - 43.8px, 1576px))" %>
+        sizes: "(min-width: 1576px) 100vw, (min-width: 37rem) 1576px, calc((100vw - 1rem) * 2.736)" %>
 </div>
 <%= image_tag "landing/world/sand/shell-1@c.webp", alt: "", class: "world__img world__shell world__shell--1", width: 368, height: 301, loading: "lazy", decoding: "async",
       srcset: { "landing/world/sand/shell-1@a.webp" => "184w", "landing/world/sand/shell-1@b.webp" => "239w", "landing/world/sand/shell-1@c.webp" => "368w" }, sizes: "184px" %>

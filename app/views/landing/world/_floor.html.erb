@@ -1,13 +1,10 @@
-<%# Floor band (owner: floor agent): the wall-to-floor seam and the pebbled floor. Three columns, each as wide as the painting: the middle
-    one is the painting, the outer two are mirrored copies that carry the floor out to the window edges. Each column has a tile
+<%# Floor band (owner: floor agent): the wall-to-floor seam and the pebbled floor. One column as wide as the painting, with a tile
     (the pebbles repeat down any section height) under the painted top piece. The haze into the sand is plain CSS at the bottom. -%>
 <%# The tile is a CSS background in landing_world_floor.css (CSP forbids inline styles): world/floor/floor-tile@a.webp, world/floor/floor-tile@b.webp, world/floor/floor-tile@c.webp. -%>
 <%# floor-top decodes synchronously on purpose: with decoding=async the wide-window (3152 px) candidate was left undrawn in headless shots, showing a flat slab. -%>
-<% [ "mid", "left", "right" ].each do |side| %>
-  <div class="floor__col floor__col--<%= side %>">
-    <div class="floor__tile"></div>
-    <%= image_tag "landing/world/floor/floor-top@c.webp", alt: "", class: "world__img floor__top", width: 3152, height: 1200, loading: "lazy", decoding: "sync",
-          srcset: { "landing/world/floor/floor-top@a.webp" => "1576w", "landing/world/floor/floor-top@b.webp" => "2049w", "landing/world/floor/floor-top@c.webp" => "3152w" }, sizes: "100vw" %>
-  </div>
-<% end %>
+<div class="floor__col">
+  <div class="floor__tile"></div>
+  <%= image_tag "landing/world/floor/floor-top@c.webp", alt: "", class: "world__img floor__top", width: 3152, height: 1200, loading: "lazy", decoding: "sync",
+        srcset: { "landing/world/floor/floor-top@a.webp" => "1576w", "landing/world/floor/floor-top@b.webp" => "2049w", "landing/world/floor/floor-top@c.webp" => "3152w" }, sizes: "(min-width: 1576px) 100vw, (min-width: 37rem) 1576px, calc((100vw - 1rem) * 2.736)" %>
+</div>
 <div class="floor__haze"></div>

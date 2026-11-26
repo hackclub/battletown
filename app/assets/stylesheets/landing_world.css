@@ -24,8 +24,9 @@
  * DESIGN SPACE: the painting is 3152 x 9898 px, a 2x picture of a 1576 px wide page. One unit rules every piece:
  * --wu, one painting CSS px, which is signpost width / 576, so it is 1px from 36rem + 1rem up and about 0.65px at
  * 390. Place a piece by calc(var(--wu) * <painting px / 2>), horizontally from the page middle (left: 50%, the
- * painting's middle x is 788). Narrower than the painting, a piece is cropped to its middle; wider, the band extends
- * with its 16px edge slices (stretched) or flat base color. Section boundaries in painting canvas px (divide by 2 for
+ * painting's middle x is 788). Narrower than the painting, a piece is cropped to its middle; from 1576px wide the
+ * unit grows (--wu = 100vw / 1576, so the painting is exactly the window wide) and everything scales with it. Nothing is ever
+ * drawn beyond the painting's edges: no extension pieces, no mirrored copies, no edge slices. Section boundaries in painting canvas px (divide by 2 for
  * --wu): .how bottom = .fight top = 2700, .fight bottom = .prizes top = 4750, .prizes bottom = .faq top = 6300,
  * .faq bottom = .final top = 8590, .final bottom = 9898. Distances between them are the design heights; on phones
  * the sections are taller or shorter, so anchor to the nearest boundary (top: for bands hanging from a top, bottom:
@@ -52,6 +53,7 @@
 
 .landing {
   --wu: calc(min(100vw - 1rem, 36rem) / 576);
+  --world-cx: calc(var(--wu) * 788); /* the painting x (in px at this width) at the window's middle; the cave band's phone rule moves it */
   --world-w: calc(var(--wu) * 1576);
   --world-sky-top: #9dc4fd;
   --world-sky-bottom: #cfe3ee;
@@ -63,6 +65,10 @@
   --world-sand-top: #d3af6c;
   --world-sand: #ebd583;
   --world-final: #d0e5ef;
+}
+/* From 1576px the whole painting scales up to fill the width: one painting, enlarged, never extended, stretched or mirrored. */
+@media (min-width: 1576px) {
+  .landing { --wu: calc(100vw / 1576); }
 }
 body:has(.landing) { background: var(--world-final); }
 

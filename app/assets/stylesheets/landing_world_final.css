@@ -6,14 +6,13 @@
  * over a flat --world-final box, not as a raster, so it reaches both window edges at any width with nothing to smear.
  * The box starts 80 design px above the section top, over the faq's flat sand (the contract allows 200), and runs to the
  * page end. Above the edge it is transparent, so the sand shows through; below it, it is exactly --world-final, the same
- * color as .final and the body. Past the painting's width the edge keeps going at a fading slope (to 500 design px each side, then flat), so no kink shows at 1920 or 2560.
+ * color as .final and the body. The polygon is exactly the painting wide, which is the window's width from 1576px up.
  * Polygon y values are design px below the box top (edge y offset from the section top + 80; the painting's edge is lifted 15 design px so it can keep sloping past its ends: below the section top the section's own blue would show).
  */
 .landing .world--final .world__shore {
   position: absolute; left: 0; right: 0; top: calc(var(--wu) * -80); bottom: 0;
   background: var(--world-final);
   clip-path: polygon(
-    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * 79),
     calc(50% + var(--wu) * -788) calc(var(--wu) * 64.5),
     calc(50% + var(--wu) * -638) calc(var(--wu) * 55),
     calc(50% + var(--wu) * -488) calc(var(--wu) * 48),
@@ -24,10 +23,9 @@
     calc(50% + var(--wu) * 312) calc(var(--wu) * 25),
     calc(50% + var(--wu) * 512) calc(var(--wu) * 22.5),
     calc(50% + var(--wu) * 712) calc(var(--wu) * 20.5),
-    calc(50% + var(--wu) * 787.5) calc(var(--wu) * 19),
-    max(100%, calc(50% + var(--wu) * 1288)) calc(var(--wu) * 16),
-    max(100%, calc(50% + var(--wu) * 1288)) 100%,
-    min(0px, calc(50% + var(--wu) * -1288)) 100%);
+    calc(50% + var(--wu) * 788) calc(var(--wu) * 19),
+    calc(50% + var(--wu) * 788) 100%,
+    calc(50% + var(--wu) * -788) 100%);
 }
 
 /*

@@ -179,7 +179,7 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .how__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* for screen readers; the boards say it */
 .landing .signpost {
-  position: relative; z-index: 2; container-type: inline-size; width: min(100%, 36rem); aspect-ratio: 1476 / 1445; margin-top: -2.25rem;
+  position: relative; z-index: 2; container-type: inline-size; width: min(100%, calc(var(--wu) * 576)); aspect-ratio: 1476 / 1445; margin-top: -2.25rem;
   background: url("landing/signpost.svg") no-repeat 0 0 / 100% 100%; /* the pole, its shadow on the ground and the three boards, drawn as one object */
 }
 @media (min-width: 48rem) {

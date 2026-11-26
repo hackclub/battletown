@@ -3,13 +3,12 @@
  * The wrapper's bottom is canvas y 4750 (the bottom of .fight). The cave piece is canvas y 3080..4750, anchored to that bottom, so a
  * point at canvas (x, y) is at  bottom: (4750 - y) / 2 * --wu  and  left: 50% - --world-cx + x / 2 * --wu.
  *
- * --world-cx is the painting x (in px at this width) that sits at the middle of the window. It is 788 --wu (the painting's middle) from
+ * --world-cx (defined in landing_world.css) is the painting x (in px at this width) that sits at the middle of the window. It is 788 --wu (the painting's middle) from
  * 64rem up, so every band centers the painting the same way there. Below 64rem the painting slides left (formula below) so the window
  * starts at painting x 670 on phones, which keeps the whole pillar stack in view, and the boss stays inside the window.
  * Any band that draws a piece on the cave seam (floor) must use the same --world-cx: left: calc(50% - var(--world-cx) + var(--wu) * x / 2).
  */
 .landing {
-  --world-cx: calc(var(--wu) * 788);
   --boss-cx: calc(var(--wu) * 1120); /* painting x of the middle of the boss's picture */
 }
 @media (max-width: 63.99rem) {
@@ -26,16 +25,6 @@
 
 .landing .world--cave { overflow: hidden; }
 .landing .world--cave .world__cave { left: calc(50% - var(--world-cx)); bottom: 0; width: var(--world-w); }
-/* Beyond the painting: the outer 550 --wu of each side again, three copies outward, flipped (1, 3) and unflipped (2) so every join is continuous. */
-.landing .world--cave .world__ext { bottom: 0; width: calc(var(--wu) * 550); }
-.landing .world--cave .world__ext--l1, .landing .world--cave .world__ext--l3, .landing .world--cave .world__ext--r1, .landing .world--cave .world__ext--r3 { scale: -1 1; }
-.landing .world--cave .world__ext--l1 { left: calc(50% - var(--world-cx) - var(--wu) * 550); }
-.landing .world--cave .world__ext--l2 { left: calc(50% - var(--world-cx) - var(--wu) * 1100); }
-.landing .world--cave .world__ext--l3 { left: calc(50% - var(--world-cx) - var(--wu) * 1650); }
-.landing .world--cave .world__ext--r1 { left: calc(50% - var(--world-cx) + var(--world-w)); }
-.landing .world--cave .world__ext--r2 { left: calc(50% - var(--world-cx) + var(--world-w) + var(--wu) * 550); }
-.landing .world--cave .world__ext--r3 { left: calc(50% - var(--world-cx) + var(--world-w) + var(--wu) * 1100); }
-
 /* The boss stands on the lavender ledge right of the pillars: his picture is canvas x 1732..2747, bottom at canvas y 4030 (feet on the
    ledge's top face), so its middle is painting x 1120 and its bottom is 360 --wu above the bottom of the section. The arena is exactly
    the boss picture's box; the health bar sits over its top, as in the painting (canvas y 3091..3158, x 1801..2717). */

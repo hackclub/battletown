@@ -12,19 +12,6 @@
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 120px); mask-image: linear-gradient(to bottom, transparent, #000 120px);
 }
 .landing .world__sky { left: 50%; bottom: 0; width: calc(var(--wu) * 1576); margin-left: calc(var(--wu) * -788); }
-/* Copies one and two painting widths out on each side. Narrower than the painting they would be off screen, so they are not shown
-   (and not loaded) until the window is wider than it. The first copy on a side is mirrored about the painting's edge, so the
-   two meet as one brushstroke; the second is the plain piece again. */
-.landing .world .sky__copy { display: none; }
-.landing .sky__copy--l1 { transform: translateX(calc(var(--wu) * -1576)); }
-.landing .sky__copy--r1 { transform: translateX(calc(var(--wu) * 1576)); }
-.landing .sky__copy--l2 { transform: translateX(calc(var(--wu) * -3152)); }
-.landing .sky__copy--r2 { transform: translateX(calc(var(--wu) * 3152)); }
-.landing .sky__copy--mirror.sky__copy--l1 { transform: translateX(calc(var(--wu) * -1576)) scaleX(-1); }
-.landing .sky__copy--mirror.sky__copy--r1 { transform: translateX(calc(var(--wu) * 1576)) scaleX(-1); }
-@media (min-width: 1580px) { .landing .world .sky__copy--l1, .landing .world .sky__copy--r1 { display: block; } }
-@media (min-width: 3200px) { .landing .world .sky__copy--l2, .landing .world .sky__copy--r2 { display: block; } }
-
 /* Clouds, at the painting's spots: canvas x 203..951 and 2078..2826, y 1851..2045 and 1985..2179, so their bottoms are 327 and 260 wu
    above the bottom of .how. The signpost's boards are wider than a phone, so each cloud may only use the sky beside the boards
    (the left one hangs from the boards' left edge, the right one starts where the painting has it): on a narrower window it shrinks

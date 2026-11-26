@@ -84,8 +84,8 @@ art.save(work / "art-clean-full.png")
 # 1. Cloud (layer 32; layer 33 is the same cloud, so one file serves both): sky band.
 layer = layer_full(32)
 save("sky", "cloud", layer.crop(layer.getchannel("A").getbbox()))
-# 1b. The sky itself (layer 2, which also runs under the clifftop): opaque, full width. The page shows mirrored copies of it past
-#     both sides (landing_world_sky.css), so its left and right edges must stay the painting's own.
+# 1b. The sky itself (layer 2, which also runs under the clifftop): opaque, full width. Wider windows scale the whole painting up
+#     (landing_world.css), so nothing continues past its edges.
 SKY_Y0, SKY_Y1 = 1498, 2700   # from under the hero swoosh down to the .how bottom
 sky = layer_full(2).crop((0, SKY_Y0, W, SKY_Y1))
 top = np.array(sky.getchannel("A"))[100:200, 800:2400] > 250  # a solid stretch, to take the flat top color from
@@ -97,10 +97,7 @@ save("sky", "sky", flat)
 
 # 2. Cliff (cliff band): the clifftop with its crack, the cliff face and its shadow, down to a flat teal bottom row
 #    (CLIFF_Y1, the lower ground). Above the clifftop it is transparent: the sky band paints the sky, haze included.
-#    Left and right of the painting, the clifftop and face are continued by warping the edge columns: each painted edge keeps its own slope, which dies away, so nothing is stretched into streaks (the last 8 px column,
-#    stretched, is then truly flat).
 CLIFF_Y0, CLIFF_Y1 = 2250, 3150
-EXT_W = 1000  # canvas px of continued art on each side (500 CSS px, enough for a 2560 px window)
 TEAL = np.array([0x11, 0xBC, 0xB3], float)
 face = np.array(layer_full(29).getchannel("A"))[CLIFF_Y0:CLIFF_Y1]
 alpha = face.copy()
@@ -125,54 +122,6 @@ cliff_img = Image.fromarray(np.dstack([out_rgb, out_a * 255]).round().clip(0, 25
 save("cliff", "cliff", cliff_img)
 
 
-def edge_landmarks(col_rgb, col_a):
-    """Rows of the painted edges in one column: top of the clifftop, start of the face, end of the face, start of the flat teal."""
-    top = int(np.nonzero(col_a > 128)[0][0])
-    teal_top = np.array([0x67, 0xE9, 0xD7], float)
-    d_top = np.abs(col_rgb - teal_top).sum(axis=1)
-    f1 = top + int(np.nonzero(d_top[top:] > 60)[0][0])
-    d_flat = np.abs(col_rgb - TEAL).sum(axis=1)
-    f3 = int(np.nonzero(d_flat < 14)[0][np.nonzero(np.nonzero(d_flat < 14)[0] > f1 + 50)[0][0]])
-    shade = np.abs(col_rgb - np.array([0x08, 0x98, 0xA7], float)).sum(axis=1)
-    f2 = f1 + int(np.nonzero(np.abs(col_rgb[f1:f3] - np.array([0x08, 0x98, 0xA7], float)).sum(axis=1) < 30)[0][0]) if (shade[f1:f3] < 30).any() else f3 - 30
-    return np.array([top, f1, f2, f3], float)
-
-
-def continue_edge(side):
-    """EXT_W columns of art continuing the painting past its left or right edge; column 0 is the one next to the art."""
-    cols = range(0, 8) if side == "l" else range(W - 8, W)
-    far = range(300, 308) if side == "l" else range(W - 308, W - 300)
-    near_rgb = cliff_rgb[:, list(cols)].mean(axis=1)
-    near_a = out_a[:, list(cols)].mean(axis=1) * 255
-    near = edge_landmarks(near_rgb, near_a)
-    far_lm = edge_landmarks(cliff_rgb[:, list(far)].mean(axis=1), out_a[:, list(far)].mean(axis=1) * 255)
-    slope = (near - far_lm) / 300.0  # px per px going outward (positive = lower)
-    tau = 260.0
-    col4 = np.concatenate([near_rgb * (near_a[:, None] / 255), near_a[:, None]], axis=1)
-    out_cols = np.zeros((H, EXT_W, 4))
-    yy = np.arange(H, dtype=float)
-    for k in range(EXT_W):
-        delta = slope * tau * (1 - np.exp(-k / tau))
-        dst = near + delta
-        xp = np.concatenate([[-1e4], dst, [1e4]])
-        fp = np.concatenate([[-1e4 - delta[0]], near, [1e4 - delta[-1]]])
-        src = np.interp(yy, xp, fp)
-        for c in range(4):
-            out_cols[:, k, c] = np.interp(src, yy, col4[:, c])
-    a = out_cols[:, :, 3:4]
-    rgb = np.where(a > 0.5, out_cols[:, :, :3] / np.maximum(a / 255.0, 1e-3), 0)
-    img = np.concatenate([rgb, a], axis=2).round().clip(0, 255).astype(np.uint8)
-    img = Image.fromarray(img, "RGBA")
-    return img if side == "r" else img.transpose(Image.FLIP_LEFT_RIGHT)
-
-
-# "l" is built from the left edge outward then flipped, so its right edge touches the painting; "r" starts at the painting
-for side in ("l", "r"):
-    ext = continue_edge(side)
-    save("cliff", f"cliff-ext-{side}", ext)
-    last = ext.crop((0, 0, 8, H)) if side == "l" else ext.crop((EXT_W - 8, 0, EXT_W, H))
-    save("cliff", f"cliff-fill-{side}", last)
-
 # 3. Path: layer 30, one piece (cliff band). Its top end is the pole foot's spot: canvas (1576, 2566).
 PATH_X0, PATH_Y0, PATH_X1, PATH_Y1 = 1340, 2556, 1640, 3436
 path = layer_full(30).crop((PATH_X0, PATH_Y0, PATH_X1, PATH_Y1))
@@ -182,9 +131,7 @@ save("cliff", "path", path)
 #    10 brushed dark edge, 13 wall, 15/16/22 crack and pillar shadow) with real transparency above the rim: the teal
 #    ground (layer 9) is left out, and the piece is cut away wherever layer 9 is opaque, so the cliff band's teal shows
 #    through. Canvas y CAVE_Y0..CAVE_Y1, CAVE_Y1 = the bottom of the .fight section. The floor band covers the last
-#    350 design px. Wider than the canvas the page draws the outer 1100 px of each side again, mirrored left to right (CSS scale -1 1)
-#    and then unmirrored, in turn; a mirror is continuous at its axis, so the joins have no seam. The art's outermost 12 px hold a dark
-#    sliver, painted over from the next column so the mirror does not double it into a line.
+#    350 design px. The art's outermost 12 px hold a dark sliver, painted over from the next column.
 CAVE_Y0, CAVE_Y1 = 3080, 4750
 wall = Image.new("RGBA", (W, psd.height), (0, 0, 0, 0))
 for i in (7, 8, 10, 13, 15, 16, 22):
@@ -198,16 +145,10 @@ pm[:, W - 12:] = pm[:, W - 13:W - 12]
 out_rgb = np.divide(pm[:, :, :3], pm[:, :, 3:4], out=np.zeros_like(pm[:, :, :3]), where=pm[:, :, 3:4] > 1e-4)
 cave = Image.fromarray((np.clip(np.dstack([out_rgb, pm[:, :, 3:4]]), 0, 1) * 255 + 0.5).astype(np.uint8), "RGBA")
 save("cave", "cave", cave)
-# Beyond the painting's width the page draws these two pieces, flipped and unflipped in turn (continuous at every join). They
-# come from the plain parts of the wall, so no second pillar stack or boss ledge shows up: the left 1100 px (before the pillars)
-# and the right 1100 px (past the pillars).
-save("cave", "cave-ext-l", cave.crop((0, 0, 1100, cave.height)))
-save("cave", "cave-ext-r", cave.crop((W - 1100, 0, W, cave.height)))
-
 # 5. Floor: the pebbled floor under the wall, from a little above the wall's foot (the floor band owns that seam).
 # 5. Floor (floor band): the wall-to-floor seam plus the pebbled floor, rebuilt from the layers so it has no step. floor-top is the
 #    painted wall foot and pillar base (transparent above the wall's bottom edge) crossfaded into the pebble mask (layer 20) in
-#    colors that go smoothly from dark navy to purple; floor-tile is the same pebbles at the lit color, a mirrored span that repeats
+#    colors that go smoothly from dark navy to purple; floor-tile is the same pebbles at the lit color, a span (mirrored top to bottom, so it loops) that repeats
 #    down any section height. Anchored to canvas y 4750 = .prizes top.
 l20 = layer_full(20).getchannel("A")
 l18 = np.asarray(layer_full(18).getchannel("A"))

@@ -6,13 +6,11 @@
  * smoothly lighter to purple (no step), then the haze fades it to --world-floor-end at the section's bottom edge. */
 .landing .world--floor { --floor-haze: calc(var(--wu) * 330); }
 
-/* The cave band slides the painting left on narrow windows (--world-cx = the painting x at the window's middle). The wall-foot
-   piece must use the same mapping or the pillar base shows twice. Same definition as landing_world_cave.css, repeated so this
-   band works alone; the foundation hoists it into landing_world.css and then these two rules can go. */
+.landing .world--floor { clip-path: inset(-100vh 0 0 0); } /* no horizontal overhang; the top may reach up over the cave seam */
 
-.landing .world--floor .floor__col { position: absolute; top: 0; bottom: 0; left: calc(50% - var(--world-cx, calc(var(--wu) * 788))); width: var(--world-w); }
-.landing .world--floor .floor__col--left { left: calc(50% - var(--world-cx, calc(var(--wu) * 788)) - var(--world-w)); scale: -1 1; }
-.landing .world--floor .floor__col--right { left: calc(50% - var(--world-cx, calc(var(--wu) * 788)) + var(--world-w)); scale: -1 1; }
+/* The cave band slides the painting left on narrow windows (--world-cx, from landing_world.css = the painting x at the window's middle);
+   the column uses the same mapping so the pillar base lines up. One column, exactly the painting wide. */
+.landing .world--floor .floor__col { position: absolute; top: 0; bottom: 0; left: calc(50% - var(--world-cx)); width: var(--world-w); }
 
 .landing .world--floor .floor__col::before { /* what shows until floor-top has loaded and decoded: a soft dark-to-tile-color wash, never a hard slab */
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--wu) * 575);
