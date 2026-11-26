@@ -2,6 +2,7 @@
     one is the painting, the outer two are mirrored copies that carry the floor out to the window edges. Each column has a tile
     (the pebbles repeat down any section height) under the painted top piece. The haze into the sand is plain CSS at the bottom. -%>
 <%# The tile is a CSS background in landing_world_floor.css (CSP forbids inline styles): world/floor/floor-tile@a.webp, world/floor/floor-tile@b.webp, world/floor/floor-tile@c.webp. -%>
+<%# floor-top decodes synchronously on purpose: with decoding=async the wide-window (3152 px) candidate was left undrawn in headless shots, showing a flat slab. -%>
 <% [ "mid", "left", "right" ].each do |side| %>
   <div class="floor__col floor__col--<%= side %>">
     <div class="floor__tile"></div>
