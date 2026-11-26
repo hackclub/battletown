@@ -111,8 +111,8 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .cta {
   display: inline-flex; max-width: 100%; padding: 0; border: 0; appearance: none; background: none;
   border-radius: 0.58em;
-  color: var(--cream);
-  font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display); /* never under 24px: cream on this pink is 3.1:1, which only passes as large text */
+  color: var(--navy-shade); /* the same deep navy as the FAQ rows and the third signpost board: cream on this pink is 3.1:1, the navy is above 5:1 */
+  font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display);
   letter-spacing: -0.05em;
   text-decoration: none; cursor: pointer;
 }
@@ -160,18 +160,39 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   .landing .hero__tagline { padding: 0; font-size: 2rem; white-space: nowrap; }
   .landing .hero__swoosh { height: var(--swoosh-height); margin-top: calc(var(--swoosh-overlap) * -1); object-fit: fill; }
 }
-/* Three of Hack Club's stickers, tilted a few degrees like they were stuck on, over one quiet line of navy text, together on
-   one soft frosted card so they read over the painting. No outlines or hard shadows: a soft blur shadow lifts each sticker. */
-.landing .hero__notes {
-  display: grid; justify-items: start; gap: 0.5rem; padding: 0.625rem 0.875rem; border-radius: 1rem;
-  background: rgb(255 255 255 / 0.6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+/* The call to action with, beside it, Hack Club's three stickers as one fanned pile (Armand's mockup, 2026-11-26) and, under it,
+   "Join N other fighters" when more than 50 people finished onboarding. On phones the pile drops under the button. The
+   pile is sized in em, so one font-size scales the whole thing. No outlines or hard shadows: soft blur shadows only. */
+.landing .hero__actions { display: grid; justify-items: start; gap: 0.875rem; }
+.landing .hero__fighters {
+  display: flex; align-items: center; gap: 0.4em; margin: 0; padding-left: 0.25rem; color: var(--cream);
+  font: 400 clamp(1.25rem, 5vw, 1.5rem)/1.1 var(--display); letter-spacing: -0.04em;
+  -webkit-text-stroke: 0.16em #0563de; paint-order: stroke fill;
 }
-.landing .hero__stickers { display: flex; align-items: center; gap: 0.75rem; padding: 0.25rem 0.25rem 0; }
-.landing .hero__sticker-img { display: block; width: auto; height: 3.25rem; border-radius: 0.35rem; filter: drop-shadow(0 2px 4px rgb(10 30 60 / 0.3)); }
-.landing .hero__sticker-img:nth-child(1) { transform: rotate(-4deg); }
-.landing .hero__sticker-img:nth-child(2) { transform: rotate(3deg); }
-.landing .hero__sticker-img:nth-child(3) { transform: rotate(-3deg); }
-.landing .hero__sticker { margin: 0; color: var(--navy); font-size: 0.875rem; font-weight: 700; line-height: 1.5; }
+.landing .hero__fighters-count {
+  padding: 0.12em 0.5em 0.2em; border-radius: var(--radius-full); background: #0563de; box-shadow: inset 0 0.08em 0 rgb(255 255 255 / 0.28);
+  -webkit-text-stroke: 0; font-variant-numeric: tabular-nums;
+}
+.landing .hero__pile { position: relative; width: 13em; height: 11.4em; margin: 0.25rem 0 0 0.25rem; font-size: 0.7rem; }
+.landing .hero__stickers { position: absolute; inset: 0; }
+.landing .hero__sticker-img { position: absolute; display: block; height: auto; filter: drop-shadow(0 0.15em 0.3em rgb(10 30 60 / 0.35)); }
+.landing .hero__sticker-img--mac { width: 6.2em; left: 5.6em; top: 0; transform: rotate(10deg); }
+.landing .hero__sticker-img--red { width: 8.6em; left: 0; top: 2.2em; transform: rotate(4deg); }
+.landing .hero__sticker-img--black { width: 7.6em; left: 5.4em; top: 4.6em; transform: rotate(-10deg); }
+.landing .hero__sticker {
+  position: absolute; z-index: 1; left: 0.4em; right: 0.4em; bottom: 0.3em; margin: 0; padding: 0.3em 0.8em 0.4em; border-radius: 1.5em;
+  background: #fff; box-shadow: 0 0 0 0.22em #fff, 0 0.2em 0.9em 0.2em rgb(255 255 255 / 0.8);
+  color: #e8352b; font: 800 1.15em/1.1 var(--display); letter-spacing: -0.03em; text-align: center; text-wrap: balance;
+}
+@media (min-width: 48rem) {
+  .landing .hero__actions { grid-template-columns: auto auto; column-gap: 1.5rem; align-items: center; }
+  .landing .hero__actions .cta { grid-column: 1; grid-row: 1; }
+  .landing .hero__fighters { grid-column: 1; grid-row: 2; }
+  .landing .hero__pile { grid-column: 2; grid-row: 1 / span 2; margin: 0; font-size: 0.7rem; } /* about 9rem wide: clear of the fighter on a tablet */
+}
+@media (min-width: 80rem) {
+  .landing .hero__pile { font-size: 0.85rem; }
+}
 /* ---- How it works: just the signpost, on flat sky. Its top board pokes up over the hero's bottom edge. ---- */
 .landing .how { position: relative; background: var(--sky); color: var(--navy); }
 .landing .how__inner { display: flex; flex-direction: column; align-items: center; padding: 0 0.5rem calc(var(--edge-a) * 0.72 + 1.5vw); }
@@ -263,21 +284,31 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 /* ---- Prizes: each one stands on a rounded blue block with its name on the darker front band (Armand's mockup, 2026-11-11). ---- */
 .landing .prizes { --bg: var(--royal); --next: var(--edge-c); }
 .landing .prizes h2 { color: var(--yellow); }
-.landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
+.landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 1.5rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
 .landing .prize {
   position: relative; isolation: isolate; container-type: inline-size; flex: none; display: flex; flex-direction: column; width: calc((100% - var(--gap)) / 2); max-width: 13rem;
-  border-radius: 1.4rem; text-align: center;
+  border-radius: 1.4rem; text-align: center; transform: rotate(var(--lean, 0deg));
+  /* Stone colors sampled from the painted cave (art-only-1576.jpg): the top face is the stepping stones' lit top at (792,1769) and (840,1850),
+     rgb(179,184,226) / rgb(179,183,231); the front face is the cliff's shaded lower rock at (1200,2200), rgb(96,106,195). */
+  --stone-top: #b3b8e2; --stone-front: #606ac3; --stone-text: var(--cream);
 }
+/* A soft contact shadow on the cave floor, a blurred ellipse under the stone, never a hard offset shadow. */
+.landing .prize::after { content: ""; position: absolute; z-index: -3; left: -6%; right: -6%; bottom: -0.9rem; height: 2rem; background: radial-gradient(ellipse at center, rgba(6, 6, 48, 0.62), rgba(6, 6, 48, 0) 68%); pointer-events: none; }
+.landing .prize:nth-child(5n+1) { --lean: -1.1deg; border-radius: 1.5rem 1.2rem 1.4rem 1.1rem; }
+.landing .prize:nth-child(5n+2) { --lean: 0.7deg; border-radius: 1.2rem 1.5rem 1.1rem 1.4rem; }
+.landing .prize:nth-child(5n+3) { --lean: -0.4deg; border-radius: 1.4rem 1.1rem 1.5rem 1.2rem; }
+.landing .prize:nth-child(5n+4) { --lean: 1.2deg; border-radius: 1.1rem 1.4rem 1.2rem 1.5rem; }
+.landing .prize:nth-child(5n) { --lean: -0.8deg; border-radius: 1.3rem 1.5rem 1.2rem 1.1rem; }
 /* The block: a dark body with the name on its front, and a lighter top face with all four corners rounded lying on it,
    so the body shows under the face's bottom corners and the block reads as a solid slab. */
-.landing .prize::before { content: ""; position: absolute; z-index: -2; inset: 0; margin-top: 60%; border-radius: inherit; background: #03045e; }
+.landing .prize::before { content: ""; position: absolute; z-index: -2; inset: 0; margin-top: 60%; border-radius: inherit; background: var(--stone-front); }
 .landing .prize__label { position: relative; margin-top: auto; padding: 0.5rem 0.5rem 0.7rem; }
-.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 36cqw; border-radius: 1.4rem; background: #1f3f93; }
+.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 36cqw; border-radius: 1.4rem 1.2rem 1.5rem 1.3rem; background: var(--stone-top); }
 /* The prize stands in the middle of the block's top face, not on its front edge. */
 .landing .prize img { display: block; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
-.landing .prize__emoji { display: flex; align-items: center; justify-content: center; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }
-.landing .prize h3 { color: #a9dcff; font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
-.landing .prize__hours { display: block; margin-top: 0.15rem; color: #d7e6ff; font-size: 0.8125rem; line-height: 1.2; overflow-wrap: anywhere; }
+.landing .prize__emoji { display: flex; align-items: flex-end; justify-content: center; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }
+.landing .prize h3 { color: var(--stone-text); font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
+.landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.8125rem; line-height: 1.2; overflow-wrap: anywhere; }
 @media (min-width: 40rem) {
   .landing .shelf { --gap: 1.25rem; }
   .landing .prize { width: calc((100% - 2 * var(--gap)) / 3); }
