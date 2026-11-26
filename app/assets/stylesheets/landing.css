@@ -288,7 +288,7 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   .landing .prize { width: calc((100% - 4 * var(--gap)) / 5); }
 }
 /* ---- FAQ: the river. The questions are stepping stones across it, and the path picks up again on the far bank. ---- */
-.landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: #2449a0; --stone-shade: #162f70; --ripple: #1b3a80; }
+.landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: var(--pink); --stone-shade: var(--color-sign-pink-edge); --ripple: transparent; } /* the question stones are the site's magenta (the button and the third signpost board), edge in the board's deeper pink; no halo, so no outline look */
 .landing .bank__face { fill: var(--royal-shade); }
 .landing .bank__foam { fill: none; stroke: #4f7fd9; stroke-width: clamp(3px, 0.4vw, 6px); stroke-linecap: round; stroke-dasharray: 70px 22px 26px 22px; vector-effect: non-scaling-stroke; }
 .landing .faq h2 { color: var(--yellow); font-size: clamp(2.5rem, 5.4vw, 4.25rem); }
@@ -325,9 +325,10 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .faq summary::-webkit-details-marker { display: none; }
 .landing .faq summary::after { content: "+"; flex: none; font-size: 1.1em; line-height: 0.8; }
 .landing .faq details[open] summary::after { content: "\2212"; }
-.landing .faq summary:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; border-radius: 0.4rem; }
-.landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: #d7e6ff; font-size: 1rem; }
-.landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: #d7e6ff; font-size: 1rem; } /* one rule per line; the markers keep it a list in every browser */
+.landing .faq summary { color: var(--navy-shade); } /* navy on this magenta: cream is 3.1:1 and #10285a 4.5:1, the deep navy is above 5:1 */
+.landing .faq summary:focus-visible { outline: 3px solid var(--navy-shade); outline-offset: 4px; border-radius: 0.4rem; }
+.landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: var(--navy-shade); font-size: 1rem; }
+.landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: var(--navy-shade); font-size: 1rem; } /* one rule per line; the markers keep it a list in every browser */
 @media (min-width: 64rem) {
   /* The stones step in from the right, where the path comes down beside the prizes, and out again toward Orpheus. */
   .landing .hop--1 { --hx: calc(100% - 7.5rem); }
