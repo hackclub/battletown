@@ -20,15 +20,32 @@
 .landing .world--cliff .world__cliff { left: calc(50% - var(--wu) * 788); /* the painting's own middle, so its edges are the window's from 1576px up; the foot is 0.8 wu right of it */ top: calc(var(--foot-y) - var(--wu) * 160); width: calc(var(--wu) * 1576); }
 .landing .world--cliff .world__path { left: calc(var(--foot-x) - var(--wu) * 118); top: calc(var(--foot-y) - var(--wu) * 7); width: calc(var(--wu) * 150); }
 
-/* The text under the painting. The path runs from the foot down to canvas y 3436, which is 360 wu below the top of the section,
+/* The text beside the path. The path runs from the foot down to canvas y 3436, which is 360 wu below the top of the section,
    with its lower curve reaching 115 wu left of the middle. Desktop: the heading sits left of that curve on the darker teal,
-   about 217 wu down, as in the painting. Phones and tablets have no room beside the path, so the text starts under its end. */
-.landing .fight .in { padding-top: calc(var(--wu) * 360 + 2.25rem); }
+   about 217 wu down, as in the painting. */
 @media (min-width: 48rem) {
-  .landing .fight .in { padding-top: calc(var(--wu) * 300); } /* tablets: little room left of the path's curve, so the heading sits lower, where the curve has moved right */
   .landing .fight__text p { max-width: min(26rem, calc(50vw - var(--wu) * 115 - var(--side) - 1.25rem)); }
 }
 @media (min-width: 64rem) {
   .landing .fight .in { padding-top: calc(var(--wu) * 217); }
   .landing .fight__text p { max-width: min(26rem, calc(50vw - var(--wu) * 115 - var(--side) - 2rem)); }
+}
+
+/* Phones and tablets (below 64rem): the path must end AT the cave rim, with the heading and paragraph beside it on the teal.
+   The path hangs from the section top (ends 347 wu down); the cave is anchored to the section bottom, and its rim, at the painting x
+   under the path's end (--world-cx - 38 wu), is about 432 wu + 0.3 * --world-cx above the bottom (fitted to the cave piece, within 5 wu
+   for painting x 800..1100). So the section is exactly as tall as that, less 6 wu so the rim paints over the path's rounded end. The
+   text sits in the column right of the path's lower curve (its right edge is 45 to 80 wu left of the foot there), below the cliff's
+   shadow and above the rim, which rises to the right (0.3 wu per wu). */
+@media (max-width: 63.99rem) {
+  .landing .fight { --fight-h: calc(var(--wu) * 776 + var(--world-cx) * 0.3); }
+  .landing .fight, .landing .fight .in { min-height: var(--fight-h); }
+  .landing .fight .in { padding-top: calc(var(--wu) * 72); padding-bottom: 0; }
+  .landing .fight__text { padding-left: calc(50% - var(--wu) * 50 + 0.45rem); padding-right: var(--side); }
+  .landing .fight h2 { margin-left: calc(var(--wu) * 14 + 0.2rem); } /* the heading sits level with the cliff steps, where the path's right edge is furthest right */
+  .landing .fight__text p { max-width: none; margin-top: 0.4rem; }
+}
+@media (max-width: 47.99rem) {
+  .landing .fight h2 { font-size: 1.5rem; }
+  .landing .fight__text p { font-size: 0.875rem; line-height: 1.3; }
 }

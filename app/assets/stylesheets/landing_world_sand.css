@@ -10,6 +10,10 @@
    the painting's width times --wu, which is the window's width from 1576px up (the whole world scales). Narrower windows show its middle. Under it, flat --world-sand, which is the piece's last row. */
 .landing .world--sand .sand__stage { position: absolute; left: 50%; top: calc(var(--wu) * -300); width: var(--world-w); translate: -50% 0; }
 .landing .world--sand .sand__img { position: static; width: 100%; height: auto; }
+/* The waterline: a thin soft white foam line along the shore curve, where the floor (water) meets the sand. The piece is transparent above
+   the curve, so a drop shadow thrown straight up (no sideways offset) shows only above the curve: the sides and bottom are opaque, so they
+   draw nothing. A fainter blurred second line sits just above it. Everything is in wu, so it scales with the world. */
+.landing .world--sand .sand__img { filter: drop-shadow(0 calc(var(--wu) * -3.5) 0 rgb(255 255 255 / 0.8)) drop-shadow(0 calc(var(--wu) * -8) calc(var(--wu) * 3) rgb(255 255 255 / 0.28)); }
 /* Until the (lazy) piece has loaded, show flat sand below where the curve can reach (it is above 36% of the piece's height)
    instead of the page behind. The piece is opaque below the curve, so once it loads this is hidden. */
 .landing .world--sand .sand__stage { background: linear-gradient(to bottom, transparent 38%, var(--world-sand-top) 38%, var(--world-sand) 85%); }
