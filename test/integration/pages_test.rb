@@ -49,22 +49,30 @@ class PagesTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("age")
   end
 
-  test "legal pages render" do
-    get "/privacy"
-    assert_response :success
-    get "/terms"
-    assert_response :success
+  # Battletown has no terms or privacy text of its own: it links to Hack Club's global page (Legal::URL).
+  test "/privacy and /terms are permanent redirects to Hack Club's global terms and privacy page, whatever the query" do
+    [ "/privacy", "/terms", "/privacy?x=1&next=https://evil.example", "/terms?redirect=//evil.example" ].each do |path|
+      get path
+      assert_response :moved_permanently, path
+      assert_equal "https://hackclub.com/privacy-and-terms/", response.headers["Location"], path
+    end
+    get "/privacy.html"
+    assert_response :not_found
   end
 
-  test "legal pages are one readable prose panel with a single h1 and no inline styles" do
-    { "/privacy" => "Privacy", "/terms" => "Terms" }.each do |path, heading|
-      get path
-      assert_select "article.panel .prose", 1
-      assert_select "h1", text: heading, count: 1
-      assert_select "article .eyebrow", text: "Legal"
-      assert_select "[style]", 0
-      assert_select "article", text: /placeholder/
-    end
+  test "no terms or privacy page of its own is left" do
+    assert_not Object.const_defined?(:PagesController), "the controller is gone"
+    assert_empty Dir[Rails.root.join("app/views/pages/*")], "so are its views"
+    assert_not File.exist?(Rails.root.join("app/views/pages/privacy.html.erb"))
+    assert_equal "https://hackclub.com/privacy-and-terms/", Legal::URL
+  end
+
+  test "the footer has one link to Hack Club's global terms and privacy policy, in the same tab with rel noopener noreferrer" do
+    get "/"
+    assert_select "footer nav[aria-label='Legal'] a", 1
+    assert_select "footer a[href='https://hackclub.com/privacy-and-terms/'][rel='noopener noreferrer']", text: "Hack Club's terms and privacy policy", count: 1
+    assert_select "footer a[target]", 0
+    assert_select "footer a[href='/privacy'], footer a[href='/terms']", 0
   end
 
   test "security headers are set" do

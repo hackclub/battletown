@@ -1,11 +1,13 @@
 require "test_helper"
 require_relative "../support/bosses_helper"
 require_relative "../support/dev_simulator_test_support"
+require_relative "../support/fighters_helper"
 
 # The dashboard's event simulator: the panel is in the page only in development (with a local database), and its JSON endpoints
 # are development-only, login-only, CSRF-protected and aggregate-only. Development is faked the way dev_boss_test.rb does.
 class DevSimulatorPanelTest < ActionDispatch::IntegrationTest
   include DevSimulatorTestSupport
+  include FightersHelper
 
   # Every memoized config read from config/game.yml, whose `development:` section differs from `test:` (ships.project_time_from,
   # for one). Whatever a request loads under the faked environment is put back as it was, so nothing leaks into later tests.
@@ -90,8 +92,8 @@ class DevSimulatorPanelTest < ActionDispatch::IntegrationTest
 
     assert_select ".event-simulator__body > :first-child.event-simulator__live" do
       assert_select "[role=status][aria-live=polite][data-event-simulator-target=message]", 1
-      assert_select "dl.event-simulator__numbers dd[data-event-simulator-target=stat]", 6
-      %w[boss damage health togo players coded].each { |key| assert_select "dd[data-stat='#{key}']", 1 }
+      assert_select "dl.event-simulator__numbers dd[data-event-simulator-target=stat]", 7
+      %w[boss damage health togo players coded shipped].each { |key| assert_select "dd[data-stat='#{key}']", 1 }
     end
     assert_select ".event-simulator__body > form:last-child[aria-labelledby=simulator-preview-title]", 1
   end
@@ -155,7 +157,8 @@ class DevSimulatorPanelTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/6 created/, json["message"])
     assert_equal 6, json.dig("status", "players")
-    assert_equal 6, json.dig("status", "people_coded_today")
+    assert_equal 6, json.dig("status", "people_coded")
+    assert_equal 0, json.dig("status", "people_shipped")
     assert_equal 6, json.dig("status", "last", "created")
 
     dev_post("/dev/simulator/ship", { mode: "all", hours_min: 2, hours_max: 2 })
@@ -166,6 +169,7 @@ class DevSimulatorPanelTest < ActionDispatch::IntegrationTest
     assert_equal "88% left", json.dig("status", "boss", "health_text")
     assert_equal 88, json.dig("status", "boss", "health_percent")
     assert_equal 6, json.dig("status", "simulated_ships_this_week")
+    assert_equal [ 6, 6 ], json["status"].values_at("people_coded", "people_shipped"), "everybody who shipped coded in the last day"
     assert_not_includes response.body, "sim!"
 
     dev_post("/dev/simulator/ship", { mode: "percent", percent: 50, hours_min: 1, hours_max: 1 })
@@ -181,7 +185,30 @@ class DevSimulatorPanelTest < ActionDispatch::IntegrationTest
 
     assert_select "progress#stage-boss-health[value='80']", 1
     assert_select ".stage__fan", 4
+    assert_select ".stage__fan a.stage__fighter[href^='/players/']", 4, "simulated players have public profiles: links"
+    assert_select ".stage__fan--hit-ship", 4, "they all shipped"
     assert_match(/Boss at 80% health/, css_select("#stage-boss-summary").text)
+  end
+
+  test "the stage sees what an action did at once, not after the 20 second cache" do
+    sign_in_as @user
+    swap_cache do
+      in_env("development") { get dashboard_path }
+      assert_select ".stage__fan", 0
+
+      dev_post("/dev/simulator/create_players", { count: 3 })
+      in_env("development") { get dashboard_path }
+      assert_select ".stage__fan", 3
+      get boss_fighters_path
+      assert_equal 3, json["total"]
+    end
+  end
+
+  test "the panel hands the circles to the stage: it sends boss:refresh after each action and draws none itself" do
+    js = Rails.root.join("app/javascript/controllers/event_simulator_controller.js").read
+    assert_match(/new CustomEvent\("boss:refresh"\)/, js)
+    assert_no_match(/stage__crowd|stage__fan|createElement\("li"\)/, js)
+    assert_no_match(/people_coded_today|MAX_FANS/, js)
   end
 
   test "a hit of up to 100 hours per ship is allowed, and the answer says how many hours hit the boss" do

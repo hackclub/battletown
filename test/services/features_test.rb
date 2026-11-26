@@ -2,7 +2,7 @@ require "test_helper"
 
 class FeaturesTest < ActiveSupport::TestCase
   test "every known flag is off until switched on" do
-    assert_equal %i[team quests returning plinko ship_screenshots merch_track email nps eligibility_gate].sort, Features::NAMES.sort
+    assert_equal %i[team quests returning plinko ship_screenshots merch_track email nps eligibility_gate analytics_paused live_updates_paused].sort, Features::NAMES.sort
     Features::NAMES.each { |name| assert_not Features.enabled?(name), "#{name} must ship off" }
   end
 

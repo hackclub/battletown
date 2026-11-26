@@ -1,4 +1,4 @@
-/* Hackatime connection settings (/hackatime). Shared components do the work; this is the layout only. Tokens only. */
+/* Hackatime connection settings (the Hackatime section of /settings). Shared components do the work; this is the layout only. Tokens only. */
 .hackatime { max-width: 48rem; }
 .hackatime__card { display: grid; gap: var(--space-4); }
 .hackatime__card > * { margin: 0; }

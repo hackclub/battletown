@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,56 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
     t.index ["created_at"], name: "index_admin_audit_events_on_created_at"
     t.index ["subject_type", "subject_id"], name: "index_admin_audit_events_on_subject_type_and_subject_id"
     t.check_constraint "jsonb_typeof(metadata) = 'object'::text", name: "admin_audit_events_metadata_object_check"
+  end
+
+  create_table "analytics_daily_snapshots", force: :cascade do |t|
+    t.date "day", null: false
+    t.string "key", limit: 60, null: false
+    t.bigint "value", default: 0, null: false
+    t.index ["day", "key"], name: "index_analytics_daily_snapshots_on_day_and_key", unique: true
+  end
+
+  create_table "analytics_events", force: :cascade do |t|
+    t.string "name", limit: 40, null: false
+    t.jsonb "props", default: {}, null: false
+    t.datetime "occurred_at", null: false
+    t.bigint "visit_id"
+    t.bigint "user_id"
+    t.string "dedupe_key", limit: 60
+    t.index ["name", "occurred_at"], name: "index_analytics_events_on_name_and_occurred_at"
+    t.index ["occurred_at"], name: "index_analytics_events_on_occurred_at", using: :brin
+    t.index ["user_id", "dedupe_key"], name: "index_analytics_events_on_user_id_and_dedupe_key", unique: true, where: "(dedupe_key IS NOT NULL)"
+    t.index ["user_id", "occurred_at"], name: "index_analytics_events_hackatime_linked", where: "((name)::text = 'hackatime_linked'::text)"
+    t.index ["user_id", "occurred_at"], name: "index_analytics_events_on_user_id_and_occurred_at"
+    t.index ["visit_id"], name: "index_analytics_events_on_visit_id"
+    t.check_constraint "jsonb_typeof(props) = 'object'::text", name: "analytics_events_props_object_check"
+    t.check_constraint "name::text ~ '^[a-z][a-z0-9_]*$'::text", name: "analytics_events_name_check"
+    t.check_constraint "octet_length(props::text) <= 400", name: "analytics_events_props_size_check"
+  end
+
+  create_table "analytics_site_days", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "day", null: false
+    t.index ["day"], name: "index_analytics_site_days_on_day"
+    t.index ["user_id", "day"], name: "index_analytics_site_days_on_user_id_and_day", unique: true
+  end
+
+  create_table "analytics_visits", force: :cascade do |t|
+    t.string "visit_key", limit: 32, null: false
+    t.bigint "user_id"
+    t.datetime "started_at", null: false
+    t.string "referral_slug", limit: 32
+    t.string "utm_source", limit: 32
+    t.string "utm_medium", limit: 32
+    t.string "utm_campaign", limit: 40
+    t.string "referrer_kind", limit: 12, default: "direct", null: false
+    t.string "device_class", limit: 10, default: "unknown", null: false
+    t.string "entry_route", limit: 80
+    t.index ["started_at"], name: "index_analytics_visits_on_started_at"
+    t.index ["user_id"], name: "index_analytics_visits_on_user_id"
+    t.index ["visit_key"], name: "index_analytics_visits_on_visit_key", unique: true
+    t.check_constraint "device_class::text = ANY (ARRAY['desktop'::character varying, 'mobile'::character varying, 'tablet'::character varying, 'unknown'::character varying]::text[])", name: "analytics_visits_device_class_check"
+    t.check_constraint "referrer_kind::text = ANY (ARRAY['direct'::character varying, 'search'::character varying, 'social'::character varying, 'hack_club'::character varying, 'other'::character varying]::text[])", name: "analytics_visits_referrer_kind_check"
   end
 
   create_table "bosses", force: :cascade do |t|
@@ -200,6 +250,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
     t.check_constraint "source::text = 'adjustment'::text OR seconds > 0", name: "hour_entries_positive_unless_adjustment_check"
     t.check_constraint "source::text = 'hackatime'::text OR note IS NOT NULL", name: "hour_entries_note_required_check"
     t.check_constraint "source::text = ANY (ARRAY['hackatime'::character varying, 'manual'::character varying, 'adjustment'::character varying]::text[])", name: "hour_entries_source_check"
+  end
+
+  create_table "job_runs", force: :cascade do |t|
+    t.string "name", limit: 60, null: false
+    t.datetime "started_at", null: false
+    t.datetime "finished_at"
+    t.string "status", limit: 10, default: "running", null: false
+    t.string "error_class", limit: 80
+    t.jsonb "counts", default: {}, null: false
+    t.index ["name", "started_at"], name: "index_job_runs_on_name_and_started_at", order: { started_at: :desc }
+    t.check_constraint "jsonb_typeof(counts) = 'object'::text", name: "job_runs_counts_check"
+    t.check_constraint "status::text = ANY (ARRAY['running'::character varying, 'ok'::character varying, 'failed'::character varying]::text[])", name: "job_runs_status_check"
   end
 
   create_table "link_suggestions", force: :cascade do |t|
@@ -579,6 +641,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
     t.check_constraint "tier::text = ANY (ARRAY['daily'::character varying, 'weekly'::character varying, 'shop'::character varying]::text[])", name: "shop_items_tier_check"
   end
 
+  create_table "slack_profiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.boolean "use_name", default: true, null: false
+    t.boolean "use_picture", default: true, null: false
+    t.string "display_name", limit: 30
+    t.binary "picture"
+    t.string "picture_sha256", limit: 64
+    t.integer "picture_bytes"
+    t.string "status", limit: 20, default: "pending", null: false
+    t.integer "failure_count", default: 0, null: false
+    t.datetime "fetched_at"
+    t.datetime "next_attempt_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_slack_profiles_on_user_id", unique: true
+    t.check_constraint "(picture IS NULL) = (picture_sha256 IS NULL)", name: "slack_profiles_picture_pair_check"
+    t.check_constraint "picture_bytes IS NULL OR picture_bytes >= 1 AND picture_bytes <= 100000", name: "slack_profiles_picture_bytes_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'ok'::character varying, 'no_picture'::character varying, 'missing_scope'::character varying, 'invalid_auth'::character varying, 'not_found'::character varying, 'no_token'::character varying, 'ratelimited'::character varying, 'error'::character varying]::text[])", name: "slack_profiles_status_check"
+  end
+
   create_table "team_cooldowns", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.datetime "left_at", null: false
@@ -642,8 +724,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
     t.text "project_idea"
     t.integer "coding_days", default: 0, null: false
     t.string "coding_time"
-    t.jsonb "coding_times", default: {}, null: false
-    t.integer "pace_minutes"
     t.string "time_zone"
     t.integer "onboarding_step", default: 0, null: false
     t.datetime "onboarded_at"
@@ -653,14 +733,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
     t.datetime "email_opted_out_at"
     t.string "email_unsubscribe_nonce", default: -> { "(gen_random_uuid())::text" }, null: false
     t.datetime "verification_checked_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.jsonb "coding_times", default: {}, null: false
+    t.integer "pace_minutes"
+    t.string "profile_name", limit: 30
+    t.string "public_slug", limit: 12, null: false
+    t.boolean "analytics_excluded", default: false, null: false
+    t.uuid "analytics_id", default: -> { "gen_random_uuid()" }, null: false
+    t.index ["analytics_id"], name: "index_users_on_analytics_id", unique: true
     t.index ["hca_uid"], name: "index_users_on_hca_uid", unique: true
+    t.index ["public_slug"], name: "index_users_on_public_slug", unique: true, where: "(public_slug IS NOT NULL)"
     t.index ["slack_id"], name: "index_users_on_slack_id"
     t.check_constraint "char_length(project_idea) <= 500", name: "users_project_idea_length_check"
     t.check_constraint "coding_days >= 0 AND coding_days <= 127", name: "users_coding_days_check"
     t.check_constraint "coding_time IS NULL OR coding_time::text ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'::text", name: "users_coding_time_check"
     t.check_constraint "jsonb_typeof(coding_times) = 'object'::text", name: "users_coding_times_check"
-    t.check_constraint "pace_minutes IS NULL OR (pace_minutes = ANY (ARRAY[15, 30, 45, 60, 90, 120, 180, 240]))", name: "users_pace_minutes_check"
     t.check_constraint "onboarding_step >= 0 AND onboarding_step <= 6", name: "users_onboarding_step_check"
+    t.check_constraint "pace_minutes IS NULL OR (pace_minutes = ANY (ARRAY[15, 30, 45, 60, 90, 120, 180, 240]))", name: "users_pace_minutes_check"
+    t.check_constraint "profile_name IS NULL OR char_length(profile_name::text) >= 1 AND char_length(profile_name::text) <= 30", name: "users_profile_name_length_check"
     t.check_constraint "project_kind IS NULL OR (project_kind::text = ANY (ARRAY['game'::character varying, 'website'::character varying, 'app'::character varying, 'tool'::character varying, 'hardware'::character varying, 'undecided'::character varying]::text[]))", name: "users_project_kind_check"
     t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying, 'pending'::character varying, 'verified'::character varying, 'ineligible'::character varying]::text[])", name: "users_verification_status_check"
   end
@@ -680,6 +769,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
 
   add_foreign_key "address_offers", "users", on_delete: :cascade
   add_foreign_key "admin_audit_events", "users", column: "actor_id", on_delete: :nullify
+  add_foreign_key "analytics_events", "analytics_visits", column: "visit_id", on_delete: :cascade
+  add_foreign_key "analytics_events", "users", on_delete: :cascade
+  add_foreign_key "analytics_site_days", "users", on_delete: :cascade
+  add_foreign_key "analytics_visits", "users", on_delete: :cascade
   add_foreign_key "coin_transactions", "users", on_delete: :cascade
   add_foreign_key "daily_results", "users", on_delete: :cascade
   add_foreign_key "hackatime_connections", "users", on_delete: :cascade
@@ -711,6 +804,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
   add_foreign_key "ships", "projects", column: ["project_id", "user_id"], primary_key: ["id", "user_id"], on_delete: :cascade
   add_foreign_key "ships", "users", column: "reviewer_id", on_delete: :nullify
   add_foreign_key "ships", "users", on_delete: :cascade
+  add_foreign_key "slack_profiles", "users", on_delete: :cascade
   add_foreign_key "team_cooldowns", "users", on_delete: :cascade
   add_foreign_key "team_memberships", "teams", on_delete: :cascade
   add_foreign_key "team_memberships", "users", on_delete: :cascade

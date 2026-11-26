@@ -113,7 +113,7 @@ class EligibilityConfigTest < ActiveSupport::TestCase
     config = Eligibility::Config.current
     assert_equal 30, config.verification_max_age_days
     assert_equal 30.days, config.max_age
-    assert_equal "Questions? Ask in Slack.", config.help_line
+    assert_equal "Questions? Ask in #{Support.where_to_ask}.", config.help_line
   end
 
   test "rejects a zero or negative age and a missing or overlong help line" do

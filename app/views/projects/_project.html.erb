@@ -1,5 +1,6 @@
 <% info = project_kind_info(project.kind) %>
 <% names = project.hackatime_links.sort_by(&:id).map(&:hackatime_project) %>
+<% ships = ships_by_project.fetch(project.id, []) %>
 <li class="card project <%= "project--active" if project.active? %> <%= "project--archived" if project.status_archived? %>">
   <div class="project__head">
     <h2 class="project__name"><%= project.name %></h2>
@@ -23,6 +24,38 @@
     <% else %>
       <span class="badge badge--warning">No Hackatime project linked yet</span>
       <%= link_to "Link one", edit_project_path(project), class: "project__link-one" if project.status_active? %>
+    <% end %>
+  </div>
+
+  <div class="project__ships">
+    <% if ships.empty? %>
+      <p class="project__ships-none">No ships yet.</p>
+    <% else %>
+      <p class="project__ships-latest">
+        Latest ship: <%= ship_status_badge(ships.first) %>
+        <%= link_to ship_path(ships.first) do %>View<span class="visually-hidden"> the <%= project_ship_date(ships.first) %> ship of <%= project.name %></span><% end %>
+      </p>
+      <% if ships.first.status_rejected? %>
+        <p class="project__ships-fix">
+          <% if ships.first.rejection_reason.present? %><span class="project__ships-reason">A reviewer said: <%= truncate(ships.first.rejection_reason, length: 140) %></span><% end %>
+          <%= link_to new_project_ship_path(project, from: ships.first.id) do %>Fix and ship again<span class="visually-hidden"> the <%= project_ship_date(ships.first) %> ship of <%= project.name %></span><% end %>
+        </p>
+      <% end %>
+      <details class="project__ships-history">
+        <summary><%= pluralize(ships.size, "ship") %></summary>
+        <ul class="project__ships-list">
+          <% ships.first(ProjectsHelper::SHIP_HISTORY_LIMIT).each do |ship| %>
+            <li>
+              <%= link_to ship_path(ship) do %><%= project_ship_date(ship) %><span class="visually-hidden"> ship of <%= project.name %></span><% end %>
+              <%= ship_status_badge(ship) %>
+              <span class="project__ships-hours"><%= project_ship_hours(ship) %></span>
+            </li>
+          <% end %>
+        </ul>
+        <% if ships.size > ProjectsHelper::SHIP_HISTORY_LIMIT %>
+          <p class="project__ships-more">The newest <%= ProjectsHelper::SHIP_HISTORY_LIMIT %> of <%= ships.size %>.</p>
+        <% end %>
+      </details>
     <% end %>
   </div>
 

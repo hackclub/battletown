@@ -6,18 +6,20 @@
     <p class="alert__title ship-note__title"><%= eligibility_text(state) %></p>
     <p>The coins are saved for you and you keep earning them. Coding and shipping are never blocked.</p>
     <% if state == :stale %>
-      <div><%= render "shared/signup_button", label: "Sign in again", css: "btn btn--sm" %></div>
+      <div><%= render "shared/signup_button", label: "Sign in again", css: "btn btn--sm", return_to: request.path %></div>
     <% end %>
   </div>
 <% elsif state == :unverified %>
   <div class="alert alert--warning ship-note" role="note">
     <p class="alert__title ship-note__title">Your coins unlock when you verify your identity with Hack Club.</p>
     <% if current_user.verification_ineligible? %>
-      <p>Your Hack Club account can't be verified for this program right now. Reach out in the Hack Club Slack and we'll help.</p>
+      <p>Your Hack Club account can't be verified for this program right now. Ask us in <%= Support.where_to_ask %> and we'll help.</p>
     <% elsif current_user.verification_pending? %>
       <p>Your verification is being checked. The coins are saved for you and unlock as soon as it goes through.</p>
+      <%= render "shared/verified_refresh" %>
     <% else %>
-      <p>The coins are saved for you. <%= ship_verify_link %> (opens in a new tab) and you can spend them in the shop.</p>
+      <p>The coins are saved for you. <%= ship_verify_link %> (opens in a new tab) and you can spend them in the armoury.</p>
+      <%= render "shared/verified_refresh" %>
     <% end %>
   </div>
 <% end %>

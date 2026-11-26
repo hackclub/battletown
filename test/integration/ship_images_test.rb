@@ -361,11 +361,11 @@ class ShipImagesTest < ActionDispatch::IntegrationTest
 
   # --- nothing else embeds a screenshot ---
 
-  test "flag on: the dashboard, the ships list and the projects list never embed a screenshot" do
+  test "flag on: the dashboard and the projects list (with its ship history) never embed a screenshot" do
     with_feature(:ship_screenshots) do
       ship_with_image
       sign_in_as @user
-      [ dashboard_path, ships_path, projects_path ].each do |path|
+      [ dashboard_path, projects_path ].each do |path|
         get path
         assert_response :success
         assert_no_match(%r{/ships/\d+/images/}, response.body, path)

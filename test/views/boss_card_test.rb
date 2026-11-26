@@ -7,6 +7,7 @@ class BossCardTest < ActionView::TestCase
   include ShipImagesHelper
 
   MONDAY = Date.new(2026, 11, 16)
+  NOW = Time.utc(2026, 11, 16, 12) # the last 24 hours the fighters are counted over end here
 
   setup do
     @user = users(:onboarded)
@@ -16,7 +17,7 @@ class BossCardTest < ActionView::TestCase
   end
 
   def card(**options)
-    render partial: "bosses/card", locals: { presenter: Bosses::Presenter.new(user: @user, today: MONDAY, **options) }
+    render partial: "bosses/card", locals: { presenter: Bosses::Presenter.new(user: @user, today: MONDAY, now: NOW, **options) }
     rendered
   end
 
@@ -53,7 +54,7 @@ class BossCardTest < ActionView::TestCase
     assert_select "section.boss-card.on-map", 1
     assert_select ".progress.progress--boss label.progress__label[for='boss-card-health']", "Boss health"
     assert_select ".boss-card__state.badge.badge--primary", "In progress"
-    assert_select ".boss-card__facts .boss-card__community", /coded today|Be the first/
+    assert_select ".boss-card__facts .boss-card__community", /coded in the last day|Nobody has coded/
     assert_select ".boss-card__stage img[alt]:not([alt=''])", 1
   end
 
@@ -115,7 +116,7 @@ class BossCardTest < ActionView::TestCase
     assert_select "progress", 0
     assert_select "img", 0
     assert_match(/The next boss arrives Friday 13 November\./, rendered)
-    assert_select ".boss-card__community", "Be the first to code today."
+    assert_select ".boss-card__community", "Nobody has coded in the last day."
   end
 
   test "every state shows exactly one h2 and states in words, never colour alone" do
@@ -131,7 +132,7 @@ class BossCardTest < ActionView::TestCase
     ship_damage(@user, 900, on: MONDAY)
     add_hours(@user, MONDAY, 900)
 
-    presenter = Bosses::Presenter.new(user: @user, today: MONDAY)
+    presenter = Bosses::Presenter.new(user: @user, today: MONDAY, now: NOW)
     html = card
     exposed = [ html, presenter.summary, presenter.community_text, presenter.contributed_text, presenter.boss_name, presenter.art_alt ].join(" ")
 
@@ -141,7 +142,7 @@ class BossCardTest < ActionView::TestCase
     assert_not_includes exposed, @user.email
     assert_not_includes exposed, @user.hca_uid
     assert_no_match(/user[-_ ]?id|data-user|\/users\//i, html)
-    assert_equal "2 people coded today.", presenter.community_text
+    assert_equal "2 people coded in the last day. 1 of them shipped.", presenter.community_text
     assert_equal "You've dealt 15 minutes of damage this week.", presenter.contributed_text, "only the viewer's own 15 minutes, never the other user's 51 hours"
   end
 

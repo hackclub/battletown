@@ -8,7 +8,7 @@ module Notifications
     SLACK = "slack_dm".freeze
     EMAIL = "email".freeze
 
-    # Kinds that belong to a feature flag: while the flag is off the switch is not shown on /settings/notifications.
+    # Kinds that belong to a feature flag: while the flag is off the switch is not shown in Settings.
     FEATURE_KINDS = { "returning_nudge" => :returning, "nps_prompt" => :nps }.freeze
 
     module_function
@@ -35,7 +35,7 @@ module Notifications
       kinds(channel: channel).reject { |kind| FEATURE_KINDS.key?(kind) && !Features.enabled?(FEATURE_KINDS.fetch(kind)) }
     end
 
-    # `settings` without the kinds whose feature is switched off (what /settings/notifications lists).
+    # `settings` without the kinds whose feature is switched off (what the Notifications section of Settings lists).
     def visible_settings(user, channel: SLACK)
       settings(user, channel: channel).reject { |kind, _| FEATURE_KINDS.key?(kind) && !Features.enabled?(FEATURE_KINDS.fetch(kind)) }
     end

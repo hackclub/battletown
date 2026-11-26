@@ -481,11 +481,14 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select ".site-footer", 0
   end
 
-  test "the sign-up step links to the terms and the privacy policy, since there is no footer to do it" do
+  test "the sign-up step links once to Hack Club's global terms and privacy policy, since there is no footer to do it" do
     anonymous_through("schedule")
     get onboarding_step_path("signup")
-    assert_select ".onboarding__panel a[href='#{terms_path}']", "Terms"
-    assert_select ".onboarding__panel a[href='#{privacy_path}']", "Privacy Policy"
+    assert_select ".onboarding__panel a", text: "Hack Club's terms and privacy policy", count: 1
+    assert_select ".onboarding__panel a[href='https://hackclub.com/privacy-and-terms/'][rel='noopener noreferrer']", 1
+    assert_select ".onboarding__panel a[href='https://hackclub.com/privacy-and-terms/'][target]", 0
+    assert_select ".onboarding__panel a[href='/privacy'], .onboarding__panel a[href='/terms']", 0
+    assert_select ".onboarding__hint", text: "By signing up you agree to Hack Club's terms and privacy policy."
   end
 
   test "the progress bar and back button sit at the top" do
@@ -833,7 +836,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "#onboarding-progress-label", "editing your plan"
     assert_select "a.onboarding-top__back[href='#{dashboard_path}']"
 
-    get settings_notifications_path
+    get settings_path
     assert_select "a[href='#{onboarding_step_path("schedule")}']", "your schedule"
   end
 

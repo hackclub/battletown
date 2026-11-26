@@ -41,7 +41,7 @@ class Notifications::Slack::CheckTest < ActiveSupport::TestCase
   end
 
   test "asks auth.test over HTTPS with a bearer token and 5 second timeouts" do
-    report, seen = check(response: scoped("chat:write"))
+    report, seen = check(response: scoped("chat:write,users:read"))
     assert report.ok?
     start = seen[:starts].sole
     assert_equal "slack.com", start[:host]
@@ -57,18 +57,18 @@ class Notifications::Slack::CheckTest < ActiveSupport::TestCase
   end
 
   test "reports the workspace, bot name and scopes and never the token" do
-    report, = check(response: scoped("chat:write"))
+    report, = check(response: scoped("chat:write,users:read"))
     assert_equal "Hack Club", report.team
     assert_equal "battletown", report.user
-    assert_equal [ "chat:write" ], report.scopes
+    assert_equal [ "chat:write", "users:read" ], report.scopes
     assert_empty report.problems
     assert_not_includes report.to_h.to_s, TOKEN
   end
 
   test "extra scopes are a problem" do
-    report, = check(response: scoped("chat:write, users:read.email,im:write"))
+    report, = check(response: scoped("chat:write, users:read, users:read.email,im:write"))
     assert_not report.ok?
-    assert_equal [ "chat:write", "im:write", "users:read.email" ], report.scopes
+    assert_equal [ "chat:write", "im:write", "users:read", "users:read.email" ], report.scopes
     assert_match(/Unexpected scopes: im:write, users:read\.email/, report.problems.sole)
   end
 
@@ -76,7 +76,13 @@ class Notifications::Slack::CheckTest < ActiveSupport::TestCase
     report, = check(response: scoped("commands"))
     assert_not report.ok?
     assert_equal 2, report.problems.size
-    assert(report.problems.any? { |problem| problem.start_with?("Missing scopes: chat:write") })
+    assert(report.problems.any? { |problem| problem.start_with?("Missing scopes: chat:write, users:read") })
+  end
+
+  test "a token installed before users:read was added says exactly what to do next" do
+    report, = check(response: scoped("chat:write"))
+    assert_not report.ok?
+    assert_equal [ "Missing scopes: users:read." ], report.problems
   end
 
   test "no scopes header still passes when Slack accepts a bot token" do
@@ -86,14 +92,14 @@ class Notifications::Slack::CheckTest < ActiveSupport::TestCase
   end
 
   test "a token that is not a bot token is a problem" do
-    report, = check(response: scoped("chat:write", OK_BODY.except(:bot_id)))
+    report, = check(response: scoped("chat:write,users:read", OK_BODY.except(:bot_id)))
     assert_not report.ok?
     assert_match(/not a bot token/, report.problems.sole)
   end
 
   test "a missing token makes no request" do
     with_env("SLACK_BOT_TOKEN" => nil) do
-      report, seen = check(response: scoped("chat:write"), token: nil)
+      report, seen = check(response: scoped("chat:write,users:read"), token: nil)
       assert_not report.ok?
       assert_match(/SLACK_BOT_TOKEN is not set/, report.problems.sole)
       assert_empty seen[:starts]
@@ -115,17 +121,17 @@ class Notifications::Slack::CheckTest < ActiveSupport::TestCase
   end
 
   test "unprintable characters and long names from Slack are cleaned" do
-    report, = check(response: scoped("chat:write", OK_BODY.merge(team: "Hack\e[31m Club" + ("x" * 200))))
+    report, = check(response: scoped("chat:write,users:read", OK_BODY.merge(team: "Hack\e[31m Club" + ("x" * 200))))
     assert_not_includes report.team, "\e"
     assert_operator report.team.length, :<=, 80
   end
 
   test "slack:check prints workspace, bot and scopes without the token and exits 0" do
     with_env("SLACK_BOT_TOKEN" => TOKEN) do
-      stub_http(response: scoped("chat:write")) do
+      stub_http(response: scoped("chat:write,users:read")) do
         out, err, status = run_task("slack:check")
         assert_nil status
-        assert_includes out, 'workspace="Hack Club" bot="battletown" scopes=chat:write'
+        assert_includes out, 'workspace="Hack Club" bot="battletown" scopes=chat:write,users:read'
         assert_includes out, "slack:check ok"
         assert_not_includes out + err, TOKEN
       end
@@ -134,7 +140,7 @@ class Notifications::Slack::CheckTest < ActiveSupport::TestCase
 
   test "slack:check exits 1 with a clear message for extra scopes or a missing token" do
     with_env("SLACK_BOT_TOKEN" => TOKEN) do
-      stub_http(response: scoped("chat:write,channels:history")) do
+      stub_http(response: scoped("chat:write,users:read,channels:history")) do
         _out, err, status = run_task("slack:check")
         assert_equal 1, status
         assert_includes err, "Unexpected scopes: channels:history"
@@ -190,7 +196,7 @@ class Notifications::Slack::CheckTest < ActiveSupport::TestCase
     end
   end
 
-  test "the manifest asks for chat:write only and nothing that needs a server" do
+  test "the manifest asks for chat:write and users:read only and nothing that needs a server" do
     manifest = YAML.safe_load_file(MANIFEST)
     assert_equal Notifications::Slack::Check::EXPECTED_SCOPES, manifest.dig("oauth_config", "scopes", "bot")
     assert_nil manifest.dig("oauth_config", "scopes", "user")

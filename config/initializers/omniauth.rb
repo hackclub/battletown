@@ -5,6 +5,8 @@ OmniAuth.config.allowed_request_methods = [ :post ]
 # Route failures (bad state, denied consent, ...) to /auth/failure in every environment,
 # instead of raising the OmniAuth exception page in development.
 OmniAuth.config.failure_raise_out_environments = []
+# First-party analytics: signup_started and hackatime_connect_started, when a sign-up or Connect button is pressed (Analytics::AuthStart).
+OmniAuth.config.before_request_phase = ->(env) { Analytics::AuthStart.call(env) }
 
 # Hack Club Auth rate limits its public endpoints (HTTP 429 "slow your roll!"), and the OIDC gem
 # re-fetches the discovery document (and its signing keys, which ride along on the same object)

@@ -1,16 +1,10 @@
 <%# locals: (label: "Main") -%>
-<%# The signed-in header navigation (also previewed on /dev/styleguide). Settings is a native disclosure, so it works
-    without JavaScript: Hackatime and Notifications live inside it. -%>
+<%# The signed-in header navigation (also previewed on /dev/styleguide): four plain links, no menus. Projects is reached
+    from the Profile page and the dashboard; Hackatime and notifications live on the one Settings page. -%>
 <nav class="site-header__nav" aria-label="<%= label %>">
   <%= nav_link "Dashboard", dashboard_path %>
-  <%= nav_link "Projects", projects_path %>
-  <%= nav_link "Ships", ships_path %>
-  <%= nav_link "Shop", shop_path %>
-  <details class="site-menu">
-    <summary class="<%= "is-current" if settings_menu_current? %>">Settings</summary>
-    <div class="site-menu__panel">
-      <%= nav_link "Hackatime", hackatime_path %>
-      <%= nav_link "Notifications", settings_notifications_path %>
-    </div>
-  </details>
+  <%# Profile is current on your own page (/profile, or your own /players/<address>), never on someone else's. -%>
+  <%= nav_link "Profile", profile_path, section: [ profile_path, (player_path(current_user.public_slug) if current_user&.public_slug.present?) ].compact %>
+  <%= nav_link "Armoury", shop_path %>
+  <%= nav_link "Settings", settings_path %>
 </nav>

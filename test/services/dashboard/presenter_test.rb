@@ -493,7 +493,7 @@ class Dashboard::PresenterTest < ActiveSupport::TestCase
     other.update_columns(display_name: "Somebody Else", email: "somebody.else@example.com")
     add_hours(other, TODAY, 1200)
     d = present
-    assert_equal "1 person coded today.", d.boss.community_text
+    assert_equal "1 person coded in the last day.", d.boss.community_text
     refute_includes [ d.today.to_h, d.quick_streak.to_h, d.coins.to_h, d.boss.summary, d.boss.community_text ].to_s, "Somebody"
   end
 end

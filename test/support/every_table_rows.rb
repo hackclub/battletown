@@ -44,6 +44,11 @@ module EveryTableRows
     AdminAudit.record!(actor: users(:new_user), action: "coins_adjusted", subject: user, metadata: { coins: 5, reason: "Jamie Doe asked on Slack" })
     AdminAudit.record!(actor: users(:new_user), action: "order_held", subject: guard_order, metadata: { order_id: guard_order.id })
     AdminAudit.record!(actor: user, action: "user_viewed", subject: users(:new_user))
+    # First-party analytics: a visit (stamped with the person at sign-in), an event of that visit and a day of presence, all deleted with them.
+    visit = AnalyticsVisit.create!(visit_key: "guard#{user.id}".ljust(22, "x"), user: user, started_at: Time.current, referral_slug: "haven", entry_route: "landing#show")
+    AnalyticsEvent.create!(name: "landing_viewed", user: user, visit: visit, occurred_at: Time.current)
+    AnalyticsSiteDay.create!(user: user, day: Date.new(2026, 11, 9))
+    SlackProfile.create!(user: user, display_name: "Guard", status: "ok")
     user
   end
 end

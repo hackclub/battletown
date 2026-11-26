@@ -14,6 +14,9 @@
 
   <%= render "projects/suggestions", suggestions: @suggestions %>
 
+  <%# Approved coins you cannot spend yet: the same note the ship page shows, so the verify nudge is not only one click deeper. %>
+  <%= render "ships/unlock_note" if @any_approved_ship %>
+
   <% if @live.empty? && @archived.empty? %>
     <div class="empty projects-empty-card">
       <%= image_tag "design/map-tree.svg", alt: "", class: "empty__art" %>
@@ -27,7 +30,7 @@
 
   <% if @live.any? %>
     <ul class="project-list">
-      <%= render partial: "projects/project", collection: @live, as: :project %>
+      <%= render partial: "projects/project", collection: @live, as: :project, locals: { ships_by_project: @ships_by_project } %>
     </ul>
   <% end %>
 
@@ -35,7 +38,7 @@
     <section aria-labelledby="archived-heading" class="stack">
       <h2 class="projects-subhead" id="archived-heading">Archived</h2>
       <ul class="project-list project-list--archived">
-        <%= render partial: "projects/project", collection: @archived, as: :project %>
+        <%= render partial: "projects/project", collection: @archived, as: :project, locals: { ships_by_project: @ships_by_project } %>
       </ul>
     </section>
   <% end %>

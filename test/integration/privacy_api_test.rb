@@ -412,8 +412,9 @@ class PrivacyApiThrottleTest < ActionDispatch::IntegrationTest
   end
 
   test "the service's normal calls are not throttled, even once the general per-IP limit is used up" do
-    300.times { get "/privacy", headers: { "REMOTE_ADDR" => "203.0.113.50" } }
-    get "/privacy", headers: { "REMOTE_ADDR" => "203.0.113.50" }
+    # The counter is written directly (1500 real requests would only make the test slow); the limit itself is in rack_attack.rb.
+    Rack::Attack.cache.store.write("rack::attack:#{Time.now.to_i / 300}:req/ip:203.0.113.50", 1500, expires_in: 300)
+    get "/", headers: { "REMOTE_ADDR" => "203.0.113.50" }
     assert_response :too_many_requests
 
     3.times do
