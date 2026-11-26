@@ -329,7 +329,6 @@ def sand_cut(art_img, y0=5700, y1=7300):
     return Image.fromarray(out_img, "RGBA")
 # --- sand-cut-end
 save("sand", "sand", sand_cut(art))
-save("final", "shore", art.crop((0, 8250, W, 8900)))
 
 # 7. Shells: layers 25 and 26.
 for name, i in (("shell-1", 25), ("shell-2", 26)):
