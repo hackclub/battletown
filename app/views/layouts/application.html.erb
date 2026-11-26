@@ -28,7 +28,7 @@
       <div class="container site-header__inner">
         <%# The logo is decorative (alt=""); the link's name is the visually hidden word, so it is announced once. %>
         <%= link_to root_path, class: "site-header__brand" do %>
-          <%= image_tag "design/logo.svg", alt: "", class: "site-header__logo", width: 77, height: 44 %><span class="visually-hidden">Battletown</span>
+          <%= image_tag "design/logo.svg", alt: "", class: "site-header__logo", width: 75, height: 44 %><span class="visually-hidden">Battletown</span>
         <% end %>
         <% if signed_in? && current_user.onboarded? %>
           <%= render "layouts/main_nav" %>
