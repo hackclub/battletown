@@ -16,6 +16,10 @@
 .landing .world--floor .floor__col--left { left: calc(50% - var(--world-cx, calc(var(--wu) * 788)) - var(--world-w)); scale: -1 1; }
 .landing .world--floor .floor__col--right { left: calc(50% - var(--world-cx, calc(var(--wu) * 788)) + var(--world-w)); scale: -1 1; }
 
+.landing .world--floor .floor__col::before { /* what shows until floor-top has loaded and decoded: a soft dark-to-tile-color wash, never a hard slab */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--wu) * 575);
+  background: linear-gradient(to bottom, #15136c, rgb(53 50 157));
+}
 .landing .world--floor .floor__top { left: 0; top: calc(var(--wu) * -25); width: var(--world-w); height: calc(var(--wu) * 600); }
 
 .landing .world--floor .floor__tile {
