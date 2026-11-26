@@ -1,11 +1,13 @@
-<%# Sky band (owner: sky agent). Decorative; the wrapper in show.html.erb is aria-hidden. The painted sky fades in from the hero's flat blue at the top
-    and out to its own edge colors at the sides, where two edge gradients carry it past the painting's width. Then the cloud, used twice. -%>
+<%# Sky band (owner: sky agent). Decorative; the wrapper in show.html.erb is aria-hidden. The painted sky fades in from the hero's flat blue at the
+    top. Past the painting's width the page shows mirrored copies of the same piece, mirrored about its left and right edges (a copy that is
+    mirrored again, two widths out, is the plain piece), so the brushwork runs on without a stretched pixel. Then the cloud, used twice. -%>
+<% sky_srcset = { "landing/world/sky/sky@a.webp" => "1576w", "landing/world/sky/sky@b.webp" => "2049w", "landing/world/sky/sky@c.webp" => "3152w" } %>
+<% sky_sizes = "(min-width: 37rem) 1576px, calc((100vw - 1rem) * 1576 / 576)" %>
 <div class="sky__paint">
-  <span class="sky__edge sky__edge--left"></span>
-  <span class="sky__edge sky__edge--right"></span>
-  <%= image_tag "landing/world/sky/sky@c.webp", alt: "", class: "world__img world__sky", width: 3152, height: 1202, loading: "lazy", decoding: "async",
-        srcset: { "landing/world/sky/sky@a.webp" => "1576w", "landing/world/sky/sky@b.webp" => "2049w", "landing/world/sky/sky@c.webp" => "3152w" },
-        sizes: "(min-width: 37rem) 1576px, calc((100vw - 1rem) * 1576 / 576)" %>
+  <%= image_tag "landing/world/sky/sky@c.webp", alt: "", class: "world__img world__sky", width: 3152, height: 1202, loading: "lazy", decoding: "async", srcset: sky_srcset, sizes: sky_sizes %>
+  <% [["l1", "sky__copy--mirror"], ["r1", "sky__copy--mirror"], ["l2", ""], ["r2", ""]].each do |pos, mirror| %>
+    <%= image_tag "landing/world/sky/sky@c.webp", alt: "", class: "world__img world__sky sky__copy sky__copy--#{pos} #{mirror}".strip, width: 3152, height: 1202, loading: "lazy", decoding: "async", srcset: sky_srcset, sizes: sky_sizes %>
+  <% end %>
 </div>
 <% cloud_srcset = { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" } %>
 <% cloud_sizes = "(min-width: 87rem) 374px, calc(50vw - 324px)" %>

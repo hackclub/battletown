@@ -84,34 +84,16 @@ art.save(work / "art-clean-full.png")
 # 1. Cloud (layer 32; layer 33 is the same cloud, so one file serves both): sky band.
 layer = layer_full(32)
 save("sky", "cloud", layer.crop(layer.getchannel("A").getbbox()))
-# 1b. The sky itself (layer 2, which also runs under the clifftop): opaque, faded out at both sides; the printed edge colors fill the
-#     band past it (landing_world_sky.css).
-SKY_Y0, SKY_Y1 = 1498, 2700   # the sky layer (2) under the hero swoosh down to the .how bottom
-SKY_FADE = 200                # px each side that fade out; the band fills past them with an edge gradient
+# 1b. The sky itself (layer 2, which also runs under the clifftop): opaque, full width. The page shows mirrored copies of it past
+#     both sides (landing_world_sky.css), so its left and right edges must stay the painting's own.
+SKY_Y0, SKY_Y1 = 1498, 2700   # from under the hero swoosh down to the .how bottom
 sky = layer_full(2).crop((0, SKY_Y0, W, SKY_Y1))
 top = np.array(sky.getchannel("A"))[100:200, 800:2400] > 250  # a solid stretch, to take the flat top color from
 rgb = np.array(sky.convert("RGB"))
 top_color = tuple(int(v) for v in np.median(rgb[100:200, 800:2400][top], axis=0))
 flat = Image.new("RGBA", sky.size, top_color + (255,))
 flat.alpha_composite(sky)                                  # no transparent holes where the painted edge dips under the swoosh
-base = np.array(flat)
-ramp = np.linspace(0, 1, SKY_FADE)
-smooth = ramp * ramp * (3 - 2 * ramp)
-edge = np.ones(W, dtype=np.float32)
-edge[:SKY_FADE], edge[-SKY_FADE:] = smooth, smooth[::-1]
-fade = flat.copy()
-fade.putalpha(Image.fromarray((np.tile(edge, (flat.height, 1)) * 255).astype(np.uint8)))
-save("sky", "sky", fade)
-# The band beyond 1576 px is filled with each edge's own colors, blurred so no brushwork streaks sideways.
-for side, cols in (("left", base[:, :60]), ("right", base[:, -60:])):
-    col = cols[:, :, :3].mean(axis=1)
-    k = np.exp(-0.5 * (np.arange(-60, 61) / 20.0) ** 2)
-    k /= k.sum()
-    pad = np.pad(col, ((60, 60), (0, 0)), mode="edge")
-    sm = np.stack([np.convolve(pad[:, c], k, mode="valid") for c in range(3)], axis=1)
-    stops = ", ".join("#%02x%02x%02x %gwu" % (*(int(round(v)) for v in sm[y]), y / 2) for y in range(0, flat.height, 50))
-    print("sky edge", side, stops)
-print("sky top color", "#%02x%02x%02x" % top_color)
+save("sky", "sky", flat)
 
 # 2. Cliff (cliff band): the clifftop with its crack, the cliff face and its shadow, down to a flat teal bottom row
 #    (CLIFF_Y1, the lower ground). Above the clifftop it is transparent: the sky band paints the sky, haze included.
