@@ -1,7 +1,9 @@
-<%# Cave band (owner: cave agent): the rim, the wall with its pillars. First cut. -%>
-<%= image_tag "landing/world/cave/cave-edge-l@c.webp", alt: "", class: "world__img world__edge world__edge--left", width: 16, height: 1670, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/cave/cave-edge-l@a.webp" => "8w", "landing/world/cave/cave-edge-l@b.webp" => "10w", "landing/world/cave/cave-edge-l@c.webp" => "16w" }, sizes: "100vw" %>
-<%= image_tag "landing/world/cave/cave-edge-r@c.webp", alt: "", class: "world__img world__edge world__edge--right", width: 16, height: 1670, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/cave/cave-edge-r@a.webp" => "8w", "landing/world/cave/cave-edge-r@b.webp" => "10w", "landing/world/cave/cave-edge-r@c.webp" => "16w" }, sizes: "100vw" %>
+<%# Cave band (owner: cave agent): the curved rim, the wall with its pillars and ledge. Canvas y 3080..4750, anchored to the bottom of .fight.
+    The piece is transparent above the rim (the cliff band's teal shows through). The two edge strips are the wall's own rows, flat and 4 px wide,
+    stretched to the window edges. -%>
+<%= image_tag "landing/world/cave/cave-edge-l@c.webp", alt: "", class: "world__img world__edge world__edge--left", width: 4, height: 1670, loading: "lazy", decoding: "async",
+      srcset: { "landing/world/cave/cave-edge-l@a.webp" => "1x", "landing/world/cave/cave-edge-l@b.webp" => "1.3x", "landing/world/cave/cave-edge-l@c.webp" => "2x" } %>
+<%= image_tag "landing/world/cave/cave-edge-r@c.webp", alt: "", class: "world__img world__edge world__edge--right", width: 4, height: 1670, loading: "lazy", decoding: "async",
+      srcset: { "landing/world/cave/cave-edge-r@a.webp" => "1x", "landing/world/cave/cave-edge-r@b.webp" => "1.3x", "landing/world/cave/cave-edge-r@c.webp" => "2x" } %>
 <%= image_tag "landing/world/cave/cave@c.webp", alt: "", class: "world__img world__cave", width: 3152, height: 1670, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/cave/cave@a.webp" => "1576w", "landing/world/cave/cave@b.webp" => "2049w", "landing/world/cave/cave@c.webp" => "3152w" }, sizes: "100vw" %>
+      srcset: { "landing/world/cave/cave@a.webp" => "1576w", "landing/world/cave/cave@b.webp" => "2049w", "landing/world/cave/cave@c.webp" => "3152w" }, sizes: "1576px" %>
