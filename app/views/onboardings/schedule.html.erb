@@ -1,5 +1,5 @@
 <%= render layout: "onboardings/frame", locals: { step: "schedule" } do %>
-  <%= form_with model: subject, scope: :user, url: onboarding_step_path("schedule"), method: :patch, data: { controller: "timezone onboarding-times", action: "change->onboarding-times#sync" } do |f| %>
+  <%= form_with model: subject, scope: :user, url: onboarding_step_path("schedule"), method: :patch, data: { controller: "timezone onboarding-times required-choice", action: "change->onboarding-times#sync change->required-choice#sync submit->required-choice#guard" } do |f| %>
     <%= render "onboardings/errors" %>
     <%= tag.fieldset class: "field onboarding__fieldset", aria: onboarding_aria(:coding_days, id: "days").slice(:describedby) do %>
       <legend class="onboarding__legend">Which days do you want to code?</legend>
@@ -7,15 +7,16 @@
       <div class="days toggle-group" data-controller="onboarding-days" data-action="change->onboarding-days#sync">
         <% User::DAYS.each do |day| %>
           <label class="day toggle">
-            <%= check_box_tag "user[coding_day_names][]", day, subject.coding_day_names.include?(day), id: "user_day_#{day}", class: "day__input toggle__input", data: { onboarding_days_target: "day", onboarding_times_target: "day" } %>
+            <%= check_box_tag "user[coding_day_names][]", day, subject.coding_day_names.include?(day), id: "user_day_#{day}", class: "day__input toggle__input", data: { onboarding_days_target: "day", onboarding_times_target: "day", required_choice_target: "input" } %>
             <span class="day__label toggle__label"><span aria-hidden="true"><%= day_label(day).first(3) %></span><span class="visually-hidden"><%= day_label(day) %></span></span>
           </label>
         <% end %>
         <%# Revealed by onboarding-days; without JS the pills above work on their own. %>
-        <button type="button" class="day-all" hidden aria-pressed="<%= subject.coding_days == 127 %>" data-onboarding-days-target="all" data-action="onboarding-days#toggleAll onboarding-times#sync">Every day</button>
+        <button type="button" class="day-all" hidden aria-pressed="<%= subject.coding_days == 127 %>" data-onboarding-days-target="all" data-action="onboarding-days#toggleAll onboarding-times#sync required-choice#sync">Every day</button>
       </div>
     <% end %>
 
+    <div class="onboarding__pair">
     <div class="field onboarding__field <%= "field--invalid" if onboarding_errors(:coding_time).any? %>">
       <%= f.label :coding_time, "What time works best?" %>
       <%= f.time_field :coding_time, value: subject.coding_time || "18:00", aria: onboarding_aria(:coding_time, id: "user_coding_time") %>
@@ -28,8 +29,10 @@
       <p class="field__hint" id="pace-hint">This is the pace your prize check on the dashboard uses. You can change it any time.</p>
       <%= onboarding_field_error(:pace_minutes, id: "user_pace_minutes") %>
     </div>
+    </div>
 
     <%# Optional: a different time on some days. Without JS all seven rows show; onboarding-times hides the unselected days. %>
+    <div class="onboarding__pair onboarding__pair--extras">
     <details class="day-times onboarding__field" <%= "open" if subject.coding_times.any? || subject.errors.key?(:coding_times) %>>
       <summary class="day-times__summary">Different time on some days? <span class="day-times__change">Set times by day</span></summary>
       <div class="day-times__body field <%= "field--invalid" if onboarding_errors(:coding_times).any? %>">
@@ -62,12 +65,13 @@
         <%= onboarding_field_error(:time_zone, id: "user_time_zone") %>
       </div>
     </details>
+    </div>
 
     <p class="field__hint onboarding__note">We'll remind you with a Slack DM on your coding days. No email or phone number needed.</p>
     <% if signed_in? && current_user.slack_id.blank? %>
       <p class="alert alert--warning onboarding__note" role="note">Your Hack Club account isn't linked to a Slack account yet, so we can't DM you. Your plan is saved for when it is.</p>
     <% end %>
     <%# TODO: SMS reminders, pending a privacy decision. %>
-    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>
 <% end %>

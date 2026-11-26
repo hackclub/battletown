@@ -13,19 +13,19 @@
 /* ---- Page chrome: the header floats over the hero, and the page ends on the last section's sky ---- */
 body:has(.landing) {
   --sky: #9dc4fd;
-  --blue: #1472d5;
-  --blue-shade: #1662c7;
+  --blue: var(--color-blue);
+  --blue-shade: var(--color-blue-edge);
   --royal: #1456bd;
   --royal-shade: #0e3f91;
-  --navy: #10285a;
-  --navy-shade: #0a1a40;
+  --navy: var(--color-navy);
+  --navy-shade: var(--color-navy-edge);
   --navy-lift: #1b3a7a;
-  --yellow: #ffd000;
-  --yellow-shade: #dc9700;
-  --pink: #ff4797;
-  --pink-shade: #ff2d84;
-  --pink-deep: #e62978;
-  --cream: #fffef5;
+  --yellow: var(--color-yellow);
+  --yellow-shade: var(--color-yellow-edge);
+  --pink: var(--color-pink);
+  --pink-shade: var(--color-pink-edge);
+  --pink-deep: var(--color-pink-deep);
+  --cream: var(--color-bg);
   --cream-shade: #e9dcc0;
   --display: var(--font-display);
   --body: var(--font-body);
@@ -47,21 +47,12 @@ body:has(.landing) .site-header .btn {
   color: var(--color-text);
 }
 
-/* The footer lies over the bottom of the last section, so Orpheus can reach the very bottom of the page. On phones his
-   cape fills that corner, so the footer sits on it at the right, on a solid blue backing (cream on the painting was 1.1:1);
-   on wider screens it sits on the sky at the left in navy, with no backing. */
-body:has(.landing) { position: relative; }
-body:has(.landing) .site-footer { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; border-top: 0; background: none; color: var(--cream); pointer-events: none; }
-body:has(.landing) .site-footer__inner { flex-direction: column; align-items: flex-end; gap: var(--space-1); max-width: none; margin: 0; padding-inline: var(--side, 1.25rem); }
-body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
-@media (max-width: 63.999rem) {
-  body:has(.landing) .site-footer__inner { width: fit-content; max-width: calc(100% - 2 * var(--side)); margin: 0 var(--side) var(--space-4) auto; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--color-ink-blue); } /* cream on it is 8.4:1, and the cream focus ring is too */
-}
-@media (min-width: 64rem) {
-  body:has(.landing) .site-footer { color: var(--navy); }
-  body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /* the cream ring would be 1.8:1 on the sky */
-  body:has(.landing) .site-footer__inner { flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-6); }
-}
+/* The footer sits in flow under the last section at every width: two centered lines of small navy text on the page-end sky, links underlined,
+   no box. (It no longer overlays the section, so nothing can cover the fighter.) */
+body:has(.landing) .site-footer { background: none; border-top: 0; color: var(--navy); }
+body:has(.landing) .site-footer a { color: var(--navy); }
+body:has(.landing) .site-footer__credit { color: color-mix(in srgb, var(--navy) 80%, #d0e5ee); }
+body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /* the cream ring would be 1.8:1 on the sky */
 
 /* The header floats over the hero on wide screens (it sits in flow as a sky strip on narrow ones). */
 @media (min-width: 48rem) {
@@ -111,8 +102,8 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .cta {
   display: inline-flex; max-width: 100%; padding: 0; border: 0; appearance: none; background: none;
   border-radius: 0.58em;
-  color: var(--cream);
-  font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display); /* never under 24px: cream on this pink is 3.1:1, which only passes as large text */
+  color: var(--cream); /* all text on this pink is cream (Armand, 2026-11-26: prettier than navy): the button, the FAQ rows and the third signpost board. 3.1:1, so it stays large or bold */
+  font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display);
   letter-spacing: -0.05em;
   text-decoration: none; cursor: pointer;
 }
@@ -124,6 +115,12 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   box-shadow: inset 0 -0.1667em 0 var(--pink-shade);
 }
 .landing .cta__label { text-wrap: balance; } /* a long label ("Join 1,234 other fighters") wraps inside the button at large text sizes instead of running out of it */
+.landing .cta:has(.cta__count) { font-size: clamp(1.25rem, 6.2vw, 1.625rem); } /* a longer label: smaller on phones so it stays on one line */
+.landing .cta:has(.cta__count) .cta__label { white-space: nowrap; }
+.landing .cta__count { /* the count in the button: the page's blue, white number, a lighter top edge, no outline */
+  display: inline-block; padding: 0.04em 0.4em 0.1em; border-radius: 999px; background: var(--blue); color: var(--cream); white-space: nowrap;
+  box-shadow: inset 0 0.07em 0 rgb(255 255 255 / 0.3); font-variant-numeric: tabular-nums;
+}
 .landing .cta svg { width: 0.87em; height: 0.875em; overflow: visible; flex: none; }
 .landing .cta:focus-visible { outline: 3px solid var(--navy); outline-offset: 4px; }
 @media (prefers-reduced-motion: no-preference) {
@@ -144,11 +141,15 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .hero__logo { width: min(72%, 19rem); line-height: 0; }
 .landing .hero__logo img { display: block; width: 100%; height: auto; }
 .landing .hero__tagline {
-  padding-left: 0.5rem; color: var(--cream);
-  font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--display); letter-spacing: -0.05em;
-  -webkit-text-stroke: 0.16em #0563de; paint-order: stroke fill;
+  padding-left: 0.5rem;
+  font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--display);
 }
-.landing .hero__tagline span { color: #ffda37; }
+/* the tagline's own text treatment (cream fill, royal-blue stroke, yellow accent) is shared with the free-sticker tag */
+.landing :is(.hero__tagline, .hero__sticker) {
+  color: var(--cream); letter-spacing: -0.05em;
+  -webkit-text-stroke: 0.16em var(--blue); paint-order: stroke fill;
+}
+.landing :is(.hero__tagline, .hero__sticker) span { color: var(--yellow); }
 .landing .hero__swoosh { position: relative; z-index: 1; display: block; width: 100%; height: auto; margin-top: calc(100% * -234 / 1440); margin-bottom: -1px; }
 @media (min-width: 48rem) {
   .landing .hero { --swoosh-height: 14rem; --swoosh-overlap: 9.5rem; }
@@ -160,26 +161,41 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   .landing .hero__tagline { padding: 0; font-size: 2rem; white-space: nowrap; }
   .landing .hero__swoosh { height: var(--swoosh-height); margin-top: calc(var(--swoosh-overlap) * -1); object-fit: fill; }
 }
-/* Two quiet lines of navy text under the button, together on one soft frosted card so they read over the painting. The
-   sign-in line is a button only because signing in is a POST; it looks like a link. */
-.landing .hero__notes {
-  display: grid; justify-items: start; gap: 0.125rem; padding: 0.5rem 0.875rem; border-radius: 1rem;
-  background: rgb(255 255 255 / 0.6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+/* The call to action with Hack Club's three stickers as one fanned pile (Armand's mockup, 2026-11-26) and, under it, "Join N other
+   fighters" when more than 50 people finished onboarding. The pile sits beside the button from 64rem up and under it below that.
+   The caption wears the tagline's text treatment; the stickers get the button's kind of soft shadow. Sized in em: one font-size scales the pile. */
+.landing .hero__actions { display: grid; justify-items: start; gap: 0.875rem; }
+.landing .hero__pile { position: relative; width: 15em; height: 10.4em; margin: 0.5rem 0 1rem 0; font-size: 0.8rem; }
+.landing .hero__stickers { position: absolute; inset: 0; }
+.landing .hero__sticker-img { position: absolute; display: block; height: auto; filter: drop-shadow(0 0.15em 0.3em rgb(10 30 60 / 0.35)); }
+.landing .hero__sticker-img--mac { width: 5.8em; left: 7.6em; top: 0; transform: rotate(12deg); }
+.landing .hero__sticker-img--red { width: 9.4em; left: 0; top: 3.4em; transform: rotate(4deg); }
+.landing .hero__sticker-img--black { width: 9.4em; left: 5.4em; top: 5.7em; transform: rotate(-10deg); }
+.landing .hero__sticker { /* a small tag across the pile's lower-left edge */
+  position: absolute; z-index: 1; left: 0.2rem; bottom: -0.9rem; margin: 0; transform: rotate(-4deg); white-space: nowrap;
+  font: 400 clamp(1.1rem, 4.6vw, 1.45rem)/1.1 var(--display);
+  letter-spacing: -0.02em; word-spacing: 0.14em;
 }
-.landing .hero__sticker, .landing .hero__signin-form { margin: 0; color: var(--navy); font-size: 0.875rem; font-weight: 700; line-height: 1.5; }
-.landing .hero__signin {
-  display: inline; min-height: 1.5rem; padding: 0 0.15em; border: 0; background: none; color: inherit;
-  font: inherit; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer;
+@media (min-width: 48rem) {
+  .landing .hero__pile { font-size: 1rem; }
 }
-.landing .hero__signin:hover { text-decoration-thickness: 2px; }
-.landing .hero__signin:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; border-radius: 0.2rem; } /* the blue ring was 3.1:1 on the sky; navy is 8:1 on it and 10:1 on the hero wash */
+@media (min-width: 90rem) {
+  .landing .hero__actions:not(.hero__actions--count) { grid-template-columns: max-content max-content; column-gap: 1rem; align-items: center; }
+  .landing .hero__actions:not(.hero__actions--count) .cta { grid-column: 1; grid-row: 1; }
+  .landing .hero__actions:not(.hero__actions--count) .hero__pile { grid-column: 2; grid-row: 1; margin: -4rem 0; }
+}
+@media (min-width: 170rem) { /* with the count the button is wider, so the pile only goes beside it where the painted ribbon is further right */
+  .landing .hero__actions--count { grid-template-columns: max-content max-content; column-gap: 1rem; align-items: center; }
+  .landing .hero__actions--count .cta { grid-column: 1; grid-row: 1; }
+  .landing .hero__actions--count .hero__pile { grid-column: 2; grid-row: 1; margin: -4rem 0; }
+}
 /* ---- How it works: just the signpost, on flat sky. Its top board pokes up over the hero's bottom edge. ---- */
 .landing .how { position: relative; background: var(--sky); color: var(--navy); }
 .landing .how__inner { display: flex; flex-direction: column; align-items: center; padding: 0 0.5rem calc(var(--edge-a) * 0.72 + 1.5vw); }
 .landing .how__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* for screen readers; the boards say it */
 .landing .signpost {
-  position: relative; z-index: 2; container-type: inline-size; width: min(100%, 36rem); aspect-ratio: 1476 / 1445; margin-top: -2.25rem;
+  position: relative; z-index: 2; container-type: inline-size; width: min(100%, calc(var(--wu) * 576)); aspect-ratio: 1476 / 1445; margin-top: -2.25rem;
   background: url("landing/signpost.svg") no-repeat 0 0 / 100% 100%; /* the pole, its shadow on the ground and the three boards, drawn as one object */
 }
 @media (min-width: 48rem) {
@@ -189,7 +205,7 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .signpost__board { --u: calc(100cqi / 1476); }
 .landing .signpost__board--1 { --tx: 168; --ty: 286; --tw: 990; --tilt: -4.7deg; color: #10285a; }
 .landing .signpost__board--2 { --tx: 318; --ty: 648; --tw: 985; --tilt: -3deg; color: var(--cream); }
-.landing .signpost__board--3 { --tx: 120; --ty: 1020; --tw: 1130; --tilt: 0.1deg; color: var(--navy-shade); } /* cream on this pink is 3.1:1; the deep navy is 5.4:1 */
+.landing .signpost__board--3 { --tx: 120; --ty: 1020; --tw: 1130; --tilt: 0.1deg; color: var(--cream); } /* cream on this pink, like the button and the FAQ rows: 3.1:1 */
 .landing .signpost__text {
   position: absolute; left: calc(var(--u) * var(--tx)); top: calc(var(--u) * var(--ty)); width: calc(var(--u) * var(--tw));
   display: grid; grid-template-columns: auto 1fr; column-gap: calc(var(--u) * 30); align-items: center;
@@ -239,17 +255,17 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .fight h2 { color: var(--yellow); } /* every heading on a blue ground is yellow */
 .landing .fight__text p { max-width: min(26rem, 76%); margin-top: 1.25rem; }
 .landing .arena { position: absolute; z-index: 1; right: -6vw; bottom: calc(var(--edge-hp) * 0.38); width: var(--aw); --boss-w: 74%; }
-.landing .fight__shadow { display: block; width: 100%; height: auto; fill: #0f5fc0; }
+.landing .fight__shadow { display: block; width: 100%; height: auto; fill: var(--color-blue-edge); }
 /* The bar is the real boss's health (a native progress element: pink is health left). Its label sits on top, un-skewed. */
 .landing .fight__health {
   position: absolute; left: 18%; right: 14%; bottom: calc(var(--aw) * 0.92); margin: 0;
-  border: 0.25rem solid #fff; background: #7a1d42; color: var(--cream); transform: skewX(-24deg);
+  border: 0.25rem solid var(--color-hp-outline); background: var(--color-hp-empty); color: var(--cream); transform: skewX(-24deg);
   font: 400 clamp(0.8rem, 1.5vw, 1.05rem)/1.2 var(--display); letter-spacing: -0.03em;
 }
-.landing .fight__bar { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; appearance: none; background: #7a1d42; color: #d0306f; }
-.landing .fight__bar::-webkit-progress-bar { background: #7a1d42; }
-.landing .fight__bar::-webkit-progress-value { background: #d0306f; } /* a little deeper than Armand's #ec5898: the cream label on it is 4.8:1, not 3.2:1 */
-.landing .fight__bar::-moz-progress-bar { background: #d0306f; }
+.landing .fight__bar { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; appearance: none; background: var(--color-hp-empty); color: var(--color-hp-fill); }
+.landing .fight__bar::-webkit-progress-bar { background: var(--color-hp-empty); }
+.landing .fight__bar::-webkit-progress-value { background: var(--color-hp-fill); } /* the one pink, same as the dashboard bar; cream label 3.14:1 */
+.landing .fight__bar::-moz-progress-bar { background: var(--color-hp-fill); }
 .landing .fight__label { position: relative; margin: 0; padding: 0.3em 1.4em; }
 .landing .fight__label span { display: inline-block; transform: skewX(24deg); }
 .landing .fight__boss { position: absolute; left: calc(56% - var(--boss-w) / 2); bottom: 41%; width: var(--boss-w); max-width: none; height: auto; pointer-events: none; }
@@ -261,34 +277,46 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   .landing .arena { right: calc(var(--side) - 2.5rem); bottom: calc(var(--edge-hp) * 0.5); --boss-w: 80%; }
   .landing .fight__health { left: 22%; right: 8%; }
 }
-/* ---- Prizes: each one stands on a rounded blue block with its name on the darker front band (Armand's mockup, 2026-11-11). ---- */
+/* ---- Prizes: each one stands on a pebble cut from the painted floor, with its name and hours as plain white text on the floor below it. ---- */
 .landing .prizes { --bg: var(--royal); --next: var(--edge-c); }
+.landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) + 1rem); } /* the sand follows the last row sooner */
 .landing .prizes h2 { color: var(--yellow); }
-.landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
+/* The stones are real cells of his pebble layer (script/export_prize_stones.py), each used once, shrunk uniformly and sized in world units like
+   the other props: --w x --h wu is the whole picture, --t the height of its top face (the rest is the side). They lie loosely, so each
+   one's --dy wu lower than its row's top makes the rows stagger; the order of the nine stays the reading order. */
+.landing .shelf { --u: var(--wu); display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: calc(var(--u) * 26) calc(var(--u) * 20); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
 .landing .prize {
-  position: relative; isolation: isolate; container-type: inline-size; flex: none; display: flex; flex-direction: column; width: calc((100% - var(--gap)) / 2); max-width: 13rem;
-  border-radius: 1.4rem; text-align: center;
+  position: relative; isolation: isolate; flex: none; display: flex; flex-direction: column; align-items: center; text-align: center;
+  width: max(calc(var(--u) * var(--w)), var(--lw, 10.5rem)); margin-top: calc(var(--u) * var(--dy));
+  --stone-text: #fff; --aw: calc(var(--u) * var(--w) * 0.64);
 }
-/* The block: a dark body with the name on its front, and a lighter top face with all four corners rounded lying on it,
-   so the body shows under the face's bottom corners and the block reads as a solid slab. */
-.landing .prize::before { content: ""; position: absolute; z-index: -2; inset: 0; margin-top: 60%; border-radius: inherit; background: #03045e; }
-.landing .prize__label { position: relative; margin-top: auto; padding: 0.5rem 0.5rem 0.7rem; }
-.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 36cqw; border-radius: 1.4rem; background: #1f3f93; }
-/* The prize stands in the middle of the block's top face, not on its front edge. */
-.landing .prize img { display: block; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
-.landing .prize__emoji { display: flex; align-items: center; justify-content: center; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }
-.landing .prize h3 { color: #a9dcff; font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
-.landing .prize__hours { display: block; margin-top: 0.15rem; color: #d7e6ff; font-size: 0.8125rem; line-height: 1.2; overflow-wrap: anywhere; }
+/* The stone: his cell's own outline, a lit lavender top and the same shape lower in the mid violet as its side (two flat tones, all in the picture). The
+   prize stands on the middle of the top face, its foot a little below the middle. */
+.landing .prize::before { content: ""; order: 2; width: calc(var(--u) * var(--w)); height: calc(var(--u) * var(--h)); margin-top: calc(var(--u) * var(--t) * -0.56); background: var(--stone) center / 100% 100% no-repeat; }
+.landing .prize img, .landing .prize__emoji { order: 1; position: relative; z-index: 1; }
+.landing .prize img { display: block; width: var(--aw); aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
+/* The keyboard photo carries a loose switch above its top-left corner and a row of spare keys below: show the keyboard alone, in the same box as the other art. */
+.landing .prize img[src*="keychron"] { clip-path: inset(33% 0 12% 0); translate: 0 calc(var(--aw) * 0.075); }
+.landing .prize__emoji { display: block; font-size: calc(var(--aw) * 0.8); line-height: 1; }
+.landing .prize__label { order: 3; margin-top: 0.6rem; padding-inline: 0.25rem; }
+.landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
+.landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.875rem; line-height: 1.2; overflow-wrap: anywhere; }
+@media (max-width: 39.99rem) { .landing .shelf { --u: calc(var(--wu) * 1.3); --lw: 8.75rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
 @media (min-width: 40rem) {
-  .landing .shelf { --gap: 1.25rem; }
-  .landing .prize { width: calc((100% - 2 * var(--gap)) / 3); }
+  .landing .prize h3 { font-size: 1.375rem; }
+  .landing .prize__hours { font-size: 0.9375rem; }
 }
-@media (min-width: 64rem) {
-  .landing .shelf { --gap: 1.5rem; gap: 2rem var(--gap); }
-  .landing .prize { width: calc((100% - 4 * var(--gap)) / 5); }
-}
+.landing .prize:nth-child(1) { --w: 138.7; --h: 160; --t: 147; --dy: 0; --stone: image-set(url("landing/world/stones/stone-1@a.webp") 1x, url("landing/world/stones/stone-1@b.webp") 1.3x, url("landing/world/stones/stone-1@c.webp") 2x); }
+.landing .prize:nth-child(2) { --w: 161.8; --h: 126.8; --t: 113.8; --dy: 20; --stone: image-set(url("landing/world/stones/stone-2@a.webp") 1x, url("landing/world/stones/stone-2@b.webp") 1.3x, url("landing/world/stones/stone-2@c.webp") 2x); }
+.landing .prize:nth-child(3) { --w: 178.2; --h: 129.2; --t: 116.2; --dy: 6; --stone: image-set(url("landing/world/stones/stone-3@a.webp") 1x, url("landing/world/stones/stone-3@b.webp") 1.3x, url("landing/world/stones/stone-3@c.webp") 2x); }
+.landing .prize:nth-child(4) { --w: 157.8; --h: 120.3; --t: 107.3; --dy: 26; --stone: image-set(url("landing/world/stones/stone-4@a.webp") 1x, url("landing/world/stones/stone-4@b.webp") 1.3x, url("landing/world/stones/stone-4@c.webp") 2x); }
+.landing .prize:nth-child(5) { --w: 160.5; --h: 148.7; --t: 135.7; --dy: 10; --stone: image-set(url("landing/world/stones/stone-5@a.webp") 1x, url("landing/world/stones/stone-5@b.webp") 1.3x, url("landing/world/stones/stone-5@c.webp") 2x); }
+.landing .prize:nth-child(6) { --w: 201.3; --h: 161.9; --t: 148.9; --dy: 24; --stone: image-set(url("landing/world/stones/stone-6@a.webp") 1x, url("landing/world/stones/stone-6@b.webp") 1.3x, url("landing/world/stones/stone-6@c.webp") 2x); }
+.landing .prize:nth-child(7) { --w: 167.3; --h: 113.8; --t: 100.8; --dy: 2; --stone: image-set(url("landing/world/stones/stone-7@a.webp") 1x, url("landing/world/stones/stone-7@b.webp") 1.3x, url("landing/world/stones/stone-7@c.webp") 2x); }
+.landing .prize:nth-child(8) { --w: 140.1; --h: 141.6; --t: 128.6; --dy: 18; --stone: image-set(url("landing/world/stones/stone-8@a.webp") 1x, url("landing/world/stones/stone-8@b.webp") 1.3x, url("landing/world/stones/stone-8@c.webp") 2x); }
+.landing .prize:nth-child(9) { --w: 141.4; --h: 169.5; --t: 156.5; --dy: 8; --stone: image-set(url("landing/world/stones/stone-9@a.webp") 1x, url("landing/world/stones/stone-9@b.webp") 1.3x, url("landing/world/stones/stone-9@c.webp") 2x); }
 /* ---- FAQ: the river. The questions are stepping stones across it, and the path picks up again on the far bank. ---- */
-.landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: #2449a0; --stone-shade: #162f70; --ripple: #1b3a80; }
+.landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: var(--pink); --stone-shade: var(--color-sign-pink-edge); --ripple: transparent; } /* the question stones are the site's magenta (the button and the third signpost board), edge in the board's deeper pink; no halo, so no outline look */
 .landing .bank__face { fill: var(--royal-shade); }
 .landing .bank__foam { fill: none; stroke: #4f7fd9; stroke-width: clamp(3px, 0.4vw, 6px); stroke-linecap: round; stroke-dasharray: 70px 22px 26px 22px; vector-effect: non-scaling-stroke; }
 .landing .faq h2 { color: var(--yellow); font-size: clamp(2.5rem, 5.4vw, 4.25rem); }
@@ -325,9 +353,10 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .faq summary::-webkit-details-marker { display: none; }
 .landing .faq summary::after { content: "+"; flex: none; font-size: 1.1em; line-height: 0.8; }
 .landing .faq details[open] summary::after { content: "\2212"; }
-.landing .faq summary:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; border-radius: 0.4rem; }
-.landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: #d7e6ff; font-size: 1rem; }
-.landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: #d7e6ff; font-size: 1rem; } /* one rule per line; the markers keep it a list in every browser */
+.landing .faq summary { color: var(--cream); } /* cream on this magenta is 3.1:1 (the same cream as the button) */
+.landing .faq summary:focus-visible { outline: 3px solid var(--cream); outline-offset: 4px; border-radius: 0.4rem; }
+.landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: var(--cream); font-size: 1rem; font-weight: 700; } /* heavier, because cream on this magenta is only 3.1:1 */
+.landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: var(--cream); font-size: 1rem; font-weight: 700; } /* one rule per line; the markers keep it a list in every browser */
 @media (min-width: 64rem) {
   /* The stones step in from the right, where the path comes down beside the prizes, and out again toward Orpheus. */
   .landing .hop--1 { --hx: calc(100% - 7.5rem); }

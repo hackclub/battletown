@@ -5,8 +5,8 @@
  * sync when the tokens change. No inline styles or scripts are used, which keeps the pages valid under the app's CSP
  * (style-src 'self'). Fonts, logo and scene are same-origin copies in /error-fonts, /error-logo.svg and
  * /error-scene.svg (SIL Open Font License 1.1, see app/assets/fonts/README.md), so the pages never depend on the app.
- * Contrast: black on cream 20.8:1, muted #4a4234 on cream 9.8:1, ink blue on sky 5.9:1, cream on the pink button is
- * 3.1:1 and only used at 24px and up (large text).
+ * Contrast: text #0a1a40 on cream 16.8:1, muted #34476b on cream 9.2:1, ink blue #10285a on sky 9.9:1, cream on the pink button is
+ * 3.14:1 (the owner's choice, 24px and up).
  * Caching: production serves public/ for a year, so every page links /error.css?v=<first 8 hex of this file's SHA-256>.
  * After any edit here, update the ?v= in public/*.html (the error pages test prints the value to use).
  */
@@ -46,7 +46,7 @@ body {
   gap: 1.5rem;
   padding: 1.5rem 1rem;
   background: #b1dcfe; /* --color-page (sky) */
-  color: #000000; /* --color-text */
+  color: #0a1a40; /* --color-text */
   font: 500 1rem / 1.6 "M PLUS Rounded 1c", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* --font-body */
 }
 
@@ -70,7 +70,7 @@ body > header { width: 12rem; max-width: 70%; }
 
 .code {
   margin: 0 0 0.5rem;
-  color: #0044b2; /* --color-ink-blue */
+  color: #10285a; /* --color-ink-blue */
   font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -110,23 +110,23 @@ p { margin: 0 0 1rem; }
   padding: 0.35em 0.708em;
   border-radius: 0.5833em; /* --radius-lg */
   background: #ff4797; /* --color-cta */
-  box-shadow: inset 0 -0.1667em 0 #ff2d84; /* --shadow-cta-edge */
+  box-shadow: inset 0 -0.1667em 0 #d2276e; /* --shadow-cta-edge */
 }
 .cta__arrow { flex: none; width: 0.87em; height: 0.875em; overflow: visible; }
 .cta:hover { color: #fffef5; filter: brightness(1.06); }
 .cta:focus-visible {
-  outline: 3px solid #0563de; /* --color-focus */
+  outline: 3px solid #1472d5; /* --color-focus */
   outline-offset: 4px;
 }
 
 a:focus-visible {
-  outline: 3px solid #0563de; /* --color-focus */
+  outline: 3px solid #1472d5; /* --color-focus */
   outline-offset: 2px;
 }
 
 .footnote {
   margin: 1rem 0 0;
-  color: #4a4234; /* --color-text-muted */
+  color: #34476b; /* --color-text-muted */
   font-size: 0.875rem;
 }
 

@@ -52,7 +52,7 @@
   counter-increment: place;
 }
 .plinko__list li::before { content: counter(place) "."; min-inline-size: 2ch; font-family: var(--font-display); }
-.plinko__list li.is-you { outline: 3px solid var(--color-ink-blue); }
+.plinko__list li.is-you { background: var(--color-warning-bg); box-shadow: inset 0 -0.2rem 0 var(--color-yellow-edge); }
 .plinko__nick { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .plinko__score { font-family: var(--font-display); }
 

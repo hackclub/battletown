@@ -62,10 +62,10 @@ class OnboardingTransitionTest < ActionDispatch::IntegrationTest
     alpha = css_rule(".transition__body")[/rgb\(255 255 255 \/ ([0-9.]+)\)/, 1].to_f
     panel = sky.map { |c| alpha * 255 + (1 - alpha) * 0.3 * c }
     tokens = Rails.root.join("app/assets/stylesheets/tokens.css").read
-    assert_includes tokens, "--color-ink-blue: #0044b2"
-    assert_includes tokens, "--color-muted-on-light: #4a4234"
-    assert_operator ratio.([ 0x00, 0x44, 0xb2 ], panel), :>=, 4.5
-    assert_operator ratio.([ 0x4a, 0x42, 0x34 ], panel), :>=, 4.5
+    assert_includes tokens, "--color-navy: #10285a"
+    assert_includes tokens, "--color-muted-on-light: #34476b"
+    assert_operator ratio.([ 0x10, 0x28, 0x5a ], panel), :>=, 4.5
+    assert_operator ratio.([ 0x34, 0x47, 0x6b ], panel), :>=, 4.5
   end
 
   test "short screens: sizes come from the viewport height and the panel scrolls as a last resort" do

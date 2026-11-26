@@ -17,9 +17,9 @@ module LandingHelper
     prize.image.presence || PRIZE_ART[prize.key]
   end
 
-  # The hero button only brags about the community once it is a real number worth showing.
-  # Below this many signed-up users it says "Join the fight" instead of "Join 3 other fighters".
-  FIGHTER_COUNT_THRESHOLD = 10
+  # A count of fighters is only shown once it is over 50 (Armand, 2026-11-26), so this is 51. On the landing page the count
+  # lives in the call to action (LandingController::FIGHTERS_LINE_MIN); onboarding's "have already joined" line uses this.
+  FIGHTER_COUNT_THRESHOLD = 51
   FIGHTER_COUNT_CACHE_KEY = "landing/fighter_count".freeze
   BOSS_CACHE_KEY = "landing/boss".freeze
 
@@ -28,17 +28,12 @@ module LandingHelper
     Rails.cache.fetch(FIGHTER_COUNT_CACHE_KEY, expires_in: 5.minutes) { User.count }
   end
 
-  def join_cta_label(count = fighter_count)
-    if count >= FIGHTER_COUNT_THRESHOLD
-      "Join #{number_with_delimiter(count)} other fighters"
-    else
-      "Join the fight"
-    end
-  end
+  # The call to action's label. Once more than LandingController::FIGHTERS_LINE_MIN people have finished onboarding (the controller then
+  # sets @onboarded_fighters) it says "Join [1,234] other fighters", the number in a blue pill; otherwise "Join the fight".
+  def join_cta_label(count = @onboarded_fighters)
+    return "Join the fight" unless count
 
-  # "Who's locked in": the real number once it is worth showing, otherwise nil (the landing shows nothing).
-  def locked_in_text(count = fighter_count)
-    "#{number_with_delimiter(count)} fighters are locked in." if count >= FIGHTER_COUNT_THRESHOLD
+    safe_join([ "Join ", content_tag(:span, number_with_delimiter(count), class: "cta__count"), " other fighters" ])
   end
 
   # The boss health bar on the "Fight together" map for a signed-out visitor. Aggregate only: the boss's health left

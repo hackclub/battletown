@@ -69,9 +69,9 @@ class PagesTest < ActionDispatch::IntegrationTest
 
   test "the footer has one link to Hack Club's global terms and privacy policy, in the same tab with rel noopener noreferrer" do
     get "/"
-    assert_select "footer nav[aria-label='Legal'] a", 1
-    assert_select "footer a[href='https://hackclub.com/privacy-and-terms/'][rel='noopener noreferrer']", text: "Hack Club's terms and privacy policy", count: 1
-    assert_select "footer a[target]", 0
+    assert_select "footer nav[aria-label='Legal'] a", 4
+    assert_select "footer a[href='#{Legal::URL}'][rel='noopener noreferrer']", text: "Terms & Privacy", count: 1
+    assert_select "footer nav[aria-label='Legal'] a[target]", 0
     assert_select "footer a[href='/privacy'], footer a[href='/terms']", 0
   end
 

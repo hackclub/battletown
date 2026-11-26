@@ -22,18 +22,20 @@
       <% end %>
 
       <div class="hero__content">
-        <h1 id="landing-title" class="hero__logo"><%= image_tag "design/logo.svg", alt: "Battletown", width: 579, height: 329 %></h1>
+        <h1 id="landing-title" class="hero__logo"><%= image_tag "design/logo.svg", alt: "Battletown", width: 580, height: 341 %></h1>
         <p class="hero__tagline">Build projects, <span>get gear</span></p>
-        <%= render "landing/cta" %>
-        <%# Two quiet lines under the button, so "Join the fight" stays the one call to action. The second is for people who
-            already have an account: signing in is a POST, so only the words "Sign in" are the (link-looking) button. %>
-        <div class="hero__notes">
-          <p class="hero__sticker"><span aria-hidden="true">🎁</span> Free sticker when you sign up</p>
-          <% unless signed_in? %>
-            <%= form_with url: "/auth/hack_club", method: :post, class: "hero__signin-form", data: { turbo: false } do %>
-              <span>Already have an account?</span> <%= button_tag "Sign in", type: :submit, class: "hero__signin" %>
-            <% end %>
-          <% end %>
+        <div class="<%= class_names("hero__actions", "hero__actions--count": @onboarded_fighters) %>">
+          <%= render "landing/cta" %>
+          <%# Three of Hack Club's own stickers as one fanned pile, with the words that explain them across its foot. They are
+              decoration (the words carry the meaning), so their alt is empty. %>
+          <div class="hero__pile">
+            <div class="hero__stickers" aria-hidden="true">
+              <%= image_tag "landing/sticker-hack-macintosh.svg", alt: "", class: "hero__sticker-img hero__sticker-img--mac", width: 335, height: 432 %>
+              <%= image_tag "landing/sticker-enjoy-hack-club.svg", alt: "", class: "hero__sticker-img hero__sticker-img--red", width: 586, height: 311 %>
+              <%= image_tag "landing/sticker-stay-determined.svg", alt: "", class: "hero__sticker-img hero__sticker-img--black", width: 399, height: 173 %>
+            </div>
+            <p class="hero__sticker"><span>free sticker!</span></p>
+          </div>
         </div>
       </div>
     </div>
@@ -41,6 +43,7 @@
   </section>
 
   <section class="how" aria-labelledby="how-title">
+    <div class="world world--sky" aria-hidden="true"><%= render "landing/world/sky" %></div>
     <div class="how__inner">
       <h2 id="how-title" class="how__title">How it works</h2>
       <ol class="signpost">
@@ -66,6 +69,8 @@
   </section>
 
   <section class="blk fight" aria-labelledby="boss-title">
+    <div class="world world--cliff" aria-hidden="true"><%= render "landing/world/cliff" %></div>
+    <div class="world world--cave" aria-hidden="true"><%= render "landing/world/cave" %></div>
     <svg class="edge edge--a" viewBox="0 0 1440 240" preserveAspectRatio="none" aria-hidden="true">
       <path class="edge__fill" d="M-20,70 C380,36 900,96 1460,196 L1460,241 L-20,241 Z"/>
     </svg>
@@ -107,6 +112,7 @@
   </section>
 
   <section id="prizes" class="blk prizes" aria-labelledby="prizes-title">
+    <div class="world world--floor" aria-hidden="true"><%= render "landing/world/floor" %></div>
     <svg class="edge edge--hp" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
       <path class="edge__fill" d="M-30,110 C240,230 560,250 860,215 C1100,186 1300,150 1470,90 L1470,321 L-30,321 Z"/>
     </svg>
@@ -142,6 +148,7 @@
   </section>
 
   <section class="blk faq" aria-labelledby="faq-title">
+    <div class="world world--sand" aria-hidden="true"><%= render "landing/world/sand" %></div>
     <svg class="edge edge--c" viewBox="0 0 1440 200" preserveAspectRatio="none" aria-hidden="true">
       <path class="edge__fill" d="M-20,150 C300,172 600,46 900,62 C1150,76 1300,150 1460,118 L1460,201 L-20,201 Z"/>
       <path class="bank__face" d="M-20,150 C300,172 600,46 900,62 C1150,76 1300,150 1460,118 L1460,144 C1300,176 1150,102 900,88 C600,72 300,198 -20,176 Z"/>
@@ -152,11 +159,11 @@
         <div class="faq__head"><h2 id="faq-title">FAQ</h2></div>
         <div class="faq__list">
           <span class="hop hop--1" aria-hidden="true"></span><span class="hop hop--2" aria-hidden="true"></span><span class="hop hop--3" aria-hidden="true"></span><span class="hop hop--4" aria-hidden="true"></span><span class="hop hop--5" aria-hidden="true"></span>
-          <details open>
+          <details name="landing-faq" open>
             <summary>Who can join?</summary>
             <p>Any teen aged 13 to 18. You sign in with your Hack Club account.</p>
           </details>
-          <details>
+          <details name="landing-faq">
             <summary>What counts as coding time?</summary>
             <ul class="faq__rules">
               <li>Hackatime is a free tool that tracks the time you spend coding.</li>
@@ -168,15 +175,15 @@
               <li>Time you logged before the program started does not count.</li>
             </ul>
           </details>
-          <details>
+          <details name="landing-faq">
             <summary>How do I earn prizes?</summary>
             <p>Your hours go toward the prize you picked. When you ship a project, those hours also hit the weekly boss. Keeping a daily streak earns you bonuses.</p>
           </details>
-          <details>
+          <details name="landing-faq">
             <summary>Is it free?</summary>
             <p>Yes. Battletown is free for teens, run by Hack Club.</p>
           </details>
-          <details>
+          <details name="landing-faq">
             <summary>How long does it run?</summary>
             <p>It runs for at least a month. We may extend it if it goes well.</p>
           </details>
@@ -186,6 +193,7 @@
   </section>
 
   <section id="join" class="blk final" aria-labelledby="final-title">
+    <div class="world world--final" aria-hidden="true"><%= render "landing/world/final" %></div>
     <svg class="edge edge--d" viewBox="0 0 1440 180" preserveAspectRatio="none" aria-hidden="true">
       <path class="bank__foam" d="M-20,50 C250,142 600,142 900,84 C1100,44 1300,36 1460,76"/>
       <path class="edge__fill" d="M-20,58 C250,150 600,150 900,92 C1100,52 1300,44 1460,84 L1460,181 L-20,181 Z"/>
@@ -200,8 +208,6 @@
       <div class="wrap">
         <h2 id="final-title">Ready to join <br>the fight?</h2>
         <%= render "landing/cta", extra_class: "cta--big" %>
-        <%# Who's locked in: the real count, only once it is a number worth showing. -%>
-        <% if (locked_in = locked_in_text) %><p class="final__proof"><%= locked_in %></p><% end %>
       </div>
       <%= image_tag "landing/orpheus.webp", alt: "", class: "final__orpheus", width: 1300, height: 1093, loading: "lazy", decoding: "async" %>
     </div></div>

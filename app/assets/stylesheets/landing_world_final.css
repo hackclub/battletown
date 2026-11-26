@@ -1,0 +1,139 @@
+/* Band: final. Owned by the final band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+
+/*
+ * A DUNE CREST AGAINST THE SKY. BattleTown is an island in the sky: the beach's own soft, gently tilted edge sits directly over
+ * the painted sky. Everything is the painting's own pixels:
+ *   - the sky is the sky band's piece (sky@*.webp, same files), unflipped and unscaled except by --wu. Its top 80 design px are the
+ *     painting's flat top blue (#a3c6ef), so the piece starts above the highest point of the edge and the brushwork begins right at
+ *     the edge, at every width, with no flat gap. The piece is 601 wu tall; its last 70 wu fade into the pale color #d0e5ee (the
+ *     piece's own corner color), which then continues, flat, to the page end (on phones and in tall windows, where the section is
+ *     taller than the piece), behind the fighter and footer;
+ *   - two of the sky band's clouds (cloud@*.webp, same files), unflipped, at new spots; one on phones;
+ *   - three very faint strips of darker sand just inside the lip (the sand's own color family, no outline), so the crest has depth.
+ *
+ * The edge: the painting's nearly straight, gently tilted edge (canvas y 8589 at the left falling to 8498 at the right; the section
+ * top is 8590), traced as a polygon. Every box below uses it as its clip, so nothing shows above the sand's edge. The boxes start 80
+ * design px above the section top, over the faq's flat sand (the contract allows 200), and run to the page end. The box is wider than
+ * the painting and the edge keeps going at a fading slope (500 design px each side, then flat), in case --wu is ever 1px at a wider
+ * window; when --wu is 100vw / 1576 the painting fills the window and this is never seen. The edge is lifted 15 design px from the
+ * painting so it can keep sloping past its ends.
+ */
+.landing .world--final .world__shore {
+  --o: 0;
+  position: absolute; left: 0; right: 0; top: calc(var(--wu) * -80); bottom: 0;
+  clip-path: polygon(
+    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * (180.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -788) calc(var(--wu) * (180.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -740.5) calc(var(--wu) * (170.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -696.5) calc(var(--wu) * (165.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -694.5) calc(var(--wu) * (163.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -692) calc(var(--wu) * (163.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -653.5) calc(var(--wu) * (157.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -347.5) calc(var(--wu) * (120.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -293) calc(var(--wu) * (112.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -239) calc(var(--wu) * (101.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -231.5) calc(var(--wu) * (102.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -222.5) calc(var(--wu) * (109.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -212) calc(var(--wu) * (114.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -200) calc(var(--wu) * (117.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -177.5) calc(var(--wu) * (121.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -154) calc(var(--wu) * (123.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -124.5) calc(var(--wu) * (124.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -87.5) calc(var(--wu) * (120.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -84) calc(var(--wu) * (138.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -73) calc(var(--wu) * (139.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -49.5) calc(var(--wu) * (137.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -46) calc(var(--wu) * (138.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -43.5) calc(var(--wu) * (137.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -43.5) calc(var(--wu) * (131.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -42) calc(var(--wu) * (129.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -36) calc(var(--wu) * (127.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -35.5) calc(var(--wu) * (124.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -27.5) calc(var(--wu) * (113.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -16) calc(var(--wu) * (88.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -8) calc(var(--wu) * (72.50 + var(--o, 0))),
+    calc(50% + var(--wu) * -6) calc(var(--wu) * (71.00 + var(--o, 0))),
+    calc(50% + var(--wu) * -5) calc(var(--wu) * (66.00 + var(--o, 0))),
+    calc(50% + var(--wu) * 29) calc(var(--wu) * (74.00 + var(--o, 0))),
+    calc(50% + var(--wu) * 86) calc(var(--wu) * (85.00 + var(--o, 0))),
+    calc(50% + var(--wu) * 139.5) calc(var(--wu) * (91.50 + var(--o, 0))),
+    calc(50% + var(--wu) * 144) calc(var(--wu) * (90.50 + var(--o, 0))),
+    calc(50% + var(--wu) * 146) calc(var(--wu) * (91.50 + var(--o, 0))),
+    calc(50% + var(--wu) * 155.5) calc(var(--wu) * (91.00 + var(--o, 0))),
+    calc(50% + var(--wu) * 158.5) calc(var(--wu) * (92.50 + var(--o, 0))),
+    calc(50% + var(--wu) * 165.5) calc(var(--wu) * (89.00 + var(--o, 0))),
+    calc(50% + var(--wu) * 290) calc(var(--wu) * (88.50 + var(--o, 0))),
+    calc(50% + var(--wu) * 377.5) calc(var(--wu) * (91.00 + var(--o, 0))),
+    calc(50% + var(--wu) * 457.5) calc(var(--wu) * (95.00 + var(--o, 0))),
+    calc(50% + var(--wu) * 510.5) calc(var(--wu) * (96.00 + var(--o, 0))),
+    calc(50% + var(--wu) * 515.5) calc(var(--wu) * (98.50 + var(--o, 0))),
+    calc(50% + var(--wu) * 519.5) calc(var(--wu) * (96.50 + var(--o, 0))),
+    calc(50% + var(--wu) * 787.5) calc(var(--wu) * (98.50 + var(--o, 0))),
+    max(100%, calc(50% + var(--wu) * 1288)) calc(var(--wu) * (98.50 + var(--o, 0))),
+    max(100%, calc(50% + var(--wu) * 1288)) 100%,
+    min(0px, calc(50% + var(--wu) * -1288)) 100%);
+}
+.landing .world--final .world__shore.shore--sand { clip-path: none; background: rgb(235 213 131); bottom: auto; height: calc(var(--wu) * 400); } /* the painting's flat sand (235,213,131) under the edge, from the box top down past its lowest point: the wall's silhouette dips below the section top */
+.landing .world--final .shore--air { background: #d0e5ee; overflow: hidden; }
+/*
+ * THE WALL ENDING. The sky starts at the bottom edge of one run of the plateau's own wall (script/export_landing_world.py,
+ * "6b"): the whole painting width, at the painting's scale (3152 canvas px = 1576 wu, never enlarged, mirrored, repeated or stretched),
+ * recolored into the sand family. The sand is a flat fill that runs down behind the wall, and the clip polygon below (the wall's own painted bottom edge, 1.5 wu inside it)
+ * starts the sky, so no sky can show between sand and wall. The piece's top sits 2 wu below the box top. No cast shadow: nothing is under it but sky.
+ */
+.landing .world--final .final__wall {
+  position: absolute; left: 50%; top: calc(var(--wu) * 2); width: calc(var(--wu) * 1576); height: auto; max-width: none; translate: -50% 0; pointer-events: none;
+}
+.landing .world--final .final__wall { top: calc(var(--wu) * -78); }
+/* (The three faint darker-sand strips inside the lip are gone: the real wall ending gives the edge its depth.) */
+/* The wall's left diagonal drops the edge about 50 wu lower than the old tilt did, so the heading starts 30 wu lower to stay clear of it. */
+.landing .final .slab > .in { padding-top: calc(clamp(2.5rem, 5vw, 4.5rem) + var(--wu) * 30); }
+
+/* The sky piece, 1576 wu wide and 601 tall; its flat top 80 wu start above the edge's highest point (box y 19), so the brushwork starts at the edge. */
+.landing .world--final .island__skybox { position: absolute; left: 50%; top: calc(var(--wu) * -66); width: calc(var(--wu) * 1576); height: calc(var(--wu) * 601); translate: -50% 0; }
+.landing .world--final .island__sky { display: block; width: 100%; height: auto; max-width: none; }
+/* The last 70 wu fade into the pale color that fills the rest of the section. */
+.landing .world--final .island__haze { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--wu) * 70); background: #d0e5ee;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000); mask-image: linear-gradient(to bottom, transparent, #000); }
+/* Clouds: x is design px from the page middle, y from the top of the box (which is 80 wu above the section). One on phones, right of the heading. */
+.landing .world--final .island__cloud { position: absolute; display: none; height: auto; max-width: none; }
+.landing .world--final .island__cloud--a { display: block; left: calc(50% + var(--wu) * 170); top: calc(var(--wu) * 190); width: calc(var(--wu) * 200); }
+.landing .world--final .island__cloud--b { left: calc(50% + var(--wu) * 470); top: calc(var(--wu) * 120); width: calc(var(--wu) * 300); }
+.landing .world--final .island__cloud--c { left: calc(50% + var(--wu) * -50); top: calc(var(--wu) * 215); width: calc(var(--wu) * 250); }
+@media (min-width: 48rem) {
+  .landing .world--final .island__cloud--a { display: none; }
+  .landing .world--final .island__cloud--b, .landing .world--final .island__cloud--c { display: block; }
+}
+/* Between 60rem and 80rem the middle cloud would sit behind the fighter's head, so only the right one shows. */
+@media (min-width: 60rem) and (max-width: 79.99rem) {
+  .landing .world--final .island__cloud--c { display: none; }
+}
+
+/* The footer sits below the section, so his cape would end in a flat cut. His own pixels fade out over the last 14% (alpha only, nothing drawn). */
+.landing .final__orpheus { -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent); mask-image: linear-gradient(to bottom, #000 84%, transparent); }
+
+/*
+ * SLOT FOR A PAINTING (empty on purpose; a painting would replace the sky and clouds, keep the sand edge). To drop one in, add to _final.html.erb, after the water layer:
+ *   <%= image_tag "landing/world/final/final@c.webp", alt: "", class: "world__img world__final-art", width: 3152, height: 1308,
+ *         loading: "lazy", decoding: "async", srcset: { "landing/world/final/final@a.webp" => "1576w", ".../final@b.webp" => "2049w", ".../final@c.webp" => "3152w" }, sizes: "100vw" %>
+ * and uncomment this rule. The art is anchored to the page END (not the top), because the section's height changes with
+ * text wrapping and the last row should always touch the bottom. Paint it 3152 wide (the 1576 px page at 2x), canvas
+ * y 8590 to 9898 (1308 px tall). The section is only about 1000 canvas px tall at 1576 wide (the page ends near canvas y 9590,
+ * not 9898), so bottom anchoring crops the top ~300 px there: keep canvas y 8590..8900 flat the sky's top blue #a3c6ef so it joins the shore, and
+ * the real subject in y 8900..9898 (its bottom 700 px is always visible; phones show more of the top). The last row flat
+ * (#d0e5ee, the haze's pale edge, which the body also paints below the page). Keep important shapes inside the middle
+ * 1000 px (canvas x 1076..2076): a 360 px phone shows only the middle ~600 design px, 1576 shows all of it, wider windows
+ * show it centered, and the edges beyond 1576 design px extend with flat color. The fighter sits bottom right and text top
+ * left of center.
+ *
+ * .landing .world--final .world__final-art { left: 50%; bottom: 0; width: max(var(--world-w), 100%); height: auto; translate: -50% 0; }
+ */
+
+/*
+ * The page end. landing_world.css sets `body:has(.landing) { background: var(--world-final) }`, but --world-final is
+ * declared on .landing, a child of body, so at body it is undefined and the declaration is invalid: the body (and the
+ * canvas behind it) painted white below the last section whenever the window is taller than the page (body is
+ * min-height 100vh and the footer sits at its bottom). Here it is the pale haze color #d0e5ee (the sky piece's own
+ * corner color), and the sky fades into it over the last 90 px, so nothing steps at the page end.
+ */
+body:has(.landing) { background: #d0e5ee; }

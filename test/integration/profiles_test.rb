@@ -177,7 +177,7 @@ class ProfilesTest < ActionDispatch::IntegrationTest
     assert_select ".profile__project:nth-child(2) .ship-status", text: "Waiting for review"
     assert_select "a[href='https://fresh.example.org/play'][rel='noopener noreferrer']", "Demo"
     assert_select "a[href='https://github.com/octo/old'][rel='noopener noreferrer']", "GitHub"
-    assert_select "a[target]", 0
+    assert_select "main a[target]", 0
   end
 
   test "only an https address ever becomes a link (the database refuses the rest, and the helper checks again)" do

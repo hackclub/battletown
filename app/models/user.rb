@@ -101,6 +101,9 @@ class User < ApplicationRecord
     self.time_zone = AddressTimeZone.zone_name(claims) if time_zone.blank?
   end
 
+  # People who finished onboarding (the same test as onboarded?, as SQL so a count never loads records).
+  scope :onboarded, -> { where.not(onboarded_at: nil) }
+
   def onboarded? = onboarded_at.present?
 
   # The daily pace in minutes: the chosen one, else the default.

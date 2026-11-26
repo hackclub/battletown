@@ -71,7 +71,7 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
 @media (prefers-reduced-motion: no-preference) {
   .onboarding-top__bar::-webkit-progress-value { transition: inline-size 500ms cubic-bezier(0.2, 1.3, 0.4, 1); }
 }
-@media (max-width: 40rem) { .onboarding-top__label { font-size: var(--text-xs); } }
+
 
 /* ---- The panel: a bigger, chunkier card, with the big display heading and a yellow marker under it ---- */
 .onboarding__panel {
@@ -195,3 +195,252 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
 .day-times__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-1) var(--space-4); }
 .day-times__row .day-times__label { margin: 0; }
 .day-times__row :is(input[type="time"], input) { width: 11rem; max-width: 100%; flex: none; }
+
+/* ==========================================================================================================
+   One screen, no scrolling. Every step (and the ineligible page) is exactly the height of the window: the strip on
+   top, the panel taking what is left, the primary button pinned inside the bottom of the panel. Nothing scrolls, so
+   everything inside is sized from the window's height (vh) as well as its width, and the prize step swaps its cards
+   for shorter ones. Loaded last, so it wins over the roomier spacing above.
+   ========================================================================================================== */
+.onboarding-page {
+  --ob-pad: clamp(0.375rem, 1.6vh, 1rem); /* around the strip and panel */
+  --ob-gap: clamp(0.5rem, 1.7vh, 1.25rem); /* between things inside the panel */
+  --ob-fit-width: 48rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding-block: var(--ob-pad);
+}
+/* The window is the page: the signed-in header (when there is one), then this section taking the rest. */
+body:has(.onboarding-page) { height: 100vh; height: 100dvh; min-height: 0; }
+body:has(.onboarding-page) .page { min-height: 0; }
+body:has(.onboarding-page) .site-header__inner { padding-block: var(--space-1); }
+body:has(.onboarding-page) .site-header__logo { width: auto; height: clamp(1.75rem, 5vh, 2.75rem); }
+.onboarding-page:has(.onboarding__panel--blue) { --ob-fit-width: 72rem; }
+body:has(.onboarding-page) .page { display: flex; flex-direction: column; padding-block: 0; }
+body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
+.onboarding-page__content { flex: 1; display: flex; flex-direction: column; gap: var(--ob-pad); min-height: 0; }
+.onboarding-top { flex: none; max-width: var(--ob-fit-width); padding-block: clamp(0.25rem, 1vh, 0.75rem); }
+.onboarding-top__label { font-size: var(--text-sm); }
+.onboarding-top__bar { height: clamp(1rem, 2.4vh, 1.375rem); }
+.onboarding { flex: 1; display: flex; flex-direction: column; min-height: 0; max-width: var(--ob-fit-width); }
+.onboarding__panel {
+  flex: 1;
+  min-height: 0;
+  gap: var(--ob-gap);
+  padding: clamp(0.75rem, 2.6vh, 2rem) clamp(0.875rem, 3vw, 2.5rem);
+  grid-template-rows: none;
+  display: flex;
+  flex-direction: column;
+  border-radius: clamp(1.25rem, 3vh, 2rem);
+}
+.onboarding__header { gap: clamp(0.125rem, 0.6vh, 0.5rem); flex: none; }
+.onboarding__header h1 { font-size: clamp(1.5rem, min(7vw, 6vh), 3.5rem); }
+.onboarding__encouragement { font-size: clamp(0.9375rem, 2.3vh, 1.25rem); line-height: 1.35; }
+.onboarding-prize { flex: none; }
+.onboarding__panel > form { flex: 1; min-height: min-content; display: flex; flex-direction: column; gap: var(--ob-gap); }
+.onboarding__panel > form > *, .onboarding__panel > .checks, .onboarding__panel > .celebration > * { margin: 0; }
+.onboarding__fieldset, .onboarding__field, .timezone { margin: 0; }
+.onboarding__actions { margin-top: auto; padding-top: 0; flex: none; }
+.onboarding__actions > .btn--primary { min-height: clamp(2.75rem, 7vh, 3.5rem); }
+.onboarding-page .btn--primary.btn--lg { font-size: clamp(1.125rem, 3.2vh, 1.5rem); }
+/* The phone layout used to pin the button to the bottom of a long page; the page no longer scrolls, so it just sits there. */
+@media (max-width: 40rem) {
+  .onboarding__actions { position: static; margin-inline: 0; padding: 0; border: 0; background: none; }
+  .onboarding__actions > .btn--primary { flex: 1 1 auto; justify-content: center; }
+}
+.onboarding__hint, .onboarding__hint--light { margin: 0; font-size: var(--text-sm); line-height: 1.3; }
+.onboarding__note { margin: 0; }
+
+/* ---- Age: the two big choices share the room under the heading ---- */
+.onboarding__panel > form:has(.age-choices) { flex: 1; }
+.age-choices { flex: 1; min-height: 0; grid-template-rows: minmax(0, 1fr); gap: var(--ob-gap); }
+@media (max-width: 39.99rem) { .age-choices { grid-template-rows: repeat(2, minmax(0, 1fr)); } }
+.age-choice { min-height: 0; padding: var(--space-3); max-height: 14rem; align-self: center; width: 100%; height: 100%; font-size: clamp(1.25rem, 3.2vh, 1.75rem); }
+
+/* ---- Prize: nine short cards (emoji on a block at the left, the words at the right) filling the room under the heading.
+   3 x 3 on a wide window, 2 columns on a phone; the one-line descriptions only where there is room for them ---- */
+.onboarding__panel--blue > form > .onboarding__fieldset { flex: 1; min-height: min-content; display: flex; flex-direction: column; gap: var(--ob-gap); }
+.onboarding__panel--blue .choice-grid--prizes {
+  flex: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(min-content, 1fr));
+  gap: clamp(0.375rem, 1.6vh, 1rem) clamp(0.375rem, 1.4vw, 1rem);
+  padding: 0.5rem; /* room for the chosen card's ring */
+  margin: -0.5rem;
+}
+
+.onboarding__panel--blue .choice__body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: clamp(0.375rem, 1.2vw, 0.875rem);
+  height: 100%;
+  box-sizing: border-box;
+  padding: clamp(0.25rem, 1.1vh, 0.625rem) clamp(0.375rem, 1vw, 0.875rem);
+  border-radius: clamp(0.875rem, 2.2vh, 1.4rem);
+  background: var(--ob-plate);
+  box-shadow: 0 0.3rem 0 var(--ob-plate-edge);
+  text-align: left;
+}
+.onboarding__panel--blue .choice__art {
+  --art: clamp(2.25rem, 8.5vh, 6.5rem);
+  grid-row: 1;
+  width: var(--art);
+  height: var(--art);
+  min-height: 0;
+  margin: 0;
+  border-radius: clamp(0.625rem, 1.6vh, 1rem);
+  background: var(--ob-royal);
+}
+.onboarding__panel--blue .choice__image { max-height: 80%; max-width: 80%; filter: none; }
+.onboarding__panel--blue .choice__emoji { font-size: calc(var(--art) * 0.7); filter: none; }
+.onboarding__panel--blue .choice__plate {
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.0625rem, 0.4vh, 0.25rem);
+  min-width: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.onboarding__panel--blue .choice__name { font-size: clamp(0.875rem, 2.2vh, 1.125rem); line-height: 1.12; overflow-wrap: break-word; }
+.onboarding__panel--blue .choice__meta { padding: 0 var(--space-2); font-size: var(--text-sm); line-height: 1.35; }
+.onboarding__panel--blue .choice__desc { display: none; font-size: var(--text-sm); line-height: 1.25; }
+@media (min-width: 60rem) and (min-height: 44rem), (min-width: 40rem) and (min-height: 56rem) { .onboarding__panel--blue .choice__desc { display: block; } }
+/* A phone: three narrow columns, so each card stacks (emoji, name, hours) and is centered */
+@media (max-width: 39.99rem) {
+  .onboarding__panel--blue .choice-grid--prizes { gap: 0.375rem; padding: 0.375rem; margin: -0.375rem; }
+  .onboarding__panel--blue .choice__body { grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; row-gap: 0.125rem; padding: 0.375rem 0.25rem; text-align: center; }
+  .onboarding__panel--blue .choice__art { --art: 2.5rem; grid-row: auto; background: none; }
+  .onboarding__panel--blue .choice__plate { grid-row: auto; align-items: center; }
+  .onboarding__panel--blue .choice__name { font-size: var(--text-sm); }
+  .onboarding__panel--blue .choice__meta { align-self: center; padding: 0 var(--space-2); border-radius: 0.75rem; font-size: var(--text-sm); line-height: 1.2; text-align: center; }
+  .onboarding__panel--blue .choice__input:checked + .choice__body::after { top: 0.125rem; right: 0.125rem; width: 1.25rem; height: 1.25rem; font-size: 0.75rem; }
+  .onboarding-page.container { padding-inline: 0.5rem; }
+  .onboarding__panel { padding-inline: 0.75rem; }
+  .onboarding-top { padding-inline: 0.25rem 0.75rem; }
+  .onboarding-top__head { flex-wrap: nowrap; align-items: flex-start; }
+  .onboarding-top__label { font-size: var(--text-sm); line-height: 1.2; }
+  .onboarding-prize { gap: 0 var(--space-2); line-height: 1.2; }
+  .toggle-group.days { gap: 2px; }
+}
+.onboarding__pair .field { align-content: start; }
+.onboarding__panel--blue .choice__input:checked + .choice__body { background: #2f5fd0; }
+.onboarding__panel--blue .choice__input:checked + .choice__body .choice__plate { background: none; }
+.onboarding__panel--blue .choice__input:checked + .choice__body::after { top: 0.25rem; right: 0.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.875rem; }
+.onboarding__panel--blue .choice:has(.choice__input:checked) { border-radius: clamp(0.875rem, 2.2vh, 1.4rem); }
+.onboarding__panel--blue .choice:hover .choice__body { transform: none; }
+.onboarding__panel--blue .onboarding__hint--light { flex: none; }
+
+/* "Working toward": a slim line; on a wide window it sits at the right of the heading row instead of taking a row of its own */
+.onboarding-prize { padding: var(--space-1) var(--space-3); font-size: var(--text-sm); }
+.onboarding-prize strong { font-size: var(--text-sm); }
+.onboarding__panel { position: relative; }
+
+/* ---- Project and schedule: a wider panel on a wide window, so the form can sit in two columns ---- */
+@media (min-width: 60rem) {
+  .onboarding-page:has(.chips), .onboarding-page:has(.days) { --ob-fit-width: 64rem; }
+}
+.toggle-group--kinds .toggle__label { font-size: clamp(1rem, 2.4vh, 1.25rem); }
+.onboarding__legend { margin: 0 0 var(--space-2); font-size: clamp(1rem, 2.4vh, 1.25rem); }
+
+/* project: the idea box fills what is left; the spark chips are 44px tall, two to a row on a phone, one column beside the box on a wide window */
+.onboarding__field:has(.chips) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.onboarding__field:has(.chips) textarea { flex: 1; min-height: 3.5rem; height: auto; resize: none; }
+.onboarding__field:has(.chips) > label { font-size: clamp(1rem, 2.4vh, 1.25rem); }
+.chips { gap: var(--space-1) var(--space-2); }
+.chip { min-height: 2.75rem; padding: var(--space-1) var(--space-3); line-height: 1.2; }
+@media (max-width: 59.99rem) {
+  .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chips li { display: flex; }
+  .chips .chip { width: 100%; }
+}
+@media (min-width: 60rem) {
+  .onboarding__field:has(.chips) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto auto; column-gap: var(--space-6); row-gap: var(--space-1); }
+  .onboarding__field:has(.chips) > label, .onboarding__field:has(.chips) > .field__hint:not(.onboarding__counter) { grid-column: 1 / -1; }
+  .onboarding__field:has(.chips) > .field__hint:last-child { grid-column: 2; }
+  .onboarding__field:has(.chips) > .chips { grid-column: 1; grid-row: 3 / span 3; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; align-self: start; display: flex; }
+  .onboarding__field:has(.chips) > textarea { grid-column: 2; grid-row: 3; }
+  .onboarding__field:has(.chips) > .field__error { grid-column: 2; }
+  .onboarding__field:has(.chips) > .onboarding__counter { grid-column: 2; grid-row: 4; text-align: start; }
+}
+
+/* schedule: tighter pills and rows; time and pace side by side from phone width up */
+.toggle-group.days { gap: clamp(0.25rem, 1vw, 0.5rem); }
+.day.toggle .toggle__label { padding-inline: clamp(0.25rem, 1.4vw, 1em); font-size: var(--text-sm); }
+@media (min-width: 30rem) { .day.toggle .toggle__label { font-size: var(--text-base); } }
+.onboarding__pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ob-gap) var(--space-4); align-items: start; }
+.onboarding__pair > * { min-width: 0; }
+@media (max-width: 39.99rem) { .onboarding__pair--extras { grid-template-columns: minmax(0, 1fr); } }
+.onboarding__field .field__hint { line-height: 1.3; }
+/* the optional extras open as a small card over the form instead of pushing it down the page */
+.day-times, .timezone { position: static; }
+.day-times__body {
+  position: absolute;
+  inset-inline: clamp(0.5rem, 3vw, 2.5rem);
+  bottom: clamp(3.5rem, 11vh, 5.5rem);
+  z-index: 5;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-md), 0 0 0 2px var(--color-border);
+}
+.day-times__body { display: grid; gap: var(--space-1); }
+.timezone__body { margin-top: var(--space-1); }
+.day-times__row { min-height: var(--tap-size); }
+
+/* ---- Signup, account, celebrate: compact cards ---- */
+.checks { gap: var(--ob-gap); }
+.check { padding: clamp(0.5rem, 1.6vh, 1rem) var(--space-4); }
+.check > p { margin: 0 0 var(--space-2); }
+.check > p:last-child { margin-bottom: 0; }
+.check__title { font-size: clamp(1rem, 2.4vh, 1.25rem); }
+.celebration__summary { gap: clamp(0.25rem, 1vh, 0.75rem) var(--space-6); padding: clamp(0.5rem, 1.6vh, 1rem) var(--space-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 29.99rem) { .celebration__summary { column-gap: var(--space-3); } }
+.celebration__summary dd { font-size: clamp(0.9375rem, 2.3vh, 1.25rem); }
+.celebration__lead { font-size: clamp(0.9375rem, 2.3vh, 1.25rem); }
+.celebration { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--ob-gap); }
+.celebration__main { gap: var(--ob-gap); }
+.celebration__layout { flex: none; }
+.celebration > form { margin-top: auto; }
+.celebration > form .onboarding__actions { margin-top: 0; }
+.onboarding__panel > .checks, .onboarding__panel > form > .checks { flex: none; }
+.onboarding__panel .check__action { margin-top: var(--space-2); }
+
+/* A phone, or a short window: body text at the 14px floor and tighter lines, smaller pills */
+@media (max-width: 39.99rem), (max-height: 46rem) {
+  .check > p, .check .muted { font-size: var(--text-sm); line-height: 1.3; }
+  .toggle-group--kinds .toggle__label { font-size: var(--text-sm); }
+  .toggle-group--kinds { gap: 0.375rem; }
+  .timezone__body { display: flex; align-items: center; gap: var(--space-2); margin-top: 0; }
+  .timezone__body label { flex: none; }
+  .timezone__body select { flex: 1; min-width: 0; }
+}
+@media (max-width: 39.99rem) { .onboarding-page { --ob-gap: 0.5rem; } }
+.onboarding .field > label, .onboarding .field__label { line-height: 1.3; }
+@media (max-width: 39.99rem) {
+  .onboarding__panel { padding-inline: 0.625rem; padding-block: 0.625rem; }
+  .onboarding-top { padding-block: 0.125rem; }
+  .onboarding-top__bar { height: 0.875rem; }
+  .celebration__summary dd { font-size: 0.9375rem; line-height: 1.3; }
+  .celebration__summary > div:nth-child(1), .celebration__summary > div:nth-child(3) { grid-column: 1 / -1; }
+  .celebration__summary .eyebrow { line-height: 1.2; }
+  .day.toggle .toggle__label { padding-inline: 0; }
+  .onboarding__pair .field__hint { font-size: var(--text-sm); }
+}
+@media (max-width: 39.99rem) and (max-height: 56rem) {
+  .onboarding-page { --ob-gap: 0.25rem; }
+  .chip { padding-block: 0; line-height: 1.15; }
+  .onboarding__field:has(.chips) textarea { min-height: 3rem; }
+  .check { padding: 0.375rem var(--space-3); }
+  .check__head { margin-bottom: 0; }
+  .onboarding__field { gap: var(--space-1); }
+}
+@media (max-width: 39.99rem) { .toggle-group.days { gap: 2px; } }
+@media (max-width: 39.99rem) { .onboarding__actions > .btn--primary { min-height: 3rem; } }
+@media (max-width: 39.99rem) { .onboarding__panel { padding-block: 0.5rem; } }

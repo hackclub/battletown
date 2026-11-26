@@ -1,0 +1,9 @@
+<%# Cliff band (owner: cliff agent): the clifftop with its crack, the cliff face and its shadow (one piece, 1576 wu wide), the path
+    (one piece). All placed from the
+    signpost's pole foot, see landing_world_cliff.css. -%>
+<%= image_tag "landing/world/cliff/cliff@c.webp", alt: "", class: "world__img world__cliff", width: 3152, height: 900, loading: "lazy", decoding: "async",
+      srcset: { "landing/world/cliff/cliff@a.webp" => "1576w", "landing/world/cliff/cliff@b.webp" => "2049w", "landing/world/cliff/cliff@c.webp" => "3152w" },
+      sizes: "(min-width: 1576px) 100vw, (min-width: 37rem) 1576px, calc((100vw - 1rem) * 2.736)" %>
+<%= image_tag "landing/world/cliff/path@c.webp", alt: "", class: "world__img world__path", width: 300, height: 880, loading: "lazy", decoding: "async",
+      srcset: { "landing/world/cliff/path@a.webp" => "150w", "landing/world/cliff/path@b.webp" => "195w", "landing/world/cliff/path@c.webp" => "300w" },
+      sizes: "(min-width: 1576px) 9.5vw, (min-width: 37rem) 150px, calc((100vw - 1rem) * 0.26)" %>

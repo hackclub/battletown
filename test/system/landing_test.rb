@@ -29,7 +29,7 @@ class LandingSystemTest < ApplicationSystemTestCase
     )
 
     visit root_path
-    assert_selector ".hero button.hero__signin", text: "Sign in" # the one sign-in control: for returning users
+    assert_no_selector ".hero button.hero__signin" # the hero has no sign-in line any more
     first(".hero a.cta").click
 
     assert_current_path "/onboarding/age"

@@ -1,0 +1,46 @@
+/* Band: sand. Owned by the sand band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+
+/* The section itself is transparent: its top part is where the floor band's pebbles show above the shore curve, so the
+   flat sand lives in the stage below the piece instead. The wrapper may overhang upward (into .prizes) but is clipped
+   at the sides and the bottom, where the final band takes over. */
+.landing .faq { background: none; min-height: calc(var(--wu) * 488); }
+.landing .world--sand { clip-path: inset(-100vh 0 0 0); }
+
+/* The stage is the sand piece (canvas y 5700..7300, so 300 design px above the section top) at the piece's own scale:
+   the painting's width times --wu, which is the window's width from 1576px up (the whole world scales). Narrower windows show its middle. Under it, flat --world-sand, which is the piece's last row. */
+.landing .world--sand .sand__stage { position: absolute; left: 50%; top: calc(var(--wu) * -300); width: var(--world-w); translate: -50% 0; }
+.landing .world--sand .sand__svg { display: block; width: 100%; height: auto; overflow: visible; }
+/* The waterline: the white foam line is a stroke along the same smooth curve that clips the sand (see _sand.html.erb), so it is anti-aliased at every
+   width and density. The old drop-shadow lines are gone. */
+/* Until the (lazy) piece has loaded, show flat sand below where the curve can reach (it is above 36% of the piece's height)
+   instead of the page behind. The piece is opaque below the curve, so once it loads this is hidden. */
+.landing .world--sand .sand__stage { background: linear-gradient(to bottom, transparent 38%, var(--world-sand-top) 38%, var(--world-sand) 85%); }
+.landing .world--sand .sand__stage::after { content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 2px); height: 1500px; background: var(--world-sand); }
+
+/* Shells: beside the FAQ list on desktop, from the page middle +484 and -658 as in the painting. The upper one hangs from the
+   section top; the lower one rises from the section bottom, because our section is shorter than the painted one. Narrower
+   windows keep them on screen at the edges. */
+.landing .world--sand .world__shell--1 { left: min(calc(50% + var(--wu) * 484), calc(100% - 6rem)); top: calc(var(--wu) * 76); width: min(calc(var(--wu) * 105), 8.5rem); } /* 57% of the painted size, and it stops growing on wide windows */
+.landing .world--sand .world__shell--2 { left: max(calc(50% - var(--wu) * 658), -3rem); top: auto; bottom: calc(var(--wu) * 330); width: min(calc(var(--wu) * 98), 8rem); }
+
+/* The heading sits on the sand above the list, at the content column's left edge, as in the painting. landing.css
+   hung it off the old river bank with a negative top. */
+.landing .faq__head { position: relative; left: auto; top: auto; translate: none; margin-bottom: 1.5rem; }
+
+/* The section's own height: sand under the list for the final band's overlap (it reaches up 200 design px), plus on
+   phones room for the lower shell. */
+.landing .faq .slab > .in { padding-bottom: calc(var(--wu) * 230 + 2.5rem); }
+
+/* Phones and tablets: the list fills the width, so the shells sit where it is not. The upper one peeks in from the right above the
+   heading, the lower one from the left below the list, both cut by the window edge and never under text. */
+@media (max-width: 63.99rem) {
+  .landing .faq .slab > .in { padding-bottom: calc(var(--wu) * 230 + 3rem); }
+  .landing .world--sand .world__shell--1 { left: calc(100% - 4.7rem); top: 0.25rem; width: 5.5rem; }
+  .landing .world--sand .world__shell--2 { left: -0.9rem; top: auto; bottom: calc(var(--wu) * 150 + 0.5rem); width: 5.25rem; }
+}
+
+/* Even space above the FAQ heading and below its list (64rem up): the heading was 86 to 109 px under the shore curve and the list had
+   222 to 261 px of empty sand under it, so 68 wu moves from the bottom to the top. The section keeps its height. */
+@media (min-width: 64rem) {
+  .landing .faq .slab > .in { padding-top: calc(clamp(2.5rem, 5vw, 4.5rem) + var(--wu) * 68); padding-bottom: calc(var(--wu) * 162 + 2.5rem); }
+}

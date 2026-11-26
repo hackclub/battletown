@@ -1,0 +1,10 @@
+<%# Floor band (owner: floor agent): the wall-to-floor seam and the pebbled floor. One column as wide as the painting, with a tile
+    (his real pebble cells at the painting's scale, repeating seamlessly), one brightness gradient over it under the painted top piece. -%>
+<%# The tile is a CSS background in landing_world_floor.css (CSP forbids inline styles): world/floor/floor-tile@a.webp, world/floor/floor-tile@b.webp, world/floor/floor-tile@c.webp. -%>
+<%# floor-top decodes synchronously on purpose: with decoding=async the wide-window (3152 px) candidate was left undrawn in headless shots, showing a flat slab. -%>
+<div class="floor__col">
+  <div class="floor__tile"></div>
+  <div class="floor__shade"></div>
+  <%= image_tag "landing/world/floor/floor-top@c.webp", alt: "", class: "world__img floor__top", width: 3152, height: 500, loading: "lazy", decoding: "sync",
+        srcset: { "landing/world/floor/floor-top@a.webp" => "1576w", "landing/world/floor/floor-top@b.webp" => "2049w", "landing/world/floor/floor-top@c.webp" => "3152w" }, sizes: "(min-width: 1576px) 100vw, (min-width: 37rem) 1576px, calc((100vw - 1rem) * 2.736)" %>
+</div>

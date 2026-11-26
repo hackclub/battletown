@@ -1,0 +1,59 @@
+/* Band: cliff. Owned by the cliff band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css.
+ *
+ * Everything here hangs from ONE point: the foot of the signpost's pole, which must stand at the top of the path. The sky band
+ * gives .how__inner a padding-bottom of 60 wu, so the signpost ends 60 wu above the top of .fight, and the pole's foot is
+ * 13.3 wu above the signpost's bottom edge (1411 of 1445 of its height). So the foot is 73.3 wu above the top of this wrapper
+ * (the wrapper is .fight), and 0.8 wu right of the page middle (pole at 740 of 1476 of the signpost's width). In the painting
+ * the foot is canvas (1576, 2570), and a canvas point (x, y) lands at foot + ((x - 1576) / 2, (y - 2570) / 2) wu. That is how
+ * every piece is placed. If the sky band's padding-bottom ever changes, change --foot-y (and nothing else).
+ *
+ * Pieces: cliff (canvas 0..3152 x 2250..3150: clifftop, crack, face, shadow, ending in flat teal), path (canvas 1340..1640 x
+ * 2556..3436). Nothing continues past the painting: from 1576px wide everything scales up with --wu.
+ * The sky above the clifftop is the sky band's painted sky; the art here is transparent above the clifftop. */
+
+.landing .world--cliff {
+  --foot-x: calc(50% + var(--wu) * 0.8);
+  --foot-y: calc(var(--wu) * -73.3);
+  /* the top may reach above the wrapper (the sky is behind), the sides and bottom are clipped to the section: no horizontal scroll */
+  clip-path: inset(calc(var(--wu) * -400) 0 0 0);
+}
+.landing .world--cliff .world__cliff { left: calc(50% - var(--wu) * 788); /* the painting's own middle, so its edges are the window's from 1576px up; the foot is 0.8 wu right of it */ top: calc(var(--foot-y) - var(--wu) * 160); width: calc(var(--wu) * 1576); }
+.landing .world--cliff .world__path { left: calc(var(--foot-x) - var(--wu) * 118); top: calc(var(--foot-y) - var(--wu) * 7); width: calc(var(--wu) * 150); }
+
+/* The text beside the path. The path runs from the foot down to canvas y 3436, which is 360 wu below the top of the section,
+   with its lower curve reaching 115 wu left of the middle. Desktop: the heading sits left of that curve on the darker teal,
+   about 217 wu down, as in the painting. */
+@media (min-width: 64rem) {
+  /* The text may start left of the content column when the column's left edge leaves too little room left of the path's curve (windows
+     wider than the painting): it keeps a 27rem measure and a 1.5rem gap from the path's lower curve (115 wu left of the middle). At
+     1576 and below the column edge is the left edge, as in the painting. */
+  .landing .fight__text { --ft-left: max(var(--gutter), min(var(--side), calc(50vw - var(--wu) * 115 - 1.5rem - 27rem))); padding-left: var(--ft-left); width: auto; }
+  .landing .fight .in { padding-top: calc(var(--wu) * 217); }
+  .landing .fight__text p { max-width: min(27rem, calc(50vw - var(--wu) * 115 - var(--ft-left) - 1.5rem)); text-wrap: pretty; }
+}
+
+/* Phones and tablets (below 64rem): the path must end AT the cave rim, with the heading and paragraph beside it on the teal.
+   The path hangs from the section top (ends 347 wu down); the cave is anchored to the section bottom, and its rim, at the painting x
+   under the path's end (--world-cx - 38 wu), is about 443 wc + 0.3 * --world-cx - 11.4 wu above the bottom (fitted to the cave piece, within
+   5 wc for painting x 800..1100). So the section is 347 wu (the path's end) + that - 6 wu, so the rim paints over the path's rounded end. The
+   text sits in the column right of the path's lower curve (its right edge is 45 to 80 wu left of the foot there), below the cliff's
+   shadow and above the rim, which rises to the right (0.3 wu per wu). */
+@media (max-width: 63.99rem) {
+  .landing .fight { --fight-h: calc(var(--wu) * 330 + var(--wc) * 443 + var(--world-cx) * 0.3); }
+  .landing .fight, .landing .fight .in { min-height: var(--fight-h); }
+  .landing .fight .in { padding-top: calc(var(--wu) * 82); padding-bottom: 0; }
+}
+/* Tablets: the text sits LEFT of the path, as on desktop (the boss and his health bar are right of it and reach up over the teal), with a
+   24 px gap from the path's lower curve (115 wu left of the middle). */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .landing .fight__text { padding-inline: var(--side) 0; }
+  .landing .fight__text :is(h2, p) { max-width: calc(50vw - var(--wu) * 115 - 24px - var(--side)); }
+  .landing .fight__text p { margin-top: 0.75rem; text-wrap: pretty; }
+}
+/* Phones: not enough room left of the path for text, and the boss's bar and head reach up over the right column, so the heading goes left of
+   the path (two lines) and the paragraph starts at the cliff and runs down the right column, 13 px clear of the path. */
+@media (max-width: 47.99rem) {
+  .landing .fight__text { padding-left: calc(50% - var(--wu) * 50 + 0.45rem); padding-right: 0.75rem; }
+  .landing .fight h2 { position: absolute; left: var(--side); top: 0; width: calc(50% - var(--wu) * 110 - var(--side) - 0.6rem); font-size: 1.5rem; }
+  .landing .fight__text p { max-width: none; margin-top: 0; font-size: 0.875rem; line-height: 1.27; text-wrap: pretty; }
+}
