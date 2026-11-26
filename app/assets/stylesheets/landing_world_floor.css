@@ -1,4 +1,27 @@
-/* Band: floor. Owned by the floor band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+/* Band: floor. Owned by the floor band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css.
+ *
+ * The wrapper's top is canvas y 4750. Anchors (canvas y -> wu from the top): the top piece starts at 4700 (-25wu) and ends at 5900
+ * (575wu); the tile starts there and repeats down. The top piece is opaque from just above the wall's bottom edge and transparent
+ * above it, so it covers only what it must of the cave band, with the same pixels. The floor is drawn as dark navy under the wall,
+ * smoothly lighter to purple (no step), then the haze fades it to --world-floor-end at the section's bottom edge. */
+.landing .world--floor { --floor-haze: calc(var(--wu) * 330); }
 
-/* First cut. The wrapper's top is canvas y 4750. The floor piece is canvas y 4650..5600. */
-.landing .world--floor .world__floor { left: 50%; top: calc(var(--wu) * -50); width: max(100%, var(--world-w)); translate: -50% 0; }
+.landing .world--floor .floor__col { position: absolute; top: 0; bottom: 0; left: calc(50% - var(--world-w) / 2); width: var(--world-w); }
+.landing .world--floor .floor__col--left { left: calc(50% - var(--world-w) * 1.5); scale: -1 1; }
+.landing .world--floor .floor__col--right { left: calc(50% + var(--world-w) / 2); scale: -1 1; }
+
+.landing .world--floor .floor__top { left: 0; top: calc(var(--wu) * -25); width: var(--world-w); height: calc(var(--wu) * 600); }
+
+.landing .world--floor .floor__tile {
+  position: absolute; left: 0; right: 0; top: calc(var(--wu) * 575); bottom: 0;
+  background: var(--world-floor) image-set(url("landing/world/floor/floor-tile@a.webp") 1x, url("landing/world/floor/floor-tile@b.webp") 1.3x, url("landing/world/floor/floor-tile@c.webp") 2x) 0 0 / var(--world-w) calc(var(--wu) * 700) repeat-y;
+}
+
+/* The haze: pebbles and ground melt into the one flat color the sand band starts from. */
+.landing .world--floor .floor__haze {
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--floor-haze);
+  background: linear-gradient(to bottom, rgb(72 62 135 / 0), rgb(72 62 135 / 0.35) 40%, rgb(72 62 135 / 0.78) 75%, var(--world-floor-end));
+}
+
+/* The section: tall enough for the painting (775wu) and the heading, with room above the heading for the pillar's foot. */
+.landing .prizes { min-height: calc(var(--wu) * 775); }
