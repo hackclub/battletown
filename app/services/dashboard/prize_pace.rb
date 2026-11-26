@@ -65,7 +65,7 @@ module Dashboard
     end
 
     def to_go_text(state, prize, seconds)
-      return (@presenter.coins.total >= prize.price_coins ? "You have the coins. Spend them in the shop." : "Ship your time and you have the coins.") if state == :reached
+      return (@presenter.coins.total >= prize.price_coins ? "You have the coins. Spend them in the armoury." : "Ship your time and you have the coins.") if state == :reached
 
       "About #{Bosses::Presenter.human_duration(seconds)} of coding to go"
     end

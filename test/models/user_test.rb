@@ -83,7 +83,7 @@ class UserTest < ActiveSupport::TestCase
     inserter = lambda do |_record|
       attempts += 1
       if attempts == 1
-        ActiveRecord::Base.connection.execute("INSERT INTO users (hca_uid, signed_up_on, created_at, updated_at) VALUES ('ident!race', CURRENT_DATE, now(), now())")
+        ActiveRecord::Base.connection.execute("INSERT INTO users (hca_uid, public_slug, signed_up_on, created_at, updated_at) VALUES ('ident!race', 'racewinner01', CURRENT_DATE, now(), now())")
       end
     end
     User.set_callback(:create, :before, inserter)

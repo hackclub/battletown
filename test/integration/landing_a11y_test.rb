@@ -53,7 +53,7 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
     assert_select "footer.site-footer nav[aria-label='Legal'] a", 4
     {
       "Hack Club" => "https://hackclub.com",
-      "Terms & Privacy" => "https://hackclub.com/privacy-and-terms",
+      "Terms & Privacy" => Legal::URL,
       "Fulfillment" => "https://forms.hackclub.com/bounty",
       "Security" => "https://security.hackclub.com"
     }.each do |label, href|

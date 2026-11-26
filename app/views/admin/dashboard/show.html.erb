@@ -84,6 +84,10 @@
           <h3 class="card__title"><%= link_to "Metrics", admin_metrics_path %></h3>
           <p class="small">Daily and weekly actives, funnel, last active day.</p>
         </li>
+        <li class="card card--tight admin-link">
+          <h3 class="card__title"><%= link_to "Analytics", admin_analytics_path %></h3>
+          <p class="small">Visitor and player funnels, sign-ups, sources, events, jobs and table sizes. CSV and JSON.</p>
+        </li>
         <% if feature?(:team) %>
           <li class="card card--tight admin-link">
             <h3 class="card__title"><%= link_to "Crews", admin_teams_path %></h3>

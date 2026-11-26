@@ -1,0 +1,15 @@
+<%# locals: (circle:, slot:) -%>
+<%# One person on the boss stage (a Bosses::Fighters::Circle). Everybody is a link to their profile (their Slack picture from this app's own
+    copy when they use it, else their initial on a colour taken from their opaque address) and says the same words as the hover and focus card.
+    boss_fighters_controller.js builds the same markup (createElement) when it redraws, so change them together. -%>
+<% tip = "fighter-tip-#{circle.key}" %>
+<li class="<%= class_names("stage__fan", "stage__fan--p#{slot}", "stage__fan--s#{circle.size}", Bosses::FighterMotion.classes(circle.motion), "stage__fan--hit-#{circle.tier}": circle.tier != :idle, "stage__fan--you": circle.you) %>" data-fighter-key="<%= circle.key %>" data-linked="1">
+  <%= link_to circle.path, class: "stage__fighter avatar avatar--tone-#{circle.tone}", "aria-label": circle.label do %><%= circle.avatar_url ? image_tag(circle.avatar_url, alt: "", class: "avatar__img", loading: "lazy", decoding: "async", width: 128, height: 128, draggable: "false") : circle.initial %><% end %>
+  <% if circle.you %><span class="stage__you" aria-hidden="true">you</span><% end %>
+  <span class="stage__tip" id="<%= tip %>" aria-hidden="true">
+    <strong class="stage__tip-title"><%= circle.title %></strong>
+    <span data-line="detail"><%= circle.detail %></span>
+    <span data-line="status"><%= circle.status %></span>
+    <span class="stage__tip-hint" data-line="hint"><%= circle.hint %></span>
+  </span>
+</li>

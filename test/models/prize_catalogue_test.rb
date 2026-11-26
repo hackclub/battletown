@@ -74,7 +74,7 @@ class PrizeCatalogueTest < ActiveSupport::TestCase
     user = users(:new_user)
     user.prize_key = "keychain"
     assert_not user.valid?
-    assert_includes user.errors[:prize_key].join, "no longer in the shop"
+    assert_includes user.errors[:prize_key].join, "no longer in the armoury"
     user.prize_key = "poster"
     assert_predicate user, :valid?
     user.prize_key = "nope"

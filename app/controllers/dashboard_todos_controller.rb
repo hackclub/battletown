@@ -9,6 +9,7 @@ class DashboardTodosController < ApplicationController
 
     project.todos = Project.clean_todos(params[:todos])
     if project.save
+      track_todo_use(project)
       respond_to do |format|
         format.html { redirect_to dashboard_path, status: :see_other }
         format.json { head :no_content } # the page saves in the background (todo-autosave) and needs nothing back
@@ -22,6 +23,13 @@ class DashboardTodosController < ApplicationController
   end
 
   private
+
+  # The page autosaves, so a day with a list counts once (the number of items on the first save of the day that had any).
+  def track_todo_use(project)
+    return if project.todos.empty?
+
+    track_event(:todo_used, items: project.todos.size, once: "todo:#{Hours::Days.today(current_user).iso8601}")
+  end
 
   def no_project
     respond_to do |format|

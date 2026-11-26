@@ -18,7 +18,8 @@ class AdminAuditCoverageTest < ActionDispatch::IntegrationTest
   # Staff writes that change nothing, so there is nothing to audit.
   NOT_AUDITED = {
     "POST /admin/users/:user_id/hours/confirm" => "the confirm step of an hours adjustment: it only shows the summary; the write is POST .../hours",
-    "POST /admin/users/:user_id/coins/confirm" => "the confirm step of a coin adjustment: it only shows the summary; the write is POST .../coins"
+    "POST /admin/users/:user_id/coins/confirm" => "the confirm step of a coin adjustment: it only shows the summary; the write is POST .../coins",
+    "POST /admin/analytics/refresh" => "only drops the cached analytics numbers (a new cache version); nothing about anyone changes"
   }.freeze
 
   setup do

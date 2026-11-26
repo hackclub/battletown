@@ -144,7 +144,7 @@ class OnboardingHackatimeTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("account")
   end
 
-  test "someone who is already in is unaffected: their link goes back to /hackatime, and editing the step never blocks them" do
+  test "someone who is already in is unaffected: their link goes back to the Hackatime section of Settings, and editing the step never blocks them" do
     user = users(:onboarded)
     sign_in_as user
     get onboarding_step_path("account")
@@ -154,19 +154,19 @@ class OnboardingHackatimeTest < ActionDispatch::IntegrationTest
 
     mock_hackatime(uid: "777")
     get "/auth/hackatime/callback"
-    assert_redirected_to hackatime_path
+    assert_redirected_to settings_path(anchor: "hackatime")
   end
 
   test "a visitor with no account cannot reach the callback or the connect page" do
     get "/auth/hackatime/callback"
     assert_redirected_to root_path
-    get hackatime_path
+    get settings_path
     assert_redirected_to root_path
   end
 
-  test "the connect page and the dashboard no longer call Hackatime optional" do
+  test "the Hackatime section of Settings no longer calls Hackatime optional" do
     sign_in_as users(:onboarded)
-    get hackatime_path
-    assert_no_match(/optional/i, response.body[/Your connection.*?<\/section>/m].to_s)
+    get settings_path
+    assert_no_match(/optional/i, css_select("#hackatime").text)
   end
 end

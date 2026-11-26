@@ -65,6 +65,18 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_equal 0, AdminAuditEvent.count, "a refused request leaves no trace"
   end
 
+  test "a person's page shows the profile address (always visible to signed-in players) and the name shown, not an opt-in state" do
+    @teen.update!(profile_name: "Zedd")
+    as_admin(@staff)
+    get admin_user_path(@teen)
+    assert_response :success
+    assert_select "dt", text: "Profile address"
+    assert_select "dt", text: "Public profile", count: 0
+    assert_select "dd code", player_path(@teen.public_slug)
+    assert_select "dd", /always visible to signed-in players, shown as Zedd/
+    assert_no_match(/Hidden \(the default\)|opted-in/, response.body)
+  end
+
   test "the list shows names and statuses but never an email, a Slack id or a Hack Club Auth id" do
     give_coins(@teen, 40)
     code(@teen, Date.new(2026, 11, 10), 5400)
@@ -73,7 +85,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "no-store", response.headers["Cache-Control"]
     assert_select ".admin-only"
-    assert_select "title", "Admin users - BattleTown"
+    assert_select "title", "Admin users - Battletown"
     assert_select "h1", 1
     assert_select "tbody tr", 2
     assert_select "#user-#{@teen.id}" do
@@ -394,7 +406,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
   test "notes are for staff only: no teen-facing page shows them" do
     AdminUsers::AddNote.call(staff: @staff, user: @teen, body: "STAFF-ONLY-NOTE-TEXT")
     sign_in_as @teen
-    [ dashboard_path, projects_path, ships_path, shop_path, settings_notifications_path, privacy_path ].each do |path|
+    [ dashboard_path, projects_path, shop_path, settings_path, settings_notifications_path ].each do |path|
       get path
       assert_not_includes response.body, "STAFF-ONLY-NOTE-TEXT", path
     end

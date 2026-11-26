@@ -26,7 +26,9 @@ class FlagsOffTest < ActionDispatch::IntegrationTest
                    %w[PATCH /admin/merch/:id/cancel] ],
     email: [ %w[GET /email/unsubscribe/:token], %w[POST /email/unsubscribe/:token], %w[GET /admin/email] ],
     nps: [ %w[GET /feedback/:token], %w[POST /feedback/:token], %w[GET /admin/nps], %w[POST /admin/nps/:id/reveal] ],
-    eligibility_gate: []
+    eligibility_gate: [],
+    analytics_paused: [], # the analytics kill switch: no routes, it just stops collection (ON means paused, so it is off while tracking runs)
+    live_updates_paused: [] # the live boss stage kill switch: no routes, the channel rejects and the pages poll (ON means paused)
   }.freeze
 
   # Controllers that belong to a flagged feature: every route they have must sit inside that flag's constraint.
@@ -151,7 +153,7 @@ class FlagsOffTest < ActionDispatch::IntegrationTest
     ENV["ADMIN_HCA_UIDS"] = admin.hca_uid
 
     sign_in_as @teen
-    teen_pages = [ dashboard_path, projects_path, ships_path, ship_path(@ship), shop_path, settings_notifications_path, hackatime_path, new_project_ship_path(@second) ]
+    teen_pages = [ dashboard_path, projects_path, ship_path(@ship), shop_path, settings_path, new_project_ship_path(@second) ]
     forbidden = /Plinko|Weekly quest|Your crew|crew|Welcome back|merch track|Merch|screenshot|Screenshot|survey|NPS|YSWS eligible/
     teen_pages.each do |path|
       statements = sql_of { get path }
@@ -171,19 +173,19 @@ class FlagsOffTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "with every flag off the header navigation and settings menu hold only the original links" do
+  test "with every flag off the header navigation holds only the four everyday links" do
     fill_world
     sign_in_as @teen
     get dashboard_path
     labels = css_select("nav.site-header__nav a").map { |link| link.text.strip }
-    assert_equal %w[Dashboard Projects Ships Shop Hackatime Notifications], labels
+    assert_equal %w[Dashboard Profile Armoury Settings], labels
     assert_select "nav a[href='/plinko'], nav a[href='/team'], nav a[href='/merch']", 0
   end
 
   test "with every flag off the notification settings page lists only the unflagged Slack switches (orders included) and no email section" do
     fill_world
     sign_in_as @teen
-    get settings_notifications_path
+    get settings_path
     assert_response :success
     kinds = css_select("input[type=checkbox][name^='preferences[']").map { |box| box["name"][/\[(.+)\]/, 1] }
     assert_equal %w[daily_reminder link_question ship_reminder ship_mvp ship_approved ship_rejected order_shipped order_fulfilled order_cancelled order_refunded], kinds

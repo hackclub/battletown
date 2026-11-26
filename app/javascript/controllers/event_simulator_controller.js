@@ -4,15 +4,17 @@ import { Controller } from "@hotwired/stimulus"
 //
 // - PREVIEW: the damage slider rewrites the boss's health bar, its two plates and the hidden summary in this browser only.
 //   Nothing is sent anywhere; "restore live values" puts back what the page last showed from the server (and a reload does too).
+//   The stage refreshes itself every 30 seconds, so a preview also lasts only until its next refresh.
 // - SIMULATED PLAYERS: buttons that call Dev::SimulatorController (create players, ship, remove). Every answer carries fresh
-//   numbers, which redraw the same bar, plates, summary and fighter circles, so the boss visibly takes damage without a reload.
+//   numbers, which redraw the bar, plates and summary, and every action then sends the window event "boss:refresh", which makes the
+//   stage's own controller (boss_fighters_controller.js) fetch and redraw the fighters too, so the boss visibly takes damage and the
+//   circles come and go without a reload.
 //
 // After every action that changed something the page shows it where you are looking: the health bar flashes and a number floats
 // up from the boss ("-22.9 h", or "+3 players"). The message and the numbers sit in the panel's sticky "live" header.
 //
 // "auto" makes a few random players ship every N seconds, with a countdown beside it. It stops when the panel goes away
 // (Turbo visit, or the page being cached for the back button), an action fails or the boss is defeated.
-const MAX_FANS = 12 // the dashboard draws at most this many fighter circles
 const MIN_SECONDS = 2
 const MAX_SECONDS = 120
 const MAX_HOURS = 100 // what the server allows for one ship (DevSimulator::MAX_HOURS); the server refuses more, so a bigger hit is only flagged here
@@ -176,6 +178,7 @@ export default class extends Controller {
       this.show(data.status)
       this.say(data.message)
       this.celebrate(data.status)
+      window.dispatchEvent(new CustomEvent("boss:refresh"))
       if (this.autoTarget.checked && data.status.boss?.state === "defeated") {
         this.stopAuto()
         this.say(`${data.message} The boss is defeated, so auto is off.`)
@@ -260,16 +263,15 @@ export default class extends Controller {
   show(status) {
     const boss = status.boss
     if (boss) {
-      this.paint({ health: boss.health_percent, text: boss.health_text, summary: boss.summary, arena: boss.arena_text, state: boss.state })
+      this.paint({ health: boss.health_percent, text: boss.health_text, summary: boss.summary, state: boss.state })
       this.live = this.snapshot()
-      this.fans(status.people_coded_today)
     }
     this.stats(status)
   }
 
-  // Put a health value into the bar, the second plate and the visually hidden sentences. Missing parts of the page are skipped
+  // Put a health value into the bar, the second plate and the visually hidden summary. Missing parts of the page are skipped
   // (a page rendered with no boss has none of them: reload after the boss appears).
-  paint({ health, text, summary, arena, state }) {
+  paint({ health, text, summary, state }) {
     const bar = document.getElementById("stage-boss-health")
     if (bar) {
       bar.value = health
@@ -278,7 +280,6 @@ export default class extends Controller {
     this.text(".stage__health .progress__text", text)
     this.text(".stage__plate:not(.stage__plate--name) .stage__plate-text", text)
     this.text("#stage-boss-summary", summary)
-    if (arena !== undefined) this.text(".stage__arena > p.visually-hidden", arena)
     if (state) this.setState(state)
   }
 
@@ -290,7 +291,6 @@ export default class extends Controller {
       health: bar ? Number(bar.value) : 100,
       text: read(".stage__plate:not(.stage__plate--name) .stage__plate-text"),
       summary: read("#stage-boss-summary"),
-      arena: read(".stage__arena > p.visually-hidden"),
       state: this.currentState()
     }
   }
@@ -313,19 +313,6 @@ export default class extends Controller {
     stage.classList.add(`stage--${state.replaceAll("_", "-")}`)
   }
 
-  // One circle per person who coded today, at most MAX_FANS, like the page does.
-  fans(people) {
-    const crowd = document.querySelector(".stage__crowd")
-    if (!crowd) return
-    const wanted = Math.min(Math.max(Number(people) || 0, 0), MAX_FANS)
-    while (crowd.children.length > wanted) crowd.lastElementChild.remove()
-    while (crowd.children.length < wanted) {
-      const fan = document.createElement("li")
-      fan.className = "stage__fan"
-      crowd.appendChild(fan)
-    }
-  }
-
   stats(status) {
     const boss = status.boss
     const values = {
@@ -334,7 +321,8 @@ export default class extends Controller {
       health: boss ? boss.health_text : "-",
       togo: boss ? (boss.hours_to_go_text || "-") : "-",
       players: status.players,
-      coded: status.people_coded_today
+      coded: status.people_coded,
+      shipped: status.people_shipped
     }
     if (this.hasReadoutTarget) this.readoutTarget.textContent = boss ? `${boss.name} · ${boss.health_text}` : "no boss today"
     this.statTargets.forEach((element) => {

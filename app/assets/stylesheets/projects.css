@@ -34,6 +34,17 @@
 .project__links { display: flex; flex-wrap: wrap; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .project__links a, .project__link-one, .projects-back a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
 .project__hackatime { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+/* The ship history on a card: the latest ship's status always shows; the short list opens from a native <details>. */
+.project__ships { display: grid; gap: var(--space-1); font-size: var(--text-sm); }
+.project__ships > * { margin: 0; }
+.project__ships-none, .project__ships-more, .project__ships-hours { color: var(--color-text-muted); }
+.project__ships-latest { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.project__ships a, .project__ships-history > summary { display: inline-flex; align-items: center; min-height: var(--tap-size); }
+.project__ships-history > summary { cursor: pointer; color: var(--color-link); font-weight: 700; }
+.project__ships-fix { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
+.project__ships-reason { color: var(--color-text-muted); overflow-wrap: anywhere; }
+.project__ships-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.project__ships-list > li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
 .project__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: auto; padding-top: var(--space-3); }
 .project__actions form, .projects-actions form, .suggestion__actions form, .links__item form { margin: 0; }
 .projects-actions, .suggestion__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }

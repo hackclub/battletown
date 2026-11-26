@@ -29,7 +29,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1 img[alt='Battletown']", 1
     assert_select ".hero__tagline", /Build projects,\s+get gear/
-    assert_select "title", text: "BattleTown"
+    assert_select "title", text: "Battletown"
     assert_select "body.page--landing", 1
     assert_select ".landing[data-controller='landing-map']", 1
   end
@@ -61,7 +61,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".signpost__num[aria-hidden='true']", 3
     assert_select ".signpost__board--1 p", text: "Build your project, and count your hours"
     assert_select ".signpost__board--2 p", text: /Ship your project to hit the boss with your hours, and get coins/
-    assert_select ".signpost__board--3 p", text: /When the boss is defeated, collect your winnings, and claim a prize from the shop/
+    assert_select ".signpost__board--3 p", text: /When the boss is defeated, collect your winnings, and claim a prize from the armoury/
   end
 
   test "the call to action opens onboarding, and the landing offers no sign-in button" do

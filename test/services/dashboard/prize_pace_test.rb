@@ -55,7 +55,7 @@ class Dashboard::PrizePaceTest < ActiveSupport::TestCase
     give_coins(@user, 50)
     assert_equal :reached, pace.state
     assert_equal "Enough for it", pace.badge
-    assert_match(/Spend them in the shop/, pace.to_go)
+    assert_match(/Spend them in the armoury/, pace.to_go)
     assert_nil pace.plan
 
     other = users(:new_user)

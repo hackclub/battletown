@@ -2,8 +2,10 @@
 # -> From a manifest -> pick the Hack Club workspace -> paste this file. Full steps: projects/battletown/runbooks/slack-app.md.
 # Schema: https://docs.slack.dev/reference/app-manifest
 #
-# The Rails app only sends direct messages (Notifications::Slack::WebApiAdapter calls chat.postMessage with a Slack
-# user id as the channel). Slack does not call this app back, so there is nothing to host and nothing to subscribe to.
+# The Rails app sends direct messages (Notifications::Slack::WebApiAdapter calls chat.postMessage with a Slack user id as
+# the channel) and reads ONE member's display name and picture for players who use their Slack name and picture
+# (SlackProfiles::Client calls users.info, in a background job, at most once a day per person). Slack does not call this app
+# back, so there is nothing to host and nothing to subscribe to.
 #
 # Adding a scope, event subscription, slash command or interactivity later needs the project owner's approval. If you
 # change the scopes, also change EXPECTED_SCOPES in app/services/notifications/slack/check.rb (a test compares them).
@@ -28,9 +30,11 @@ oauth_config:
   scopes:
     # Bot scopes only; there are no user scopes, so the app can never act as a person.
     bot:
-      # Post messages as the bot, including into a person's DM with it. This is the only permission the app asks for.
-      # It cannot read messages, channels, users or email addresses.
+      # Post messages as the bot, including into a person's DM with it. It cannot read messages or channels.
       - chat:write
+      # Read a member's profile (users.info): display name and picture address, for players who use their Slack name and picture. Deliberately NOT
+      # users:read.email: the app never asks Slack for an email address (Hack Club Auth is where email comes from).
+      - users:read
 
 settings:
   # Not an organisation-wide app: it is installed in one workspace.

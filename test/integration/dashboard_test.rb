@@ -224,13 +224,15 @@ class DashboardTest < ActionDispatch::IntegrationTest
 
   # --- the boss and the fighters ---
 
-  test "the boss's health, the fighters (decoration only) and the headcount in words" do
+  test "the boss's health, one circle per fighter of the last 24 hours and the headcount in words" do
     fill_in_everything(@user)
     3.times { |i| add_hours(build_user(created_on: @today - 30), @today, 1200 + i) }
     dashboard
-    assert_select ".stage__crowd[aria-hidden='true'] .stage__fan", 4, "one circle per person who coded today, you included"
-    assert_select ".stage__fan", text: /./, count: 0, message: "the circles carry no names, avatars or text"
-    assert_equal 1, response.body.scan(/4 people coded today/).size, "the headcount is said once, in words"
+    assert_select ".stage__crowd .stage__fan", 4, "one circle per person who coded in the last day, you included"
+    assert_select ".stage__fan a.stage__fighter[href^='/players/']", 4, "everybody is a link to their profile, named by a handle"
+    assert_select ".stage__fan .stage__fighter--anonymous", 0
+    assert_select ".stage__fan--you", 1
+    assert_equal 1, response.body.scan(/4 people coded in the last day/).size, "the headcount is said once, in words"
     assert_select ".stage__art[alt]", 1
   end
 
@@ -248,7 +250,7 @@ class DashboardTest < ActionDispatch::IntegrationTest
     15.times { add_hours(build_user(created_on: @today - 30), @today, 1200) }
     dashboard
     assert_select ".stage__fan", 12
-    assert_includes response.body, "15 people coded today"
+    assert_includes response.body, "15 people coded in the last day"
   end
 
   test "no boss: the stage says so and still shows the prize and the next step" do
@@ -479,7 +481,7 @@ class DashboardTest < ActionDispatch::IntegrationTest
 
     body = response.body
     [ "Zed", "zed.person", "U0ZEDSLACK", "Secret Plans", "zed-hackatime", "777" ].each { |secret| assert_not body.include?(secret), "the page leaked #{secret.inspect}" }
-    assert_includes body, "2 people coded today" # only a headcount: this user and the other one
+    assert_includes body, "2 people coded in the last day" # only a headcount: this user and the other one
   end
 
   test "a typical user's dashboard runs a bounded number of queries" do

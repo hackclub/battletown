@@ -1,7 +1,8 @@
 module Nps
   # The Net Promoter Score maths, for the staff page. Promoters score 9 or 10, detractors 0 to 6, passives 7 or 8.
   # NPS = (promoters - detractors) / responses, as a percentage rounded to a whole number (halves away from zero),
-  # so it runs from -100 to 100. With no responses there is no NPS (nil), never zero.
+  # so it runs from -100 to 100. With no responses there is no NPS (nil), never zero. By default only answers from people who
+  # are measured count (not staff, simulated players or listed testers: User.analytics_included).
   module Stats
     TREND_DAYS = 14
     Tally = Data.define(:promoters, :passives, :detractors) do
@@ -24,10 +25,12 @@ module Nps
                 detractors: scores.count { |score| score <= 6 })
     end
 
-    def overall(scope = NpsResponse.all) = tally(scope.pluck(:score))
+    def measured = NpsResponse.where(user_id: User.analytics_included.select(:id))
+
+    def overall(scope = measured) = tally(scope.pluck(:score))
 
     # One Day per UTC date for the last TREND_DAYS days, newest last, empty days included.
-    def trend(now: Time.current, scope: NpsResponse.all)
+    def trend(now: Time.current, scope: measured)
       today = now.utc.to_date
       from = today - (TREND_DAYS - 1)
       scores = scope.where(answered_at: from.beginning_of_day.utc..).pluck(:answered_at, :score).group_by { |time, _| time.utc.to_date }

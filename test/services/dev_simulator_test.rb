@@ -19,9 +19,18 @@ class DevSimulatorTest < ActiveSupport::TestCase
     end
   end
 
+  test "the local database check refuses in production, even for a local database" do
+    original = Rails.method(:env)
+    Rails.define_singleton_method(:env) { ActiveSupport::EnvironmentInquirer.new("production") }
+    assert_raises(DevSimulator::Refused) { DevSimulator.check_local_database! }
+    assert_raises(DevSimulator::Refused) { DevSimulator::Looks.apply_all }
+  ensure
+    Rails.define_singleton_method(:env, original)
+  end
+
   test "players are the users whose id starts with sim! and nobody else" do
     now = Time.current
-    User.insert_all!([ "sim!1", "sim!99", "ident!sim!1", "sim", "simx", "SIM!2" ].map { |uid| { hca_uid: uid, signed_up_on: now.to_date, created_at: now, updated_at: now } })
+    User.insert_all!([ "sim!1", "sim!99", "ident!sim!1", "sim", "simx", "SIM!2" ].map { |uid| { hca_uid: uid, public_slug: SecureRandom.alphanumeric(11).downcase, signed_up_on: now.to_date, created_at: now, updated_at: now } })
 
     assert_equal %w[sim!1 sim!99], DevSimulator.players.order(:hca_uid).pluck(:hca_uid)
   end

@@ -4,6 +4,7 @@ class ReferralsController < ApplicationController
     raise ActionController::RoutingError, "Not Found" unless referral
 
     session[:referral_source] ||= referral.slug unless signed_in?
+    track_event(:referral_link_hit, slug: referral.slug)
     redirect_to root_path
   end
 end

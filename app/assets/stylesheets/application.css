@@ -119,7 +119,7 @@
 
 /* Site chrome. The header is a cream bar with the chunky cream edge of the Figma CTA; the footer is an ink-blue band.
    Header: brand and account buttons on the first row, the main links on a second row of their own on phones; one row
-   from 48rem up. No JavaScript: Settings is a native <details>. */
+   from 48rem up. Four plain links, no menus and no JavaScript. */
 @layer components {
   .site-header {
     background: var(--color-bg);
@@ -173,9 +173,9 @@
     gap: var(--space-1);
   }
 
-  /* One pill shape for every header link and the Settings summary. The current page is solid ink blue (and carries
+  /* One pill shape for every header link. The current page is solid ink blue (and carries
      aria-current), so it is never marked by colour alone: it is also bold on a filled pill. */
-  .site-header__nav a, .site-menu summary {
+  .site-header__nav a {
     display: inline-flex;
     align-items: center;
     min-height: var(--tap-size);
@@ -185,45 +185,16 @@
     font-weight: 700;
     text-decoration: none;
   }
-  .site-header__nav a:hover, .site-menu summary:hover { background: var(--color-surface-raised); color: var(--color-ink-blue); }
-  .site-header__nav a[aria-current="page"], .site-header__nav a.is-current, .site-menu summary.is-current {
+  .site-header__nav a:hover { background: var(--color-surface-raised); color: var(--color-ink-blue); }
+  .site-header__nav a[aria-current="page"], .site-header__nav a.is-current {
     background: var(--color-ink-blue);
     color: var(--color-bg);
   }
-
-  .site-menu { position: relative; }
-  .site-menu summary { cursor: pointer; list-style: none; }
-  .site-menu summary::-webkit-details-marker { display: none; }
-  .site-menu summary::after {
-    content: "";
-    display: inline-block;
-    margin-inline-start: var(--space-2);
-    border: 0.3em solid transparent;
-    border-top-color: currentcolor;
-    vertical-align: -0.1em;
-  }
-  .site-menu[open] summary::after { border-top-color: transparent; border-bottom-color: currentcolor; vertical-align: 0.1em; }
-  .site-menu__panel {
-    position: absolute;
-    z-index: 10;
-    inset-inline-start: 0;
-    top: 100%;
-    display: grid;
-    gap: var(--space-1);
-    min-width: 12rem;
-    padding: var(--space-2);
-    border: 2px solid var(--color-surface-raised);
-    border-radius: var(--radius-md);
-    background: var(--color-bg);
-    box-shadow: var(--shadow-md);
-  }
-  .site-menu__panel a { justify-content: flex-start; border-radius: var(--radius-sm); }
 
   @media (min-width: 48rem) {
     .site-header__inner { flex-wrap: nowrap; }
     .site-header__nav { order: 2; flex-basis: auto; margin-inline-start: auto; justify-content: flex-end; }
     .site-header__account { order: 3; margin-inline-start: 0; }
-    .site-menu__panel { inset-inline-start: auto; inset-inline-end: 0; }
   }
 
   .site-footer {

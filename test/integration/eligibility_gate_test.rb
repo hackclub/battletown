@@ -10,7 +10,7 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
   include ShipsTestSupport
 
   NOT_ELIGIBLE = "Prizes are only available to people who qualify for Hack Club YSWS programs. Your account does not qualify yet.".freeze
-  HELP = "Questions? Ask in Slack.".freeze
+  HELP = "Questions? Ask in #{Support.where_to_ask}.".freeze
   RECHECK = "Sign in again to refresh your verification.".freeze
   D = ->(day) { Date.new(2026, 11, day) }
   HOURS_NOW = Time.utc(2026, 11, 10, 12)
@@ -197,26 +197,25 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
 
   # --- the ships and the form ---
 
-  test "ship detail and the ships list carry the same note in each state" do
+  test "ship detail carries the unlock note in each state" do
     ship = approved_ship
     with_feature(:eligibility_gate) do
-      [ ship_path(ship), ships_path ].each do |path|
-        in_state :not_eligible
-        get path
-        assert_select ".ship-note", text: /#{Regexp.escape(NOT_ELIGIBLE)} #{Regexp.escape(HELP)}/
+      path = ship_path(ship)
+      in_state :not_eligible
+      get path
+      assert_select ".ship-note", text: /#{Regexp.escape(NOT_ELIGIBLE)} #{Regexp.escape(HELP)}/
 
-        in_state :stale
-        get path
-        assert_select ".ship-note", text: /#{Regexp.escape(RECHECK)}/
+      in_state :stale
+      get path
+      assert_select ".ship-note", text: /#{Regexp.escape(RECHECK)}/
 
-        in_state :unverified
-        get path
-        assert_select ".ship-note", text: /Your coins unlock when you verify your identity with Hack Club/
+      in_state :unverified
+      get path
+      assert_select ".ship-note", text: /Your coins unlock when you verify your identity with Hack Club/
 
-        in_state :ready
-        get path
-        assert_select ".ship-note", 0
-      end
+      in_state :ready
+      get path
+      assert_select ".ship-note", 0
     end
   end
 
@@ -318,7 +317,7 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
     ship = approved_ship
     with_feature(:eligibility_gate) do
       in_state :not_eligible
-      bodies = [ shop_path, dashboard_path, ship_path(ship), ships_path ].map do |path|
+      bodies = [ shop_path, dashboard_path, ship_path(ship) ].map do |path|
         get path
         response.body
       end

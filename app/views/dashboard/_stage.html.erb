@@ -5,7 +5,8 @@
 <% stage = d.stage %>
 <% prize = d.prize %>
 <% project = d.project %>
-<section class="stage on-map stage--<%= boss.state.to_s.dasherize %>" aria-labelledby="stage-title">
+<section class="stage on-map stage--<%= boss.state.to_s.dasherize %>" aria-labelledby="stage-title"
+         <% if boss.boss? %>data-controller="boss-fighters<%= " boss-live" if Bosses::Live.enabled? %>" data-boss-fighters-url-value="<%= boss_fighters_path %>" data-action="turbo:before-cache@document->boss-fighters#stop<%= " turbo:before-cache@document->boss-live#disconnect" if Bosses::Live.enabled? %>" data-damage-text="<%= boss.contributed_text %>" data-boss-live-own-key-value="<%= boss.own_key %>"<% end %>>
   <%# The prize box and the pace check stand at the left of the boss, or, with no boss, under the message. -%>
   <% pace = d.prize_pace %>
   <% prize_link = capture do %>
@@ -16,7 +17,7 @@
           <span class="stage__prize-box" aria-hidden="true">
             <% if prize.image.present? %><%= image_tag prize.image, alt: "", class: "stage__prize-image" %><% else %><span class="stage__prize-emoji"><%= prize.emoji %></span><% end %>
           </span>
-          <span class="visually-hidden"><%= prize.name %>, <%= prize.free ? "free" : prize.progress_text %>. Open the shop.</span>
+          <span class="visually-hidden"><%= prize.name %>, <%= prize.free ? "free" : prize.progress_text %>. Open the armoury.</span>
         <% end %>
         <% if pace %>
           <div class="stage__pace stage__pace--<%= pace.state.to_s.dasherize %>">
@@ -36,13 +37,13 @@
     <% else %>
       <div class="progress progress--boss stage__health">
         <label for="stage-boss-health" class="visually-hidden"><%= boss.boss_name %>, weekly boss, health</label>
-        <progress id="stage-boss-health" class="progress__bar stage__bar" max="100" value="<%= boss.health_percent %>" aria-describedby="stage-boss-summary"><%= boss.health_text %></progress>
-        <span class="progress__text visually-hidden"><%= boss.health_text %></span>
-        <p id="stage-boss-summary" class="visually-hidden"><%= boss.summary %></p>
+        <progress id="stage-boss-health" class="progress__bar stage__bar" max="100" value="<%= boss.health_percent %>" aria-describedby="stage-boss-summary" data-boss-fighters-target="bar"><%= boss.health_text %></progress>
+        <span class="progress__text visually-hidden" data-boss-fighters-target="healthText"><%= boss.health_text %></span>
+        <p id="stage-boss-summary" class="visually-hidden" data-boss-fighters-target="summary"><%= boss.summary %></p>
         <%# The two plates that hang under the bar, as on any fighting game's health bar: the boss's name and what is left. Said once for assistive tech, above. -%>
         <div class="stage__plates" aria-hidden="true">
-          <span class="stage__plate stage__plate--name"><span class="stage__plate-text"><%= boss.boss_name %></span></span>
-          <span class="stage__plate"><span class="stage__plate-text"><%= boss.health_text %></span></span>
+          <span class="stage__plate stage__plate--name"><span class="stage__plate-text" data-boss-fighters-target="name"><%= boss.boss_name %></span></span>
+          <span class="stage__plate"><span class="stage__plate-text" data-boss-fighters-target="plate"><%= boss.health_text %></span></span>
         </div>
       </div>
     <% end %>
@@ -52,13 +53,21 @@
     <%= prize_link %>
     <% art_path, art_width, art_height = boss.stage_art %>
     <div class="stage__arena">
-      <%# One anonymous circle per person who coded today (at most 12), around the boss: stand-ins for the fighters' avatars. Decoration; the headcount is said in words. -%>
-      <ul class="stage__crowd" aria-hidden="true">
-        <% [ boss.community_active_today.to_i, 12 ].min.times do %><li class="stage__fan"></li><% end %>
-      </ul>
-      <%# The built-in cut-out has empty space above the boss; the page trims it so the boss stands close under the health bar. -%>
-      <%= image_tag art_path, alt: boss.art_alt, class: class_names("stage__art", "stage__art--cutout": art_path.start_with?("design/")), width: art_width, height: art_height %>
-      <p class="visually-hidden"><%= boss.community_text %> <%= boss.contributed_text %> <%= "Boss defeated." if boss.state == :defeated %><%= " The boss got away this week." if boss.state == :escaped %></p>
+      <%# The people who coded in the last 24 hours, at most 12, around the boss: an avatar each (their Slack picture, or their initial on a colour),
+          a link to their profile page. Size says how much they coded, the lunge how they hit the
+          boss (see Bosses::Fighters). Hover or focus shows a card; boss_fighters_controller.js keeps it all live. -%>
+      <%# The ring is the boss's picture box (the circles' places are measured from its edges, and the lunge stops at them): the circles
+          sit in a ring around it, outside it, never over the picture. -%>
+      <div class="stage__ring<%= " stage__ring--cutout" if art_path.start_with?("design/") %>">
+        <ul class="stage__crowd" aria-label="People fighting the boss" tabindex="-1" data-boss-fighters-target="crowd">
+          <% boss.fighters.each_with_index do |circle, index| %><%= render "dashboard/fighter", circle: circle, slot: index + 1 %><% end %>
+        </ul>
+        <%# The built-in cut-out has empty space above the boss; the page trims it so the boss stands close under the health bar. -%>
+        <%= image_tag art_path, alt: boss.art_alt, class: "stage__art", width: art_width, height: art_height %>
+      </div>
+      <%# Said once in words for assistive tech, including "Nobody has coded in the last day" when the arena is empty. Nothing on screen: any
+          text here sits over the boss's feet. -%>
+      <p class="visually-hidden" data-boss-fighters-target="arena"><%= boss.arena_text %></p>
     </div>
   <% end %>
 

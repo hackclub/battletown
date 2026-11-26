@@ -68,7 +68,7 @@ class AdminTest < ActionDispatch::IntegrationTest
     get "/admin"
     assert_response :success
     assert_equal "no-store", response.headers["Cache-Control"]
-    assert_select "title", text: "Admin - BattleTown", count: 1
+    assert_select "title", text: "Admin - Battletown", count: 1
     assert_select "h1", "Admin dashboard"
     assert_select ".admin-only table.admin-table", 6
     assert_select "table caption", /Signups per day/

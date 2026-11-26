@@ -57,6 +57,11 @@ module Battletown
     # through with no screen. On when the OAuth app is set up; HACKATIME_CHAIN=0 turns it off (for example when the app's
     # credentials are not working yet, so sign-in does not send everyone into a failing step). Off in tests unless one sets it.
     config.x.hackatime.sign_in_chain = config.x.hackatime.client_id.present? && config.x.hackatime.client_secret.present? && ENV["HACKATIME_CHAIN"] != "0"
+    # Whether a working Hackatime link is required to finish onboarding (OnboardingsController#hackatime_ready?). On by default.
+    # This is the launch-day escape hatch: if Hackatime or its OAuth app breaks, set HACKATIME_REQUIRED=0 (or false) and restart
+    # so nobody is stuck at the account step; the step then shows Connect as recommended with a "Skip for now" button, and the
+    # dashboard keeps asking people to connect later. This is the only place the variable is read.
+    config.x.hackatime.required = !%w[0 false].include?(ENV["HACKATIME_REQUIRED"].to_s.strip.downcase)
 
     # Active Record encryption for the Hackatime tokens (HackatimeConnection). Keys come from the environment in every
     # environment except test (config/environments/test.rb); production refuses to boot without them (production.rb).
@@ -64,6 +69,12 @@ module Battletown
     config.active_record.encryption.primary_key = ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"].presence
     config.active_record.encryption.deterministic_key = ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"].presence
     config.active_record.encryption.key_derivation_salt = ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"].presence
+
+    # Where people can reach the team (app/services/support.rb, shown in the "who to ask" lines). Both are
+    # optional and come from the environment, never from the repository: an address is never made up. Unset, the wording falls
+    # back to "the Battletown channel in the Hack Club Slack" and no email line is shown.
+    config.x.support.email = ENV["SUPPORT_EMAIL"].presence
+    config.x.support.slack_channel = ENV["SUPPORT_SLACK_CHANNEL"].presence
 
     # Configuration for the application, engines, and railties goes here.
     #

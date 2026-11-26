@@ -4,14 +4,34 @@
     <title><%= page_title %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="application-name" content="Battletown">
+    <meta name="theme-color" content="#1472d5">
+    <%# Link previews (Slack, Discord, search, social): a page can set content_for :meta_description or :share_title; the
+        URL and the 1200x630 image (public/og-image.png) are absolute, built on APP_URL. %>
+    <% share_title = content_for(:share_title).presence || page_title %>
+    <% share_description = content_for(:meta_description).presence || default_meta_description %>
+    <meta name="description" content="<%= share_description %>">
+    <meta property="og:site_name" content="Battletown">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<%= share_title %>">
+    <meta property="og:description" content="<%= share_description %>">
+    <meta property="og:url" content="<%= public_url(request.path) %>">
+    <meta property="og:image" content="<%= public_url("/og-image.png") %>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="The Battletown logo in front of a boss in armour and a pink cloak">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= share_title %>">
+    <meta name="twitter:description" content="<%= share_description %>">
+    <meta name="twitter:image" content="<%= public_url("/og-image.png") %>">
+    <link rel="manifest" href="/manifest.json">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+    <link rel="icon" href="/icon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/icon-180.png">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
@@ -67,7 +87,7 @@
         <nav aria-label="Legal">
           <%= link_to "Hack Club", "https://hackclub.com", rel: "noopener noreferrer" %>
           <span aria-hidden="true">&middot;</span>
-          <%= link_to "Terms & Privacy", "https://hackclub.com/privacy-and-terms", rel: "noopener noreferrer" %>
+          <%= link_to "Terms & Privacy", Legal::URL, rel: "noopener noreferrer" %>
           <span aria-hidden="true">&middot;</span>
           <%= link_to "Fulfillment", "https://forms.hackclub.com/bounty", rel: "noopener noreferrer" %>
           <span aria-hidden="true">&middot;</span>

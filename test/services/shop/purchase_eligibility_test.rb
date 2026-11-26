@@ -36,7 +36,7 @@ class Shop::PurchaseEligibilityTest < ActiveSupport::TestCase
     with_feature(:eligibility_gate) do
       state!(status: "verified", eligible: false)
       assert_refused(Shop::NotEligible) do |error|
-        assert_equal "Prizes are only available to people who qualify for Hack Club YSWS programs. Your account does not qualify yet. Questions? Ask in Slack.", error.message
+        assert_equal "Prizes are only available to people who qualify for Hack Club YSWS programs. Your account does not qualify yet. Questions? Ask in #{Support.where_to_ask}.", error.message
         assert_kind_of Shop::Error, error
       end
     end

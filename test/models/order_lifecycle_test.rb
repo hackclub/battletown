@@ -9,6 +9,9 @@ class OrderLifecycleTest < ActiveSupport::TestCase
 
   setup { setup_orders_world }
   teardown { teardown_orders_world }
+  # The migration test below changes tables inside the test transaction; statements prepared against them must not outlive it
+  # ("cached plan must not change result type" in the next test on this worker).
+  teardown { ActiveRecord::Base.connection_pool.connections.each(&:clear_cache!) }
 
   def raw_order(status: "requested", key: "raw-#{SecureRandom.hex(4)}", **columns)
     values = { user_id: @buyer.id, prize_key: "tshirt", prize_name: "Name", coins: 50, kind: "purchase", status: status, idempotency_key: key,
