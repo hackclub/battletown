@@ -230,24 +230,33 @@
     background: var(--color-ink-blue);
     color: var(--color-bg);
     font-size: var(--text-sm);
+    text-align: center;
   }
   .site-footer__inner {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2) var(--space-6);
-    padding-block: var(--space-6);
+    gap: 0;
+    padding-block: var(--space-4);
   }
+  /* Two centered lines: the links between middle dots, then a quieter credit. Links are underlined in the site's yellow (6.2:1 on the ink blue). */
   .site-footer a {
     display: inline-flex;
     align-items: center;
     min-height: var(--tap-size);
-    color: var(--color-bg);
+    color: var(--color-highlight);
     font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
-  .site-footer a:hover { color: var(--color-surface); }
-  .site-footer nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-4); }
+  .site-footer a:hover { color: var(--color-bg); }
+  .site-footer nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: var(--space-2); }
+  /* On the narrowest phones the links wrap, so the dots go (a dot left at a line's end looks like a mistake) and the gap separates them. */
+  @media (max-width: 30rem) {
+    .site-footer nav > span { display: none; }
+    .site-footer nav { column-gap: var(--space-6); }
+  }
+  .site-footer__credit { margin: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 0.3em; color: color-mix(in srgb, var(--color-bg) 86%, var(--color-ink-blue)); }
   .site-footer :focus-visible { outline-color: var(--color-bg); }
 }
 

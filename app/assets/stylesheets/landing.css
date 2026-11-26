@@ -47,28 +47,12 @@ body:has(.landing) .site-header .btn {
   color: var(--color-text);
 }
 
-/* The footer lies over the bottom of the last section, so Orpheus can reach the very bottom of the page. On phones his
-   cape fills that corner, so the footer sits on it at the right, on a solid blue backing (cream on the painting was 1.1:1);
-   on wider screens it sits on the sky at the left in navy, with no backing. */
-body:has(.landing) { position: relative; }
-body:has(.landing) .site-footer { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; border-top: 0; background: none; color: var(--cream); pointer-events: none; }
-body:has(.landing) .site-footer__inner { flex-direction: column; align-items: flex-end; gap: var(--space-1); max-width: none; margin: 0; padding-inline: var(--side, 1.25rem); }
-body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
-@media (max-width: 63.999rem) {
-  /* Phones and tablets: no box and no overlap. The footer sits in flow under the last section, as small navy underlined links on the page-end sky. */
-  body:has(.landing) .site-footer { position: static; color: var(--navy); pointer-events: auto; padding-block: var(--space-2); }
-  body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); }
-  body:has(.landing) .site-footer__inner { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; column-gap: 1.25rem; row-gap: 0; }
-  body:has(.landing) .site-footer__inner > span { display: block; padding-block: 0.8rem; }
-  body:has(.landing) .site-footer nav { display: flex; flex-wrap: wrap; column-gap: 1.25rem; }
-  body:has(.landing) .site-footer nav a { display: inline-flex; align-items: center; min-height: 2.75rem; }
-  body:has(.landing) .site-footer__inner > span a { padding-block: 0.8rem; margin-block: -0.8rem; }
-}
-@media (min-width: 64rem) {
-  body:has(.landing) .site-footer { color: var(--navy); }
-  body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /* the cream ring would be 1.8:1 on the sky */
-  body:has(.landing) .site-footer__inner { flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-6); }
-}
+/* The footer sits in flow under the last section at every width: two centered lines of small navy text on the page-end sky, links underlined,
+   no box. (It no longer overlays the section, so nothing can cover the fighter.) */
+body:has(.landing) .site-footer { background: none; border-top: 0; color: var(--navy); }
+body:has(.landing) .site-footer a { color: var(--navy); }
+body:has(.landing) .site-footer__credit { color: color-mix(in srgb, var(--navy) 80%, #d0e5ee); }
+body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /* the cream ring would be 1.8:1 on the sky */
 
 /* The header floats over the hero on wide screens (it sits in flow as a sky strip on narrow ones). */
 @media (min-width: 48rem) {

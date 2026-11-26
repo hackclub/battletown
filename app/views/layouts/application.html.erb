@@ -64,12 +64,16 @@
     <% unless content_for?(:hide_footer) %>
     <footer class="site-footer">
       <div class="container site-footer__inner">
-        <span>A <%= link_to "Hack Club", "https://hackclub.com", rel: "noopener noreferrer" %> program</span>
         <nav aria-label="Legal">
-          <%= link_to "Terms & Privacy Policy", "https://hackclub.com/privacy-and-terms", rel: "noopener noreferrer" %>
-          <%= link_to "Fulfillment bounty", "https://forms.hackclub.com/bounty", rel: "noopener noreferrer" %>
+          <%= link_to "Hack Club", "https://hackclub.com", rel: "noopener noreferrer" %>
+          <span aria-hidden="true">&middot;</span>
+          <%= link_to "Terms & Privacy", "https://hackclub.com/privacy-and-terms", rel: "noopener noreferrer" %>
+          <span aria-hidden="true">&middot;</span>
+          <%= link_to "Fulfillment", "https://forms.hackclub.com/bounty", rel: "noopener noreferrer" %>
+          <span aria-hidden="true">&middot;</span>
           <%= link_to "Security", "https://security.hackclub.com", rel: "noopener noreferrer" %>
         </nav>
+        <p class="site-footer__credit">made with &lt;3 by <%= link_to "@armand", "https://hackclub.enterprise.slack.com/team/U07ABEP916X", target: "_blank", rel: "noopener" %></p>
       </div>
     </footer>
     <% end %>

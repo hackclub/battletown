@@ -50,29 +50,26 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
 
   test "the footer and the sign-in link are on the page the stylesheet rules target" do
     get "/"
-    assert_select "footer.site-footer .site-footer__inner > span", text: "A Hack Club program"
-    assert_select "footer.site-footer nav[aria-label='Legal'] a", 3
-    assert_select "footer.site-footer .site-footer__inner > span a[href='https://hackclub.com']", text: "Hack Club"
+    assert_select "footer.site-footer nav[aria-label='Legal'] a", 4
     {
-      "Terms & Privacy Policy" => "https://hackclub.com/privacy-and-terms",
-      "Fulfillment bounty" => "https://forms.hackclub.com/bounty",
+      "Hack Club" => "https://hackclub.com",
+      "Terms & Privacy" => "https://hackclub.com/privacy-and-terms",
+      "Fulfillment" => "https://forms.hackclub.com/bounty",
       "Security" => "https://security.hackclub.com"
     }.each do |label, href|
       assert_select "footer.site-footer nav[aria-label='Legal'] a[href='#{href}'][rel='noopener noreferrer']", text: label
     end
+    assert_select "footer.site-footer .site-footer__credit", text: "made with <3 by @armand"
+    assert_select "footer.site-footer .site-footer__credit a[href='https://hackclub.enterprise.slack.com/team/U07ABEP916X'][target='_blank'][rel='noopener']", text: "@armand"
     assert_select ".hero__signin-form", 0
   end
 
-  test "the footer has no box at any width: below 64rem it sits in flow under the last section, navy on the sky" do
-    below = CSS[/@media \(max-width: 63\.999rem\) \{(.*?)\n\}/m, 1]
-    assert below, "a max-width 63.999rem block for the footer"
-    assert_match(/\.site-footer \{[^}]*position: static/, below)
-    assert_match(/\.site-footer \{[^}]*color: var\(--navy\)/, below)
-    assert_no_match(/background: var\(--color-ink-blue\)/, below)
-    wide = CSS[/@media \(min-width: 64rem\) \{\n  body:has\(\.landing\) \.site-footer \{(.*?)\n\}/m, 1]
-    assert_match(/color: var\(--navy\)/, wide)
-    assert_match(/outline-color: var\(--navy\)/, wide)
-    assert_no_match(/background: var\(--color-ink-blue\)/, wide)
+  test "the footer has no box and does not overlay the last section: in flow, navy on the sky" do
+    block = rule("body:has(.landing) .site-footer")
+    assert_match(/background: none/, block)
+    assert_match(/color: var\(--navy\)/, block)
+    assert_no_match(/position: absolute/, block)
+    assert_no_match(/background: var\(--color-ink-blue\)/, CSS[/The footer sits in flow.*?\n\n/m].to_s)
   end
 
   test "the call to action can wrap and never drops below 24px" do
