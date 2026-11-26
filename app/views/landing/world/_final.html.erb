@@ -1,8 +1,8 @@
-<%# Final band (owner: final agent): night ground. The sand edge is a CSS clip over the site's ink blue, with a thin darker-sand shade under the lip. The only decoration is the logo's four-point sparkle, one inline symbol reused, so no image bytes load. Each star's place is a class in landing_world_final.css (the CSP forbids style attributes). See that file, which also documents the empty slot for a future painting. -%>
+<%# Final band (owner: final agent): the teal ground again under the sand's shore, with the cliff band's painted path (same files, lower stretch only) leading to the call to action. The shore is a CSS clip, see landing_world_final.css, which also documents the empty slot for a future painting. -%>
 <% %w[shade ground].each do |layer| %>
   <div class="world__shore shore--<%= layer %>"></div>
 <% end %>
-<svg class="night__defs" aria-hidden="true" focusable="false"><symbol id="night-star" viewBox="0 0 100 100"><path d="M50 0C52 31 69 48 100 50C69 52 52 69 50 100C48 69 31 52 0 50C31 48 48 31 50 0Z"/></symbol></svg>
-<% (1..9).each do |n| %>
-  <svg class="night__star night__star--<%= n %>" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#night-star"/></svg>
-<% end %>
+<div class="ground__path">
+  <%= image_tag "landing/world/cliff/path@c.webp", alt: "", width: 300, height: 880, loading: "lazy", decoding: "async",
+        srcset: { "landing/world/cliff/path@a.webp" => "150w", "landing/world/cliff/path@b.webp" => "195w", "landing/world/cliff/path@c.webp" => "300w" }, sizes: "(min-width: 48rem) 240px, 104px" %>
+</div>
