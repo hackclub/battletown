@@ -279,36 +279,44 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 }
 /* ---- Prizes: each one sits on its own low stone in the floor, with its name and hours as plain white text on the floor below it. ---- */
 .landing .prizes { --bg: var(--royal); --next: var(--edge-c); }
+.landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) + 1rem); } /* the sand follows the second row sooner */
 .landing .prizes h2 { color: var(--yellow); }
-.landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 2rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
+.landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 1.5rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
 .landing .prize {
-  position: relative; isolation: isolate; container-type: inline-size; flex: none; display: flex; flex-direction: column; align-items: center; width: calc((100% - var(--gap)) / 2); max-width: 13rem;
+  position: relative; isolation: isolate; container-type: inline-size; flex: none; display: flex; flex-direction: column; align-items: center; width: calc((100% - var(--gap)) / 2);
   text-align: center;
-  /* Stone colors sampled from the painted floor (art-only-1576.jpg): the lit top of the stepping stones, #b3b7e6, and the mid-violet under their front edge, #4c56b5. */
-  --stone-top: #b3b7e6; --stone-lip: #4c56b5; --stone-text: #fff; --sw: 90%; --sh: 3.8rem; --dy: 0rem;
+  /* Stone colors sampled from the painted floor (art-only-1576.jpg): the lit top of the stepping stones, #b3b7e6, and the mid-violet under their front edge, #4c56b5.
+     --sw is the stone's width as a multiple of its card, --k shrinks every stone on narrow screens. */
+  --stone-top: #b3b7e6; --stone-lip: #4c56b5; --stone-text: #fff; --sw: 1; --k: 0.9; --dy: 0rem;
+  --w: calc(var(--sw) * var(--k) * 100%); --u: calc(var(--sw) * var(--k) * 1cqw);
   margin-top: var(--dy);
 }
-/* The stone is low and flat: one pale top face with a thin lip in a darker violet under its front edge. The prize stands on it; its lower part overlaps the stone. */
-.landing .prize::before { content: ""; order: 2; width: var(--sw); height: var(--sh); margin-top: calc(var(--sh) * -0.55); box-sizing: border-box; border-radius: 50%; border-bottom: 0.4rem solid var(--stone-lip); background: var(--stone-top); }
+/* The stone is low and flat: one pale top face with a thin lip in a darker violet under its front edge. The prize is about 64% as wide as the stone and stands
+   on the middle of its top face, its foot a little below the middle. */
+.landing .prize::before { content: ""; order: 2; width: var(--w); height: calc(var(--u) * 24); margin-top: calc(var(--u) * -14); box-sizing: border-box; border-radius: 50%; border-bottom: 0.45rem solid var(--stone-lip); background: var(--stone-top); }
 .landing .prize img, .landing .prize__emoji { order: 1; position: relative; z-index: 1; }
-.landing .prize img { display: block; width: 54%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
-.landing .prize__emoji { display: flex; align-items: flex-end; justify-content: center; width: 54%; aspect-ratio: 5 / 4; font-size: 20cqw; line-height: 1; }
-.landing .prize__label { order: 3; margin-top: 0.6rem; padding-inline: 0.25rem; }
-.landing .prize h3 { color: var(--stone-text); font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
-.landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.8125rem; line-height: 1.2; overflow-wrap: anywhere; }
+.landing .prize img { display: block; width: calc(var(--u) * 64); aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
+/* The keyboard photo carries a loose switch above its top-left corner and a row of spare keys below: show the keyboard alone, in the same box as the other art. */
+.landing .prize img[src*="keychron"] { clip-path: inset(33% 0 12% 0); translate: 0 calc(var(--u) * 6); }
+.landing .prize__emoji { display: block; font-size: calc(var(--u) * 52); line-height: 1; }
+.landing .prize__label { order: 3; margin-top: 0.75rem; padding-inline: 0.25rem; }
+.landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
+.landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.875rem; line-height: 1.2; overflow-wrap: anywhere; }
 /* Hand-laid stones: a little narrower or wider, one a touch lower. */
-.landing .prize:nth-child(5n + 1) { --sw: 94%; }
-.landing .prize:nth-child(5n + 2) { --sw: 86%; --dy: 0.5rem; }
-.landing .prize:nth-child(5n + 3) { --sw: 92%; }
-.landing .prize:nth-child(5n + 4) { --sw: 88%; --dy: 0.4rem; }
-.landing .prize:nth-child(5n) { --sw: 96%; }
+.landing .prize:nth-child(5n + 1) { --sw: 1.04; }
+.landing .prize:nth-child(5n + 2) { --sw: 0.94; --dy: 0.5rem; }
+.landing .prize:nth-child(5n + 3) { --sw: 1.02; }
+.landing .prize:nth-child(5n + 4) { --sw: 0.96; --dy: 0.4rem; }
+.landing .prize:nth-child(5n) { --sw: 1.06; }
 @media (min-width: 40rem) {
   .landing .shelf { --gap: 1.25rem; }
-  .landing .prize { width: calc((100% - 2 * var(--gap)) / 3); }
+  .landing .prize { width: calc((100% - 2 * var(--gap)) / 3); --k: 0.96; }
+  .landing .prize h3 { font-size: 1.375rem; }
+  .landing .prize__hours { font-size: 0.9375rem; }
 }
 @media (min-width: 64rem) {
-  .landing .shelf { --gap: 1.5rem; gap: 2rem var(--gap); }
-  .landing .prize { width: calc((100% - 4 * var(--gap)) / 5); }
+  .landing .shelf { --gap: 1.25rem; gap: 2rem var(--gap); }
+  .landing .prize { width: calc((100% - 4 * var(--gap)) / 5); --k: 1.0; }
 }
 /* ---- FAQ: the river. The questions are stepping stones across it, and the path picks up again on the far bank. ---- */
 .landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: var(--pink); --stone-shade: var(--color-sign-pink-edge); --ripple: transparent; } /* the question stones are the site's magenta (the button and the third signpost board), edge in the board's deeper pink; no halo, so no outline look */
