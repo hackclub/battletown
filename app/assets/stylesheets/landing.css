@@ -144,11 +144,15 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .hero__logo { width: min(72%, 19rem); line-height: 0; }
 .landing .hero__logo img { display: block; width: 100%; height: auto; }
 .landing .hero__tagline {
-  padding-left: 0.5rem; color: var(--cream);
-  font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--display); letter-spacing: -0.05em;
+  padding-left: 0.5rem;
+  font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--display);
+}
+/* the tagline's own text treatment (cream fill, royal-blue stroke, yellow accent) is shared with the free-sticker caption and the fighter count */
+.landing :is(.hero__tagline, .hero__sticker, .hero__fighters) {
+  color: var(--cream); letter-spacing: -0.05em;
   -webkit-text-stroke: 0.16em #0563de; paint-order: stroke fill;
 }
-.landing .hero__tagline span { color: #ffda37; }
+.landing :is(.hero__tagline, .hero__sticker) span { color: #ffda37; }
 .landing .hero__swoosh { position: relative; z-index: 1; display: block; width: 100%; height: auto; margin-top: calc(100% * -234 / 1440); margin-bottom: -1px; }
 @media (min-width: 48rem) {
   .landing .hero { --swoosh-height: 14rem; --swoosh-overlap: 9.5rem; }
@@ -160,38 +164,33 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
   .landing .hero__tagline { padding: 0; font-size: 2rem; white-space: nowrap; }
   .landing .hero__swoosh { height: var(--swoosh-height); margin-top: calc(var(--swoosh-overlap) * -1); object-fit: fill; }
 }
-/* The call to action with, beside it, Hack Club's three stickers as one fanned pile (Armand's mockup, 2026-11-26) and, under it,
-   "Join N other fighters" when more than 50 people finished onboarding. On phones the pile drops under the button. The
-   pile is sized in em, so one font-size scales the whole thing. No outlines or hard shadows: soft blur shadows only. */
+/* The call to action with Hack Club's three stickers as one fanned pile (Armand's mockup, 2026-11-26) and, under it, "Join N other
+   fighters" when more than 50 people finished onboarding. The pile sits beside the button from 64rem up and under it below that.
+   The caption wears the tagline's text treatment; the stickers get the button's kind of soft shadow. Sized in em: one font-size scales the pile. */
 .landing .hero__actions { display: grid; justify-items: start; gap: 0.875rem; }
 .landing .hero__fighters {
-  display: flex; align-items: center; gap: 0.4em; margin: 0; padding-left: 0.25rem; color: var(--cream);
-  font: 400 clamp(1.25rem, 5vw, 1.5rem)/1.1 var(--display); letter-spacing: -0.04em;
-  -webkit-text-stroke: 0.16em #0563de; paint-order: stroke fill;
+  display: flex; align-items: center; gap: 0.4em; margin: 0; padding-left: 0.25rem;
+  font: 400 clamp(1rem, 4vw, 1.1rem)/1.1 var(--display);
 }
 .landing .hero__fighters-count {
   padding: 0.12em 0.5em 0.2em; border-radius: var(--radius-full); background: #0563de; box-shadow: inset 0 0.08em 0 rgb(255 255 255 / 0.28);
   -webkit-text-stroke: 0; font-variant-numeric: tabular-nums;
 }
-.landing .hero__pile { position: relative; width: 13em; height: 11.4em; margin: 0.25rem 0 0 0.25rem; font-size: 0.7rem; }
-.landing .hero__stickers { position: absolute; inset: 0; }
+.landing .hero__pile { position: relative; display: grid; justify-items: center; width: max-content; margin: 0.25rem 0 0 0; }
+.landing .hero__stickers { position: relative; width: 12em; height: 8.2em; font-size: 0.9rem; }
 .landing .hero__sticker-img { position: absolute; display: block; height: auto; filter: drop-shadow(0 0.15em 0.3em rgb(10 30 60 / 0.35)); }
-.landing .hero__sticker-img--mac { width: 6.2em; left: 5.6em; top: 0; transform: rotate(10deg); }
-.landing .hero__sticker-img--red { width: 8.6em; left: 0; top: 2.2em; transform: rotate(4deg); }
-.landing .hero__sticker-img--black { width: 7.6em; left: 5.4em; top: 4.6em; transform: rotate(-10deg); }
+.landing .hero__sticker-img--mac { width: 4.8em; left: 4.4em; top: 0; transform: rotate(12deg); }
+.landing .hero__sticker-img--red { width: 7.2em; left: 0.4em; top: 2.2em; transform: rotate(4deg); }
+.landing .hero__sticker-img--black { width: 7.2em; left: 4.8em; top: 4em; transform: rotate(-10deg); }
 .landing .hero__sticker {
-  position: absolute; z-index: 1; left: 0.4em; right: 0.4em; bottom: 0.3em; margin: 0; padding: 0.3em 0.8em 0.4em; border-radius: 1.5em;
-  background: #fff; box-shadow: 0 0 0 0.22em #fff, 0 0.2em 0.9em 0.2em rgb(255 255 255 / 0.8);
-  color: #e8352b; font: 800 1.15em/1.1 var(--display); letter-spacing: -0.03em; text-align: center; text-wrap: balance;
+  position: relative; z-index: 1; margin: -1.9rem 0 0; white-space: nowrap; text-align: center;
+  font: 400 clamp(0.95rem, 4.2vw, 1.2rem)/1.1 var(--display); /* about 60% of the tagline */
 }
-@media (min-width: 48rem) {
-  .landing .hero__actions { grid-template-columns: auto auto; column-gap: 1.5rem; align-items: center; }
+@media (min-width: 90rem) {
+  .landing .hero__actions { grid-template-columns: max-content max-content; column-gap: 1.25rem; align-items: center; }
   .landing .hero__actions .cta { grid-column: 1; grid-row: 1; }
-  .landing .hero__fighters { grid-column: 1; grid-row: 2; }
-  .landing .hero__pile { grid-column: 2; grid-row: 1 / span 2; margin: 0; font-size: 0.7rem; } /* about 9rem wide: clear of the fighter on a tablet */
-}
-@media (min-width: 80rem) {
-  .landing .hero__pile { font-size: 0.85rem; }
+  .landing .hero__fighters { grid-column: 1 / -1; grid-row: 2; }
+  .landing .hero__pile { grid-column: 2; grid-row: 1; margin: -2rem 0 -2rem; }
 }
 /* ---- How it works: just the signpost, on flat sky. Its top board pokes up over the hero's bottom edge. ---- */
 .landing .how { position: relative; background: var(--sky); color: var(--navy); }
@@ -287,26 +286,27 @@ body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 .landing .shelf { --gap: 1rem; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 1.5rem var(--gap); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
 .landing .prize {
   position: relative; isolation: isolate; container-type: inline-size; flex: none; display: flex; flex-direction: column; width: calc((100% - var(--gap)) / 2); max-width: 13rem;
-  border-radius: 1.4rem; text-align: center; transform: rotate(var(--lean, 0deg));
+  border-radius: 1.4rem 1.4rem 0 0; text-align: center;
   /* Stone colors sampled from the painted cave (art-only-1576.jpg): the top face is the stepping stones' lit top at (792,1769) and (840,1850),
-     rgb(179,184,226) / rgb(179,183,231); the front face is the cliff's shaded lower rock at (1200,2200), rgb(96,106,195). */
-  --stone-top: #b3b8e2; --stone-front: #606ac3; --stone-text: var(--cream);
+     rgb(179,184,226) / rgb(179,183,231); the front face is the cliff's shaded lower rock at (1300,2050..2250), rgb(96,106,195); the submerged part
+     fades from the pillar's dark side at (770,1830), rgb(44,47,124). White on the front face is 4.83:1. */
+  --stone-top: #b3b8e2; --stone-front: #606ac3; --stone-deep: #2c2f7c; --stone-text: #fff;
 }
-/* A soft contact shadow on the cave floor, a blurred ellipse under the stone, never a hard offset shadow. */
-.landing .prize::after { content: ""; position: absolute; z-index: -3; left: -6%; right: -6%; bottom: -0.9rem; height: 2rem; background: radial-gradient(ellipse at center, rgba(6, 6, 48, 0.62), rgba(6, 6, 48, 0) 68%); pointer-events: none; }
-.landing .prize:nth-child(5n+1) { --lean: -1.1deg; border-radius: 1.5rem 1.2rem 1.4rem 1.1rem; }
-.landing .prize:nth-child(5n+2) { --lean: 0.7deg; border-radius: 1.2rem 1.5rem 1.1rem 1.4rem; }
-.landing .prize:nth-child(5n+3) { --lean: -0.4deg; border-radius: 1.4rem 1.1rem 1.5rem 1.2rem; }
-.landing .prize:nth-child(5n+4) { --lean: 1.2deg; border-radius: 1.1rem 1.4rem 1.2rem 1.5rem; }
-.landing .prize:nth-child(5n) { --lean: -0.8deg; border-radius: 1.3rem 1.5rem 1.2rem 1.1rem; }
-/* The block: a dark body with the name on its front, and a lighter top face with all four corners rounded lying on it,
-   so the body shows under the face's bottom corners and the block reads as a solid slab. */
-.landing .prize::before { content: ""; position: absolute; z-index: -2; inset: 0; margin-top: 60%; border-radius: inherit; background: var(--stone-front); }
-.landing .prize__label { position: relative; margin-top: auto; padding: 0.5rem 0.5rem 0.7rem; }
-.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 36cqw; border-radius: 1.4rem 1.2rem 1.5rem 1.3rem; background: var(--stone-top); }
+/* The floor is water and each stone stands in it: no shadow underneath. The front face ends in the waterline, an arc (the water meeting a round
+   stone), with a thin soft white foam line on it like the shore's, and below it the stone carries on a short way, darker and bluer, fading into the water. */
+.landing .prize::after { content: ""; position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 0.7rem; border-bottom: 3px solid rgb(255 255 255 / 0.8); border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  box-shadow: 0 3px 5px -1px rgb(255 255 255 / 0.28); pointer-events: none; }
+.landing .prize:nth-child(2n)::after { height: 0.62rem; left: 1%; right: 0.5%; }
+.landing .prize:nth-child(3n)::after { height: 0.78rem; left: 0; right: 1.5%; }
+/* The block: the front face with the name on it, and a lighter top face lying on it. The front's bottom is the waterline arc, not a rounded corner. */
+.landing .prize::before { content: ""; position: absolute; z-index: -2; inset: 0; margin-top: 60%; border-radius: 0 0 50% 50% / 0 0 0.7rem 0.7rem; background: var(--stone-front); }
+.landing .prize__label { position: relative; margin-top: auto; padding: 0.5rem 0.5rem 1.15rem; }
+.landing .prize__label::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 100%; height: 40cqw; border-radius: 1.4rem 1.2rem 0.5rem 0.5rem / 1.4rem 1.2rem 0.4rem 0.4rem; background: var(--stone-top); }
+/* The submerged part: the same stone a little below the surface, darker and bluer, fading out into the water. */
+.landing .prize__label::after { content: ""; position: absolute; z-index: -3; left: 3%; right: 3%; top: calc(100% - 0.9rem); height: 2.4rem; border-radius: 0 0 50% 50%; background: linear-gradient(to bottom, rgb(44 47 124 / 0.85), rgb(44 47 124 / 0.35) 55%, rgb(44 47 124 / 0)); pointer-events: none; }
 /* The prize stands in the middle of the block's top face, not on its front edge. */
-.landing .prize img { display: block; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
-.landing .prize__emoji { display: flex; align-items: flex-end; justify-content: center; width: 84%; margin: 0 auto 9%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }
+.landing .prize img { display: block; width: 56%; margin: 0 auto 16%; aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
+.landing .prize__emoji { display: flex; align-items: flex-end; justify-content: center; width: 84%; margin: 0 auto 12%; aspect-ratio: 5 / 4; font-size: 26cqw; line-height: 1; }
 .landing .prize h3 { color: var(--stone-text); font: 400 1.125rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
 .landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.8125rem; line-height: 1.2; overflow-wrap: anywhere; }
 @media (min-width: 40rem) {
