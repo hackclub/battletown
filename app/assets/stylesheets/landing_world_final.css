@@ -66,7 +66,6 @@
   .landing .world--final .sea__cloud--a { display: block; left: calc(50% + var(--wu) * -100); top: calc(var(--wu) * 20); width: calc(var(--wu) * 420); }
   .landing .world--final .sea__cloud--b, .landing .world--final .sea__cloud--c, .landing .world--final .sea__cloud--d { display: block; }
 }
-@media (min-width: 1700px) { .landing .world--final .sea__cloud--d, 
 /* Shells half in the water at the shoreline: the sand band's files, the lower half faded into the water. Not on phones. */
 .landing .world--final .sea__shell {
   position: absolute; display: none; height: auto; max-width: none;
