@@ -54,9 +54,11 @@ def render(hide):
     return psd.composite(layer_filter=keep, force=True).convert("RGBA")
 
 
-def save(band, name, img):
+def save(band, name, img, keys=None):
     (out / band).mkdir(exist_ok=True)
     for key, scale in VARIANTS.items():
+        if keys and key not in keys:
+            continue
         size = (max(1, round(img.width * scale)), max(1, round(img.height * scale)))
         im = img if scale == 1.0 else img.resize(size, Image.LANCZOS)
         path = out / band / f"{name}@{key}.webp"
@@ -146,25 +148,16 @@ out_rgb = np.divide(pm[:, :, :3], pm[:, :, 3:4], out=np.zeros_like(pm[:, :, :3])
 cave = Image.fromarray((np.clip(np.dstack([out_rgb, pm[:, :, 3:4]]), 0, 1) * 255 + 0.5).astype(np.uint8), "RGBA")
 save("cave", "cave", cave)
 # 5. Floor: the pebbled floor under the wall, from a little above the wall's foot (the floor band owns that seam).
-# 5. Floor (floor band): the wall-to-floor seam plus the pebbled floor, rebuilt from the layers so it has no step. floor-top is the
-#    painted wall foot and pillar base (transparent above the wall's bottom edge) crossfaded into the pebble mask (layer 20) in
-#    colors that go smoothly from dark navy to purple; floor-tile is the same pebbles at the lit color, a span (mirrored top to bottom, so it loops) that repeats
-#    down any section height. Anchored to canvas y 4750 = .prizes top.
-l20 = layer_full(20).getchannel("A")
+# 5. Floor (floor band): the painted wall foot and the painted pebble floor, both unaltered pixels of the painting.
+#    floor-top is the wall-to-floor seam at the painting's own scale: transparent above the wall's bottom edge (the cave piece
+#    paints the same pixels there), opaque down to FADE0, then fading to transparent by FADE1 over the floor-fill piece.
+#    floor-fill is the real painted floor (canvas y FILL_Y0..FILL_Y1, above the highest point of the shore), drawn once, never
+#    mirrored, never repeated: CSS sizes it uniformly to cover the section (see landing_world_floor.css). Anchored to canvas y 4750.
 l18 = np.asarray(layer_full(18).getchannel("A"))
 art_rgb = art.convert("RGB")
-F_Y0, F_Y1 = 4700, 5900          # top piece rows (canvas)
-BLEND0, BLEND1 = 4930, 5050      # painted -> synthetic crossfade
-S0, S1 = 5050, 5700              # dark -> lit transition
-DARK = {"gap": (37, 35, 143), "peb": (14, 13, 92)}
-LIT = {"gap": (79, 76, 183), "peb": (37, 35, 143)}
-TILE_A, TILE_B = 5200, 5900      # tile rows: mirrored span continuing from F_Y1
-
-
-def mask(y0, y1):  # pebble coverage 0..1 (1 = pebble), softened a hair
-    m = l20.crop((0, y0, W, y1)).filter(ImageFilter.GaussianBlur(0.7))
-    a = np.asarray(m, dtype=np.float32)
-    return np.clip((140.0 - a) / 80.0, 0, 1)
+F_Y0, F_Y1 = 4700, 5200          # top piece rows (canvas)
+FADE0, FADE1 = 4960, 5120        # top piece opaque until FADE0, transparent from FADE1
+FILL_Y0, FILL_Y1 = 4750, 5790    # fill rows: all floor, no sand, across the whole width
 
 
 def smooth(t):
@@ -172,21 +165,8 @@ def smooth(t):
     return t * t * (3 - 2 * t)
 
 
-def synth(y0, y1, m):
-    ys = np.arange(y0, y1, dtype=np.float32)
-    s = smooth((ys - S0) / (S1 - S0))[:, None, None]
-    gap = np.array(DARK["gap"], np.float32) * (1 - s) + np.array(LIT["gap"], np.float32) * s
-    peb = np.array(DARK["peb"], np.float32) * (1 - s) + np.array(LIT["peb"], np.float32) * s
-    mm = m[..., None]
-    return gap * (1 - mm) + peb * mm
-
-
-m = mask(F_Y0, F_Y1)
-S = synth(F_Y0, F_Y1, m)
 O = np.asarray(art_rgb.crop((0, F_Y0, W, F_Y1)), dtype=np.float32)
 ys = np.arange(F_Y0, F_Y1, dtype=np.float32)
-w = smooth((ys - BLEND0) / (BLEND1 - BLEND0))[:, None, None]
-rgb = O * (1 - w) + S * w
 # alpha: opaque from just above the wall's bottom edge (the cave piece paints the same pixels above it)
 edge = np.array([np.argmax(l18[4600:5000, x] > 128) + 4600 for x in range(W)])
 k = 41
@@ -194,18 +174,10 @@ pad = np.pad(edge, k // 2, mode="edge")
 edge = np.array([np.median(pad[i:i + k]) for i in range(W)]).astype(int)
 top = np.minimum(edge - 6, 4735)
 # a 16-row ramp (not a hard edge), so any rounding difference with the cave piece's identical pixels cannot show as a line
-alpha = 255 * smooth((np.arange(F_Y0, F_Y1, dtype=np.float32)[:, None] - (top[None, :] - 10)) / 16)
-piece = np.dstack([rgb, alpha]).clip(0, 255).astype(np.uint8)
-top_img = Image.fromarray(piece, "RGBA")
-
-# tile: mirrored span of the mask in lit colors, continuing from F_Y1
-mt = mask(TILE_A, TILE_B)
-period = np.concatenate([mt[::-1], mt], 0)
-tile = np.array(LIT["gap"], np.float32) * (1 - period[..., None]) + np.array(LIT["peb"], np.float32) * period[..., None]
-tile_img = Image.fromarray(tile.clip(0, 255).astype(np.uint8), "RGB")
-
-save("floor", "floor-top", top_img)
-save("floor", "floor-tile", tile_img)
+alpha = 255 * smooth((ys[:, None] - (top[None, :] - 10)) / 16)
+alpha = alpha * (1 - smooth((ys[:, None] - FADE0) / (FADE1 - FADE0)))
+save("floor", "floor-top", Image.fromarray(np.dstack([O, alpha]).clip(0, 255).astype(np.uint8), "RGBA"))
+save("floor", "floor-fill", art_rgb.crop((0, FILL_Y0, W, FILL_Y1)))
 
 # 6. Sand: the end of the floor, the wavy shore and the sand down to where it is flat. Opaque. The sand band owns the
 #    floor-to-sand seam. (The sand-to-blue shore of the final band is a CSS clip, not a piece: see landing_world_final.css.)
@@ -231,12 +203,30 @@ def sand_cut(art_img, y0=5700, y1=7300):
     out_img = np.dstack([rgb, alpha * 255]).clip(0, 255).astype(np.uint8)
     return Image.fromarray(out_img, "RGBA")
 # --- sand-cut-end
-save("sand", "sand", sand_cut(art))
+save("sand", "sand", sand_cut(art), keys="c")  # only @c: the page draws it inside an SVG clipped by the traced shore curve (see _sand.html.erb)
 
-# 7. Shells: layers 25 and 26.
+# 7. Shells: layers 25 and 26, recolored with the page's own palette. The painted shell has three tones (flat fills of the painter's
+#    brush shapes): light (181,135,37) luminance 137.6, mid (154,104,13) 108.6 and a dark shaded edge (146,82,2) 92, plus an orange
+#    rim (174,112,10) between mid and light. Each pixel's luminance is mapped piecewise-linearly onto dark -> mid -> light of the new hue,
+#    so the bands, brush shapes and anti-aliased edges (alpha untouched) are exactly the painting's. No hue-rotate, no redraw.
+SHELL_L = (92.0, 108.6, 137.6)
+SHELL_COLORS = {  # (dark, mid, light), all from the page's palette (tokens.css / the world's teal and the signpost blue)
+    "shell-1": ((0x08, 0x98, 0xA7), (0x11, 0xBC, 0xB3), (0x67, 0xE9, 0xD7)),  # teal of the plateau: --world-teal-shade, --world-teal, --world-teal-top
+    "shell-2": ((0x11, 0x4F, 0xAB), (0x18, 0x7B, 0xE0), (0x4A, 0x9A, 0xF0)),  # signpost blue: --color-sign-blue-edge, --color-sign-blue, a lighter step of it
+}
+
+
+def recolor_shell(img, dark, mid, light):
+    a = np.asarray(img.convert("RGBA")).astype(np.float32)
+    lum = a[..., :3] @ np.array([0.299, 0.587, 0.114], np.float32)
+    xs = np.array(SHELL_L)
+    chans = [np.interp(lum, xs, [dark[c], mid[c], light[c]]) for c in range(3)]
+    return Image.fromarray(np.dstack(chans + [a[..., 3]]).clip(0, 255).astype(np.uint8), "RGBA")
+
+
 for name, i in (("shell-1", 25), ("shell-2", 26)):
     layer = layer_full(i)
-    save("sand", name, layer.crop(layer.getchannel("A").getbbox()))
+    save("sand", name, recolor_shell(layer.crop(layer.getchannel("A").getbbox()), *SHELL_COLORS[name]))
 
 print("flat colors: sky", art.getpixel((60, 2200))[:3], "teal", art.getpixel((60, 3300))[:3],
       "sand", art.getpixel((60, 7500))[:3], "blue", art.getpixel((60, 9500))[:3])

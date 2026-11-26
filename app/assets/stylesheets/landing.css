@@ -55,7 +55,7 @@ body:has(.landing) .site-footer { position: absolute; z-index: 2; left: 0; right
 body:has(.landing) .site-footer__inner { flex-direction: column; align-items: flex-end; gap: var(--space-1); max-width: none; margin: 0; padding-inline: var(--side, 1.25rem); }
 body:has(.landing) .site-footer a { color: inherit; pointer-events: auto; }
 @media (max-width: 63.999rem) {
-  body:has(.landing) .site-footer__inner { width: fit-content; max-width: calc(100% - 2 * var(--side)); margin: 0 var(--side) var(--space-4) auto; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--color-ink-blue); } /* cream on it is 8.4:1, and the cream focus ring is too */
+  body:has(.landing) .site-footer__inner { align-items: flex-start; width: fit-content; max-width: calc(100% - 2 * var(--side)); margin: 0 var(--side) var(--space-4) auto; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--color-ink-blue); } /* cream on it is 8.4:1, and the cream focus ring is too */
 }
 @media (min-width: 64rem) {
   body:has(.landing) .site-footer { color: var(--navy); }

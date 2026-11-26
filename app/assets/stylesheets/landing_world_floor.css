@@ -1,7 +1,7 @@
 /* Band: floor. Owned by the floor band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css.
  *
  * The wrapper's top is canvas y 4750. Anchors (canvas y -> wu from the top): the top piece starts at 4700 (-25wu) and ends at 5900
- * (575wu); the tile starts there and repeats down. The top piece is opaque from just above the wall's bottom edge and transparent
+ * (125wu); the painted floor (floor-fill) lies under it. The top piece is opaque from just above the wall's bottom edge and transparent
  * above it, so it covers only what it must of the cave band, with the same pixels. The floor is drawn as dark navy under the wall,
  * smoothly lighter to purple (no step), then the haze fades it to --world-floor-end at the section's bottom edge. */
 .landing .world--floor { --floor-haze: calc(var(--wu) * 330); }
@@ -16,11 +16,13 @@
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--wc) * 575);
   background: linear-gradient(to bottom, #15136c, rgb(53 50 157));
 }
-.landing .world--floor .floor__top { left: 0; top: calc(var(--wc) * -25); width: var(--cave-w); height: calc(var(--wc) * 600); }
+.landing .world--floor .floor__top { left: 0; top: calc(var(--wc) * -25); width: var(--cave-w); height: calc(var(--wc) * 250); }
 
+/* The real painted floor, drawn once: sized uniformly to cover the section (never mirrored, repeated or stretched), top-anchored so it
+   meets floor-top. Tall sections show it larger. floor-top paints over its first rows and fades out into it. */
 .landing .world--floor .floor__tile {
-  position: absolute; left: 0; right: 0; top: calc(var(--wc) * 575); bottom: 0;
-  background: var(--world-floor) image-set(url("landing/world/floor/floor-tile@a.webp") 1x, url("landing/world/floor/floor-tile@b.webp") 1.3x, url("landing/world/floor/floor-tile@c.webp") 2x) 0 0 / var(--cave-w) calc(var(--wc) * 700) repeat-y;
+  position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+  background: var(--world-floor) image-set(url("landing/world/floor/floor-fill@a.webp") 1x, url("landing/world/floor/floor-fill@b.webp") 1.3x, url("landing/world/floor/floor-fill@c.webp") 2x) center top / cover no-repeat;
 }
 
 /* The haze: pebbles and ground melt into the one flat color the sand band starts from. */

@@ -39,11 +39,9 @@
     min(0px, calc(50% + var(--wu) * -1288)) 100%);
 }
 .landing .world--final .shore--air { background: #d0e5ee; overflow: hidden; }
-/* Darker sand just inside the lip: three strips, each its own edge lifted 10, 6 and 3 design px, drawn under the sky so only the strip above the edge shows. */
-.landing .world--final .shore--shade { background: rgba(150, 105, 20, 0.07); }
-.landing .world--final .shore--shade1 { --o: -10; }
-.landing .world--final .shore--shade2 { --o: -6; }
-.landing .world--final .shore--shade3 { --o: -3; }
+/* The sand's end: a cliff face under the edge (see _final.html.erb), 1576 wu wide like the painting, hung from the same edge as the clip above. */
+.landing .world--final .world__face { position: absolute; left: 50%; top: calc(var(--wu) * -80); width: var(--world-w); translate: -50% 0; pointer-events: none; }
+.landing .world--final .face__svg { display: block; width: 100%; height: auto; }
 
 /* The sky piece, 1576 wu wide and 601 tall; its flat top 80 wu start above the edge's highest point (box y 19), so the brushwork starts at the edge. */
 .landing .world--final .island__skybox { position: absolute; left: 50%; top: calc(var(--wu) * -66); width: calc(var(--wu) * 1576); height: calc(var(--wu) * 601); translate: -50% 0; }
@@ -64,6 +62,13 @@
 @media (min-width: 60rem) and (max-width: 79.99rem) {
   .landing .world--final .island__cloud--c { display: none; }
 }
+
+/* The cloud bank under the fighter: three of the painted clouds, each placed once, scaled uniformly up (width from --ow, his width), overlapping along
+   the bottom right corner in front of his cape hem. They paint after his image, so they cover his lower body. */
+.landing .final__bank { position: absolute; z-index: 1; height: auto; max-width: none; pointer-events: none; }
+.landing .final__bank--1 { right: calc(var(--ow) * -0.12); bottom: calc(var(--ow) * 0.01); width: calc(var(--ow) * 0.78); }
+.landing .final__bank--2 { right: calc(var(--ow) * 0.30); bottom: calc(var(--ow) * -0.01); width: calc(var(--ow) * 0.7); }
+.landing .final__bank--3 { right: calc(var(--ow) * 0.62); bottom: calc(var(--ow) * 0); width: calc(var(--ow) * 0.55); }
 
 /*
  * SLOT FOR A PAINTING (empty on purpose; a painting would replace the sky and clouds, keep the sand edge). To drop one in, add to _final.html.erb, after the water layer:

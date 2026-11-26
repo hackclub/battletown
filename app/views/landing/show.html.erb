@@ -217,6 +217,11 @@
         <% if (locked_in = locked_in_text) %><p class="final__proof"><%= locked_in %></p><% end %>
       </div>
       <%= image_tag "landing/orpheus.webp", alt: "", class: "final__orpheus", width: 1300, height: 1093, loading: "lazy", decoding: "async" %>
+      <%# A bank of the painted clouds (the sky band's own file, unflipped, scaled up) in front of his cape hem, so he rises out of it. -%>
+      <% %w[1 2 3].each do |n| %>
+        <%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "final__bank final__bank--#{n}", width: 748, height: 194, loading: "lazy", decoding: "async",
+              srcset: { "landing/world/sky/cloud@a.webp" => "374w", "landing/world/sky/cloud@b.webp" => "486w", "landing/world/sky/cloud@c.webp" => "748w" }, sizes: "(min-width: 64rem) 35rem, 95vw" %>
+      <% end %>
     </div></div>
   </section>
 
