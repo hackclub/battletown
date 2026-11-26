@@ -27,6 +27,25 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  test "pace is optional, defaults to an hour, and must be one of the offered paces" do
+    user = users(:new_user)
+    assert_nil user.pace_minutes
+    assert_equal User::PACE_DEFAULT, user.pace
+
+    User::PACES.each do |minutes|
+      user.pace_minutes = minutes
+      assert user.valid?, "#{minutes} should be accepted"
+      assert_equal minutes, user.pace
+    end
+    [ 0, 7, -15, 500 ].each do |minutes|
+      user.pace_minutes = minutes
+      assert_not user.valid?, "#{minutes} should be rejected"
+      assert user.errors.of_kind?(:pace_minutes, :inclusion)
+    end
+    user.pace_minutes = nil
+    assert user.valid?
+  end
+
   test "coding days round-trip through the bitmask" do
     user = users(:new_user)
     user.coding_day_names = %w[monday wednesday sunday bogus]

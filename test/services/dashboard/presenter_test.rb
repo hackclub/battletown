@@ -477,7 +477,7 @@ class Dashboard::PresenterTest < ActiveSupport::TestCase
 
   # --- the boss, through the existing presenter ---
 
-  test "the boss card presenter is built for the same local day" do
+  test "the boss card presenter is built for the UTC day (a boss week is the same instant for everybody)" do
     assert_equal :none, present.boss.state
 
     boss = make_boss(starts_on: Date.new(2026, 11, 13), hp_seconds: 100 * HOUR)

@@ -101,4 +101,35 @@ class DevHoursTest < ActionDispatch::IntegrationTest
     end
     assert_equal 43_200, HourEntry.where(user: User.find_by!(hca_uid: "dev-user")).sum(:seconds)
   end
+
+  test "from the dashboard's dev button the time goes to the active project's linked Hackatime project and comes back to the dashboard" do
+    dev_login
+    user = User.find_by!(hca_uid: "dev-user")
+    project = user.projects.first || Project.create!(user: user, name: "Dev project", kind: "game")
+    in_env("development") do
+      assert_difference "HourEntry.count", 1 do
+        post "/dev/hours", params: { local_date: Date.current.iso8601, minutes: "15", return_to: "dashboard", for_active_project: "1" }
+      end
+      assert_redirected_to dashboard_path
+    end
+    link = project.reload.hackatime_links.sole
+    assert_equal "dev-time", link.hackatime_project
+    assert_equal link.hackatime_project, HourEntry.order(:id).last.hackatime_project
+
+    in_env("development") { post "/dev/hours", params: { local_date: Date.current.iso8601, minutes: "30", return_to: "dashboard", for_active_project: "1" } }
+    assert_equal 1, project.hackatime_links.count, "the made-up link is reused"
+    assert_equal 45 * 60, Ships::Window.call(project).seconds
+  end
+
+  test "the dashboard shows the dev add-time buttons only in development" do
+    dev_login
+    User.find_by!(hca_uid: "dev-user").update_columns(onboarded_at: Time.current, onboarding_step: 6, prize_key: "tshirt")
+    in_env("development") do
+      get dashboard_path
+      assert_select "form.stage__dev button[name=minutes]", 3
+      assert_select "form.stage__dev input[name=for_active_project]", 1
+    end
+    get dashboard_path
+    assert_select ".stage__dev", 0
+  end
 end

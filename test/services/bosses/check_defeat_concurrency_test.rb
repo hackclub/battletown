@@ -12,12 +12,12 @@ class Bosses::CheckDefeatConcurrencyTest < ActiveSupport::TestCase
   setup do
     @users = Array.new(THREADS) { |index| User.create!(hca_uid: "ident!boss-race-#{index}-#{SecureRandom.hex(4)}", time_zone: "UTC", created_at: 1.year.ago) }
     @date = Time.current.utc.to_date
-    @boss = make_boss(starts_on: @date - 1, hp_seconds: 1_000)
+    @boss = make_boss(starts_on: friday_on_or_before(@date), hp_seconds: 1_000)
   end
 
   teardown do
     Boss.where(id: @boss.id).delete_all
-    User.where(id: @users.map(&:id)).delete_all # the database cascades to hour_entries
+    User.where(id: @users.map(&:id)).delete_all # the database cascades to their projects and ships
   end
 
   def in_threads(count)
@@ -34,9 +34,9 @@ class Bosses::CheckDefeatConcurrencyTest < ActiveSupport::TestCase
     threads.map(&:value)
   end
 
-  test "several simultaneous ledger writes that cross the health set defeated_at exactly once" do
+  test "several simultaneous ships that cross the health set defeated_at exactly once" do
     in_threads(THREADS) do |index|
-      Hours::Credit.call(user: User.find(@users[index].id), seconds: 600, source: "manual", note: "Race", local_date: @date, idempotency_key: "race-#{index}")
+      Bosses::CheckDefeat.for_ship(ship_damage(User.find(@users[index].id), 600, on: Time.current))
     end
 
     assert_equal 2_400, Bosses::Damage.for(@boss)
@@ -50,7 +50,7 @@ class Bosses::CheckDefeatConcurrencyTest < ActiveSupport::TestCase
   end
 
   test "of several simultaneous direct checks exactly one records the defeat" do
-    HourEntry.insert_all!(@users.map.with_index { |user, index| { user_id: user.id, local_date: @boss.starts_on, seconds: 600, source: "manual", note: "t", idempotency_key: "direct-#{index}" } })
+    @users.each { |user| ship_damage(user, 600, on: Time.current) }
 
     results = in_threads(THREADS) { Bosses::CheckDefeat.call(Boss.find(@boss.id)) }
 
@@ -59,9 +59,9 @@ class Bosses::CheckDefeatConcurrencyTest < ActiveSupport::TestCase
     assert @boss.reload.defeated?
   end
 
-  test "two entries that only together cross the health are both seen by the last check" do
+  test "two ships that only together cross the health are both seen by the last check" do
     in_threads(2) do |index|
-      HourEntry.create!(user: User.find(@users[index].id), local_date: @boss.starts_on, seconds: 600, source: "manual", note: "t", idempotency_key: "pair-#{index}")
+      Bosses::CheckDefeat.for_ship(ship_damage(User.find(@users[index].id), 600, on: Time.current))
     end
 
     assert @boss.reload.defeated?, "600 + 600 >= 1000"

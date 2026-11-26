@@ -1,7 +1,8 @@
 module Ships
   # The teen takes their ship back (a draft or a submitted one that is still waiting). Under `ship.with_lock` with the
   # status checked again, so it cannot race a reviewer's decision: whichever gets the lock first wins. A withdrawn
-  # ship gives its window back, so the same hours go into the next ship.
+  # ship gives its window back, so the same hours go into the next ship. It stops counting as damage to the weekly boss
+  # (which can only lower it, so there is nothing to re-check; a defeat already recorded stays).
   module Withdraw
     module_function
 

@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../support/plinko_helper"
 
-# The Plinko page, the drop endpoint, the leaderboard switch, the dashboard teaser and the admin page, with the flag
+# The Plinko page, the drop endpoint, the leaderboard switch and the admin page, with the flag
 # off (everything is a 404 and nothing is written) and on.
 class PlinkoTest < ActionDispatch::IntegrationTest
   include PlinkoHelper
@@ -58,17 +58,14 @@ class PlinkoTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "with the flag off the dashboard and the admin dashboard show nothing about Plinko and read no Plinko tables" do
+  test "with the flag off the admin dashboard shows nothing about Plinko and reads no Plinko tables" do
     ENV["ADMIN_HCA_UIDS"] = @alice.hca_uid
     sign_in_as @alice
     queries = []
     counter = ->(*, payload) { queries << payload[:sql] if payload[:sql].match?(/plinko/i) }
     ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
-      get dashboard_path
-      assert_response :success
-      assert_no_match(/Plinko/, response.body)
-      assert_select "a[href^='/plinko']", false
       get admin_root_path
+      assert_response :success
       assert_no_match(/Plinko/, response.body)
       assert_select "a[href^='/admin/plinko']", false
     end
@@ -315,22 +312,6 @@ class PlinkoTest < ActionDispatch::IntegrationTest
       post nickname_plinko_path
       assert_redirected_to plinko_path
       assert_not_equal before, PlinkoPlayer.find_by!(user_id: @alice.id).nickname
-    end
-  end
-
-  # --- dashboard teaser ---
-
-  test "the dashboard shows the teaser with the number of balls only while the flag is on" do
-    sign_in_as @alice
-    give_balls(@alice, 4)
-    get dashboard_path
-    assert_select "#dash-plinko-title", false
-
-    with_feature(:plinko) do
-      get dashboard_path
-      assert_select "#dash-plinko-title", "Plinko"
-      assert_select ".dash-plinko strong", "4"
-      assert_select ".dash-plinko a[href='#{plinko_path}']"
     end
   end
 

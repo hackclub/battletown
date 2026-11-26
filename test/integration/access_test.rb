@@ -30,7 +30,7 @@ class AccessTest < ActionDispatch::IntegrationTest
     sign_in_as users(:onboarded)
     get "/dashboard"
     assert_response :success
-    assert_select "strong", /T-shirt/
+    assert_select ".stage__prize", /T-shirt/
     get "/"
     assert_redirected_to dashboard_path
   end

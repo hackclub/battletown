@@ -5,7 +5,7 @@
     <% if @state %>
       A made-up boss in the <strong><%= @state.tr("_", " ") %></strong> state, health left <%= @percent %>% (nothing is read or written).
     <% else %>
-      The real card for you: the real presenter reading the real rows. Add time on <%= link_to "the hours page", dev_hours_path %> and reload.
+      The real card for you: the real presenter reading the real rows. The boss is only hurt by submitted ships (add time on <%= link_to "the hours page", dev_hours_path %>, then ship a project) and reload.
     <% end %>
   </p>
   <p>

@@ -35,15 +35,5 @@ class HackatimeLinksController < ApplicationController
     (value.is_a?(ActionController::Parameters) ? value : ActionController::Parameters.new).permit(:hackatime_project)[:hackatime_project].to_s.strip
   end
 
-  def friendly_error(link, name)
-    errors = link.errors
-    if name.blank?
-      "Type the name of the Hackatime project to link."
-    elsif errors.of_kind?(:hackatime_project, :taken)
-      other = HackatimeLink.project_for(current_user, name)
-      other ? "#{name} is already linked to #{other.name}. Unlink it there first." : "#{name} is already linked."
-    else
-      "Couldn't link that: #{errors.full_messages.to_sentence}."
-    end
-  end
+  def friendly_error(link, name) = Projects::LinkHackatime.error_message(link, name, current_user)
 end

@@ -86,6 +86,7 @@ class AdminAuditCoverageTest < ActionDispatch::IntegrationTest
       "PATCH /admin/ships/:id/approve" => [ "ship_approved", -> { patch approve_admin_ship_path(a_ship(name: "Approve me", hackatime: "approve-me")) } ],
       "PATCH /admin/ships/:id/reject" => [ "ship_rejected", -> { patch reject_admin_ship_path(a_ship(name: "Reject me", hackatime: "reject-me")), params: { reason_note: "Needs a working demo." } } ],
       "DELETE /admin/ships/:ship_id/images/:position" => [ "ship_screenshot_removed", -> { delete_screenshot } ],
+      "POST /admin/bosses" => [ "boss_created", -> { post "/admin/bosses", params: { boss: { name: "The Compiler", hp_hours: "200", starts_on: (Boss.chronological.last.ends_on + 1).iso8601 } } } ],
       "PATCH /admin/bosses/:id" => [ "boss_updated", -> { patch admin_boss_path(future_boss), params: { boss: { name: "The Linter", art_key: "placeholder" } } } ],
       "POST /admin/quests" => [ "quest_created", -> { post "/admin/quests", params: { quest: { starts_on: weeks.first.iso8601, goal_key: "code_days", target: "3", reward_coins: "20" } } } ],
       "PATCH /admin/quests/:id" => [ "quest_updated", -> { patch "/admin/quests/#{Quest.create!(starts_on: weeks.second, goal_key: "code_days", target: 3, reward_coins: 20).id}", params: { quest: { reward_coins: "25" } } } ],
@@ -98,7 +99,7 @@ class AdminAuditCoverageTest < ActionDispatch::IntegrationTest
   # The PUT twins of PATCH routes share the action.
   PUT_TWINS = { "PUT /admin/bosses/:id" => "PATCH /admin/bosses/:id", "PUT /admin/quests/:id" => "PATCH /admin/quests/:id" }.freeze
 
-  def future_boss = Boss.chronological.reject { |boss| boss.starts_on <= Date.current }.first || Boss.create!(name: "Later boss", art_key: "placeholder", starts_on: Date.current + 30, ends_on: Date.current + 36, hp_seconds: 3600)
+  def future_boss = Boss.chronological.reject { |boss| boss.starts_on <= Date.current }.first || Boss.create!(name: "Later boss", art_key: "placeholder", starts_on: (Date.current + 30).next_occurring(:friday), hp_seconds: 3600)
 
   def a_claim = MerchClaim.create!(user: @teen, boss: Boss.chronological.to_a[(@claims = @claims.to_i + 1)], item_key: "k#{SecureRandom.hex(3)}", item_name: "Sticker", claimed_at: Time.current)
 

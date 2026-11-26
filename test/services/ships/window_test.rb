@@ -153,4 +153,39 @@ class Ships::WindowTest < ActiveSupport::TestCase
     end
     assert_equal({ D[1] => HOUR, D[2] => HOUR }, window.seconds_by_date)
   end
+
+  test "time before the project time cutoff does not count on a project, and time on or after it does" do
+    code(@user, D[19], 3 * HOUR)
+    code(@user, D[22], 2 * HOUR)
+    code(@user, D[23], HOUR)
+    code(@user, D[24], 1800)
+    config = Ships::Config.current.with(project_time_from: D[23])
+
+    result = Ships::Window.call(@project, config: config)
+    assert_equal HOUR + 1800, result.seconds
+    assert_equal [ D[23], D[24] ], [ result.start_date, result.end_date ]
+    assert_equal 6 * HOUR + 1800, Ships::Window.call(@project, config: config.with(project_time_from: nil)).seconds, "no cutoff counts everything since sign-up"
+  end
+
+  test "the cutoff never lets in time before the person's own first counted date" do
+    @user.update_columns(signed_up_on: D[25], created_at: Time.utc(2026, 11, 25, 12))
+    code(@user, D[24], HOUR)
+    code(@user, D[26], HOUR)
+    config = Ships::Config.current.with(project_time_from: D[23])
+    assert_equal HOUR, Ships::Window.call(@project, config: config).seconds
+  end
+
+  test "the shared config sets 23 November as the cutoff and the test environment turns it off" do
+    assert_nil Ships::Config.current.project_time_from
+    shared = YAML.safe_load(ERB.new(Rails.root.join("config/game.yml").read).result, aliases: true).dig("shared", "ships")
+    assert_equal "2026-11-23", shared["project_time_from"]
+    raw = Rails.application.config_for(:game).fetch(:ships)
+    assert_equal Date.new(2026, 11, 23), Ships::Config.from_hash(raw.merge(project_time_from: shared["project_time_from"])).project_time_from
+  end
+
+  test "a bad cutoff date in the config is refused" do
+    raw = Rails.application.config_for(:game).fetch(:ships)
+    assert_raises(ArgumentError) { Ships::Config.from_hash(raw.merge(project_time_from: "23/11/2026")) }
+    assert_nil Ships::Config.from_hash(raw.merge(project_time_from: "")).project_time_from
+  end
 end

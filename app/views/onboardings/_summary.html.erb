@@ -5,4 +5,5 @@
   <% end %>
   <div><dt class="eyebrow">Project</dt><dd><%= OnboardingsHelper::PROJECT_KINDS.dig(subject.project_kind, :name) %></dd></div>
   <div><dt class="eyebrow">When</dt><dd><%= coding_schedule_text(subject) %>, <%= subject.time_zone %></dd></div>
+  <div><dt class="eyebrow">Pace</dt><dd><%= subject.pace %> minutes a day</dd></div>
 </dl>

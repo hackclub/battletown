@@ -27,6 +27,13 @@ class MerchClaimTest < ActiveSupport::TestCase
     assert build_claim(boss: make_boss(starts_on: WEEK_START + 7)).valid?
   end
 
+  test "a claim's boss is read without the picture bytes" do
+    claim = build_claim
+    claim.save!
+    assert_not MerchClaim.includes(:boss).find(claim.id).boss.has_attribute?(:art_content)
+    assert_not MerchClaim.find(claim.id).boss.has_attribute?(:art_content)
+  end
+
   test "a claim holds no address, no coins and no free text" do
     assert_empty MerchClaim.column_names & %w[address street city phone coins amount note email name]
   end

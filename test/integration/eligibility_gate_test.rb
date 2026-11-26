@@ -195,43 +195,7 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # --- the dashboard, the ships and the form ---
-
-  test "dashboard coins panel in each state" do
-    give_coins(@user, 40)
-    with_feature(:eligibility_gate) do
-      in_state :not_eligible
-      get dashboard_path
-      assert_select ".dash-coins strong", "40 coins"
-      assert_select ".dash-coins", /Spendable now:\s*0 coins/
-      assert_select ".dash-coins .ship-note", text: /#{Regexp.escape(NOT_ELIGIBLE)} #{Regexp.escape(HELP)}/
-      assert_select ".dash-coins .ship-note a", count: 0
-      assert_select ".dash-coins a[href='#{shop_path}']"
-
-      in_state :stale
-      get dashboard_path
-      assert_select ".dash-coins .ship-note", text: /#{Regexp.escape(RECHECK)}/
-      assert_select ".dash-coins .ship-note form[action='/auth/hack_club']"
-
-      in_state :unverified
-      get dashboard_path
-      assert_select ".dash-coins .ship-note a[href='https://auth.hackclub.com']", "Verify with Hack Club"
-
-      in_state :ready
-      get dashboard_path
-      assert_select ".dash-coins .ship-note", 0
-      assert_select ".dash-coins", { text: /Spendable now/, count: 0 }
-    end
-  end
-
-  test "dashboard flag off: verified but not eligible shows no note" do
-    give_coins(@user, 40)
-    without_feature(:eligibility_gate) do
-      sign_in_as @user, eligible: false
-      get dashboard_path
-      assert_select ".dash-coins .ship-note", 0
-    end
-  end
+  # --- the ships and the form ---
 
   test "ship detail and the ships list carry the same note in each state" do
     ship = approved_ship

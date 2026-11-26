@@ -2,7 +2,7 @@
 
 Project documentation (interface contract, deploy runbook, privacy API, plans, design notes) is kept in the agent wiki, not in this repo: `projects/battletown/` in `transcental/agent-wiki`. Paths written below as `projects/battletown/...` mean files there.
 
-Battletown is a Hack Club You Ship We Ship (YSWS) program, run by Amber and Armand (formerly called "Village"). Teens code, log time with Hackatime, and chip away at a shared boss to earn prizes from a shop.
+Battletown is a Hack Club You Ship We Ship (YSWS) program, run by Amber and Armand (formerly called "Village"). Teens code, log time with Hackatime, and ship projects to chip away at a shared boss and earn prizes from a shop.
 This repo is the platform: landing page, sign-up, onboarding, dashboard, projects, a Hackatime hours ledger, streaks and coins, the weekly boss, ships with staff review, the shop and orders, Slack reminders, a small admin area and Hack Club's data-deletion API (Rails 8.1, PostgreSQL, importmap, plain CSS). What is built and what is still open: `projects/battletown/plans/platform-backlog.md` in the agent wiki.
 
 ## Setup

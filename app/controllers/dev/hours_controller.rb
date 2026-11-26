@@ -16,16 +16,29 @@ module Dev
     def create
       date = parse_date(params[:local_date])
       minutes = params[:minutes].to_s.strip
-      return redirect_to(dev_hours_path, alert: "Pick a date and a whole number of minutes.") unless date && minutes.match?(/\A\d{1,4}\z/)
+      back = params[:return_to] == "dashboard" ? dashboard_path : dev_hours_path
+      return redirect_to(back, alert: "Pick a date and a whole number of minutes.") unless date && minutes.match?(/\A\d{1,4}\z/)
 
       result = Hours::Credit.call(user: current_user, seconds: minutes.to_i * 60, source: "manual", local_date: date,
-                                  hackatime_project: params[:hackatime_project].to_s.strip.presence, note: "Dev page", created_by: "dev:hours", idempotency_key: "manual:dev:#{SecureRandom.hex(8)}")
-      redirect_to dev_hours_path, notice: result.capped? ? "That day is already at the daily cap." : "Added #{result.credited_seconds / 60} minutes."
+                                  hackatime_project: hackatime_project_for(params), note: "Dev page", created_by: "dev:hours", idempotency_key: "manual:dev:#{SecureRandom.hex(8)}")
+      redirect_to back, notice: result.capped? ? "That day is already at the daily cap." : "Added #{result.credited_seconds / 60} minutes."
     rescue Hours::Credit::Rejected => error
-      redirect_to dev_hours_path, alert: "Not added: #{error.message}."
+      redirect_to back, alert: "Not added: #{error.message}."
     end
 
     private
+
+    # The Hackatime project name the time is credited to. From the dashboard's dev button (`for_active_project`) it is the active
+    # project's first linked name, linking a made-up one ("dev-time") when it has none, so the time counts toward a ship.
+    def hackatime_project_for(params)
+      return params[:hackatime_project].to_s.strip.presence unless params[:for_active_project].present?
+
+      project = current_user.active_project
+      return unless project
+
+      project.hackatime_links.order(:id).first&.hackatime_project ||
+        project.hackatime_links.create!(user: current_user, hackatime_project: "dev-time", link_method: "manual").hackatime_project
+    end
 
     def require_development!
       raise ActionController::RoutingError, "Not Found" unless Rails.env.development?

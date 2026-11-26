@@ -40,12 +40,29 @@ class BossTest < ActiveSupport::TestCase
     assert_not build(art_key: "nope").valid?
     assert_not build(starts_on: nil).valid?
     assert_not build(ends_on: FRIDAY - 1).valid?
-    assert build(ends_on: FRIDAY).valid?, "a one-day boss is fine"
+    assert_not build(ends_on: FRIDAY).valid?, "a boss week is a whole week"
     assert_not build(hp_seconds: 0).valid?
     assert_not build(hp_seconds: -1).valid?
     assert_not build(hp_seconds: 1.5).valid?
     assert_not build(hp_seconds: Boss::MAX_HP_SECONDS + 1).valid?
     assert build(hp_seconds: 1).valid?
+  end
+
+  test "a new boss starts on a Friday and ends the Thursday after; the end is filled in when left out" do
+    assert_not build(starts_on: FRIDAY + 1, ends_on: THURSDAY + 1).valid?
+    assert_includes build(starts_on: FRIDAY + 1, ends_on: THURSDAY + 1).tap(&:valid?).errors[:starts_on], "must be a Friday"
+    assert_includes build(ends_on: THURSDAY - 1).tap(&:valid?).errors[:ends_on], "must be the Thursday six days after the start"
+    assert_not build(ends_on: THURSDAY + 1).valid?
+
+    boss = build(ends_on: nil)
+    assert boss.valid?
+    assert_equal THURSDAY, boss.ends_on
+  end
+
+  test "an existing boss is not re-checked for its week when it is saved again" do
+    boss = make_boss
+    boss.update_columns(starts_on: FRIDAY + 1, ends_on: THURSDAY + 1)
+    assert boss.reload.update(name: "Renamed")
   end
 
   test "the name is squished" do

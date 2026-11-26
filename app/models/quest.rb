@@ -37,7 +37,7 @@ class Quest < ApplicationRecord
 
   # Boss weeks that can still be given a quest: not over yet and without one. What the admin form offers.
   def self.open_weeks
-    Boss.where(ends_on: Time.current.in_time_zone(LATEST_ZONE).to_date..).where.not(starts_on: select(:starts_on)).chronological
+    Boss.without_art_content.where(ends_on: Time.current.in_time_zone(LATEST_ZONE).to_date..).where.not(starts_on: select(:starts_on)).chronological
   end
 
   # { quest id => { completed:, paid:, coins: } } for the admin list: counts and a coin total over everyone, never who.
@@ -87,7 +87,7 @@ class Quest < ApplicationRecord
     errors.add(:starts_on, "must be the first day of a boss week (pick a week from the list)") unless boss_week
   end
 
-  def boss_week = Boss.find_by(starts_on: starts_on)
+  def boss_week = Boss.without_art_content.find_by(starts_on: starts_on)
 
   def take_ends_on_from_boss
     self.ends_on = boss_week&.ends_on if starts_on

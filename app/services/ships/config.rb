@@ -3,7 +3,7 @@ require "bigdecimal"
 module Ships
   # Tunables from config/game.yml under `ships:`. Read through `Ships::Config.current`; every value is converted
   # once into integer seconds (the hours are decimals in the file, never floats at run time).
-  Config = Data.define(:min_seconds, :step_seconds, :rejection_reasons, :reminder_seconds) do
+  Config = Data.define(:min_seconds, :step_seconds, :rejection_reasons, :reminder_seconds, :project_time_from) do
     def self.current
       @current ||= from_hash(Rails.application.config_for(:game).fetch(:ships))
     end
@@ -25,7 +25,17 @@ module Ships
       reminders = Array(raw.fetch(:reminder_hours)).map { |hours| seconds(hours, "ships.reminder_hours") }
       raise ArgumentError, "game.yml: ships.reminder_hours must be two increasing positive numbers of hours" unless reminders.size == 2 && reminders.all?(&:positive?) && reminders.first < reminders.last
 
-      new(min_seconds: min, step_seconds: step, rejection_reasons: reasons.freeze, reminder_seconds: reminders.freeze)
+      new(min_seconds: min, step_seconds: step, rejection_reasons: reasons.freeze, reminder_seconds: reminders.freeze,
+          project_time_from: date(raw[:project_time_from], "ships.project_time_from"))
+    end
+
+    # The first local date whose Hackatime time counts on a project ("2026-11-23"), or nil for no cutoff.
+    def self.date(value, name)
+      return if value.blank?
+
+      value.is_a?(Date) ? value : Date.iso8601(value.to_s)
+    rescue ArgumentError
+      raise ArgumentError, "game.yml: #{name} must be a date like 2026-11-23 or empty"
     end
 
     def self.seconds(hours, name)

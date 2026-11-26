@@ -150,8 +150,9 @@
   background: url("design/boss-shadow.svg") center / 100% 100% no-repeat;
   mix-blend-mode: soft-light;
 }
-.boss-card__art { display: block; width: 100%; max-width: 15rem; height: auto; }
-@media (min-width: 48rem) { .boss-card__art { max-width: 24rem; } }
+/* Staff upload their own pictures, so the shape is not known: cap both sides (never stretched, never scaled up past its own size). */
+.boss-card__art { display: block; width: auto; max-width: min(100%, 15rem); max-height: min(26rem, 80vh); height: auto; object-fit: contain; }
+@media (min-width: 48rem) { .boss-card__art { max-width: min(100%, 24rem); } }
 .boss-card--escaped .boss-card__art { opacity: 0.75; }
 .boss-card--defeated .boss-card__art { filter: grayscale(0.7); }
 

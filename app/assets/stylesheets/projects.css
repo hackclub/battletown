@@ -68,3 +68,33 @@
 
 /* A card whose title sits right above a form (not a .stack): give the title room. */
 .card > .card__title + form, .card > .card__title + .projects-form { margin-top: var(--space-4); }
+
+/* The searchable multi-select on the short Hackatime link page (app/views/projects/link.html.erb): a native <details> as the
+   dropdown, a search box and a scrolling list of checkboxes. Open and usable without JavaScript. */
+.multi__label { display: block; margin-bottom: var(--space-1); font-weight: 700; }
+.multi__box { position: relative; }
+.multi__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--tap-size);
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-field-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  cursor: pointer;
+  list-style: none;
+}
+.multi__summary::-webkit-details-marker { display: none; }
+.multi__summary::after { content: ""; flex: none; inline-size: 0.6rem; block-size: 0.6rem; border: solid currentcolor; border-width: 0 3px 3px 0; transform: translateY(-0.15rem) rotate(45deg); }
+.multi__box[open] > .multi__summary::after { transform: translateY(0.1rem) rotate(-135deg); }
+.multi__panel { margin-top: var(--space-2); padding: var(--space-3); border: 2px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
+.multi__filter[hidden] { display: none; }
+.multi__options { max-height: 16rem; margin: var(--space-3) 0 0; padding: 0; overflow-y: auto; border: 0; }
+.multi__option { display: flex; gap: var(--space-3); align-items: center; min-height: var(--tap-size); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); cursor: pointer; }
+.multi__option[hidden] { display: none; }
+.multi__option:hover { background: var(--color-surface-raised); }
+.multi__check { flex: none; inline-size: 1.4rem; block-size: 1.4rem; accent-color: var(--color-ink-blue); }
+.multi__name { min-width: 0; overflow-wrap: anywhere; }
+.multi__none { margin: var(--space-3) 0 0; color: var(--color-text-muted); }

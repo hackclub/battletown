@@ -54,7 +54,7 @@ module LandingHelper
 
   def build_landing_boss
     today = Hours::Days.today("UTC")
-    boss = Boss.covering(today).first
+    boss = Boss.without_art_content.covering(today).first
     if boss
       facts = Bosses::Presenter::Facts.new(today: today, boss: boss, damage: Bosses::Damage.for(boss), user_seconds: 0,
                                            active_today: 0, upcoming_on: nil, previous_escaped_name: nil)

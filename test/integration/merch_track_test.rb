@@ -61,14 +61,9 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "with the flag off the dashboard and the admin dashboard show nothing about the track" do
+  test "with the flag off the admin dashboard shows nothing about the track" do
     earn_week
     travel_to(AFTER_WEEK) do
-      sign_in_as @user
-      get dashboard_path
-      assert_response :success
-      assert_no_match(/reward track|merch/i, css_select("main").to_s)
-
       as_admin
       get admin_root_path
       assert_response :success
@@ -135,26 +130,26 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # --- flag on: the dashboard card ---
+  # --- flag on: the status of a week (the track page) ---
 
-  test "mid-week the dashboard card shows seven dots with text, the count and the item, and no claim button yet" do
+  test "mid-week a week shows seven dots with text, the count and the item, and no claim button yet" do
     with_feature(:merch_track) do
       earn_week(count: 3)
       travel_to(MID_WEEK) do
         sign_in_as @user
-        get dashboard_path
+        get merch_path
         assert_response :success
-        assert_select "section.merch-card h2", "This week's reward track"
-        assert_select ".merch-card .merch-day", 7
-        assert_select ".merch-card .merch-day--met", 3
-        assert_select ".merch-card .merch-day--pending.is-today", 1
-        assert_select ".merch-card .merch-day--future", 3
-        assert_select ".merch-card .merch-day .visually-hidden", text: /Friday 13 November: goal met/
-        assert_select ".merch-card .merch-day .visually-hidden", text: /Monday 16 November \(today\): still counting/
-        assert_select ".merch-card .merch-count strong", "3 of 5 days"
-        assert_select ".merch-card .merch-item strong", "Week 1 sticker"
-        assert_select ".merch-card .merch-message", /2 more goal days to go, with 4 days left this week/
-        assert_select ".merch-card form", 0
+        assert_select "#merch-week-1 h2", "Week 1: Week 1 sticker"
+        assert_select "#merch-week-1 .merch-day", 7
+        assert_select "#merch-week-1 .merch-day--met", 3
+        assert_select "#merch-week-1 .merch-day--pending.is-today", 1
+        assert_select "#merch-week-1 .merch-day--future", 3
+        assert_select "#merch-week-1 .merch-day .visually-hidden", text: /Friday 13 November: goal met/
+        assert_select "#merch-week-1 .merch-day .visually-hidden", text: /Monday 16 November \(today\): still counting/
+        assert_select "#merch-week-1 .merch-count strong", "3 of 5 days"
+        assert_select "#merch-week-1 .merch-item strong", "Week 1 sticker"
+        assert_select "#merch-week-1 .merch-message", /2 more goal days to go, with 4 days left this week/
+        assert_select "#merch-week-1 form", 0
       end
     end
   end
@@ -164,11 +159,11 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
       earn_week
       travel_to(AFTER_WEEK) do
         sign_in_as @user
-        get dashboard_path
-        assert_select ".merch-card .merch-count strong", "5 of 5 days"
-        assert_select ".merch-card #merch-verify-note", /Rewards unlock when you verify your identity with Hack Club/
-        assert_select ".merch-card #merch-verify-note a[href='https://auth.hackclub.com']", 1
-        assert_select ".merch-card form", 0
+        get merch_path
+        assert_select "#merch-week-1 .merch-count strong", "5 of 5 days"
+        assert_select "#merch-week-1 #merch-verify-note", /Rewards unlock when you verify your identity with Hack Club/
+        assert_select "#merch-week-1 #merch-verify-note a[href='https://auth.hackclub.com']", 1
+        assert_select "#merch-week-1 form", 0
       end
     end
   end
@@ -179,9 +174,9 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
       verified!(@user)
       travel_to(AFTER_WEEK) do
         sign_in_as @user
-        get dashboard_path
-        assert_select ".merch-card .merch-message", /Ship a project and get it approved/
-        assert_select ".merch-card form", 0
+        get merch_path
+        assert_select "#merch-week-1 .merch-message", /Ship a project and get it approved/
+        assert_select "#merch-week-1 form", 0
       end
     end
   end
@@ -196,18 +191,21 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
           sign_in_as @user
 
           @user.update_columns(ysws_eligible: false, verification_checked_at: Time.current)
-          get dashboard_path
-          assert_select ".merch-card .merch-message", /only available to people who qualify for Hack Club YSWS programs/
-          assert_select ".merch-card form", 0
+          status = MerchTrack::Status.for(@user, @boss, now: Time.current)
+          assert_equal :not_eligible, status.state
+          assert_match(/only available to people who qualify for Hack Club YSWS programs/, status.message)
+          assert_not status.can_claim?
           post "/merch/weeks/#{@boss.id}/claim"
           assert_equal 0, MerchClaim.count
           assert_match(/qualify for Hack Club YSWS programs/, flash[:alert])
 
           @user.update_columns(ysws_eligible: true, verification_checked_at: 90.days.ago)
-          get dashboard_path
-          assert_select ".merch-card .merch-message", /Sign in again to refresh your verification/
-          assert_select ".merch-card form[action='/auth/hack_club']", 1
-          assert_select ".merch-card form[action*='/claim']", 0
+          status = MerchTrack::Status.for(@user, @boss, now: Time.current)
+          assert_equal :needs_recheck, status.state
+          assert_match(/Sign in again to refresh your verification/, status.message)
+          assert_not status.can_claim?
+          post "/merch/weeks/#{@boss.id}/claim"
+          assert_equal 0, MerchClaim.count
         end
       end
     end
@@ -219,30 +217,30 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
       (WEEK_START + 2..WEEK_END).each { |date| goal_day(@user, date, met: false) }
       travel_to(AFTER_WEEK) do
         sign_in_as @user
-        get dashboard_path
-        assert_select ".merch-card .merch-message", "Next week is a fresh start."
+        get merch_path
+        assert_select "#merch-week-1 .merch-message", "Next week is a fresh start."
         assert_no_match(/missed it/i, response.body)
       end
     end
   end
 
-  test "claiming from the dashboard makes one claim, and a second press is a friendly no-op" do
+  test "claiming from the track page makes one claim, and a second press is a friendly no-op" do
     with_feature(:merch_track) do
       earn_week
       verified!(@user)
       approved_ship!(@user)
       travel_to(AFTER_WEEK) do
         sign_in_as @user
-        get dashboard_path
-        assert_select ".merch-card form[action^='#{merch_claim_path(boss_id: @boss.id)}'] button", /Claim this reward/
-        post merch_claim_path(boss_id: @boss.id, from: "dashboard")
-        assert_redirected_to dashboard_path
+        get merch_path
+        assert_select "#merch-week-1 form[action^='#{merch_claim_path(boss_id: @boss.id)}'] button", /Claim this reward/
+        post merch_claim_path(boss_id: @boss.id)
+        assert_redirected_to merch_path
         follow_redirect!
         assert_select ".flash", /Claimed: Week 1 sticker. The team will message you on Slack to arrange delivery./
-        assert_select ".merch-card .merch-message", /Claimed. The team will message you on Slack/
-        assert_select ".merch-card form", 0
+        assert_select "#merch-week-1 .merch-message", /Claimed. The team will message you on Slack/
+        assert_select "#merch-week-1 form", 0
 
-        post merch_claim_path(boss_id: @boss.id, from: "dashboard")
+        post merch_claim_path(boss_id: @boss.id)
         follow_redirect!
         assert_select ".flash", /already claimed/
         assert_equal 1, MerchClaim.where(user_id: @user.id).count
@@ -295,16 +293,15 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the dashboard card points at earlier weeks that are still waiting" do
+  test "the panel counts earlier weeks that are still waiting" do
     with_feature(:merch_track) do
       earn_week
       second = make_boss(starts_on: WEEK_START + 7)
-      travel_to(second.starts_on.in_time_zone("UTC") + 12.hours) do
-        sign_in_as @user
-        get dashboard_path
-        assert_select ".merch-card .merch-note", "1 reward is waiting from earlier weeks."
-        assert_select ".merch-card .merch-item strong", "Week 2 reward"
-      end
+      now = second.starts_on.in_time_zone("UTC") + 12.hours
+      panel = MerchTrack::Panel.for(@user, today: now.to_date, now: now)
+      assert_equal 1, panel.waiting
+      assert_equal "1 reward is waiting from earlier weeks.", panel.waiting_text
+      assert_equal "Week 2 reward", panel.status.item.name
     end
   end
 

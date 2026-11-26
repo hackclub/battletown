@@ -1,0 +1,89 @@
+<%# locals: (boss:, url:, creating: false, weeks: nil, previous: nil, use_previous: false) -%>
+<% picture = Bosses::ArtConfig.current %>
+<% targets = { name: "boss_name", art_key: "boss_name", hp_seconds: "boss_hp_hours", starts_on: "boss_starts_on", ends_on: "boss_starts_on", art_alt: "boss_art_alt" } %>
+<% failed = ->(attribute) { boss.errors.include?(attribute) } %>
+<%# The picture as stored: a form re-rendered after a failed save holds unsaved picture changes that must not be shown as current. %>
+<% saved_sha = boss.art_sha256_in_database %>
+<% saved_path = saved_sha ? boss_art_path(boss.id, v: saved_sha.first(12)) : "bosses/#{boss.art_key}.webp" %>
+<% saved_alt = (boss.art_alt_in_database if saved_sha) || Boss::ARTS[boss.art_key] || "The boss, #{boss.name_in_database}" %>
+<% if boss.errors.any? %>
+  <div class="alert alert--danger admin-form__errors" role="alert">
+    <p class="alert__title">That was not saved</p>
+    <ul>
+      <% boss.errors.each do |error| %>
+        <li><%= link_to error.full_message, "##{error.options[:target] || targets.fetch(error.attribute, (error.message.include?('overlap') ? 'boss_starts_on' : 'boss_name'))}" %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="card admin-form-card">
+  <%= form_with model: boss, url: url, method: (creating ? :post : :patch), multipart: true, class: "admin-form stack" do |form| %>
+    <% unless creating %><%= form.hidden_field :lock_version %><% end %>
+
+    <div class="field">
+      <%= form.label :name, "Name (1 to 60 characters)" %>
+      <%= form.text_field :name, class: "input", maxlength: 60, required: true, "aria-invalid": (failed.call(:name) ? "true" : nil) %>
+    </div>
+
+    <div class="field">
+      <%= form.label :hp_hours, "Health (hours of coding)" %>
+      <% if !creating && boss.started? %>
+        <%= form.text_field :hp_hours, class: "input", disabled: true, "aria-describedby": "boss-hp-hint" %>
+        <span id="boss-hp-hint" class="field__hint admin-form__hint">Locked: this boss has started, so its health can no longer change.</span>
+      <% else %>
+        <%= form.number_field :hp_hours, class: "input", min: 1, max: Boss::MAX_HP_SECONDS / 3600, step: "any", required: true, "aria-describedby": "boss-hp-hint", "aria-invalid": (failed.call(:hp_seconds) ? "true" : nil) %>
+        <span id="boss-hp-hint" class="field__hint admin-form__hint">The community's total coded hours needed to beat it. <%= creating ? "Editable until the boss starts." : "Editable until the boss starts on #{boss.starts_on.strftime('%A %-d %B')}." %></span>
+      <% end %>
+    </div>
+
+    <% if creating %>
+      <div class="field">
+        <%= form.label :starts_on, "Week" %>
+        <%= form.select :starts_on, weeks.options.map { |friday| [ "#{friday.strftime('%a %-d %b')} to #{(friday + 6).strftime('%a %-d %b %Y')}", friday ] }, { selected: boss.starts_on, include_blank: false }, class: "select", "aria-describedby": "boss-week-hint", "aria-invalid": (failed.call(:starts_on) || failed.call(:ends_on) ? "true" : nil) %>
+        <span id="boss-week-hint" class="field__hint admin-form__hint">A week runs Friday to Thursday. Only the next <%= Bosses::FreeWeeks::OPTIONS %> weeks with no boss are listed. The week can't be changed later.</span>
+      </div>
+    <% end %>
+
+    <% if !creating %>
+      <div class="field">
+        <span class="field__label">Current picture</span>
+        <p class="admin-form__readonly">
+          <%= image_tag saved_path, alt: saved_alt, class: "admin-boss-art" %>
+          <span class="admin-form__hint field__hint"><%= saved_sha ? "An uploaded picture (#{boss.art_width_in_database} by #{boss.art_height_in_database} pixels)." : "The built-in picture." %></span>
+        </p>
+      </div>
+    <% end %>
+
+    <div class="field">
+      <%= form.label :art_upload, (creating ? "Picture (optional)" : "Replace the picture") %>
+      <%= form.file_field :art_upload, accept: "image/png,image/jpeg,image/webp,image/gif", "aria-describedby": "boss-art-hint" %>
+      <span id="boss-art-hint" class="field__hint admin-form__hint">PNG, JPEG, WebP or GIF, up to <%= number_with_precision(picture.max_upload_bytes / 1_000_000.0, precision: 1, strip_insignificant_zeros: true) %> MB. A picture that is roughly square or a little taller than wide, with a transparent background, looks best. It is shrunk to at most <%= picture.max_edge_px %> pixels on its longest side; location and camera details are removed. Without one, the built-in picture is used.</span>
+    </div>
+
+    <% if creating && previous %>
+      <div class="field">
+        <label class="option"><%= check_box_tag "boss[use_previous_art]", "1", use_previous, id: "boss_use_previous_art", "aria-describedby": "boss-previous-hint" %> Use last week's picture</label>
+        <span id="boss-previous-hint" class="field__hint admin-form__hint">Copies the picture and alt text of the latest boss (<%= previous.name %>, week of <%= previous.starts_on.strftime("%-d %b") %>). Ignored when you upload a different picture above.</span>
+      </div>
+    <% end %>
+
+    <div class="field">
+      <%= form.label :art_alt, "Alt text for the picture (up to #{Boss::ART_ALT_MAX} characters)" %>
+      <%= form.text_field :art_alt, class: "input", maxlength: Boss::ART_ALT_MAX, autocomplete: "off", "aria-describedby": "boss-alt-hint", "aria-invalid": (failed.call(:art_alt) ? "true" : nil) %>
+      <span id="boss-alt-hint" class="field__hint admin-form__hint">Describes the picture for people who can't see it, for example "A tall armoured boss holding a spiked blade". Required when you upload a picture<%= creating && previous ? "; when you use last week's picture instead, leave it blank to keep last week's text" : "" %>. It is not saved for the built-in picture.</span>
+    </div>
+
+    <% if !creating && saved_sha %>
+      <div class="field">
+        <label class="option"><%= check_box_tag "boss[remove_art]", "1", false, id: "boss_remove_art", "aria-describedby": "boss-remove-hint" %> Remove the picture (go back to the built-in one)</label>
+        <span id="boss-remove-hint" class="field__hint admin-form__hint">Also removes the alt text. Ignored when you upload a new picture above.</span>
+      </div>
+    <% end %>
+
+    <div class="cluster">
+      <%= form.submit (creating ? "Add boss" : "Save boss"), class: "btn btn--primary" %>
+      <%= link_to "Cancel", admin_bosses_path, class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+</div>

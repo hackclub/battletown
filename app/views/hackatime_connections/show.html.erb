@@ -3,7 +3,7 @@
   <header class="page-header">
     <p class="eyebrow">Settings</p>
     <h1>Hackatime</h1>
-    <p class="lead">Hackatime tracks the time you spend coding. Connect it and your hours count toward the boss, your streak and your ships without you doing anything.</p>
+    <p class="lead">Hackatime tracks the time you spend coding. Connect it and your hours count toward your streak and your ships without you doing anything.</p>
   </header>
 
   <section class="card hackatime__card" id="hackatime" aria-labelledby="hackatime-status-heading">
@@ -19,7 +19,7 @@
     </div>
 
     <% if @connection.nil? %>
-      <p>Connect Hackatime so your coding time counts toward the boss, your streak and your ships automatically.</p>
+      <p>Connect Hackatime so your coding time counts toward your streak and your ships automatically.</p>
       <div class="hackatime__actions">
         <%= button_to "Connect Hackatime", "/auth/hackatime", method: :post, class: "btn btn--primary btn--lg", form: { data: { turbo: false } } %>
       </div>

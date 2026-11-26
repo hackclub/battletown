@@ -16,7 +16,11 @@ Rails.application.config.filter_parameters += [
   :metadata, /\Abody\z/,
   # Screenshot uploads: an uploaded file's log line would carry its original file name (often a real name); the alt text is free text.
   :images,
+  # A boss's picture upload, its alt text (staff-written free text) and the stored bytes (SQL bind values).
+  :art_upload, :art_alt, :art_content,
   # Shipping addresses (projects/battletown/specs/contract.md): the fields of an address, the encrypted offer's payload, the checkout's draft key and the
   # Hack Club Auth address id travel in params, SQL binds and sessions only, never in a log line.
+  # The dashboard's to-do list (a project's `todos`): short free text the person wrote, in params and in the SQL bind values.
+  :todos,
   /\Aline_[12]\z/, :city, :recipient, :payload, :draft, :address_id, :hca_address, :purge_after
 ]

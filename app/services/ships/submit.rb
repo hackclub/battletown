@@ -11,7 +11,8 @@ module Ships
   #   Ships::Submit.call(project: project, attributes: { description:, repo_url:, demo_url: }, submit: true)
   #   Ships::Submit.call(project: project, ship: draft, attributes: {...}, submit: true)   # continue a draft
   #
-  # Emits `ship_submitted.battletown` (ship_id only) after the ship is saved as submitted.
+  # Emits `ship_submitted.battletown` (ship_id only) after the ship is saved as submitted, and then checks whether the hours
+  # just shipped brought down the weekly boss (Bosses::CheckDefeat.for_ship: shipping is what damages the boss).
   class Submit
     class Refused < StandardError; end
     class NoHackatimeLink < Refused; end
@@ -56,7 +57,10 @@ module Ships
         @after_save&.call(ship) if saved
         @ship = ship
       end
-      instrument if saved && @submit
+      if saved && @submit
+        instrument
+        Bosses::CheckDefeat.for_ship(@ship)
+      end
       @ship
     rescue ActiveRecord::RecordNotUnique
       raise AlreadyOpen, @project.ships.open_now.first

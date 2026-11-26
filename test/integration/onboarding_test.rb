@@ -827,14 +827,12 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "#onboarding-progress-label", "onboarding progress (the fun part: picking a prize)"
   end
 
-  test "an onboarded user editing a step sees it as editing, with the way back being the dashboard, and the dashboard and notifications link here" do
+  test "an onboarded user editing a step sees it as editing, with the way back being the dashboard, and notifications link here" do
     sign_in_as users(:onboarded)
     get onboarding_step_path("schedule")
     assert_select "#onboarding-progress-label", "editing your plan"
     assert_select "a.onboarding-top__back[href='#{dashboard_path}']"
 
-    get dashboard_path
-    assert_select "a[href='#{onboarding_step_path("prize")}']", "Change prize"
     get settings_notifications_path
     assert_select "a[href='#{onboarding_step_path("schedule")}']", "your schedule"
   end

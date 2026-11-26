@@ -62,6 +62,8 @@ class HeaderNavTest < ActionDispatch::IntegrationTest
       assert_select "span.visually-hidden", "Battletown"
     end
     assert_select "header nav", 1
+
+    get projects_path
     assert_select "footer nav[aria-label=Legal]", 1
   end
 

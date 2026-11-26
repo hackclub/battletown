@@ -1,7 +1,8 @@
 require "test_helper"
 require_relative "../support/ships_test_support"
 
-# The welcome-back banner and the boosted bonus figures on the dashboard (feature flag `returning`).
+# The welcome-back banner and the boosted bonus figures the dashboard presenter hands out (feature flag `returning`). The page
+# itself no longer draws them, so the figures are read from Dashboard::Presenter after a real dashboard visit (which settles).
 class ReturningDashboardTest < ActionDispatch::IntegrationTest
   include ShipsTestSupport
 
@@ -25,16 +26,18 @@ class ReturningDashboardTest < ActionDispatch::IntegrationTest
     follow_redirect!
     get dashboard_path
     assert_response :success
+    Dashboard::Presenter.new(user: @user.reload)
   end
 
   test "the day the person comes back, the banner says the boost is on" do
     code(@user, @today - 10, 900)
     code(@user, @today, 900)
     with_feature(:returning) do
-      dashboard
-      assert_select ".dash-returning[role=status] .callout__title", "Welcome back!"
-      assert_select ".dash-returning", /boosted for 3 more days/
-      assert_select ".dash-returning", /at least 10\.3%/
+      banner = dashboard.returning_banner
+      assert_equal "Welcome back!", banner.title
+      assert_equal 3, banner.days_left
+      assert_match(/boosted for 3 more days/, banner.message)
+      assert_match(/at least 10\.3%/, banner.message)
     end
   end
 
@@ -43,27 +46,27 @@ class ReturningDashboardTest < ActionDispatch::IntegrationTest
     code(@user, @today - 1, 900)
     code(@user, @today, 900)
     with_feature(:returning) do
-      dashboard
+      banner = dashboard.returning_banner
       assert_equal @today - 1, WelcomeBackWindow.find_by!(user: @user).starts_on
-      assert_select ".dash-returning", /boosted for 2 more days/
+      assert_match(/boosted for 2 more days/, banner.message)
     end
   end
 
   test "an idle person who has not coded yet sees the boosted figure but no banner" do
     code(@user, @today - 10, 900)
     with_feature(:returning) do
-      dashboard
-      assert_select ".dash-returning", 0
-      assert_select ".dash-facts__ramp", /10\.3%/
+      presenter = dashboard
+      assert_nil presenter.returning_banner
+      assert_match(/10\.3%/, presenter.quick_streak.today_bonus_text)
     end
   end
 
   test "an active person sees no banner and the plain ramp" do
     (1..5).each { |ago| code(@user, @today - ago, 900) }
     with_feature(:returning) do
-      dashboard
-      assert_select ".dash-returning", 0
-      assert_select ".dash-facts__ramp", /11\.3%/ # day 6 of a real streak: the plain ramp, no floor involved
+      presenter = dashboard
+      assert_nil presenter.returning_banner
+      assert_match(/11\.3%/, presenter.quick_streak.today_bonus_text) # day 6 of a real streak: the plain ramp, no floor involved
     end
   end
 
@@ -72,19 +75,17 @@ class ReturningDashboardTest < ActionDispatch::IntegrationTest
     code(@user, @today - 1, 900)
     code(@user, @today, 900)
     without_feature(:returning) do
-      dashboard
-      assert_select ".dash-returning", 0
-      assert_no_match(/Welcome back/, response.body)
+      presenter = dashboard
+      assert_nil presenter.returning_banner
       assert_equal 0, WelcomeBackWindow.count
-      assert_select ".dash-facts__ramp", /Today's bonus: 7%/
+      assert_match(/Today's bonus: 7%/, presenter.quick_streak.today_bonus_text)
     end
   end
 
   test "the idle person's projected figure is the plain ramp with the flag off" do
     code(@user, @today - 10, 900)
     without_feature(:returning) do
-      dashboard
-      assert_select ".dash-facts__ramp", /Today's bonus: 5%/
+      assert_match(/Today's bonus: 5%/, dashboard.quick_streak.today_bonus_text)
     end
   end
 end

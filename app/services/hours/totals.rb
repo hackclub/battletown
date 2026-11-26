@@ -1,11 +1,10 @@
 module Hours
-  # Read API over the ledger, for the dashboard, boss, streaks and coins. All values are integer seconds and are the net
+  # Read API over the ledger, for the dashboard, streaks and coins. All values are integer seconds and are the net
   # of every row (credits and adjustments), floored at zero. Dates are the frozen local dates on the rows, so ranges are
   # plain date ranges (Date..Date inclusive, Date...Date exclusive, endless and beginless work too).
   #
   # Only COUNTED dates are read: a user's entries dated before `Hours::Days.first_counted_date(user)` (the local date
-  # they signed up on, by default) stay in the ledger but are left out of every total here, for the boss as much as
-  # for the user's own numbers.
+  # they signed up on, by default) stay in the ledger but are left out of every total here.
   module Totals
     module_function
 
@@ -18,7 +17,9 @@ module Hours
     # Seconds one user has on one local date (0 when none).
     def seconds_for_date(user, date) = [ counted_for(user, date).sum(:seconds), 0 ].max
 
-    # Seconds across ALL users in a date range (the boss). Aggregate only: no user is identifiable from it.
+    # Seconds across ALL users in a date range. Aggregate only: no user is identifiable from it. No production code calls this
+    # (the boss reads shipped hours, Bosses::Damage); the tests keep it to check the all-users SQL cutoff (`counted`) against
+    # the per-user Ruby one.
     def seconds_in_range(range) = [ counted.where(local_date: range).sum(:seconds), 0 ].max
 
     # How many users have at least `active_seconds` (default 15 minutes, config/game.yml) on that local date.

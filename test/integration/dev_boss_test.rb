@@ -1,8 +1,10 @@
 require "test_helper"
 require_relative "../support/bosses_helper"
+require_relative "../support/ship_images_helper"
 
 class DevBossTest < ActionDispatch::IntegrationTest
   include BossesHelper
+  include ShipImagesHelper
 
   def in_env(name)
     original = Rails.env
@@ -40,7 +42,10 @@ class DevBossTest < ActionDispatch::IntegrationTest
   end
 
   test "shows the real card in a green dev-only frame" do
-    make_boss(starts_on: Date.current - 2, ends_on: Date.current + 4, name: "Real Boss")
+    # The signed-in user's own day can be a day away from the server's, so the week before is a boss too (a Friday today is a Thursday there).
+    this_friday = friday_on_or_before(Date.current)
+    make_boss(starts_on: this_friday, name: "Real Boss")
+    make_boss(starts_on: this_friday - 7, name: "Real Boss")
     dev_login
     in_env("development") { get "/dev/boss" }
 
@@ -48,6 +53,21 @@ class DevBossTest < ActionDispatch::IntegrationTest
     assert_select "section.dev-only", 1
     assert_select "section.boss-card--in-progress h2", "Real Boss"
     assert_select "a[href='/dev/hours']", 1
+  end
+
+  test "the real card shows a boss's own picture" do
+    this_friday = friday_on_or_before(Date.current)
+    [ this_friday, this_friday - 7 ].each do |starts_on|
+      boss = make_boss(starts_on: starts_on, name: "Pictured Boss")
+      boss.attach_art(ShipImages::Processor.call(upload_file(png_bytes(64, 32)), config: Bosses::ArtConfig.current))
+      boss.art_alt = "A pictured boss"
+      boss.save!
+    end
+    dev_login
+    in_env("development") { get "/dev/boss" }
+
+    assert_response :success
+    assert_select "img.boss-card__art[src^='/bosses/'][alt='A pictured boss']", 1
   end
 
   test "state and percent params render a made-up boss and write nothing" do

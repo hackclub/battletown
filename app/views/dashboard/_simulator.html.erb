@@ -1,0 +1,91 @@
+<%# locals: () -%>
+<%# The development-only event simulator, in the bottom-left corner of the real dashboard (rendered only when dev_simulator? is
+    true: development with a database on this machine). Top to bottom when open: the LIVE header (the last message and the key
+    numbers, sticky), SIMULATED PLAYERS (real rows in the dev database, through Dev::SimulatorController) and last a PREVIEW that
+    rewrites the boss bar in this browser only. All behaviour is the Stimulus controller
+    app/javascript/controllers/event_simulator_controller.js; styles are event_simulator.css. -%>
+<details class="event-simulator" data-controller="event-simulator" data-action="turbo:before-cache@document->event-simulator#cleanup"
+         data-event-simulator-status-url-value="<%= status_dev_simulator_path %>"
+         data-event-simulator-players-url-value="<%= create_players_dev_simulator_path %>"
+         data-event-simulator-ship-url-value="<%= ship_dev_simulator_path %>"
+         data-event-simulator-reset-url-value="<%= reset_dev_simulator_path %>">
+  <summary class="event-simulator__toggle" title="Development only, local database only">
+    <span class="event-simulator__label">event simulator</span>
+    <span class="event-simulator__readout" role="status" data-event-simulator-target="readout"></span>
+  </summary>
+  <div class="event-simulator__body">
+    <div class="event-simulator__live">
+      <p class="event-simulator__status" role="status" aria-live="polite" data-event-simulator-target="message">live values</p>
+      <dl class="event-simulator__numbers">
+        <% { "boss" => "boss", "damage" => "damage dealt", "health" => "boss health", "togo" => "to go", "players" => "simulated players", "coded" => "coded today" }.each do |key, label| %>
+          <div><dt><%= label %></dt><dd data-event-simulator-target="stat" data-stat="<%= key %>">-</dd></div>
+        <% end %>
+      </dl>
+    </div>
+
+    <div class="event-simulator__group" role="group" aria-labelledby="simulator-players-title">
+      <h2 id="simulator-players-title" class="event-simulator__title">simulated players</h2>
+      <p class="event-simulator__hint event-simulator__hint--warn">Development only, local database only. Writes to your dev database. They are users with an id starting "sim!".</p>
+      <label class="event-simulator__field" for="simulator-count">players (1 to 200)
+        <input id="simulator-count" type="number" name="count" min="1" max="200" step="1" value="10" inputmode="numeric" autocomplete="off" data-event-simulator-target="count">
+      </label>
+      <div class="event-simulator__pair">
+        <label class="event-simulator__field" for="simulator-hours-min">hours per ship, min
+          <input id="simulator-hours-min" type="number" name="hours_min" min="1" max="<%= DevSimulator::MAX_HOURS %>" step="0.5" value="<%= DevSimulator::DEFAULT_HOURS_MIN %>" inputmode="decimal" autocomplete="off"
+                 data-event-simulator-target="hoursMin" data-action="input->event-simulator#showRange">
+        </label>
+        <label class="event-simulator__field" for="simulator-hours-max"><span class="visually-hidden">hours per ship, </span>max
+          <input id="simulator-hours-max" type="number" name="hours_max" min="1" max="<%= DevSimulator::MAX_HOURS %>" step="0.5" value="<%= DevSimulator::DEFAULT_HOURS_MAX %>" inputmode="decimal" autocomplete="off"
+                 data-event-simulator-target="hoursMax" data-action="input->event-simulator#showRange">
+        </label>
+      </div>
+      <fieldset class="event-simulator__hit">
+        <legend>hit size (times the hours above)</legend>
+        <% [ 1, 5, 20 ].each do |factor| %>
+          <label class="event-simulator__choice">
+            <input type="radio" name="hit_size" value="<%= factor %>" <%= "checked" if factor == 1 %> autocomplete="off"
+                   data-event-simulator-target="hitSize" data-action="change->event-simulator#showRange">
+            x<%= factor %>
+          </label>
+        <% end %>
+      </fieldset>
+      <p class="event-simulator__hint" data-event-simulator-target="range"></p>
+      <div class="event-simulator__actions">
+        <button type="button" class="event-simulator__button" data-event-simulator-target="action" data-action="event-simulator#createPlayers">create players</button>
+        <button type="button" class="event-simulator__button" data-event-simulator-target="action" data-action="event-simulator#ship"
+                data-event-simulator-mode-param="all">everyone ships</button>
+        <button type="button" class="event-simulator__button" data-event-simulator-target="action" data-action="event-simulator#ship"
+                data-event-simulator-mode-param="percent" data-event-simulator-percent-param="30">random 30% ship</button>
+      </div>
+      <div class="event-simulator__field event-simulator__field--row">
+        <input id="simulator-auto" type="checkbox" name="auto" autocomplete="off" data-event-simulator-target="auto" data-action="change->event-simulator#toggleAuto">
+        <label for="simulator-auto">auto: ship every</label>
+        <input id="simulator-seconds" type="number" name="seconds" min="2" max="120" step="1" value="4" inputmode="numeric" autocomplete="off"
+               class="event-simulator__small" aria-label="seconds between auto ships" data-event-simulator-target="seconds" data-action="change->event-simulator#toggleAuto">
+        <span>s</span>
+        <span class="event-simulator__countdown" aria-hidden="true" data-event-simulator-target="countdown"></span>
+      </div>
+      <div class="event-simulator__field event-simulator__field--row">
+        <input id="simulator-clear" type="checkbox" name="clear_defeat" autocomplete="off" data-event-simulator-target="clearDefeat">
+        <label for="simulator-clear">on remove, also let this week's boss fall again</label>
+      </div>
+      <div class="event-simulator__actions">
+        <button type="button" class="event-simulator__button event-simulator__button--danger" data-event-simulator-target="action" data-action="event-simulator#reset">remove simulated players</button>
+      </div>
+    </div>
+
+    <form class="event-simulator__group" data-action="submit->event-simulator#applyPreview" aria-labelledby="simulator-preview-title">
+      <h2 id="simulator-preview-title" class="event-simulator__title">preview</h2>
+      <p class="event-simulator__hint">Browser only. Changes this page and writes nothing. Reload to undo.</p>
+      <label class="event-simulator__field" for="simulator-damage">damage (%)
+        <input id="simulator-damage" type="range" name="damage" min="0" max="100" step="1" value="25" autocomplete="off"
+               data-event-simulator-target="damage" data-action="input->event-simulator#applyPreview">
+        <output class="event-simulator__value" for="simulator-damage" data-event-simulator-target="damageOutput">25%</output>
+      </label>
+      <div class="event-simulator__actions">
+        <button type="submit" class="event-simulator__button">apply preview</button>
+        <button type="button" class="event-simulator__button" data-action="event-simulator#restore">restore live values</button>
+      </div>
+    </form>
+  </div>
+</details>

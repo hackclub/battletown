@@ -2,7 +2,7 @@ require "test_helper"
 require_relative "../support/coins_helper"
 require_relative "../support/ships_test_support"
 
-# The crew pages, the invite link, the dashboard card and the admin list, with the `team` flag on and off.
+# The crew pages, the invite link, the ship page line and the admin list, with the `team` flag on and off.
 class TeamTest < ActionDispatch::IntegrationTest
   include CoinsHelper
   include ShipsTestSupport
@@ -64,22 +64,22 @@ class TeamTest < ActionDispatch::IntegrationTest
     assert_equal [ 1, 1 ], [ Team.count, TeamMembership.count ]
   end
 
-  test "with the flag off the dashboard shows no crew card and the admin dashboard no Crews link" do
+  test "with the flag off the admin dashboard has no Crews link" do
     ENV["ADMIN_HCA_UIDS"] = @ann.hca_uid
     sign_in_as @ann
-    get dashboard_path
-    assert_response :success
-    assert_no_match(/Invite a buddy/, response.body)
-    assert_no_match(%r{href="/team"}, response.body)
     get admin_root_path
+    assert_response :success
     assert_no_match(%r{/admin/teams}, response.body)
   end
 
   test "with the flag off an approved ship shows no crew line" do
-    start_crew
+    team = start_crew
+    Teams::Crew.join!(user: @ben, token: team.invite_token)
+    ship = approved_ship_with_team_bonus
     Flipper.disable(:team)
     sign_in_as @ann
-    get dashboard_path
+    get ship_path(ship)
+    assert_response :success
     assert_no_match(/crew bonus/i, response.body)
   end
 
@@ -282,21 +282,20 @@ class TeamTest < ActionDispatch::IntegrationTest
     assert_redirected_to team_path
   end
 
-  # --- the dashboard card, the ship page and the admin list ---
+  # --- the ship page and the admin list ---
 
-  test "the dashboard card invites a buddy, then shows the crew size and the person's own bonus coins" do
-    Flipper.enable(:team)
-    sign_in_as @ann
-    get dashboard_path
-    assert_select ".dash-team a[href='#{team_path}']", text: "Invite a buddy"
-
+  test "the crew page shows the crew size and the person's own bonus coins" do
     team = start_crew
+    sign_in_as @ann
+    get team_path
+    assert_select ".badge", text: "1 of 5 people"
+    assert_select "#invite-title", "Invite a buddy"
+
     Teams::Crew.join!(user: @ben, token: team.invite_token)
     ship = approved_ship_with_team_bonus
-    get dashboard_path
-    assert_select ".dash-team", text: /2 of 5 people/
-    assert_select ".dash-team", text: /#{ship.team_payout.coins} coins/
-    assert_no_match(/Ben Example/, css_select(".dash-team").to_s)
+    get team_path
+    assert_select ".badge", text: "2 of 5 people"
+    assert_select "#bonus-title + p strong", text: "#{ship.team_payout.coins} #{'coin'.pluralize(ship.team_payout.coins)}"
   end
 
   test "an approved ship shows the crew bonus as its own line" do

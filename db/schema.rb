@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -51,7 +51,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.datetime "defeated_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.binary "art_content"
+    t.integer "art_width"
+    t.integer "art_height"
+    t.integer "art_byte_size"
+    t.string "art_sha256", limit: 64
+    t.string "art_alt", limit: 200
+    t.integer "lock_version", default: 0, null: false
     t.index ["starts_on"], name: "index_bosses_on_starts_on", unique: true
+    t.check_constraint "art_alt IS NULL OR char_length(art_alt::text) <= 200", name: "bosses_art_alt_check"
+    t.check_constraint "art_content IS NULL AND art_width IS NULL AND art_height IS NULL AND art_byte_size IS NULL AND art_sha256 IS NULL OR art_content IS NOT NULL AND art_width > 0 AND art_height > 0 AND art_byte_size >= 1 AND art_byte_size <= 5000000 AND octet_length(art_content) = art_byte_size AND art_sha256::text ~ '^[0-9a-f]{64}$'::text AND SUBSTRING(art_content FROM 1 FOR 4) = '\\x52494646'::bytea AND SUBSTRING(art_content FROM 9 FOR 4) = '\\x57454250'::bytea", name: "bosses_art_check"
     t.check_constraint "art_key::text ~ '^[a-z0-9_-]{1,40}$'::text", name: "bosses_art_key_check"
     t.check_constraint "char_length(btrim(name::text)) >= 1 AND char_length(btrim(name::text)) <= 60", name: "bosses_name_check"
     t.check_constraint "ends_on >= starts_on", name: "bosses_dates_check"
@@ -425,6 +434,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.datetime "updated_at", null: false
     t.string "review_status", default: "unreviewed", null: false
     t.datetime "reviewed_at"
+    t.jsonb "todos", default: [], null: false
     t.index ["id", "user_id"], name: "index_projects_on_id_and_user_id", unique: true
     t.index ["review_status", "created_at"], name: "index_projects_on_review_status_and_created_at"
     t.index ["user_id", "created_at"], name: "index_projects_on_user_id_and_created_at"
@@ -435,6 +445,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.check_constraint "char_length(name::text) >= 1 AND char_length(name::text) <= 60 AND btrim(name::text) <> ''::text", name: "projects_name_check"
     t.check_constraint "demo_url IS NULL OR char_length(demo_url::text) <= 300 AND demo_url::text ~ '^https://[^[:space:]/?\#@]+([/?#][^[:space:]]*)?$'::text", name: "projects_demo_url_check"
     t.check_constraint "guide_key IS NULL OR (guide_key::text = ANY (ARRAY['sd'::character varying, 'playground'::character varying]::text[]))", name: "projects_guide_key_check"
+    t.check_constraint "jsonb_typeof(todos) = 'array'::text AND jsonb_array_length(todos) <= 10", name: "projects_todos_check"
     t.check_constraint "kind::text = ANY (ARRAY['game'::character varying, 'website'::character varying, 'app'::character varying, 'tool'::character varying, 'hardware'::character varying, 'undecided'::character varying]::text[])", name: "projects_kind_check"
     t.check_constraint "repo_url IS NULL OR char_length(repo_url::text) <= 300 AND repo_url::text ~ '^https://github\\.com/[a-z0-9-]{1,39}/(?!\\.+$)[a-z0-9._-]{1,100}$'::text", name: "projects_repo_url_check"
     t.check_constraint "review_status::text = ANY (ARRAY['unreviewed'::character varying, 'ok'::character varying, 'flagged'::character varying]::text[])", name: "projects_review_status_check"
@@ -632,6 +643,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.integer "coding_days", default: 0, null: false
     t.string "coding_time"
     t.jsonb "coding_times", default: {}, null: false
+    t.integer "pace_minutes"
     t.string "time_zone"
     t.integer "onboarding_step", default: 0, null: false
     t.datetime "onboarded_at"
@@ -647,6 +659,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_180000) do
     t.check_constraint "coding_days >= 0 AND coding_days <= 127", name: "users_coding_days_check"
     t.check_constraint "coding_time IS NULL OR coding_time::text ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'::text", name: "users_coding_time_check"
     t.check_constraint "jsonb_typeof(coding_times) = 'object'::text", name: "users_coding_times_check"
+    t.check_constraint "pace_minutes IS NULL OR (pace_minutes = ANY (ARRAY[15, 30, 45, 60, 90, 120, 180, 240]))", name: "users_pace_minutes_check"
     t.check_constraint "onboarding_step >= 0 AND onboarding_step <= 6", name: "users_onboarding_step_check"
     t.check_constraint "project_kind IS NULL OR (project_kind::text = ANY (ARRAY['game'::character varying, 'website'::character varying, 'app'::character varying, 'tool'::character varying, 'hardware'::character varying, 'undecided'::character varying]::text[]))", name: "users_project_kind_check"
     t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying, 'pending'::character varying, 'verified'::character varying, 'ineligible'::character varying]::text[])", name: "users_verification_status_check"

@@ -13,7 +13,7 @@ shared:
     # A user counts as active on a date from this many credited seconds (15 minutes).
     active_seconds: 900
     # Hours on local dates before the account's sign-up date (in the user's zone) stay in the ledger but count for
-    # nothing in the game: no boss damage, streak day, coins or dashboard time. This many days before the sign-up date
+    # nothing in the game: no ship hours (so no boss damage), streak day, coins or dashboard time. This many days before the sign-up date
     # count anyway; 0 means the sign-up date itself is the first that counts (fully).
     days_before_signup_counted: 0
 
@@ -59,7 +59,8 @@ shared:
 
   # The weekly boss (app/services/bosses/**).
   boss:
-    # Coded seconds in a boss week (all of one's own local dates in it) that earn the "Boss slayer" badge when the boss falls (15 minutes).
+    # Seconds on one's own submitted or approved ships (submitted in the boss week, UTC dates) that earn the "Boss slayer" badge when
+    # the boss falls (15 minutes, which any real ship passes: a ship needs ships.min_hours). Coding that is not shipped does not count.
     slayer_seconds: 900
     # How many days after a boss ends the card keeps showing it (defeated or escaped) when no newer boss has started.
     afterglow_days: 7
@@ -68,6 +69,11 @@ shared:
   ships:
     # The fewest coded hours (since the last ship) a project needs before it can be shipped.
     min_hours: 1.0
+    # The first local date whose Hackatime time counts on a project (toward a ship, a project's totals, the dashboard's "to go"):
+    # time on linked Hackatime projects before it is ignored, and the project picker only lists projects coded on since. A date
+    # (YYYY-MM-DD) or empty for no cutoff. Streaks and the daily goal are not affected. Boss damage follows,
+    # since it is the hours on shipped ships. The test environment has none.
+    project_time_from: "2026-11-23"
     # Staff can lower the approved hours (never raise them) in steps of this many hours.
     approval_step_hours: 0.25
     # Hours coded on a project since its last ship at which Slack nudges it (app/services/notifications/ship_reminders.rb):
@@ -271,3 +277,22 @@ shared:
     max_edge_px: 800
     # WebP quality of the stored copy (1 to 100).
     webp_quality: 85
+
+  # Weekly boss pictures (app/services/bosses/art_config.rb), read through Bosses::ArtConfig. Staff upload them at /admin/bosses; they
+  # go through the same safe re-encode as ship screenshots (ShipImages::Processor). A boss picture is a transparent cut-out that
+  # stands on the map, so it is kept larger than a shop picture and keeps its transparency.
+  boss_art:
+    # The biggest picture upload accepted, in bytes (5 MB). Checked before the file is read; at most 5,000,000, the database's own
+    # ceiling for a stored image. A whole admin request is capped at this plus a small allowance.
+    max_upload_bytes: 5000000
+    # Decompression-bomb guard: the most megapixels a picture may have, read from its header before any pixel is decoded.
+    max_megapixels: 16
+    # Pictures are scaled down (never up) so their long side is at most this many pixels.
+    max_edge_px: 1600
+    # WebP quality of the stored copy (1 to 100).
+    webp_quality: 85
+
+# Tests use dates all over November 2026, so the project time cutoff is off there.
+test:
+  ships:
+    project_time_from:

@@ -29,13 +29,13 @@ module OnboardingsHelper
   # Names people see for the attributes that can fail (attribute names are column names such as prize_key).
   ERROR_LABELS = {
     prize_key: "Prize", project_kind: "Project type", project_idea: "Project idea", coding_time: "Time",
-    coding_times: "Times for some days", coding_days: "Days", time_zone: "Time zone", referral_source: "How you found us"
+    coding_times: "Times for some days", coding_days: "Days", time_zone: "Time zone", pace_minutes: "Daily pace", referral_source: "How you found us"
   }.freeze
 
   # The id of the control an error should jump to (the first radio or day pill for the grouped fields).
   ERROR_ANCHORS = {
     project_kind: "user_project_kind_game", project_idea: "user_project_idea", coding_time: "user_coding_time",
-    coding_times: "day-times-hint", coding_days: "user_day_monday", time_zone: "user_time_zone", referral_source: "user_referral_source"
+    coding_times: "day-times-hint", coding_days: "user_day_monday", time_zone: "user_time_zone", pace_minutes: "user_pace_minutes", referral_source: "user_referral_source"
   }.freeze
 
   # What to tell people for each kind of failure, as a short instruction (never "can't be blank"). Keyed by attribute and
@@ -47,6 +47,7 @@ module OnboardingsHelper
     coding_days: { blank: "Pick at least one day" },
     coding_time: { blank: "Choose a time to code", invalid: "Use a time like 5:30 pm" },
     time_zone: { blank: "Choose your time zone", inclusion: "Choose your time zone from the list" },
+    pace_minutes: { inclusion: "Pick a pace from the list" },
     referral_source: { inclusion: "Pick one of the options in the list", invalid: "Pick one of the options in the list" }
   }.freeze
 
@@ -180,6 +181,14 @@ module OnboardingsHelper
   end
 
   def day_label(day) = day.capitalize
+
+  # "1 hour 30 minutes" for a daily pace given in minutes (the select's option text).
+  def pace_text(minutes)
+    hours, rest = minutes.divmod(60)
+    [ (pluralize(hours, "hour") if hours.positive?), (pluralize(rest, "minute") if rest.positive?) ].compact.join(" ")
+  end
+
+  def pace_options = User::PACES.map { |minutes| [ pace_text(minutes), minutes ] }
 
   # "18:30" as "6:30 pm" (the stored value stays 24-hour HH:MM).
   def coding_time_text(time)

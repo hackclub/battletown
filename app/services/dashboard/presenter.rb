@@ -28,17 +28,17 @@ module Dashboard
     ShipSummary = Data.define(:id, :status, :label, :message, :reason, :open)
 
     ProjectPanel = Data.define(:id, :name, :linked_count, :linked_text, :window_seconds, :window_text, :min_text, :readiness,
-                               :reason, :can_ship, :ship)
+                               :reason, :can_ship, :ship, :todos)
 
     HackatimePanel = Data.define(:state, :title, :message)
 
-    PrizePanel = Data.define(:name, :emoji, :price_coins, :price_text, :hours_text, :balance, :progress_value, :progress_text,
+    PrizePanel = Data.define(:name, :emoji, :image, :price_coins, :price_text, :hours_text, :balance, :progress_value, :progress_text,
                              :message, :reached, :free)
 
     HACKATIME_COPY = {
-      connected: [ "Connected", "Your coding time counts toward the boss automatically." ],
+      connected: [ "Connected", "Your coding time counts toward your ships automatically." ],
       needs_reconnect: [ "Needs reconnecting", "Hackatime stopped accepting our access, so your time isn't syncing right now. Connect again to pick up where you left off." ],
-      not_connected: [ "Not connected", "Connect Hackatime so your coding time counts toward the boss automatically." ]
+      not_connected: [ "Not connected", "Connect Hackatime so your coding time counts toward your ships automatically." ]
     }.freeze
 
     attr_reader :user, :now
@@ -59,13 +59,32 @@ module Dashboard
 
     # --- the weekly boss (render with the bosses/card partial) ---
 
-    def boss = @boss ||= Bosses::Presenter.new(user: user, today: today_date)
+    # The boss is picked by the UTC date, not the user's local one: a ship lands in the boss week of its UTC instant (Bosses::Damage).
+    def boss = @boss ||= Bosses::Presenter.new(user: user, today: Hours::Days.today("UTC", now: now))
 
     # --- today ---
 
     def today
       @today ||= build_today
     end
+
+    # --- the top of the page: what to do next, its one bar and the ship button (Dashboard::Stage) ---
+
+    def stage = @stage ||= Stage.for(self)
+
+    # The to-do list under it: three boxes, what to do right now, the reviewer's note after a rejected ship (Dashboard::Plan)
+    def plan = @plan ||= Plan.for(self)
+
+    # The prize check: how much coding is left for the chosen prize, with today's bonus, and whether they are on pace
+    # (Dashboard::PrizePace).
+    def prize_pace
+      return @prize_pace if defined?(@prize_pace)
+
+      @prize_pace = PrizePace.for(self)
+    end
+
+    # The streak bonus (or the welcome-back floor) a day coded today is projected to earn, in basis points (1 bp = 0.01%).
+    def active_bonus_bps = projected_bps(streaks.carried_quick + 1, today_date)
 
     # --- streaks ---
 
@@ -298,7 +317,7 @@ module Dashboard
                        linked_text: links.empty? ? "No Hackatime project linked yet" : "#{links.size} Hackatime #{links.size == 1 ? 'project' : 'projects'} linked",
                        window_seconds: window.seconds, window_text: window.empty? ? "0 minutes" : duration_text(window.seconds), min_text: hours_text(min_seconds),
                        readiness: readiness, reason: readiness_reason(readiness, window.seconds, min_seconds),
-                       can_ship: readiness == :ready, ship: latest && ship_summary(latest))
+                       can_ship: readiness == :ready, ship: latest && ship_summary(latest), todos: active.todos)
     end
 
     def project_readiness(links, window, min_seconds, latest)
@@ -350,7 +369,7 @@ module Dashboard
 
       balance = coins.total
       if chosen.free_signup? || chosen.coins.zero?
-        return PrizePanel.new(name: chosen.name, emoji: chosen.emoji, price_coins: 0, price_text: "Free", hours_text: nil, balance: balance,
+        return PrizePanel.new(name: chosen.name, emoji: chosen.emoji, image: chosen.image, price_coins: 0, price_text: "Free", hours_text: nil, balance: balance,
                               progress_value: 0, progress_text: nil, message: "This one is free: claim it in the shop.", reached: true, free: true)
       end
 
@@ -361,7 +380,7 @@ module Dashboard
       else
         "#{coins_text(chosen.coins - balance)} to go, about #{hours_text_of_coins(chosen.coins - balance)} of approved coding."
       end
-      PrizePanel.new(name: chosen.name, emoji: chosen.emoji, price_coins: chosen.coins, price_text: coins_text(chosen.coins),
+      PrizePanel.new(name: chosen.name, emoji: chosen.emoji, image: chosen.image, price_coins: chosen.coins, price_text: coins_text(chosen.coins),
                      hours_text: chosen.hours_text, balance: balance, progress_value: value,
                      progress_text: "#{ActiveSupport::NumberHelper.number_to_delimited(value)} of #{coins_text(chosen.coins)}",
                      message: message, reached: reached, free: false)

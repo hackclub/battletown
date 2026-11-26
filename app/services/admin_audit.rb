@@ -63,6 +63,7 @@ module AdminAudit
     ship_approved
     ship_rejected
     ship_screenshot_removed
+    boss_created
     boss_updated
     quest_created
     quest_updated

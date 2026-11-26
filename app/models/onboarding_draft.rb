@@ -8,7 +8,7 @@ class OnboardingDraft < SimpleDelegator
   SIGNUP_STEP = 4
   # Index of the prize step: where an account resumes when the prize in its draft is no longer on offer.
   PRIZE_STEP = 1
-  ANSWERS = %w[prize_key project_kind project_idea coding_days coding_time coding_times time_zone].freeze
+  ANSWERS = %w[prize_key project_kind project_idea coding_days coding_time coding_times time_zone pace_minutes].freeze
   # Never a real Hack Club Auth id: only there so the unsaved user passes its own presence validation.
   PLACEHOLDER_UID = "draft".freeze
 
@@ -23,7 +23,8 @@ class OnboardingDraft < SimpleDelegator
 
   # The draft lives in a 4 KB cookie (encrypted, so about 1.8 times bigger, next to the CSRF token, referral slug and
   # splash flag). 500 four-byte emoji overflow it, so an idea is capped in bytes here; ordinary text is never affected.
-  # With the biggest idea a different time on all seven days (about 200 bytes more) still leaves roughly 800 bytes free.
+  # With the biggest idea a different time on all seven days (about 200 bytes more) still leaves roughly 800 bytes free;
+  # the pace is a small integer (a few bytes).
   MAX_IDEA_BYTES = 1200
 
   def valid?(context = nil)

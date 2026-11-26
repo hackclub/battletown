@@ -1,0 +1,155 @@
+/* The development-only event simulator on the dashboard (app/views/dashboard/_simulator.html.erb, only rendered in development
+   against a database on this machine). A collapsed dark panel fixed to the bottom-left corner of the page; cream text on dark
+   ink (--color-ink-brown, about 11:1). Open, it is at most 34rem tall (and never taller than the window less 14rem: the navbar, the
+   boss's health bar and its plates sit above that, at the top) and scrolls inside itself, so it stays below them; on a narrow screen it is the full width of the
+   bottom. Its sticky "live" header (message and key numbers) stays in view while the controls scroll. Native controls only, so
+   it is all keyboard operable. The panel itself does not move; the flash on the page's health bar and the floating number over
+   the boss (the last two blocks) are the only motion, and only for people who have not asked for less. */
+.event-simulator {
+  --summary-h: var(--tap-size);
+  --panel-max: min(34rem, calc(100vh - 14rem));
+  position: fixed;
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 50;
+  box-sizing: border-box;
+  width: min(22rem, calc(100vw - var(--space-8)));
+  background: var(--color-ink-brown);
+  color: var(--color-bg);
+  border: 2px solid var(--color-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card-edge);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+/* Closed, it shrinks to its label. */
+.event-simulator:not([open]) { width: auto; }
+/* dvh follows the visible area on a phone (100vh above is the fallback); never so short that the panel is unusable. */
+@supports (height: 100dvh) {
+  .event-simulator { --panel-max: min(34rem, calc(100dvh - 14rem)); }
+}
+.event-simulator :focus-visible { outline-color: var(--color-bg); }
+/* One line: the name, then the live readout ("Boss 2 · 96% left") cut short rather than wrapped, so the summary keeps one height. */
+.event-simulator__toggle {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--summary-h);
+  padding: 0 var(--space-4);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.event-simulator__label { flex: none; }
+.event-simulator__readout { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 400; opacity: 0.9; }
+.event-simulator__readout:not(:empty)::before { content: "\00b7\00a0"; }
+/* Open/closed marker (a flex summary has none of its own). */
+.event-simulator__toggle::after { flex: none; margin-inline-start: auto; content: "\25B8"; }
+.event-simulator[open] > .event-simulator__toggle::after { content: "\25BE"; }
+/* The body scrolls on its own, inside the most the panel may be. */
+.event-simulator__body {
+  display: grid;
+  gap: var(--space-4);
+  padding: 0 var(--space-4) var(--space-4);
+  max-height: calc(max(14rem, var(--panel-max)) - var(--summary-h) - 4px);
+  /* Room for the sticky live header (message and three rows of numbers), so a focused control is never left under it. */
+  scroll-padding-top: 10rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Sticky at the top of the scrolling body (which has no top padding, so it sticks flush). Opaque, so controls pass under it. */
+.event-simulator__live {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  background: var(--color-ink-brown);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-bg) 50%, transparent);
+}
+.event-simulator__group { display: grid; gap: var(--space-2); margin: 0; padding: var(--space-3); border: 1px solid color-mix(in srgb, var(--color-bg) 50%, transparent); border-radius: var(--radius-md); }
+.event-simulator__title { margin: 0; font-family: var(--font-display); font-size: var(--text-base); font-weight: 400; }
+.event-simulator__hint { margin: 0; color: var(--color-bg); }
+.event-simulator__hint--warn { color: var(--color-highlight); }
+.event-simulator__field { display: grid; gap: var(--space-1); }
+.event-simulator__field--row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.event-simulator__field--row label { flex: 1 1 0; min-width: 0; }
+.event-simulator__pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.event-simulator__hit { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-4); margin: 0; padding: 0; border: 0; }
+.event-simulator__hit legend { padding: 0; margin-bottom: var(--space-1); }
+.event-simulator__choice { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap-size); font-weight: 700; }
+.event-simulator input[type="radio"] { width: var(--space-6); height: var(--space-6); margin: 0; accent-color: var(--color-highlight); }
+.event-simulator__countdown { flex: none; white-space: nowrap; font-weight: 700; color: var(--color-highlight); }
+.event-simulator__countdown:empty { display: none; }
+.event-simulator__value { font-weight: 700; }
+.event-simulator input[type="number"] {
+  box-sizing: border-box;
+  min-height: var(--tap-size);
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-field-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+.event-simulator input[type="number"].event-simulator__small { width: 4.5rem; }
+.event-simulator input[type="range"] { width: 100%; min-height: var(--tap-size); accent-color: var(--color-highlight); }
+.event-simulator input[type="checkbox"] { width: var(--space-6); height: var(--space-6); accent-color: var(--color-highlight); }
+.event-simulator__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.event-simulator__button {
+  min-height: var(--tap-size);
+  padding: var(--space-1) var(--space-4);
+  border: 2px solid var(--color-bg);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.event-simulator__button:hover:not(:disabled, [aria-disabled="true"]) { background: var(--color-highlight); }
+.event-simulator__button:disabled, .event-simulator__button[aria-disabled="true"] { opacity: 0.6; cursor: progress; }
+.event-simulator__button--danger { background: transparent; color: var(--color-bg); }
+.event-simulator__button--danger:hover:not(:disabled, [aria-disabled="true"]) { background: var(--color-danger); border-color: var(--color-danger); }
+.event-simulator__status { margin: 0; font-weight: 700; color: var(--color-highlight); overflow-wrap: anywhere; }
+.event-simulator__numbers { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-1) var(--space-3); margin: 0; font-size: var(--text-xs); }
+.event-simulator__numbers div { min-width: 0; }
+.event-simulator__numbers dt { color: var(--color-bg); opacity: 0.8; }
+.event-simulator__numbers dd { margin: 0; font-size: var(--text-sm); font-weight: 700; overflow-wrap: anywhere; }
+
+/* A narrow screen: the open panel runs the full width of the bottom edge (still no taller than before). */
+@media (max-width: 40rem) {
+  .event-simulator[open] { left: 0; right: 0; bottom: 0; width: auto; border-inline-width: 0; border-bottom-width: 0; border-radius: var(--radius-md) var(--radius-md) 0 0; }
+}
+
+/* Feedback on the page itself (appended to .stage__arena and put on .stage__health by the controller). The health bar gets a brief
+   outline and brightening; the number is a pill that rises from the boss and fades over 1.2 s, when it is removed. */
+.stage__health--flash { outline: 4px solid var(--color-highlight); outline-offset: 2px; filter: brightness(1.3); }
+.event-simulator__float {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  z-index: 3;
+  padding: var(--space-1) var(--space-4);
+  transform: translateX(-50%);
+  border: 3px solid var(--color-highlight);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-brown);
+  color: var(--color-highlight);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stage__health--flash { transition: filter 0.15s ease-out; }
+  .event-simulator__float { animation: simulator-float 1.2s ease-out forwards; }
+}
+@keyframes simulator-float {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  70% { opacity: 1; }
+  to { opacity: 0; transform: translate(-50%, -4rem); }
+}
