@@ -1,9 +1,12 @@
 <%# Cave band (owner: cave agent): the curved rim, the wall with its pillars and ledge. Canvas y 3080..4750, anchored to the bottom of .fight.
-    The piece is transparent above the rim (the cliff band's teal shows through). The two edge strips are the wall's own rows, flat and 4 px wide,
-    stretched to the window edges. -%>
-<%= image_tag "landing/world/cave/cave-edge-l@c.webp", alt: "", class: "world__img world__edge world__edge--left", width: 4, height: 1670, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/cave/cave-edge-l@a.webp" => "1x", "landing/world/cave/cave-edge-l@b.webp" => "1.3x", "landing/world/cave/cave-edge-l@c.webp" => "2x" } %>
-<%= image_tag "landing/world/cave/cave-edge-r@c.webp", alt: "", class: "world__img world__edge world__edge--right", width: 4, height: 1670, loading: "lazy", decoding: "async",
-      srcset: { "landing/world/cave/cave-edge-r@a.webp" => "1x", "landing/world/cave/cave-edge-r@b.webp" => "1.3x", "landing/world/cave/cave-edge-r@c.webp" => "2x" } %>
+    The piece is transparent above the rim (the cliff band's teal shows through). Outside the painting's width the outer 1100 canvas px of each
+    side are drawn again, three times outward, flipped and unflipped in turn (CSS scale -1 1 on the odd copies): the art is continuous at every join,
+    so real painting runs out to the window edges (up to 3840 wide). File names are spelled out so the test that every image is used can see them. -%>
+<% srcset_l = { "landing/world/cave/cave-ext-l@a.webp" => "550w", "landing/world/cave/cave-ext-l@b.webp" => "715w", "landing/world/cave/cave-ext-l@c.webp" => "1100w" } %>
+<% srcset_r = { "landing/world/cave/cave-ext-r@a.webp" => "550w", "landing/world/cave/cave-ext-r@b.webp" => "715w", "landing/world/cave/cave-ext-r@c.webp" => "1100w" } %>
+<% (1..3).each do |n| %>
+  <%= image_tag "landing/world/cave/cave-ext-l@c.webp", alt: "", class: "world__img world__ext world__ext--l#{n}", width: 1100, height: 1670, loading: "lazy", decoding: "async", srcset: srcset_l, sizes: "550px" %>
+  <%= image_tag "landing/world/cave/cave-ext-r@c.webp", alt: "", class: "world__img world__ext world__ext--r#{n}", width: 1100, height: 1670, loading: "lazy", decoding: "async", srcset: srcset_r, sizes: "550px" %>
+<% end %>
 <%= image_tag "landing/world/cave/cave@c.webp", alt: "", class: "world__img world__cave", width: 3152, height: 1670, loading: "lazy", decoding: "async",
       srcset: { "landing/world/cave/cave@a.webp" => "1576w", "landing/world/cave/cave@b.webp" => "2049w", "landing/world/cave/cave@c.webp" => "3152w" }, sizes: "1576px" %>

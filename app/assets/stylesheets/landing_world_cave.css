@@ -4,42 +4,61 @@
  * point at canvas (x, y) is at  bottom: (4750 - y) / 2 * --wu  and  left: 50% - --world-cx + x / 2 * --wu.
  *
  * --world-cx is the painting x (in px at this width) that sits at the middle of the window. It is 788 --wu (the painting's middle) from
- * 64rem up, so every band centers the painting the same way there. Below 64rem the painting slides left just enough that the ledge and
- * the boss (painting x up to 1393) stay inside the window, so the pillars end up partly visible at the left. Any band that draws a piece
- * on the cave seam (floor) must use the same --world-cx to land in the same place: left: calc(50% - var(--world-cx) + var(--wu) * x / 2).
+ * 64rem up, so every band centers the painting the same way there. Below 64rem the painting slides left (formula below) so the window
+ * starts at painting x 670 on phones, which keeps the whole pillar stack in view, and the boss stays inside the window.
+ * Any band that draws a piece on the cave seam (floor) must use the same --world-cx: left: calc(50% - var(--world-cx) + var(--wu) * x / 2).
  */
 .landing {
   --world-cx: calc(var(--wu) * 788);
-  --boss-bw: min(calc(var(--wu) * 507.5), calc(100vw - var(--wu) * 664 - 1.5rem)); /* the boss never crosses the window's right edge */
+  --boss-cx: calc(var(--wu) * 1120); /* painting x of the middle of the boss's picture */
 }
 @media (max-width: 63.99rem) {
-  .landing { --world-cx: max(calc(var(--wu) * 788), calc(var(--wu) * 1393 - 50vw)); --boss-bw: calc(var(--wu) * 507.5); }
+  /* The window starts at painting x 670 on phones (the stack's lowest pillar at its left edge) and slides left to 788 at most; it also
+     slides far enough that the whole boss is inside it once the window is about 770 --wu wide. */
+  .landing { --world-cx: min(calc(var(--wu) * 670 + 50vw), max(calc(var(--wu) * 788), calc(var(--wu) * 1405 - 50vw))); }
 }
+@media (max-width: 47.99rem) {
+  .landing { --boss-cx: calc(var(--wu) * 1090); }
+}
+/* The boss never crosses the window's right edge: his picture shrinks (about his middle) when the window is too narrow for the pillar
+   stack and the whole boss together. The window's right edge, as a painting x, is --world-cx + 50vw. */
+.landing { --boss-bw: min(calc(var(--wu) * 507.5), calc(2 * (var(--world-cx) + 50vw - 0.75rem - var(--boss-cx)))); }
 
 .landing .world--cave { overflow: hidden; }
 .landing .world--cave .world__cave { left: calc(50% - var(--world-cx)); bottom: 0; width: var(--world-w); }
-.landing .world--cave .world__edge { bottom: 0; height: calc(var(--wu) * 835); }
-.landing .world--cave .world__edge--left { left: 0; width: calc(max(0px, 50% - var(--world-cx)) + 2px); }
-.landing .world--cave .world__edge--right { right: 0; width: calc(max(0px, 50% + var(--world-cx) - var(--world-w)) + 2px); }
+/* Beyond the painting: the outer 550 --wu of each side again, three copies outward, flipped (1, 3) and unflipped (2) so every join is continuous. */
+.landing .world--cave .world__ext { bottom: 0; width: calc(var(--wu) * 550); }
+.landing .world--cave .world__ext--l1, .landing .world--cave .world__ext--l3, .landing .world--cave .world__ext--r1, .landing .world--cave .world__ext--r3 { scale: -1 1; }
+.landing .world--cave .world__ext--l1 { left: calc(50% - var(--world-cx) - var(--wu) * 550); }
+.landing .world--cave .world__ext--l2 { left: calc(50% - var(--world-cx) - var(--wu) * 1100); }
+.landing .world--cave .world__ext--l3 { left: calc(50% - var(--world-cx) - var(--wu) * 1650); }
+.landing .world--cave .world__ext--r1 { left: calc(50% - var(--world-cx) + var(--world-w)); }
+.landing .world--cave .world__ext--r2 { left: calc(50% - var(--world-cx) + var(--world-w) + var(--wu) * 550); }
+.landing .world--cave .world__ext--r3 { left: calc(50% - var(--world-cx) + var(--world-w) + var(--wu) * 1100); }
 
 /* The boss stands on the lavender ledge right of the pillars: his picture is canvas x 1732..2747, bottom at canvas y 4030 (feet on the
    ledge's top face), so its middle is painting x 1120 and its bottom is 360 --wu above the bottom of the section. The arena is exactly
    the boss picture's box; the health bar sits over its top, as in the painting (canvas y 3091..3158, x 1801..2717). */
 .landing .fight .arena {
   right: auto; width: var(--boss-bw); aspect-ratio: 1500 / 1453; --boss-w: 100%;
-  left: calc(50% - var(--world-cx) + var(--wu) * 1120 - var(--boss-bw) / 2);
+  left: calc(50% - var(--world-cx) + var(--boss-cx) - var(--boss-bw) / 2);
   bottom: calc(var(--wu) * 360);
 }
 .landing .fight .arena .fight__shadow { position: absolute; inset: 0; width: 100%; height: 100%; }
 .landing .fight .arena .fight__boss { left: 0; bottom: 0; width: 100%; }
 .landing .fight .arena .fight__health { left: 6.8%; right: 3%; top: 4.5%; bottom: auto; }
 
+/* On phones the boss is small, so the bar's label gets a smaller size too (the axe covers the right half of the bar, as in the painting). */
+@media (max-width: 47.99rem) {
+  .landing .fight .arena .fight__health { font-size: 0.65rem; }
+}
+
 /* Heights. From 64rem the section is the painting's height (canvas 2700..4750), with the text at the top left. Below that the text sits
-   above the arena, so the bottom padding clears the boss and its health bar (they reach 830 --wu above the bottom). */
+   above the arena, so the bottom padding clears the boss and its health bar. */
 @media (min-width: 64rem) {
   .landing .fight, .landing .fight .in { min-height: calc(var(--wu) * 1025); }
   .landing .fight .in { padding-bottom: 0; }
 }
 @media (max-width: 63.99rem) {
-  .landing .fight .in { padding-bottom: calc(var(--wu) * 870); }
+  .landing .fight .in { padding-bottom: calc(var(--wu) * 360 + var(--boss-bw) * 0.97 + 1.5rem); }
 }
