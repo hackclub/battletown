@@ -62,7 +62,7 @@
 }
 
 /* The island's underside: 1576 wu wide, its top lip a little above the shore's edge so the shore's clip trims it to the edge. */
-.landing .world--final .island__face { position: absolute; left: 50%; top: calc(var(--wu) * -6); width: calc(var(--wu) * 1576); height: auto; max-width: none; translate: -50% 0; }
+.landing .world--final .island__face { position: absolute; left: 50%; top: calc(var(--wu) * -29); width: calc(var(--wu) * 1576); height: auto; max-width: none; translate: -50% 0; }
 
 /*
  * SLOT FOR A PAINTING (empty on purpose; a painting would replace the sky and clouds, keep or drop the island strip). To drop one in, add to _final.html.erb, after the water layer:
