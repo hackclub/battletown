@@ -85,9 +85,13 @@ art.save(work / "art-clean-full.png")
 layer = layer_full(32)
 save("sky", "cloud", layer.crop(layer.getchannel("A").getbbox()))
 
-# 2. Cliff: the clifftop, its crack and its face (layer 29 is the transparent cut), and the shadow and flat lower teal
-#    under the face down to CLIFF_Y1. Everything below the face is opaque.
-CLIFF_Y0, CLIFF_Y1 = 2290, 3100
+# 2. Cliff (cliff band): the clifftop with its crack, the cliff face and its shadow, down to a flat teal bottom row
+#    (CLIFF_Y1, the lower ground). Above the clifftop it is transparent: the sky band paints the sky, haze included.
+#    Left and right of the painting, the clifftop and face are continued by warping the edge columns: each painted edge keeps its own slope, which dies away, so nothing is stretched into streaks (the last 8 px column,
+#    stretched, is then truly flat).
+CLIFF_Y0, CLIFF_Y1 = 2250, 3150
+EXT_W = 1000  # canvas px of continued art on each side (500 CSS px, enough for a 2560 px window)
+TEAL = np.array([0x11, 0xBC, 0xB3], float)
 face = np.array(layer_full(29).getchannel("A"))[CLIFF_Y0:CLIFF_Y1]
 alpha = face.copy()
 for x in range(W):
@@ -96,14 +100,71 @@ for x in range(W):
         alpha[rows[-1]:, x] = 255
     else:
         alpha[:, x] = 0
-band = art.crop((0, CLIFF_Y0, W, CLIFF_Y1))
-band.putalpha(Image.fromarray(alpha))
-save("cliff", "cliff", band)
-save("cliff", "cliff-edge-l", band.crop((0, 0, 16, band.height)))
-save("cliff", "cliff-edge-r", band.crop((W - 16, 0, W, band.height)))
+cliff_rgb = np.array(art.crop((0, CLIFF_Y0, W, CLIFF_Y1)).convert("RGB"), float)
+H = CLIFF_Y1 - CLIFF_Y0
+a_f = alpha / 255.0
+out_a = a_f
+out_rgb = cliff_rgb
+# a flat teal floor under the shadow, so the last rows match the section color exactly
+below = np.cumsum(np.abs(cliff_rgb - TEAL).sum(axis=2)[::-1] > 10, axis=0)[::-1] == 0
+for x in range(W):
+    col = np.nonzero(~below[:, x])[0]
+    if len(col):
+        out_rgb[col[-1] + 1:, x] = TEAL
+cliff_img = Image.fromarray(np.dstack([out_rgb, out_a * 255]).round().clip(0, 255).astype(np.uint8), "RGBA")
+save("cliff", "cliff", cliff_img)
 
-# 3. Path: layer 30, one piece (cliff band).
-PATH_X0, PATH_X1, PATH_Y0, PATH_Y1 = 1330, 1650, 2540, 3440
+
+def edge_landmarks(col_rgb, col_a):
+    """Rows of the painted edges in one column: top of the clifftop, start of the face, end of the face, start of the flat teal."""
+    top = int(np.nonzero(col_a > 128)[0][0])
+    teal_top = np.array([0x67, 0xE9, 0xD7], float)
+    d_top = np.abs(col_rgb - teal_top).sum(axis=1)
+    f1 = top + int(np.nonzero(d_top[top:] > 60)[0][0])
+    d_flat = np.abs(col_rgb - TEAL).sum(axis=1)
+    f3 = int(np.nonzero(d_flat < 14)[0][np.nonzero(np.nonzero(d_flat < 14)[0] > f1 + 50)[0][0]])
+    shade = np.abs(col_rgb - np.array([0x08, 0x98, 0xA7], float)).sum(axis=1)
+    f2 = f1 + int(np.nonzero(np.abs(col_rgb[f1:f3] - np.array([0x08, 0x98, 0xA7], float)).sum(axis=1) < 30)[0][0]) if (shade[f1:f3] < 30).any() else f3 - 30
+    return np.array([top, f1, f2, f3], float)
+
+
+def continue_edge(side):
+    """EXT_W columns of art continuing the painting past its left or right edge; column 0 is the one next to the art."""
+    cols = range(0, 8) if side == "l" else range(W - 8, W)
+    far = range(300, 308) if side == "l" else range(W - 308, W - 300)
+    near_rgb = cliff_rgb[:, list(cols)].mean(axis=1)
+    near_a = out_a[:, list(cols)].mean(axis=1) * 255
+    near = edge_landmarks(near_rgb, near_a)
+    far_lm = edge_landmarks(cliff_rgb[:, list(far)].mean(axis=1), out_a[:, list(far)].mean(axis=1) * 255)
+    slope = (near - far_lm) / 300.0  # px per px going outward (positive = lower)
+    tau = 260.0
+    col4 = np.concatenate([near_rgb * (near_a[:, None] / 255), near_a[:, None]], axis=1)
+    out_cols = np.zeros((H, EXT_W, 4))
+    yy = np.arange(H, dtype=float)
+    for k in range(EXT_W):
+        delta = slope * tau * (1 - np.exp(-k / tau))
+        dst = near + delta
+        xp = np.concatenate([[-1e4], dst, [1e4]])
+        fp = np.concatenate([[-1e4 - delta[0]], near, [1e4 - delta[-1]]])
+        src = np.interp(yy, xp, fp)
+        for c in range(4):
+            out_cols[:, k, c] = np.interp(src, yy, col4[:, c])
+    a = out_cols[:, :, 3:4]
+    rgb = np.where(a > 0.5, out_cols[:, :, :3] / np.maximum(a / 255.0, 1e-3), 0)
+    img = np.concatenate([rgb, a], axis=2).round().clip(0, 255).astype(np.uint8)
+    img = Image.fromarray(img, "RGBA")
+    return img if side == "r" else img.transpose(Image.FLIP_LEFT_RIGHT)
+
+
+# "l" is built from the left edge outward then flipped, so its right edge touches the painting; "r" starts at the painting
+for side in ("l", "r"):
+    ext = continue_edge(side)
+    save("cliff", f"cliff-ext-{side}", ext)
+    last = ext.crop((0, 0, 8, H)) if side == "l" else ext.crop((EXT_W - 8, 0, EXT_W, H))
+    save("cliff", f"cliff-fill-{side}", last)
+
+# 3. Path: layer 30, one piece (cliff band). Its top end is the pole foot's spot: canvas (1576, 2566).
+PATH_X0, PATH_Y0, PATH_X1, PATH_Y1 = 1340, 2556, 1640, 3436
 path = layer_full(30).crop((PATH_X0, PATH_Y0, PATH_X1, PATH_Y1))
 save("cliff", "path", path)
 

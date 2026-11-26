@@ -1,8 +1,38 @@
-/* Band: cliff. Owned by the cliff band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css. */
+/* Band: cliff. Owned by the cliff band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css.
+ *
+ * Everything here hangs from ONE point: the foot of the signpost's pole, which must stand at the top of the path. The sky band
+ * gives .how__inner a padding-bottom of 60 wu, so the signpost ends 60 wu above the top of .fight, and the pole's foot is
+ * 13.3 wu above the signpost's bottom edge (1411 of 1445 of its height). So the foot is 73.3 wu above the top of this wrapper
+ * (the wrapper is .fight), and 0.8 wu right of the page middle (pole at 740 of 1476 of the signpost's width). In the painting
+ * the foot is canvas (1576, 2570), and a canvas point (x, y) lands at foot + ((x - 1576) / 2, (y - 2570) / 2) wu. That is how
+ * every piece is placed. If the sky band's padding-bottom ever changes, change --foot-y (and nothing else).
+ *
+ * Pieces: cliff (canvas 0..3152 x 2250..3150: clifftop, crack, face, shadow, ending in flat teal), path (canvas 1340..1640 x
+ * 2556..3436), cliff-ext-l/-r (1000 canvas px of the clifftop and face continued past each side of the painting, warped, not
+ * stretched), cliff-fill-l/-r (an 8 px column of the far end of each continuation, stretched sideways: it is flat there).
+ * The sky above the clifftop is the sky band's painted sky; the art here is transparent above the clifftop. */
 
-/* First cut. The wrapper's top is canvas y 2700. The cliff piece is canvas y 2290..3100, the path 2540..3440 at x 1330..1650. */
-.landing .world--cliff .world__cliff { left: calc(50% - var(--wu) * 788); top: calc(var(--wu) * -205); width: var(--world-w); }
-.landing .world--cliff .world__edge { top: calc(var(--wu) * -205); height: calc(var(--wu) * 405); }
-.landing .world--cliff .world__edge--left { left: 0; width: calc(50% - var(--wu) * 788 + 1px); }
-.landing .world--cliff .world__edge--right { right: 0; width: calc(50% - var(--wu) * 788 + 1px); }
-.landing .world--cliff .world__path { left: calc(50% - var(--wu) * 123); top: calc(var(--wu) * -80); width: calc(var(--wu) * 160); }
+.landing .world--cliff {
+  --foot-x: calc(50% + var(--wu) * 0.8);
+  --foot-y: calc(var(--wu) * -73.3);
+  /* the top may reach above the wrapper (the sky is behind), the sides and bottom are clipped to the section: no horizontal scroll */
+  clip-path: inset(calc(var(--wu) * -400) 0 0 0);
+}
+.landing .world--cliff .world__cliff { left: calc(var(--foot-x) - var(--wu) * 788); top: calc(var(--foot-y) - var(--wu) * 160); width: calc(var(--wu) * 1576); }
+.landing .world--cliff .world__ext { top: calc(var(--foot-y) - var(--wu) * 160); width: calc(var(--wu) * 500); }
+.landing .world--cliff .world__ext--left { left: calc(var(--foot-x) - var(--wu) * 1288); }
+.landing .world--cliff .world__ext--right { left: calc(var(--foot-x) + var(--wu) * 788); }
+.landing .world--cliff .world__fill { top: calc(var(--foot-y) - var(--wu) * 160); height: calc(var(--wu) * 450); }
+.landing .world--cliff .world__fill--left { left: 0; width: max(0px, calc(var(--foot-x) - var(--wu) * 1287)); }
+.landing .world--cliff .world__fill--right { right: 0; width: max(0px, calc(100% - var(--foot-x) - var(--wu) * 1287)); }
+.landing .world--cliff .world__path { left: calc(var(--foot-x) - var(--wu) * 118); top: calc(var(--foot-y) - var(--wu) * 7); width: calc(var(--wu) * 150); }
+
+/* The text under the painting. The path runs from the foot down to canvas y 3436, which is 360 wu below the top of the section,
+   with its lower curve reaching 115 wu left of the middle. Desktop: the heading sits left of that curve on the darker teal,
+   about 217 wu down, as in the painting. Phones and tablets have no room beside the path, so the text starts under its end. */
+.landing .fight .in { padding-top: calc(var(--wu) * 360 + 2.25rem); }
+@media (min-width: 48rem) {
+  .landing .fight .in { padding-top: calc(var(--wu) * 217); }
+  .landing .fight__text p { max-width: min(26rem, calc(50vw - var(--wu) * 115 - var(--side) - 1.25rem)); }
+}
+@media (min-width: 64rem) { .landing .fight__text p { max-width: min(26rem, calc(50vw - var(--wu) * 115 - var(--side) - 2rem)); } }
