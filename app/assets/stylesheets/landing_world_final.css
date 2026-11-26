@@ -19,7 +19,7 @@
   position: absolute; left: 0; right: 0; top: calc(var(--wu) * -80); bottom: 0;
   background: var(--sea-top);
   clip-path: polygon(
-    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * (79 + var(--o, 0))),
+    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * (74 + var(--o, 0))),
     calc(50% + var(--wu) * -788) calc(var(--wu) * (64.5 + var(--o, 0))),
     calc(50% + var(--wu) * -638) calc(var(--wu) * (55 + var(--o, 0))),
     calc(50% + var(--wu) * -488) calc(var(--wu) * (48 + var(--o, 0))),
@@ -38,31 +38,34 @@
 .landing .world--final .shore--wet1 { --o: -13; background: #e3ca7a; }
 .landing .world--final .shore--wet2 { --o: -7; background: #d9bd6c; }
 .landing .world--final .shore--wet3 { --o: -3; background: #cdb05f; }
-.landing .world--final .shore--foam1 { --o: 0; background: #e8f2f5; }
-.landing .world--final .shore--foam2 { --o: 2; background: #f5fafc; }
+.landing .world--final .shore--foam1 { --o: 0; background: #dcecf2; }
+.landing .world--final .shore--foam2 { --o: 2; background: #eef6f9; }
 .landing .world--final .shore--water { --o: 5; background: linear-gradient(to bottom, var(--sea-top), var(--sea-deep)); }
 
 /*
  * Reflections. A box over the water (below the section's own content) holds the sky band's cloud flipped upside down, at low
- * opacity. One ripple mask on the box breaks every reflection with the same horizontal gaps, as on real water: three repeating
- * gradients with different periods (9, 15 and 27 px) that only line up every 135 px, so the gaps do not look ruled. Positions
+ * opacity. One ripple mask on the box breaks every reflection with the same horizontal gaps, as on real water: two repeating
+ * gradients with different periods (10 and 18 px) that only line up every 90 px, so the gaps do not look ruled. Positions
  * are design px from the page middle (--wu), so the picture scales like the other bands. On phones fewer and smaller clouds, and
  * none beside the heading. Past the painting's width (1700 px and up) more clouds carry the water on instead of stretching anything.
  */
 .landing .world--final .sea__reflect {
   position: absolute; inset: 0; overflow: hidden;
-  -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 8px, transparent 8px 9px), repeating-linear-gradient(to bottom, #000 0 13px, transparent 13px 15px), repeating-linear-gradient(to bottom, #000 0 24px, transparent 24px 27px);
-  mask-image: repeating-linear-gradient(to bottom, #000 0 8px, transparent 8px 9px), repeating-linear-gradient(to bottom, #000 0 13px, transparent 13px 15px), repeating-linear-gradient(to bottom, #000 0 24px, transparent 24px 27px);
+  -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 9px, transparent 9px 10px), repeating-linear-gradient(to bottom, #000 0 16px, transparent 16px 18px);
+  mask-image: repeating-linear-gradient(to bottom, #000 0 9px, transparent 9px 10px), repeating-linear-gradient(to bottom, #000 0 16px, transparent 16px 18px);
   -webkit-mask-composite: source-in; mask-composite: intersect;
 }
 .landing .world--final .sea__cloud { position: absolute; display: none; height: auto; max-width: none; transform: scaleY(-1); opacity: var(--op, 0.4); }
 /* x from the page middle, y from the top of the section */
-.landing .world--final .sea__cloud--a { --op: 0.42; display: block; left: calc(50% + var(--wu) * -40); top: calc(var(--wu) * 6); width: calc(var(--wu) * 300); }
-.landing .world--final .sea__cloud--b { --op: 0.32; left: calc(50% + var(--wu) * -705); top: calc(var(--wu) * 300); width: calc(var(--wu) * 250); }
-.landing .world--final .sea__cloud--c { --op: 0.26; left: calc(50% + var(--wu) * -330); top: calc(var(--wu) * 400); width: calc(var(--wu) * 200); }
-.landing .world--final .sea__cloud--d { --op: 0.34; left: calc(50% + var(--wu) * 380); top: calc(var(--wu) * 30); width: calc(var(--wu) * 280); }
-.landing .world--final .sea__cloud--e { --op: 0.3; left: calc(50% + var(--wu) * -1010); top: calc(var(--wu) * 60); width: calc(var(--wu) * 300); }
-@media (min-width: 48rem) { .landing .world--final .sea__cloud--b, .landing .world--final .sea__cloud--c { display: block; } }
+.landing .world--final .sea__cloud--a { --op: 0.6; display: block; left: calc(100% - 8.5rem); top: 1.25rem; width: 7.5rem; }
+.landing .world--final .sea__cloud--b { --op: 0.5; left: calc(50% + var(--wu) * -705); top: calc(var(--wu) * 320); width: calc(var(--wu) * 320); }
+.landing .world--final .sea__cloud--c { --op: 0.4; left: calc(50% + var(--wu) * -300); top: calc(var(--wu) * 410); width: calc(var(--wu) * 240); }
+.landing .world--final .sea__cloud--d { --op: 0.5; left: calc(50% + var(--wu) * 400); top: calc(var(--wu) * 30); width: calc(var(--wu) * 360); }
+.landing .world--final .sea__cloud--e { --op: 0.45; left: calc(50% + var(--wu) * -1010); top: calc(var(--wu) * 70); width: calc(var(--wu) * 320); }
+@media (min-width: 48rem) {
+  .landing .world--final .sea__cloud--a { left: calc(50% + var(--wu) * -100); top: calc(var(--wu) * 20); width: calc(var(--wu) * 420); }
+  .landing .world--final .sea__cloud--b, .landing .world--final .sea__cloud--c { display: block; }
+}
 @media (min-width: 1700px) { .landing .world--final .sea__cloud--d, .landing .world--final .sea__cloud--e { display: block; } }
 
 /* Shells half in the water at the shoreline: the sand band's files, the lower half faded into the water. Not on phones. */
@@ -100,3 +103,5 @@
  * gradient, so nothing steps at the page end.
  */
 body:has(.landing) { background: #c0dcec; }
+/* The section's own flat blue is the deepest water too, so a rounded-off row at the bottom of the water can never show a lighter line. */
+.landing .final { background: #c0dcec; }
