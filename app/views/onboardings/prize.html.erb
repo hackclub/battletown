@@ -1,5 +1,6 @@
 <%= render layout: "onboardings/frame", locals: { step: "prize", tone: "blue" } do %>
-  <%= form_with model: subject, scope: :user, url: onboarding_step_path("prize"), method: :patch do |f| %>
+  <%= form_with model: subject, scope: :user, url: onboarding_step_path("prize"), method: :patch,
+        data: { controller: "required-choice", action: "change->required-choice#sync submit->required-choice#guard" } do |f| %>
     <%= render "onboardings/errors" %>
     <%= tag.fieldset class: "onboarding__fieldset", aria: onboarding_aria(:prize_key, id: "prize").slice(:describedby) do %>
       <legend class="visually-hidden">Prize</legend>
@@ -9,7 +10,7 @@
         <% Prize.paid.each do |prize| %>
           <label class="choice">
             <%# radio_button_tag keeps the radio directly before its card body (the "input + body" styling); the builder would add an association-based id and error handling we do not need. %>
-            <%= radio_button_tag "user[prize_key]", prize.key, prize.key == selected, id: "user_prize_key_#{prize.key}", class: "choice__input" %>
+            <%= radio_button_tag "user[prize_key]", prize.key, prize.key == selected, id: "user_prize_key_#{prize.key}", class: "choice__input", data: { required_choice_target: "input" } %>
             <span class="choice__body">
               <span class="choice__art">
                 <% if prize.image.present? %>
@@ -29,6 +30,6 @@
       </div>
       <p class="onboarding__hint onboarding__hint--light"><%= OnboardingDesignHelper::HOURS_NOTE %></p>
     <% end %>
-    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>
 <% end %>

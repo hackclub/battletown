@@ -380,6 +380,28 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "fieldset[aria-describedby=days-error] #days-error"
   end
 
+  test "steps with a required choice wire Continue to it, described by the step's own sentence, and the server still validates" do
+    user = users(:new_user)
+    sign_in_as user
+    step("prize")
+    assert_response :unprocessable_content # the server still refuses an empty prize
+    assert_select "form[data-controller~=required-choice]" do
+      assert_select "input[data-required-choice-target=input]", Prize.paid.count
+      assert_select "button[data-required-choice-target=submit][aria-describedby=onboarding-lead]", "Continue"
+    end
+    assert_select "p#onboarding-lead"
+
+    finish_through(user, "prize")
+    get onboarding_step_path("project")
+    assert_select "form[data-controller~=required-choice] input[data-required-choice-target=input]"
+    assert_select "button[data-required-choice-target=submit][aria-describedby=onboarding-lead]"
+
+    finish_through(user, "project")
+    get onboarding_step_path("schedule")
+    assert_select "form[data-controller~=required-choice] input.day__input[data-required-choice-target=input]", 7
+    assert_select "button[data-required-choice-target=submit][aria-describedby=onboarding-lead]"
+  end
+
   test "a missing prize or project type is reported against the first option" do
     user = users(:new_user)
     sign_in_as user

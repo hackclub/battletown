@@ -2,7 +2,7 @@
   <% max = User.validators_on(:project_idea).first.options[:maximum] %>
   <% idea_length = subject.project_idea.to_s.strip.length %>
   <%= form_with model: subject, scope: :user, url: onboarding_step_path("project"), method: :patch,
-        data: { controller: "onboarding-idea", onboarding_idea_max_value: max, onboarding_idea_over_class: "onboarding__counter--over" } do |f| %>
+        data: { controller: "onboarding-idea required-choice", action: "change->required-choice#sync submit->required-choice#guard", onboarding_idea_max_value: max, onboarding_idea_over_class: "onboarding__counter--over" } do |f| %>
     <%= render "onboardings/errors" %>
     <%= tag.fieldset class: "field onboarding__fieldset", aria: onboarding_aria(:project_kind, id: "kind").slice(:describedby) do %>
       <legend class="onboarding__legend">What kind of project?</legend>
@@ -10,7 +10,7 @@
       <div class="toggle-group toggle-group--kinds">
         <% offered_project_kinds.each do |kind, info| %>
           <label class="toggle">
-            <%= radio_button_tag "user[project_kind]", kind, subject.project_kind == kind, id: "user_project_kind_#{kind}", class: "toggle__input" %>
+            <%= radio_button_tag "user[project_kind]", kind, subject.project_kind == kind, id: "user_project_kind_#{kind}", class: "toggle__input", data: { required_choice_target: "input" } %>
             <span class="toggle__label"><span aria-hidden="true"><%= info[:emoji] %></span> <%= info[:name] %></span>
           </label>
         <% end %>
@@ -38,6 +38,6 @@
         <span class="badge badge--muted placeholder-link">Jumpstart playground (coming soon)</span>
       </p>
     </div>
-    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>
 <% end %>
