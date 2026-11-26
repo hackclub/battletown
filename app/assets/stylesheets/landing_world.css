@@ -53,8 +53,16 @@
 
 .landing {
   --wu: calc(min(100vw - 1rem, 36rem) / 576);
-  --world-cx: calc(var(--wu) * 788); /* the painting x (in px at this width) at the window's middle; the cave band's phone rule moves it */
   --world-w: calc(var(--wu) * 1576);
+  /* The cave art (cave, boss, floor top) has its own unit, --wc, one painting px. It is --wu, except on narrow windows, where the cave
+     is drawn smaller, boss and cave together, so the whole boss fits right of the path's end: the boss's health bar and head
+     (they reach 0.27 of his width left of his middle, and he is 507.5 wc wide) must start 25 px right of the path's end, and the boss
+     must end 12 px inside the window's right edge: 391 wc <= 50vw - 12px - (25px - 16 wu). */
+  --wc: min(var(--wu), calc((50vw + var(--wu) * 16 - 37px) / 391));
+  --cave-w: calc(var(--wc) * 1576);
+  /* The painting x (in px at the cave's scale) at the window's middle: the painting's middle, slid left only as far as needed to keep the
+     boss's right edge (painting x 1374) 12 px inside the window. */
+  --world-cx: max(calc(var(--wc) * 788), calc(var(--wc) * 1374 - 50vw + 12px));
   --world-sky-top: #9dc4fd;
   --world-sky-bottom: #cfe3ee;
   --world-teal-top: #67e9d7;

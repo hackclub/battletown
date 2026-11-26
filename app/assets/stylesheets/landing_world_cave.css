@@ -1,43 +1,32 @@
 /* Band: cave. Owned by the cave band agent only. Shared rules, colors, the --wu unit and the contract are in landing_world.css.
  *
  * The wrapper's bottom is canvas y 4750 (the bottom of .fight). The cave piece is canvas y 3080..4750, anchored to that bottom, so a
- * point at canvas (x, y) is at  bottom: (4750 - y) / 2 * --wu  and  left: 50% - --world-cx + x / 2 * --wu.
+ * point at canvas (x, y) is at  bottom: (4750 - y) / 2 * --wc  and  left: 50% - --world-cx + x / 2 * --wc. The cave, the boss and the floor top share
+ * --wc (landing_world.css), so the boss is always the painting's size on his painted shadow.
  *
- * --world-cx (defined in landing_world.css) is the painting x (in px at this width) that sits at the middle of the window. It is 788 --wu (the painting's middle) from
- * 64rem up, so every band centers the painting the same way there. Below 64rem the painting slides left (formula below) so the window
- * starts at painting x 670 on phones, which keeps the whole pillar stack in view, and the boss stays inside the window.
- * Any band that draws a piece on the cave seam (floor) must use the same --world-cx: left: calc(50% - var(--world-cx) + var(--wu) * x / 2).
+ * --world-cx and --wc are defined in landing_world.css. Any band that draws a piece on the cave seam (floor) must use the same mapping.
  */
 .landing {
-  --boss-cx: calc(var(--wu) * 1120); /* painting x of the middle of the boss's picture */
+  --boss-cx: calc(var(--wc) * 1120); /* painting x of the middle of the boss's picture */
+  --boss-bw: calc(var(--wc) * 507.5); /* always the painting's size relative to the cave art */
 }
-@media (max-width: 63.99rem) {
-  /* The window starts at painting x 670 on phones (the stack's lowest pillar at its left edge) and slides left to 788 at most; it also
-     slides far enough that the whole boss is inside it once the window is about 770 --wu wide. */
-  .landing { --world-cx: min(calc(var(--wu) * 670 + 50vw), max(calc(var(--wu) * 788), calc(var(--wu) * 1405 - 50vw))); }
-}
-@media (max-width: 47.99rem) {
-  .landing { --boss-cx: calc(var(--wu) * 1090); }
-}
-/* The boss never crosses the window's right edge: his picture shrinks (about his middle) when the window is too narrow for the pillar
-   stack and the whole boss together. The window's right edge, as a painting x, is --world-cx + 50vw. */
-/* Also never so wide that his head (its left edge is 0.27 of his picture left of its middle) reaches the path's end, which arrives at
-   the rim at painting x --world-cx - 38 wu (see landing_world_cliff.css); and his health bar's top (92.5% of his picture's height above his feet's 360 wu) stays below the rim at that spot, so it never crosses the path; both only limit windows from 768 to 1023 px. */
-.landing { --boss-bw: min(calc(var(--wu) * 507.5), calc(2 * (var(--world-cx) + 50vw - 0.75rem - var(--boss-cx))), calc((var(--boss-cx) - var(--world-cx) + var(--wu) * 5) / 0.27), calc((var(--wu) * 72 + var(--world-cx) * 0.3) / 0.925)); }
 
 .landing .world--cave { overflow: hidden; }
-.landing .world--cave .world__cave { left: calc(50% - var(--world-cx)); bottom: 0; width: var(--world-w); }
+.landing .world--cave .world__cave { left: calc(50% - var(--world-cx)); bottom: 0; width: var(--cave-w); }
 /* The boss stands on the lavender ledge right of the pillars: his picture is canvas x 1732..2747, bottom at canvas y 4030 (feet on the
    ledge's top face), so its middle is painting x 1120 and its bottom is 360 --wu above the bottom of the section. The arena is exactly
    the boss picture's box; the health bar sits over its top, as in the painting (canvas y 3091..3158, x 1801..2717). */
 .landing .fight .arena {
   right: auto; width: var(--boss-bw); aspect-ratio: 1500 / 1453; --boss-w: 100%;
   left: calc(50% - var(--world-cx) + var(--boss-cx) - var(--boss-bw) / 2);
-  bottom: calc(var(--wu) * 360);
+  bottom: calc(var(--wc) * 360);
 }
 .landing .fight .arena .fight__shadow { position: absolute; inset: 0; width: 100%; height: 100%; }
 .landing .fight .arena .fight__boss { left: 0; bottom: 0; width: 100%; }
 .landing .fight .arena .fight__health { left: 6.8%; right: 3%; top: 4.5%; bottom: auto; }
+@media (max-width: 63.99rem) {
+  .landing .fight .arena .fight__health { left: 22%; } /* the bar starts at the head, so it never crosses the path that arrives at the rim just left of the boss */
+}
 
 /* On phones the boss is small, so the bar's label gets a smaller size too (the axe covers the right half of the bar, as in the painting). */
 @media (max-width: 47.99rem) {

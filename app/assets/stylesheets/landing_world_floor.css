@@ -10,17 +10,17 @@
 
 /* The cave band slides the painting left on narrow windows (--world-cx, from landing_world.css = the painting x at the window's middle);
    the column uses the same mapping so the pillar base lines up. One column, exactly the painting wide. */
-.landing .world--floor .floor__col { position: absolute; top: 0; bottom: 0; left: calc(50% - var(--world-cx)); width: var(--world-w); }
+.landing .world--floor .floor__col { position: absolute; top: 0; bottom: 0; left: calc(50% - var(--world-cx)); width: var(--cave-w); }
 
 .landing .world--floor .floor__col::before { /* what shows until floor-top has loaded and decoded: a soft dark-to-tile-color wash, never a hard slab */
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--wu) * 575);
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--wc) * 575);
   background: linear-gradient(to bottom, #15136c, rgb(53 50 157));
 }
-.landing .world--floor .floor__top { left: 0; top: calc(var(--wu) * -25); width: var(--world-w); height: calc(var(--wu) * 600); }
+.landing .world--floor .floor__top { left: 0; top: calc(var(--wc) * -25); width: var(--cave-w); height: calc(var(--wc) * 600); }
 
 .landing .world--floor .floor__tile {
-  position: absolute; left: 0; right: 0; top: calc(var(--wu) * 575); bottom: 0;
-  background: var(--world-floor) image-set(url("landing/world/floor/floor-tile@a.webp") 1x, url("landing/world/floor/floor-tile@b.webp") 1.3x, url("landing/world/floor/floor-tile@c.webp") 2x) 0 0 / var(--world-w) calc(var(--wu) * 700) repeat-y;
+  position: absolute; left: 0; right: 0; top: calc(var(--wc) * 575); bottom: 0;
+  background: var(--world-floor) image-set(url("landing/world/floor/floor-tile@a.webp") 1x, url("landing/world/floor/floor-tile@b.webp") 1.3x, url("landing/world/floor/floor-tile@c.webp") 2x) 0 0 / var(--cave-w) calc(var(--wc) * 700) repeat-y;
 }
 
 /* The haze: pebbles and ground melt into the one flat color the sand band starts from. */
