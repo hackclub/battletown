@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 from psd_tools import PSDImage
 
 psd_path = sys.argv[1]
@@ -182,7 +182,66 @@ for side, rows in (("l", rows_l), ("r", rows_r)):  # one row-flat strip, 4 px wi
     save("cave", f"cave-edge-{side}", strip)
 
 # 5. Floor: the pebbled floor under the wall, from a little above the wall's foot (the floor band owns that seam).
-save("floor", "floor", art.crop((0, 4650, W, 5600)))
+# 5. Floor (floor band): the wall-to-floor seam plus the pebbled floor, rebuilt from the layers so it has no step. floor-top is the
+#    painted wall foot and pillar base (transparent above the wall's bottom edge) crossfaded into the pebble mask (layer 20) in
+#    colors that go smoothly from dark navy to purple; floor-tile is the same pebbles at the lit color, a mirrored span that repeats
+#    down any section height. Anchored to canvas y 4750 = .prizes top.
+l20 = layer_full(20).getchannel("A")
+l18 = np.asarray(layer_full(18).getchannel("A"))
+art_rgb = art.convert("RGB")
+F_Y0, F_Y1 = 4700, 5900          # top piece rows (canvas)
+BLEND0, BLEND1 = 4930, 5050      # painted -> synthetic crossfade
+S0, S1 = 5050, 5700              # dark -> lit transition
+DARK = {"gap": (37, 35, 143), "peb": (14, 13, 92)}
+LIT = {"gap": (79, 76, 183), "peb": (37, 35, 143)}
+TILE_A, TILE_B = 5200, 5900      # tile rows: mirrored span continuing from F_Y1
+
+
+def mask(y0, y1):  # pebble coverage 0..1 (1 = pebble), softened a hair
+    m = l20.crop((0, y0, W, y1)).filter(ImageFilter.GaussianBlur(0.7))
+    a = np.asarray(m, dtype=np.float32)
+    return np.clip((140.0 - a) / 80.0, 0, 1)
+
+
+def smooth(t):
+    t = np.clip(t, 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def synth(y0, y1, m):
+    ys = np.arange(y0, y1, dtype=np.float32)
+    s = smooth((ys - S0) / (S1 - S0))[:, None, None]
+    gap = np.array(DARK["gap"], np.float32) * (1 - s) + np.array(LIT["gap"], np.float32) * s
+    peb = np.array(DARK["peb"], np.float32) * (1 - s) + np.array(LIT["peb"], np.float32) * s
+    mm = m[..., None]
+    return gap * (1 - mm) + peb * mm
+
+
+m = mask(F_Y0, F_Y1)
+S = synth(F_Y0, F_Y1, m)
+O = np.asarray(art_rgb.crop((0, F_Y0, W, F_Y1)), dtype=np.float32)
+ys = np.arange(F_Y0, F_Y1, dtype=np.float32)
+w = smooth((ys - BLEND0) / (BLEND1 - BLEND0))[:, None, None]
+rgb = O * (1 - w) + S * w
+# alpha: opaque from just above the wall's bottom edge (the cave piece paints the same pixels above it)
+edge = np.array([np.argmax(l18[4600:5000, x] > 128) + 4600 for x in range(W)])
+k = 41
+pad = np.pad(edge, k // 2, mode="edge")
+edge = np.array([np.median(pad[i:i + k]) for i in range(W)]).astype(int)
+top = np.minimum(edge - 6, 4735)
+# a 16-row ramp (not a hard edge), so any rounding difference with the cave piece's identical pixels cannot show as a line
+alpha = 255 * smooth((np.arange(F_Y0, F_Y1, dtype=np.float32)[:, None] - (top[None, :] - 10)) / 16)
+piece = np.dstack([rgb, alpha]).clip(0, 255).astype(np.uint8)
+top_img = Image.fromarray(piece, "RGBA")
+
+# tile: mirrored span of the mask in lit colors, continuing from F_Y1
+mt = mask(TILE_A, TILE_B)
+period = np.concatenate([mt[::-1], mt], 0)
+tile = np.array(LIT["gap"], np.float32) * (1 - period[..., None]) + np.array(LIT["peb"], np.float32) * period[..., None]
+tile_img = Image.fromarray(tile.clip(0, 255).astype(np.uint8), "RGB")
+
+save("floor", "floor-top", top_img)
+save("floor", "floor-tile", tile_img)
 
 # 6. Sand: the end of the floor, the wavy shore and the sand down to where it is flat. Opaque. The sand band owns the
 #    floor-to-sand seam. (The sand-to-blue shore of the final band is a CSS clip, not a piece: see landing_world_final.css.)
