@@ -51,7 +51,15 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
   test "the footer and the sign-in link are on the page the stylesheet rules target" do
     get "/"
     assert_select "footer.site-footer .site-footer__inner > span", text: "A Hack Club program"
-    assert_select "footer.site-footer nav[aria-label='Legal'] a", 2
+    assert_select "footer.site-footer nav[aria-label='Legal'] a", 3
+    assert_select "footer.site-footer .site-footer__inner > span a[href='https://hackclub.com']", text: "Hack Club"
+    {
+      "Terms & Privacy Policy" => "https://hackclub.com/privacy-and-terms",
+      "Fulfillment bounty" => "https://forms.hackclub.com/bounty",
+      "Security" => "https://security.hackclub.com"
+    }.each do |label, href|
+      assert_select "footer.site-footer nav[aria-label='Legal'] a[href='#{href}'][rel='noopener noreferrer']", text: label
+    end
     assert_select ".hero__signin-form", 0
   end
 

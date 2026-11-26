@@ -64,10 +64,11 @@
     <% unless content_for?(:hide_footer) %>
     <footer class="site-footer">
       <div class="container site-footer__inner">
-        <span>A Hack Club program</span>
+        <span>A <%= link_to "Hack Club", "https://hackclub.com", rel: "noopener noreferrer" %> program</span>
         <nav aria-label="Legal">
-          <%= link_to "Privacy", privacy_path %>
-          <%= link_to "Terms", terms_path %>
+          <%= link_to "Terms & Privacy Policy", "https://hackclub.com/privacy-and-terms", rel: "noopener noreferrer" %>
+          <%= link_to "Fulfillment bounty", "https://forms.hackclub.com/bounty", rel: "noopener noreferrer" %>
+          <%= link_to "Security", "https://security.hackclub.com", rel: "noopener noreferrer" %>
         </nav>
       </div>
     </footer>
