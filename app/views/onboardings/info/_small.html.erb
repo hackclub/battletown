@@ -1,0 +1,22 @@
+<%# Three flat bars from Hack Club's own numbers (see Onboarding::Story::FIRST_PROJECTS): they grow from the baseline, then the values appear. Drawn on a 300 x 124 box; each bar sits in the middle of a third. %>
+<% bars = Onboarding::Story::FIRST_PROJECTS %>
+<figure class="bars">
+  <svg class="bars__svg" viewBox="0 0 300 124" role="img" aria-label="<%= bars.map { |b| "#{b[:label]}: #{b[:percent]} percent" }.join(". ") %>. The middle first project took <%= Onboarding::Story::FIRST_PROJECT_MEDIAN %> hours.">
+    <% bars.each_with_index do |bar, i| %>
+      <% height = (bar[:percent] * 1.1).round(1) %>
+      <g class="bars__group bars__group--<%= i + 1 %>">
+        <rect class="bars__bar" x="<%= 10 + i * 100 %>" y="<%= (120 - height).round(1) %>" width="80" height="<%= height %>" rx="6"/>
+        <text class="bars__value" x="<%= 50 + i * 100 %>" y="<%= (114 - height).round(1) %>" text-anchor="middle"><%= bar[:percent] %>%</text>
+      </g>
+    <% end %>
+    <g class="bars__median">
+      <circle class="bars__dot" cx="50" cy="78" r="4.5"/>
+      <text class="bars__median-text" x="50" y="97" text-anchor="middle">Median</text>
+      <text class="bars__median-text" x="50" y="109" text-anchor="middle"><%= Onboarding::Story::FIRST_PROJECT_MEDIAN %> hours</text>
+    </g>
+    <rect class="bars__base" x="0" y="120" width="300" height="3"/>
+  </svg>
+  <div class="bars__labels" aria-hidden="true"><% bars.each do |bar| %><span><%= bar[:label] %></span><% end %></div>
+</figure>
+<p class="info__line">Your first project does not have to be big.</p>
+<p class="info__note">*Based on 17,053 first projects approved by Hack Club.</p>

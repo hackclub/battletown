@@ -45,6 +45,19 @@ module Onboarding
       PACES.find { |pace| raw <= pace }
     end
 
+    # The paces the pace step offers for a prize: only those that finish by the end of the program. When none does, the biggest alone.
+    def offered_paces(hours, today: Time.zone.today, ends_on: self.ends_on)
+      return PACES unless hours.to_f.positive?
+
+      fits = PACES.select { |minutes| reachable?(hours, minutes, today: today, ends_on: ends_on) }
+      fits.presence || [ PACES.max ]
+    end
+
+    # True when even the biggest pace misses the end of the program.
+    def none_in_time?(hours, today: Time.zone.today, ends_on: self.ends_on)
+      hours.to_f.positive? && !reachable?(hours, PACES.max, today: today, ends_on: ends_on)
+    end
+
     # "about 30 minutes a day", "about 1.5 hours a day", "about 2 hours a day".
     def text(minutes)
       return unless minutes
@@ -57,9 +70,10 @@ module Onboarding
       "about #{amount} a day"
     end
 
-    # Can `minutes` a day earn a prize of `hours` by the end date? True when there is no date.
+    # Can `minutes` a day earn a prize of `hours` by the end of the program? The end date when one is set, else the stand-in length (card_days).
+    # True only when there is no length at all.
     def reachable?(hours, minutes, today: Time.zone.today, ends_on: self.ends_on)
-      days = days_left(today: today, ends_on: ends_on)
+      days = card_days(today: today, ends_on: ends_on)
       return true unless days
       return false unless days.positive?
 

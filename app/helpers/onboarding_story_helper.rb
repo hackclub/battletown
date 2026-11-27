@@ -40,6 +40,8 @@ module OnboardingStoryHelper
       end
     when "stops_answer" then "Here is what helps"
     when "how" then "How it works"
+    when "small" then "First projects are small"
+    when "halfway" then "Halfway there"
     when "summary" then "Today, and then"
     end
   end

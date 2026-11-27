@@ -41,21 +41,21 @@ class Onboarding::FlowTest < ActiveSupport::TestCase
 
   test "question and info screens per branch, with the crew question off and on" do
     without_feature(:team) do
-      %w[game website app tool].each { |kind| assert_equal [ 13, 6 ], counts(kind), kind }
-      assert_equal [ 10, 4 ], counts("undecided", stops: %w[none]), "undecided with nothing stopping them: no obstacle answer screen"
-      assert_equal [ 10, 5 ], counts("undecided")
+      %w[game website app tool].each { |kind| assert_equal [ 13, 8 ], counts(kind), kind }
+      assert_equal [ 10, 6 ], counts("undecided", stops: %w[none]), "undecided with nothing stopping them: no obstacle answer screen"
+      assert_equal [ 10, 7 ], counts("undecided")
     end
     with_feature(:team) do
-      %w[game website app tool].each { |kind| assert_equal [ 14, 6 ], counts(kind), kind }
-      assert_equal [ 10, 5 ], counts("undecided")
+      %w[game website app tool].each { |kind| assert_equal [ 14, 8 ], counts(kind), kind }
+      assert_equal [ 10, 7 ], counts("undecided")
     end
   end
 
   test "the screens tell one story in this order, and the idea question is only for Not sure yet" do
     decided = Flow.visible(answers_for(kind: "game", stops: %w[time], prize: "mechanical_keyboard")).map(&:key)
-    assert_equal %w[age prize use cost how when made project detail audience started size reflect editor coding_when schedule pace_date stops stops_answer summary signup account celebrate], decided
+    assert_equal %w[age prize use cost how when made project detail audience started size halfway reflect editor coding_when small schedule pace_date stops stops_answer summary signup account celebrate], decided
     undecided = Flow.visible(answers_for(kind: "undecided", stops: %w[time], prize: "mechanical_keyboard")).map(&:key)
-    assert_equal %w[age prize use cost how when made project idea editor coding_when schedule pace_date stops stops_answer summary signup account celebrate], undecided
+    assert_equal %w[age prize use cost how when made project idea editor halfway coding_when small schedule pace_date stops stops_answer summary signup account celebrate], undecided
   end
 
   test "When do you want it? is asked only when its dated frames lead to at least two different paces" do
@@ -66,6 +66,17 @@ class Onboarding::FlowTest < ActiveSupport::TestCase
     skipped = Flow.visible(answers_for(kind: "game")).map(&:key)
     assert_equal "how", skipped[skipped.index("cost") + 1]
     assert_equal "made", skipped[skipped.index("how") + 1]
+  end
+
+  test "the halfway screen sits at the real middle of the screens this person will see, wherever hidden ones shift it" do
+    [ [ "game", "tshirt" ], [ "game", "mechanical_keyboard" ], [ "undecided", "tshirt" ], [ "undecided", "mechanical_keyboard" ], [ "app", "headphones" ] ].each do |kind, prize|
+      keys = Flow.visible(answers_for(kind: kind, prize: prize)).map(&:key)
+      assert_equal (keys.size / 2.0).round, keys.index("halfway") + 1, "#{kind} #{prize}: #{keys.size} screens"
+    end
+    answers = answers_for(kind: "game", prize: "tshirt")
+    keys = Flow.visible(answers).map(&:key)
+    assert_equal "halfway", Flow.next_key(keys[keys.index("halfway") - 1], answers)
+    assert_equal keys[keys.index("halfway") - 1], Flow.previous_key("halfway", answers)
   end
 
   test "next and previous skip hidden screens in both directions" do

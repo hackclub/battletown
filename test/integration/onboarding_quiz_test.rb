@@ -60,6 +60,8 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
     answer("audience", "friends")
     answer("started", "plan")
     answer("size", "weeks")
+    assert_redirected_to onboarding_step_path("halfway") # the middle of this person's screens
+    patch onboarding_step_path("halfway")
     assert_redirected_to onboarding_step_path("reflect")
     follow_redirect!
     assert_select "h1", /A puzzle game for your friends, a few weeks of work\./
@@ -144,9 +146,20 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
     ENV["ONBOARDING_PROGRAM_ENDS_ON"] = (Time.zone.today + 2).iso8601 # three days: 30 minutes a day is 1.5 hours, not enough
     reach_quiz_step("schedule")
     get onboarding_step_path("schedule")
-    assert_select "label:has(input[value='30']) .choice__meta", "Not in time for the end of the program"
+    assert_select ".onboarding__encouragement", "Even the biggest pace will not finish by the end of the program."
+    assert_select "input[name='user[pace_minutes]']", 1 # no pace finishes in time: the biggest alone
+    assert_select "label:has(input[value='180']) .choice__meta", "Not in time for the end of the program"
   ensure
     ENV.delete("ONBOARDING_PROGRAM_ENDS_ON")
+  end
+
+  test "the pace step offers only paces that finish within the program, for the small and the big prizes" do
+    { "custom_sticker" => [ 30, 60, 120, 180 ], "tshirt" => [ 30, 60, 120, 180 ], "mechanical_keyboard" => [ 60, 120, 180 ], "headphones" => [ 120, 180 ] }.each do |prize, paces|
+      begin_quiz(prize: prize)
+      reach_quiz_step("schedule")
+      get onboarding_step_path("schedule")
+      assert_equal paces, css_select("input[name='user[pace_minutes]']").map { |i| i["value"].to_i }, prize
+    end
   end
 
   test "the editor answer outlives sign-in and prefills the Hackatime step" do

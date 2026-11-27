@@ -16,6 +16,16 @@ module Onboarding
     # Time frames for "When do you want it?": [value, label, days (nil: the end date, or no deadline)].
     FRAMES = [ [ "two_weeks", "In 2 weeks", 14 ], [ "month", "In a month", 30 ], [ "program", "By the end of the program", :program ], [ "no_rush", "No rush", nil ] ].freeze
 
+    # Hack Club's own numbers for the "first projects are small" screen: each person's first approved project, reviewed hours, n = 17,053
+    # (research 2026-11-27, hack-club-stats.md row 14: 54.2% took 5 hours or less, 73.9% took 10 hours or less). The bars are separate groups that add
+    # to 100%, both derived by subtraction from those same 17,053 projects: 73.9 - 54.2 = 19.7 took more than 5 and up to 10 hours, 100 - 73.9 = 26.1 took more.
+    FIRST_PROJECTS = [
+      { label: "5 hours or less", percent: 54.2 },
+      { label: "5 to 10 hours", percent: 19.7 },
+      { label: "Over 10 hours", percent: 26.1 }
+    ].freeze
+    FIRST_PROJECT_MEDIAN = 4.8
+
     module_function
 
     def today = Time.zone.today
@@ -116,7 +126,10 @@ module Onboarding
 
     # What helps with each thing that stops people finishing: [acknowledgement, a real feature]. Only features that exist get a line:
     # the ship minimum and reminder hours come from config, the crew bonus only while the crew flag is on, the boss week from Boss.
-    def obstacle_lines(picked, team: Features.enabled?(:team))
+    def obstacle_lines(picked, team: Features.enabled?(:team)) = obstacle_entries(picked, team: team).map { |_, acknowledgement, feature| [ acknowledgement, feature ] }
+
+    # The same lines with the thing that stops them: [[key, acknowledgement, feature]], in the order picked (the key picks the screen's icon).
+    def obstacle_entries(picked, team: Features.enabled?(:team))
       cfg = Ships::Config.current
       min = (cfg.min_seconds / 3600.0)
       min = min == min.to_i ? min.to_i : min
@@ -126,7 +139,7 @@ module Onboarding
         "lost" => [ "Losing motivation?", "Each boss week runs Friday to Thursday, and Slack reminds you to ship at #{first} and #{second} hours." ]
       }
       lines["stuck"] = [ "Getting stuck?", "Code on the same days as your crew and you earn a bonus." ] if team
-      picked.filter_map { |value| lines[value] }
+      picked.filter_map { |value| [ value, *lines[value] ] if lines[value] }
     end
   end
 end

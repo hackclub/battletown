@@ -1,2 +1,18 @@
-<%= render "onboardings/info/prize", prize: answers.prize %>
+<%# A straight line of hours from today to the day the prize is earned at the chosen pace. Flat inline SVG; the line draws in once (CSS only, final state when motion is reduced). %>
+<% prize = answers.prize %>
+<%= render "onboardings/info/prize", prize: prize %>
+<% if prize && (date = onboarding_prize_date) %>
+  <div class="hline" role="img" aria-label="<%= "From today, 0 hours, to #{Onboarding::Story.date_text(date)}, #{prize.hours_text}" %>">
+    <svg class="hline__svg" viewBox="0 0 320 16" aria-hidden="true" focusable="false">
+      <line class="hline__track" x1="8" y1="8" x2="312" y2="8"/>
+      <path class="hline__fill" d="M8 8H312" pathLength="1"/>
+      <circle class="hline__dot hline__dot--start" cx="8" cy="8" r="8"/>
+      <circle class="hline__dot hline__dot--end" cx="312" cy="8" r="8"/>
+    </svg>
+    <div class="hline__labels" aria-hidden="true">
+      <span class="hline__label"><strong>Today</strong><span>0 hours</span></span>
+      <span class="hline__label hline__label--end"><strong><%= Onboarding::Story.date_text(date) %></strong><span><%= prize.hours_text %></span></span>
+    </div>
+  </div>
+<% end %>
 <% if (line = onboarding_boss_line) %><p class="info__line"><%= line %></p><% end %>

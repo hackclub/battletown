@@ -679,12 +679,9 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .info__line { margin: 0; font-weight: 700; color: var(--color-ink-blue); text-wrap: balance; }
 .info__prize { width: min(22rem, 100%); max-height: 22rem; object-fit: contain; }
 /* one column for every screen: the same width, radius and padding as an option row */
-.info__pairs, .info__steps { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; text-align: left; width: 100%; }
-.info__pairs li, .info__steps li { padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); }
+.info__pairs { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; text-align: left; width: 100%; }
+.info__pairs li { padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); }
 .info__pairs li { display: grid; gap: var(--space-1); }
-.info__steps { counter-reset: step; }
-.info__steps li { counter-increment: step; display: flex; align-items: center; gap: var(--space-3); font-weight: 700; }
-.info__steps li::before { content: counter(step); flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--color-blue); color: var(--color-surface); font-family: var(--font-body); font-weight: 800; }
 /* today and then: a winding path of flat stepping stones. Positions are percentages of the drawing (wide on a desktop, taller on a phone). */
 .summary { display: grid; justify-items: center; gap: var(--space-4); width: 100%; }
 .trail {
@@ -746,10 +743,101 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   54%, 66.5%, 78.5%, 90.5% { translate: 0 -1.1rem; scale: 0.92 1.1; animation-timing-function: ease-in; }
   49%, 62%, 74%, 86% { scale: 1.1 0.88; }
 }
+/* pace_date: a straight line of hours from today to the finish day. The finished state is the base style; the motion is CSS only and off under reduced motion. */
+.hline { display: grid; gap: var(--space-3); width: min(100%, 28rem); }
+.hline__svg { display: block; width: 100%; height: auto; overflow: visible; }
+.hline__track { stroke: var(--color-cool-tint-edge); stroke-width: 6; }
+.hline__fill { fill: none; stroke: var(--color-blue); stroke-width: 6; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.hline__dot--start { fill: var(--color-navy); }
+.hline__dot--end { fill: var(--color-blue); }
+.hline__dot { transform-box: fill-box; transform-origin: center; }
+.hline__labels { display: flex; justify-content: space-between; gap: var(--space-4); }
+.hline__label { display: grid; gap: var(--space-1); text-align: left; color: var(--color-ink-blue); }
+.hline__label strong { font-weight: 800; font-size: var(--text-lg); line-height: 1.1; }
+.hline__label span { font-weight: 600; font-size: var(--text-sm); }
+.hline__label--end { text-align: right; }
+@media (prefers-reduced-motion: no-preference) {
+  .hline__fill { animation: hline-draw 1.1s cubic-bezier(.6, 0, .3, 1) 0.15s both; }
+  .hline__dot--start { animation: trail-pop 0.3s cubic-bezier(.3, 1.6, .5, 1) both; }
+  .hline__dot--end { animation: trail-pop 0.35s cubic-bezier(.3, 1.6, .5, 1) 1.15s both; }
+  .hline__labels > :first-child { animation: trail-fade 0.3s ease-out 0.1s both; }
+  .hline__labels > :last-child { animation: trail-fade 0.3s ease-out 1.2s both; }
+}
+@keyframes hline-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+/* cost: one flat block per hour of coding, in groups of five, at most five groups across. The finished state is the base style. */
+.blocks { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-4) var(--space-3); width: min(100%, 28rem); }
+.blocks--cols-1 { --across: 1; } .blocks--cols-2 { --across: 2; } .blocks--cols-3 { --across: 3; } .blocks--cols-4 { --across: 4; } .blocks--cols-5 { --across: 5; }
+.blocks__group { flex: 0 0 calc((100% - (var(--across) - 1) * var(--space-3)) / var(--across)); max-width: 8rem; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-1); } /* a short last row stays centered under the picture; every group is the same width */
+.blocks__block { height: 1.5rem; border-radius: var(--radius-sm); background: var(--color-blue); transform-origin: bottom center; }
+.blocks__group:nth-child(1) { --g: 0; } .blocks__group:nth-child(2) { --g: 1; } .blocks__group:nth-child(3) { --g: 2; } .blocks__group:nth-child(4) { --g: 3; } .blocks__group:nth-child(5) { --g: 4; }
+.blocks__group:nth-child(6) { --g: 5; } .blocks__group:nth-child(7) { --g: 6; } .blocks__group:nth-child(8) { --g: 7; } .blocks__group:nth-child(9) { --g: 8; } .blocks__group:nth-child(10) { --g: 9; }
+.blocks__block:nth-child(1) { --j: 0; } .blocks__block:nth-child(2) { --j: 1; } .blocks__block:nth-child(3) { --j: 2; } .blocks__block:nth-child(4) { --j: 3; } .blocks__block:nth-child(5) { --j: 4; }
+/* the groups share about 0.72 s whatever their number, so the whole fill-in ends within about 1.2 s (the last block starts by 0.9 s and takes 0.25 s) */
+.blocks--n-1 { --gstep: 0s; } .blocks--n-2 { --gstep: 0.2s; } .blocks--n-3 { --gstep: 0.2s; } .blocks--n-4 { --gstep: 0.18s; } .blocks--n-5 { --gstep: 0.144s; }
+.blocks--n-6 { --gstep: 0.12s; } .blocks--n-7 { --gstep: 0.103s; } .blocks--n-8 { --gstep: 0.09s; } .blocks--n-9 { --gstep: 0.08s; } .blocks--n-10 { --gstep: 0.072s; }
+@media (prefers-reduced-motion: no-preference) {
+  .blocks__block { animation: block-in 0.25s cubic-bezier(.3, 1.4, .5, 1) calc(0.1s + var(--g, 0) * var(--gstep, 0.08s) + var(--j, 0) * 0.02s) both; }
+}
+@keyframes block-in { from { scale: 1 0; opacity: 0; } to { scale: 1 1; opacity: 1; } }
+/* how it works: four numbered flat tiles in a row (two by two on a phone), each with a small drawing. The finished state is the base style. */
+.how { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin: 0; padding: 0; list-style: none; width: 100%; }
+.how__step { display: grid; justify-items: center; align-content: start; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-surface); text-align: center; }
+.how__num { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--color-blue); color: var(--color-surface); font-family: var(--font-body); font-weight: 800; font-size: var(--text-sm); line-height: 1; }
+.how__art { display: block; width: 3.5rem; height: 3.5rem; }
+.how__text { font-weight: 700; color: var(--color-text); text-wrap: balance; }
+.how__navy { fill: var(--color-navy); } .how__blue { fill: var(--color-blue); } .how__blue-edge { fill: var(--color-blue-edge); }
+.how__yellow { fill: var(--color-yellow); } .how__yellow-edge { fill: var(--color-yellow-edge); }
+.how__line { fill: none; stroke: var(--color-surface); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 39.99rem) { .how { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: no-preference) {
+  .how__step { animation: how-in 0.35s ease-out both; }
+  .how__step:nth-child(1) { animation-delay: 0.25s; } .how__step:nth-child(2) { animation-delay: 0.5s; }
+  .how__step:nth-child(3) { animation-delay: 0.75s; } .how__step:nth-child(4) { animation-delay: 1s; }
+}
+@keyframes how-in { from { opacity: 0; translate: 0 0.75rem; } to { opacity: 1; translate: 0 0; } }
+/* stops_answer: a flat icon badge on each row; rows appear in order. The finished state is the base style. */
+.info__pairs .help__row { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-4); } /* the badge-to-text gap matches the row's inner rhythm */
+.help__badge { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--color-blue); }
+.help__badge svg { display: block; width: 1.5rem; height: 1.5rem; }
+.help__white { fill: var(--color-surface); }
+.help__hand { fill: none; stroke: var(--color-blue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.help__text { display: grid; gap: var(--space-1); }
+@media (prefers-reduced-motion: no-preference) {
+  .help__row { animation: how-in 0.35s ease-out both; }
+  .help__row:nth-child(1) { animation-delay: 0.25s; } .help__row:nth-child(2) { animation-delay: 0.5s; } .help__row:nth-child(3) { animation-delay: 0.75s; }
+}
+/* small: three flat bars from the baseline, then their values. The finished state is the base style. */
+.bars { display: grid; gap: var(--space-2); width: min(100%, 28rem); margin: 0; }
+.bars__svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bars__base { fill: var(--color-cool-tint-edge); }
+.bars__bar { fill: var(--color-blue); transform-box: fill-box; transform-origin: bottom center; }
+.bars__value { font-family: var(--font-body); font-weight: 800; font-size: 14px; fill: var(--color-ink-blue); }
+.bars__dot { fill: var(--color-yellow); }
+.bars__median-text { font-family: var(--font-body); font-weight: 800; font-size: 11px; fill: var(--color-surface); }
+.bars__labels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding-inline: 0; text-align: center; font-weight: 700; font-size: var(--text-sm); color: var(--color-ink-blue); text-wrap: balance; }
+.bars__labels > span { padding-inline: var(--space-1); }
+.info__note { margin: 0; font-size: var(--text-sm); color: var(--color-ink-blue); text-wrap: balance; }
+@media (prefers-reduced-motion: no-preference) {
+  .bars__bar { animation: bar-grow 0.7s cubic-bezier(.3, 0, .2, 1) 0.25s both; }
+  .bars__group--2 .bars__bar { animation-delay: 0.45s; } .bars__group--3 .bars__bar { animation-delay: 0.65s; }
+  .bars__value, .bars__median { animation: trail-fade 0.3s ease-out 1.2s both; }
+}
+@keyframes bar-grow { from { scale: 1 0; } to { scale: 1 1; } }
+/* halfway: a flat rosette badge that pops in, then the prize line. The finished state is the base style. */
+.medal { display: block; width: 9rem; height: 9rem; overflow: visible; }
+.medal__pop { transform-box: fill-box; transform-origin: center; }
+.medal__edge { fill: var(--color-yellow-edge); }
+.medal__face { fill: var(--color-yellow); }
+.medal__disc { fill: var(--color-blue); }
+.medal__half { fill: var(--color-surface); }
+@media (prefers-reduced-motion: no-preference) {
+  .medal__pop { animation: trail-pop 0.5s cubic-bezier(.3, 1.6, .5, 1) 0.25s both; }
+  .medal__line { animation: trail-fade 0.3s ease-out 0.6s both; }
+}
 @media (max-width: 39.99rem) {
   .info { gap: var(--space-4); }
   .info__prize { width: min(14rem, 70%); }
-  .info__pairs li, .info__steps li { padding: var(--space-3) var(--space-4); }
+  .info__pairs li { padding: var(--space-3) var(--space-4); }
 }
 /* one gap under the heading block on every step, with or without a second line, at every width */
 .onboarding__panel > .onboarding__header { margin-bottom: var(--space-4); }

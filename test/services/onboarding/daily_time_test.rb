@@ -9,7 +9,8 @@ class Onboarding::DailyTimeTest < ActiveSupport::TestCase
     assert_equal 60, DT.minutes_a_day(30, today: TODAY, ends_on: nil) # 30 hours in 30 days
     assert_nil DT.minutes_a_day(300, today: TODAY, ends_on: nil) # over the biggest pace choice a day: total hours instead
     assert_nil DT.days_left(today: TODAY, ends_on: nil)
-    assert DT.reachable?(30, 15, today: TODAY, ends_on: nil)
+    assert DT.reachable?(30, 60, today: TODAY, ends_on: nil) # 30 hours at 60 minutes: exactly the 30 stand-in days
+    assert_not DT.reachable?(30, 30, today: TODAY, ends_on: nil) # 60 days: past the stand-in length
   end
 
   test "a past end date gives nothing and nothing is reachable" do
@@ -46,6 +47,18 @@ class Onboarding::DailyTimeTest < ActiveSupport::TestCase
     ends = TODAY + 9
     assert DT.reachable?(10, 60, today: TODAY, ends_on: ends)
     assert_not DT.reachable?(11, 60, today: TODAY, ends_on: ends)
+  end
+
+  test "the pace step offers only the paces that finish by the end of the program, else the biggest alone" do
+    paces = ->(hours, ends_on: nil) { DT.offered_paces(hours, today: TODAY, ends_on: ends_on) }
+    assert_equal [ 30, 60, 120, 180 ], paces.(1)
+    assert_equal [ 30, 60, 120, 180 ], paces.(5)
+    assert_equal [ 60, 120, 180 ], paces.(30)
+    assert_equal [ 120, 180 ], paces.(50)
+    assert_equal [ 180 ], paces.(100) # 100 hours: no pace fits in 30 days, so the biggest alone
+    assert DT.none_in_time?(100, today: TODAY, ends_on: nil)
+    assert_not DT.none_in_time?(50, today: TODAY, ends_on: nil)
+    assert_equal [ 120, 180 ], paces.(10, ends_on: TODAY + 4) # five days left: 10 hours needs 2 hours a day
   end
 
   test "the end date comes from the environment override, never from the committed config" do
