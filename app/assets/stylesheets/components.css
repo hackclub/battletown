@@ -92,7 +92,7 @@
 
   .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
 
-  .btn__arrow, .btn .icon { flex: none; width: 1em; height: 1em; }
+  .btn .icon { flex: none; width: 1em; height: 1em; }
 
   /* THE RAISED SLAB (opt-in, used sparingly: the landing sign-up buttons and the onboarding hold-to-sign; the one raised button on the
      site). The element is the BASE: a static darker shade of the face's own color that never moves, repaints or transitions, so the click
@@ -577,3 +577,7 @@
   .display { font-family: var(--font-display); font-weight: 400; letter-spacing: var(--tracking-display); line-height: var(--leading-tight); }
   .numeric { font-variant-numeric: tabular-nums; }
 }
+
+/* The shared arrow (ApplicationHelper#arrow_icon), at the landing call to action's size relative to its text. Outside the layers and written
+   .btn .btn__arrow so it holds over the plain .btn__arrow rule in onboarding_world.css. */
+.btn__arrow, .btn .btn__arrow { flex: none; display: block; width: 0.87em; height: 0.875em; overflow: visible; }

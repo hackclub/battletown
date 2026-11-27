@@ -79,10 +79,8 @@ module OnboardingsHelper
 
   def onboarding_copy(step) = STEP_COPY.fetch(step, GENERIC_COPY)
 
-  # Inline SVG icons for the onboarding, drawn on a 24-unit box with the shape centered in it, so a grid or flex box centers them exactly.
-  def onboarding_arrow
-    tag.svg(tag.path(d: "M5 12h14M13 6l6 6-6 6"), class: "btn__arrow", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": true, focusable: false)
-  end
+  # The arrow after a button label: the one shared arrow icon (see ApplicationHelper#arrow_icon).
+  def onboarding_arrow = arrow_icon("btn__arrow")
 
   # A button label with the arrow after it.
   def onboarding_label(text) = safe_join([ text, onboarding_arrow ])

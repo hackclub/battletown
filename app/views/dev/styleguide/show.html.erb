@@ -1,7 +1,7 @@
 <% content_for :title, "Style guide" %>
 <%# Development-only (the controller 404s elsewhere). Everything here uses the real shared classes; the colour list and
     contrast table are read from tokens.css. Markup for each component is documented in projects/battletown/specs/contract.md. %>
-<% arrow = capture do %><svg class="icon" viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg><% end %>
+<% arrow = arrow_icon("btn__arrow") %>
 
 <div class="container sg">
   <%= dev_tool(:header, class: "stack stack--sm") do %>
