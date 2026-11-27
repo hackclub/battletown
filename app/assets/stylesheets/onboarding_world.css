@@ -759,13 +759,9 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 }
 @keyframes hline-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 /* cost: one flat block per hour of coding, in groups of five, at most five groups across. The finished state is the base style. */
-.blocks { display: grid; gap: var(--space-4) var(--space-3); width: min(100%, 28rem); }
-.blocks--cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.blocks--cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.blocks--cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.blocks--cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.blocks--cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.blocks__group { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-1); }
+.blocks { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-4) var(--space-3); width: min(100%, 28rem); }
+.blocks--cols-1 { --across: 1; } .blocks--cols-2 { --across: 2; } .blocks--cols-3 { --across: 3; } .blocks--cols-4 { --across: 4; } .blocks--cols-5 { --across: 5; }
+.blocks__group { flex: 0 0 calc((100% - (var(--across) - 1) * var(--space-3)) / var(--across)); max-width: 8rem; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-1); } /* a short last row stays centered under the picture; every group is the same width */
 .blocks__block { height: 1.5rem; border-radius: var(--radius-sm); background: var(--color-blue); transform-origin: bottom center; }
 .blocks__group:nth-child(1) { --g: 0; } .blocks__group:nth-child(2) { --g: 1; } .blocks__group:nth-child(3) { --g: 2; } .blocks__group:nth-child(4) { --g: 3; } .blocks__group:nth-child(5) { --g: 4; }
 .blocks__group:nth-child(6) { --g: 5; } .blocks__group:nth-child(7) { --g: 6; } .blocks__group:nth-child(8) { --g: 7; } .blocks__group:nth-child(9) { --g: 8; } .blocks__group:nth-child(10) { --g: 9; }
