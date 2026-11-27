@@ -13,22 +13,8 @@
 /* ---- Page chrome: the header floats over the hero, and the page ends on the last section's sky ---- */
 body:has(.landing) {
   --sky: #9dc4fd;
-  --blue: var(--color-blue);
-  --blue-shade: var(--color-blue-edge);
   --royal: #1456bd;
-  --royal-shade: #0e3f91;
-  --navy: var(--color-navy);
-  --navy-shade: var(--color-navy-edge);
-  --navy-lift: #1b3a7a;
-  --yellow: var(--color-yellow);
-  --yellow-shade: var(--color-yellow-edge);
-  --pink: var(--color-pink);
-  --pink-shade: var(--color-pink-edge);
-  --pink-deep: var(--color-pink-deep);
-  --cream: var(--color-bg);
   --cream-shade: #e9dcc0;
-  --display: var(--font-display);
-  --body: var(--font-body);
   --gutter: clamp(1.25rem, 5vw, 4rem);
   --side: max(var(--gutter), calc((100vw - 72rem) / 2)); /* content sits in a centred column, 72rem at most */
   --v: min(1vw, 0.9rem);
@@ -48,10 +34,10 @@ body:has(.landing) .site-header .btn {
 
 /* The footer sits in flow under the last section at every width: two centered lines of small navy text on the page-end sky, links underlined,
    no box. (It no longer overlays the section, so nothing can cover the fighter.) */
-body:has(.landing) .site-footer { background: none; border-top: 0; color: var(--navy); }
-body:has(.landing) .site-footer a { color: var(--navy); }
-body:has(.landing) .site-footer__credit { color: color-mix(in srgb, var(--navy) 80%, #d0e5ee); }
-body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /* the cream ring would be 1.8:1 on the sky */
+body:has(.landing) .site-footer { background: none; border-top: 0; color: var(--color-navy); }
+body:has(.landing) .site-footer a { color: var(--color-navy); }
+body:has(.landing) .site-footer__credit { color: color-mix(in srgb, var(--color-navy) 80%, #d0e5ee); }
+body:has(.landing) .site-footer :focus-visible { outline-color: var(--color-navy); } /* the cream ring would be 1.8:1 on the sky */
 
 /* The header floats over the hero on wide screens (it sits in flow as a sky strip on narrow ones). */
 @media (min-width: 48rem) {
@@ -61,7 +47,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 }
 
 /* ---- Base for the page (the app's own base styles are different, so reset what the design relies on) ---- */
-.landing { color: var(--cream); font: 500 1.0625rem/1.6 var(--body); }
+.landing { color: var(--color-bg); font: 500 1.0625rem/1.6 var(--font-body); }
 .landing :is(h1, h2, h3, p, ol, ul) { margin: 0; padding: 0; overflow-wrap: normal; }
 .landing :is(ol, ul) { list-style: none; }
 .landing img { max-width: 100%; }
@@ -96,20 +82,20 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 /* the bowl's "Boss health" label (an SVG text element; the CSP forbids a style attribute on it) */
 .landing { position: relative; overflow: clip; }
 .landing .wrap { padding-inline: var(--side); }
-.landing h2 { font: 400 clamp(2.25rem, 4.6vw, 3.75rem)/0.95 var(--display); letter-spacing: -0.04em; }
+.landing h2 { font: 400 clamp(2.25rem, 4.6vw, 3.75rem)/0.95 var(--font-display); letter-spacing: -0.04em; }
 /* ---- Button: the shared .slab-btn (components.css) in pink; here only its size, type and colors ---- */
 .landing .cta {
-  --slab-face: var(--pink);
-  --slab-base: var(--pink-shade); /* the darker pink of the base: this link never moves or repaints, only the face on it does */
-  --slab-fg: var(--cream); /* all text on this pink is cream (Armand, 2026-11-26: prettier than navy): the button, the FAQ rows and the third signpost board. 3.1:1, so it stays large or bold */
-  font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display);
+  --slab-face: var(--color-pink);
+  --slab-base: var(--color-pink-edge); /* the darker pink of the base: this link never moves or repaints, only the face on it does */
+  --slab-fg: var(--color-bg); /* all text on this pink is cream (Armand, 2026-11-26: prettier than navy): the button, the FAQ rows and the third signpost board. 3.1:1, so it stays large or bold */
+  font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--font-display);
   letter-spacing: -0.05em;
 }
 .landing .cta__label { text-wrap: balance; } /* a long label ("Join 1,234 other fighters") wraps inside the button at large text sizes instead of running out of it */
 .landing .cta:has(.cta__count) { font-size: clamp(1.25rem, 6.2vw, 1.625rem); } /* a longer label: smaller on phones so it stays on one line */
 .landing .cta:has(.cta__count) .cta__label { white-space: nowrap; }
 .landing .cta__count { /* the count in the button: the page's blue, white number, a lighter top edge, no outline */
-  display: inline-block; padding: 0.04em 0.4em 0.1em; border-radius: 999px; background: var(--blue); color: var(--cream); white-space: nowrap;
+  display: inline-block; padding: 0.04em 0.4em 0.1em; border-radius: 999px; background: var(--color-blue); color: var(--color-bg); white-space: nowrap;
   box-shadow: inset 0 0.07em 0 rgb(255 255 255 / 0.3); font-variant-numeric: tabular-nums;
 }
 .landing .cta svg { width: 0.87em; height: 0.875em; overflow: visible; flex: none; }
@@ -127,14 +113,14 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .hero__logo img { display: block; width: 100%; height: auto; }
 .landing .hero__tagline {
   padding-left: 0.5rem;
-  font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--display);
+  font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--font-display);
 }
 /* the tagline's own text treatment: cream fill, royal-blue stroke, yellow accent */
 .landing .hero__tagline {
-  color: var(--cream); letter-spacing: -0.05em;
-  -webkit-text-stroke: 0.16em var(--blue); paint-order: stroke fill;
+  color: var(--color-bg); letter-spacing: -0.05em;
+  -webkit-text-stroke: 0.16em var(--color-blue); paint-order: stroke fill;
 }
-.landing .hero__tagline span { color: var(--yellow); }
+.landing .hero__tagline span { color: var(--color-yellow); }
 .landing .hero__swoosh { position: relative; z-index: 1; display: block; width: 100%; height: auto; margin-top: calc(100% * -234 / 1440); margin-bottom: -1px; }
 @media (min-width: 48rem) {
   .landing .hero { --swoosh-height: 14rem; --swoosh-overlap: 9.5rem; }
@@ -167,7 +153,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   .landing .hero__stickers { right: 5.2em; font-size: 1.1rem; }
 }
 /* ---- How it works: just the signpost, on flat sky. Its top board pokes up over the hero's bottom edge. ---- */
-.landing .how { position: relative; background: var(--sky); color: var(--navy); }
+.landing .how { position: relative; background: var(--sky); color: var(--color-navy); }
 .landing .how__inner { display: flex; flex-direction: column; align-items: center; padding: 0 0.5rem calc(var(--edge-a) * 0.72 + 1.5vw); }
 .landing .how__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* for screen readers; the boards say it */
@@ -181,12 +167,12 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 /* Each board's words start on the middle line of its face and run along the board's own slope. --u is one unit of the drawing. */
 .landing .signpost__board { --u: calc(100cqi / 1476); }
 .landing .signpost__board--1 { --tx: 168; --ty: 286; --tw: 990; --tilt: -4.7deg; color: #10285a; }
-.landing .signpost__board--2 { --tx: 318; --ty: 648; --tw: 985; --tilt: -3deg; color: var(--cream); }
-.landing .signpost__board--3 { --tx: 120; --ty: 1020; --tw: 1130; --tilt: 0.1deg; color: var(--cream); } /* cream on this pink, like the button and the FAQ rows: 3.1:1 */
+.landing .signpost__board--2 { --tx: 318; --ty: 648; --tw: 985; --tilt: -3deg; color: var(--color-bg); }
+.landing .signpost__board--3 { --tx: 120; --ty: 1020; --tw: 1130; --tilt: 0.1deg; color: var(--color-bg); } /* cream on this pink, like the button and the FAQ rows: 3.1:1 */
 .landing .signpost__text {
   position: absolute; left: calc(var(--u) * var(--tx)); top: calc(var(--u) * var(--ty)); width: calc(var(--u) * var(--tw));
   display: grid; grid-template-columns: auto 1fr; column-gap: calc(var(--u) * 30); align-items: center;
-  font-family: var(--display); letter-spacing: -0.06em; line-height: 1.05;
+  font-family: var(--font-display); letter-spacing: -0.06em; line-height: 1.05;
   transform: translateY(-50%) rotate(var(--tilt)); transform-origin: left center;
 }
 .landing .signpost__num { grid-row: 1 / span 2; font-size: calc(var(--u) * 176); line-height: 0.9; }
@@ -226,18 +212,18 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   .landing .prop.m { display: none; }
 }
 /* ---- Fight together: the boss stands on the ground with a patch of shade under him and his health bar over his shoulder. ---- */
-.landing .fight { --bg: var(--blue); --aw: 112vw; }
+.landing .fight { --bg: var(--color-blue); --aw: 112vw; }
 .landing .fight .in { padding-bottom: 132vw; }
 .landing .fight__text { padding-inline: var(--side); }
-.landing .fight h2 { color: var(--yellow); } /* every heading on a blue ground is yellow */
+.landing .fight h2 { color: var(--color-yellow); } /* every heading on a blue ground is yellow */
 .landing .fight__text p { max-width: min(26rem, 76%); margin-top: 1.25rem; }
 .landing .arena { position: absolute; z-index: 1; right: -6vw; bottom: calc(var(--edge-hp) * 0.38); width: var(--aw); --boss-w: 74%; }
 .landing .fight__shadow { display: block; width: 100%; height: auto; fill: var(--color-blue-edge); }
 /* The bar is the real boss's health (a native progress element: pink is health left). Its label sits on top, un-skewed. */
 .landing .fight__health {
   position: absolute; left: 18%; right: 14%; bottom: calc(var(--aw) * 0.92); margin: 0;
-  border: 0.25rem solid var(--color-hp-outline); background: var(--color-hp-empty); color: var(--cream); transform: skewX(-24deg);
-  font: 400 clamp(0.8rem, 1.5vw, 1.05rem)/1.2 var(--display); letter-spacing: -0.03em;
+  border: 0.25rem solid var(--color-hp-outline); background: var(--color-hp-empty); color: var(--color-bg); transform: skewX(-24deg);
+  font: 400 clamp(0.8rem, 1.5vw, 1.05rem)/1.2 var(--font-display); letter-spacing: -0.03em;
 }
 .landing .fight__bar { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; appearance: none; background: var(--color-hp-empty); color: var(--color-hp-fill); }
 .landing .fight__bar::-webkit-progress-bar { background: var(--color-hp-empty); }
@@ -257,7 +243,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 /* ---- Prizes: each one stands on a pebble cut from the painted floor, with its name and hours as plain white text on the floor below it. ---- */
 .landing .prizes { --bg: var(--royal); --next: var(--edge-c); }
 .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55); } /* the sand follows the last row sooner */
-.landing .prizes h2 { color: var(--yellow); }
+.landing .prizes h2 { color: var(--color-yellow); }
 /* The stones are real cells of his pebble layer (script/export_prize_stones.py), each used once, shrunk uniformly and sized in world units like
    the other props: --w x --h wu is the whole picture, --t the height of its top face (the rest is the side). They lie loosely, so each
    one's --dy wu lower than its row's top makes the rows stagger; the order of the nine stays the reading order. */
@@ -276,7 +262,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .prize img[src*="keychron"] { clip-path: inset(33% 0 12% 0); translate: 0 calc(var(--aw) * 0.075); }
 .landing .prize__emoji { display: block; font-size: calc(var(--aw) * 0.8); line-height: 1; }
 .landing .prize__label { order: 3; margin-top: 0.6rem; padding-inline: 0.25rem; }
-.landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
+.landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--font-display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
 .landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.875rem; line-height: 1.2; overflow-wrap: anywhere; }
 @media (max-width: 39.99rem) { .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55 + 2.5rem); } .landing .shelf { --u: calc(var(--wu) * 1.15); --lw: 10rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
 @media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(1rem, calc(100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
@@ -294,10 +280,10 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .prize:nth-child(8) { --w: 182.8; --h: 177.7; --t: 122.1; --dy: 18; --stone: image-set(url("landing/world/stones/stone-8@a.webp") 1x, url("landing/world/stones/stone-8@b.webp") 1.3x, url("landing/world/stones/stone-8@c.webp") 2x); }
 .landing .prize:nth-child(9) { --w: 176.2; --h: 167.5; --t: 114.5; --dy: 8; --stone: image-set(url("landing/world/stones/stone-9@a.webp") 1x, url("landing/world/stones/stone-9@b.webp") 1.3x, url("landing/world/stones/stone-9@c.webp") 2x); }
 /* ---- FAQ: the river. The questions are stepping stones across it, and the path picks up again on the far bank. ---- */
-.landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: var(--pink); --stone-shade: var(--color-sign-pink-edge); --ripple: transparent; } /* the question stones are the site's magenta (the button and the third signpost board), edge in the board's deeper pink; no halo, so no outline look */
-.landing .bank__face { fill: var(--royal-shade); }
+.landing .faq { --bg: var(--color-navy); --next: var(--edge-d); --stone: var(--color-pink); --stone-shade: var(--color-sign-pink-edge); --ripple: transparent; } /* the question stones are the site's magenta (the button and the third signpost board), edge in the board's deeper pink; no halo, so no outline look */
+.landing .bank__face { fill: var(--color-royal); }
 .landing .bank__foam { fill: none; stroke: #4f7fd9; stroke-width: clamp(3px, 0.4vw, 6px); stroke-linecap: round; stroke-dasharray: 70px 22px 26px 22px; vector-effect: non-scaling-stroke; }
-.landing .faq h2 { color: var(--yellow); font-size: clamp(2.5rem, 5.4vw, 4.25rem); }
+.landing .faq h2 { color: var(--color-yellow); font-size: clamp(2.5rem, 5.4vw, 4.25rem); }
 .landing .faq__grid { display: grid; }
 /* The heading straddles the shore: half on the land above, half over the water. */
 .landing .faq__head { position: absolute; left: var(--side); top: calc(-1 * clamp(2.5rem, 5vw, 4.5rem) - var(--edge-c) * 0.27); translate: 0 -50%; }
@@ -326,15 +312,15 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .faq summary {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 0.85rem 0 0.9rem; cursor: pointer; list-style: none;
-  font: 400 clamp(1.125rem, 1.6vw, 1.3125rem)/1.15 var(--display); letter-spacing: -0.03em;
+  font: 400 clamp(1.125rem, 1.6vw, 1.3125rem)/1.15 var(--font-display); letter-spacing: -0.03em;
 }
 .landing .faq summary::-webkit-details-marker { display: none; }
 .landing .faq summary::after { content: "+"; flex: none; font-size: 1.1em; line-height: 0.8; }
 .landing .faq details[open] summary::after { content: "\2212"; }
-.landing .faq summary { color: var(--cream); } /* cream on this magenta is 3.1:1 (the same cream as the button) */
-.landing .faq summary:focus-visible { outline: 3px solid var(--cream); outline-offset: 4px; border-radius: 0.4rem; }
-.landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: var(--cream); font-size: 1rem; font-weight: 700; } /* heavier, because cream on this magenta is only 3.1:1 */
-.landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: var(--cream); font-size: 1rem; font-weight: 700; } /* one rule per line; the markers keep it a list in every browser */
+.landing .faq summary { color: var(--color-bg); } /* cream on this magenta is 3.1:1 (the same cream as the button) */
+.landing .faq summary:focus-visible { outline: 3px solid var(--color-bg); outline-offset: 4px; border-radius: 0.4rem; }
+.landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: var(--color-bg); font-size: 1rem; font-weight: 700; } /* heavier, because cream on this magenta is only 3.1:1 */
+.landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: var(--color-bg); font-size: 1rem; font-weight: 700; } /* one rule per line; the markers keep it a list in every browser */
 @media (min-width: 64rem) {
   /* The stones step in from the right, where the path comes down beside the prizes, and out again toward Orpheus. */
   .landing .hop--1 { --hx: calc(100% - 7.5rem); }
@@ -344,7 +330,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   .landing .hop--5 { display: block; }
 }
 /* ---- Last call: Orpheus in the bottom right corner, cape running off the page ---- */
-.landing .final { --bg: var(--sky); color: var(--navy); --ow: 92vw; }
+.landing .final { --bg: var(--sky); color: var(--color-navy); --ow: 92vw; }
 .landing .final .in { padding-bottom: 66vw; }
 .landing .final .wrap { position: relative; z-index: 1; }
 .landing .final h2 { font-size: clamp(2.75rem, 6vw, 4.75rem); }

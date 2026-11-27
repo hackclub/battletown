@@ -68,7 +68,7 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
   test "the footer has no box and does not overlay the last section: in flow, navy on the sky" do
     block = rule("body:has(.landing) .site-footer")
     assert_match(/background: none/, block)
-    assert_match(/color: var\(--navy\)/, block)
+    assert_match(/color: var\(--color-navy\)/, block)
     assert_no_match(/position: absolute/, block)
     assert_no_match(/background: var\(--color-ink-blue\)/, CSS[/The footer sits in flow.*?\n\n/m].to_s)
   end
