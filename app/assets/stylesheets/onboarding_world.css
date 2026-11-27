@@ -604,11 +604,13 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .onboarding-page .choice__body,
 .onboarding-page .choice:is(:hover, :active) .choice__body { margin: 0; box-shadow: none; transition: none; }
 .onboarding-page .choice-grid--cards .choice__body { padding: var(--card-pad); }
-.onboarding-page .choice-grid .choice:hover .choice__input:not(:checked) + .choice__body { background: var(--color-cool-hover); } /* hover: a slight blue tint, instantly; no ring, no outline */
+.onboarding-page .choice-grid .choice:hover .choice__input:not(:checked) + .choice__body { background: var(--color-cool-hover); } /* hover: a blue tint with a short fade; no ring, no outline */
 .onboarding-page .choice-grid .choice__input:checked + .choice__body { box-shadow: none; }
 .onboarding-page .choice__input:focus-visible + .choice__body { outline: 3px solid var(--color-focus-on-light); outline-offset: 2px; } /* the keyboard ring, never on mouse hover */
-/* only a pick animates (the fill and the text color over 150ms); a hover never does */
+/* a hover fades the fill in and out over 120ms; a pick fades the fill and the text color over 150ms */
 @media (prefers-reduced-motion: no-preference) {
+  .onboarding-page .choice-grid .choice__body,
+  .onboarding-page .choice-grid .choice:is(:hover, :active) .choice__body { transition: background-color 120ms ease; }
   .onboarding-page .choice-grid .choice__input:checked + .choice__body { transition: background-color 150ms ease, color 150ms ease; }
 }
 
