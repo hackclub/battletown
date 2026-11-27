@@ -216,7 +216,9 @@
 
   <%# The one sign-in request both sign-up buttons send once Hack Club Auth says the visitor is already signed in there (whoami_login_controller.js):
       the same POST /auth/hack_club as everywhere, with the page's own CSRF token, and nothing else in it. %>
-  <%= form_with url: "/auth/hack_club", method: :post, id: "whoami-login-form", hidden: true, data: { turbo: false } do %><% end if whoami_enabled? && !signed_in? %>
+  <% if whoami_enabled? && !signed_in? %>
+    <%= form_with url: "/auth/hack_club", method: :post, id: "whoami-login-form", hidden: true, data: { turbo: false } do %><% end %>
+  <% end %>
 
   <svg class="trail" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="trail-land"><polygon/></clipPath><clipPath id="trail-far-bank"><polygon/></clipPath></defs><path clip-path="url(#trail-land)"/><path clip-path="url(#trail-far-bank)"/></svg>
 </div>
