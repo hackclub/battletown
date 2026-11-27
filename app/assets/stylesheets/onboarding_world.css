@@ -568,8 +568,6 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   --ob-pink-edge: var(--color-blue-edge);
   --ob-cream: var(--color-surface);
 }
-.age-choice:hover, .pace-choice[aria-pressed="true"] { --age-edge-color: var(--color-blue-edge); background: var(--color-blue); color: var(--color-surface); }
-.age-choice:hover .pace-choice__days, .pace-choice[aria-pressed="true"] .pace-choice__days { color: var(--color-surface); }
 .choice-grid--prizes .choice__input:checked + .choice__body,
 .choice-grid--kinds .choice__input:checked + .choice__body { background: var(--color-blue); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--color-blue-edge); color: var(--color-surface); }
 .choice-grid .choice__input:checked + .choice__body :is(.choice__name, .choice__meta, .choice__desc, .choice__emoji) { color: var(--color-surface); }
@@ -578,3 +576,45 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color-cool-ground); }
 /* the small kind cards keep the badge's corner clear: room above and below the name, evenly */
 .choice-grid--kinds .choice__body { padding-block: calc(var(--card-pad) + var(--card-badge)) calc(var(--card-pad) + var(--card-badge) + var(--card-edge)); }
+
+/* ---- Primary and secondary, the one system for every onboarding control ----
+   PRIMARY: the logo's deep blue face, white text, its own darker blue edge (white on it 4.78:1, on the edge 6.1:1). At rest, not only when picked.
+   SECONDARY: the pale tint face, navy text (12:1), the tint's darker shade as the edge. Hover and focus move the fill one small step and
+   never touch the text color (the face lift is the shared press rule, not set here). Only a pick turns a secondary card primary. ---- */
+.onboarding-page {
+  --pri-face: var(--color-blue);
+  --pri-edge: var(--color-blue-edge);
+  --pri-ink: var(--color-surface);
+  --pri-face-step: color-mix(in srgb, var(--color-blue) 90%, var(--color-ink-blue));
+  --sec-face: var(--color-cool-tint);
+  --sec-edge: var(--color-cool-tint-edge);
+  --sec-ink: var(--color-ink-blue);
+  --sec-face-step: color-mix(in srgb, var(--color-cool-tint) 55%, var(--color-cool-tint-edge));
+}
+/* the age step: the expected answer is primary at rest, the other secondary */
+.age-choice { --age-edge-color: var(--sec-edge); background: var(--sec-face); color: var(--sec-ink); }
+.age-choice:is(:hover, :focus-visible) { --age-edge-color: var(--sec-edge); background: var(--sec-face-step); color: var(--sec-ink); }
+.age-choice--primary, .pace-choice[aria-pressed="true"] { --age-edge-color: var(--pri-edge); background: var(--pri-face); color: var(--pri-ink); }
+.age-choice--primary:is(:hover, :focus-visible), .pace-choice[aria-pressed="true"]:is(:hover, :focus-visible) { --age-edge-color: var(--pri-edge); background: var(--pri-face-step); color: var(--pri-ink); }
+.pace-choice[aria-pressed="true"] .pace-choice__days { color: var(--pri-ink); }
+/* the pickers: every card rests secondary, the picked one is primary */
+.choice-grid :is(.choice__body) { background: var(--sec-face); color: var(--sec-ink); }
+.choice-grid--prizes .choice__body, .choice-grid--kinds .choice__body { background: var(--sec-face); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--sec-edge); }
+.choice-grid .choice:hover .choice__body { background: var(--sec-face-step); }
+.choice-grid .choice__input:checked + .choice__body,
+.choice-grid--prizes .choice__input:checked + .choice__body,
+.choice-grid--kinds .choice__input:checked + .choice__body { background: var(--pri-face); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--pri-edge); color: var(--pri-ink); }
+.choice-grid .choice:hover .choice__input:checked + .choice__body { background: var(--pri-face-step); }
+@media (prefers-reduced-motion: no-preference) {
+  .age-choice { transition: --press 120ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease; }
+  .choice__body { transition: --press 120ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease; }
+}
+/* Continue is primary; when a choice is still to make it is visibly off: a face barely off the ground, muted text, no edge, no arrow */
+.onboarding-page .btn--primary.btn--lg[aria-disabled="true"],
+.onboarding-page .btn--primary.btn--lg[aria-disabled="true"]:hover,
+.onboarding-page .btn--primary.btn--lg[aria-disabled="true"]:active {
+  background: color-mix(in srgb, var(--color-cool-ground) 65%, var(--color-cool-tint-edge));
+  color: color-mix(in srgb, var(--color-text-muted) 70%, var(--color-cool-ground));
+  box-shadow: none;
+  cursor: not-allowed;
+}
