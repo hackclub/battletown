@@ -117,6 +117,7 @@ Rails.application.routes.draw do
 
   get "privacy", to: "pages#privacy"
   get "terms", to: "pages#terms"
+  get "docs", to: "pages#docs"
 
   get "auth/:provider/callback", to: "sessions#create", constraints: { provider: "hack_club" }
   # Hackatime account linking, additive to sign-in: the callback never signs anyone in (HackatimeConnectionsController).

@@ -1,0 +1,207 @@
+<% content_for :title, "Docs" %>
+<% content_for :head do %>
+  <meta name="description" content="How Battletown works: signing up, Hackatime, projects, ships, bosses, coins, the shop, the rules and fulfillment.">
+<% end %>
+<% game = docs_game %>
+<% ships = docs_ship_config %>
+<div class="container">
+  <article class="panel panel--white panel--narrow docs">
+    <header class="page-header">
+      <p class="eyebrow">Docs</p>
+      <h1>How Battletown works</h1>
+      <p class="lead">Battletown is a Hack Club You Ship We Ship program. Build projects, take down a weekly boss with the community and earn prizes.</p>
+    </header>
+
+    <nav class="docs__toc" aria-labelledby="docs-toc-title">
+      <h2 id="docs-toc-title" class="docs__toc-title">On this page</h2>
+      <ol>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#sign-up">Signing up</a></li>
+        <li><a href="#hackatime">Hackatime</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#ships">Ships</a></li>
+        <li><a href="#coins">Coins and streaks</a></li>
+        <li><a href="#bosses">Bosses and damage</a></li>
+        <li><a href="#shop">The shop</a></li>
+        <li><a href="#rules">Rules</a>
+          <ul>
+            <li><a href="#coding-time">What counts as coding time</a></li>
+            <li><a href="#valid-ship">What a valid ship is</a></li>
+            <li><a href="#honesty">Honesty</a></li>
+            <li><a href="#eligibility">Who can join</a></li>
+          </ul>
+        </li>
+        <li><a href="#fulfillment">Fulfillment</a>
+          <ul>
+            <li><a href="#ordering">Ordering and addresses</a></li>
+            <li><a href="#order-status">Order status</a></li>
+            <li><a href="#duties">Import duties and customs</a></li>
+          </ul>
+        </li>
+        <li><a href="#legal">Terms, privacy and security</a></li>
+      </ol>
+    </nav>
+
+    <div class="prose">
+      <h2 id="how-it-works">How it works</h2>
+      <ol>
+        <li><strong>Build.</strong> Build your project, and count your hours.</li>
+        <li><strong>Ship.</strong> Ship your project to hit the boss with your hours, and get coins.</li>
+        <li><strong>Get your prize.</strong> When the boss is defeated, collect your winnings, and claim a prize from the shop.</li>
+      </ol>
+      <p>In more detail: you sign in with your Hack Club account and connect Hackatime, which tracks the time you spend coding. You add a project and link it to a Hackatime project. When you have coded enough, you ship it. A staff member reviews the ship. Approved hours turn into coins, and the hours on your ship also hit the weekly boss. You spend coins in the shop.</p>
+
+      <h2 id="sign-up">Signing up</h2>
+      <p>You sign in with your Hack Club account. Signing in with Hack Club gets you a free sticker.</p>
+      <p>Onboarding asks you for these things, and you can change your plan later:</p>
+      <ul>
+        <li>The prize you want to work toward.</li>
+        <li>What kind of project you want to build, and an idea if you have one. Nothing is locked in.</li>
+        <li>Which days you want to code, what time works best, and how long you will code on those days.</li>
+        <li>Your Hackatime account. It is required, because it is how your hours count.</li>
+      </ul>
+      <p>We remind you with a Slack DM on your coding days. No email or phone number is needed.</p>
+
+      <h2 id="hackatime">Hackatime</h2>
+      <p>Hackatime is a free tool that tracks the time you spend coding. It is how your hours count.</p>
+      <ul>
+        <li>You connect it once, from onboarding or from Settings. You go to Hackatime, say yes and come straight back.</li>
+        <li>Battletown can only read from Hackatime, never change anything.</li>
+        <li>We use how long you code each day and the names of your Hackatime projects.</li>
+        <li>If Hackatime stops accepting the connection, your time stops syncing until you connect again.</li>
+      </ul>
+
+      <h2 id="projects">Projects</h2>
+      <p>A project is something you are building. You can have up to 10 projects. One of them is your active project at a time.</p>
+      <ul>
+        <li>Each project is linked to one or more of your Hackatime projects. That link tells Battletown which of your coding time belongs to it.</li>
+        <li>You can change your project any time. You can archive a project to tuck it away.</li>
+      </ul>
+
+      <h2 id="ships">Ships</h2>
+      <p>A ship is your request to turn the time you coded on one project into approved hours and coins.</p>
+      <ol>
+        <li>Open the project and choose to ship it. A ship covers the time Hackatime logged on the projects linked to it since your last ship.</li>
+        <li>Write what you built, add a public GitHub link and send it in. You can save a draft first.</li>
+        <li>A staff member reviews it and approves up to the hours you coded. Staff can lower the approved hours in steps of <%= docs_hours(ships.step_seconds) %>. They never raise them.</li>
+        <li>If it needs one more touch, you get a reason. Fix it up and ship again. A rejected ship gives its hours back, so they are still yours to ship.</li>
+      </ol>
+      <ul>
+        <li>You can withdraw a draft or a ship that is still waiting for review. The time you coded is free for your next one.</li>
+        <li>Time you log after you submit goes into your next ship. Whole days count together, so submit when you are done coding for the day.</li>
+        <li>We nudge you on Slack once a project has <%= docs_hours(ships.reminder_seconds.first) %> coded since its last ship, and again at <%= docs_hours(ships.reminder_seconds.last) %>.</li>
+      </ul>
+
+      <h2 id="coins">Coins and streaks</h2>
+      <ul>
+        <li>Coins come from approved hours only. Each approved hour is worth <%= game.coins_per_hour %> coins.</li>
+        <li>Hours past <%= game.deflation_after_seconds / 3600 %> in one ship earn <%= number_with_precision(docs_deflated_rate, precision: 1, strip_insignificant_zeros: true) %> coins an hour instead of <%= game.coins_per_hour %>, so shipping a bit more often pays better. This affects coins only, never boss damage.</li>
+        <li>A day counts for your streak when you code at least <%= game.quick_seconds / 60 %> minutes on it. Keeping a daily streak earns you a bonus on that day&rsquo;s coins, from <%= docs_percent(game.ramp_bps.first) %> on day 1 up to <%= docs_percent(game.ramp_bps.last) %> from day <%= game.ramp_bps.size %>.</li>
+        <li>A missed day resets your streak. You start with one freeze that protects your streak from your first missed day. After you use it, you earn it back by coding on <%= game.freeze_regen_days %> days in a row.</li>
+        <li>A day settles <%= game.grace_seconds / 3600 %> hours after local midnight, so a late Hackatime sync can still land on it.</li>
+        <li>Hours are a guide for the prize you picked. Daily streaks can get you there faster.</li>
+      </ul>
+
+      <h2 id="bosses">Bosses and damage</h2>
+      <p>Each boss has a health bar measured in hours of coding. Every time someone ships a project, its hours hit the boss, so ship together to defeat it.</p>
+      <ul>
+        <li>Coding alone never hurts the boss. Shipping does.</li>
+        <li>Damage is the coded hours on the ships people submitted during the boss&rsquo;s week. A boss week runs from Friday 00:00 UTC to the next Friday 00:00 UTC.</li>
+        <li>A ship that is waiting for review or approved counts. A rejected or withdrawn ship does not. If staff approve fewer hours than you coded, the damage uses the approved hours.</li>
+        <li>Once a boss is defeated, it stays defeated.</li>
+      </ul>
+
+      <h2 id="shop">The shop</h2>
+      <p>Trade the coins you earn for real gear. Everyone pays the same price. The shop lists what is on offer and what each item costs in coins.</p>
+      <ul>
+        <li>Your coins unlock when you verify your identity with Hack Club. You keep earning them in the meantime, and coding is never blocked.</li>
+        <li>You can claim a free sticker. It costs no coins, and you do not have to be verified yet. It is one per person.</li>
+        <li>Placing an order is a request. You can cancel it from your orders page until the team sends it, and your coins come straight back.</li>
+        <li>You can have up to <%= Orders::Config.current.max_open_requested %> orders waiting at once.</li>
+      </ul>
+
+      <h2 id="rules">Rules</h2>
+
+      <h3 id="coding-time">What counts as coding time</h3>
+      <ul>
+        <li>Hackatime is a free tool that tracks the time you spend coding.</li>
+        <li>Only time tracked with Hackatime while you build your project counts.</li>
+        <li>Log only time you really spent. Never add extra hours.</li>
+        <li>Reading docs or watching videos counts only once you build something with what you learned.</li>
+        <li>Time spent on art usually counts only up to about a third of your project time.</li>
+        <li>Time can only count toward one You Ship We Ship program.</li>
+        <li>Time you logged before the program started does not count.</li>
+      </ul>
+      <p>The site also applies these limits:</p>
+      <ul>
+        <li>At most <%= docs_hours(Hours::Config.current.daily_cap_seconds) %> of coding time is credited for one day.</li>
+        <li>Time from before the day you signed up does not count.</li>
+        <% if ships.project_time_from %>
+          <li>Time on a project before <%= docs_date(ships.project_time_from) %> does not count toward a ship.</li>
+        <% end %>
+      </ul>
+
+      <h3 id="valid-ship">What a valid ship is</h3>
+      <ul>
+        <li>A Hackatime project is linked to the project you are shipping.</li>
+        <li>You coded at least <%= docs_hours(ships.min_seconds) %> since your last ship.</li>
+        <li>You wrote a few words on what you built (up to <%= Ship::DESCRIPTION_MAX %> characters).</li>
+        <li>You added a public GitHub link, so the reviewer can open your code. It looks like https://github.com/your-name/your-repo.</li>
+        <li>A demo link is optional. If you add one, it must be a full link starting with https://.</li>
+        <li>A project can have one open ship at a time.</li>
+      </ul>
+      <p>A reviewer can send a ship back. These are the reasons they can pick from, and they can add their own words:</p>
+      <ul>
+        <% ships.rejection_reasons.each do |reason| %>
+          <li><%= reason %>.</li>
+        <% end %>
+      </ul>
+
+      <h3 id="honesty">Honesty</h3>
+      <ul>
+        <li>Log only time you really spent. Never add extra hours.</li>
+        <li>A staff member reviews every ship. They can lower the approved hours, and they can send a ship back with a reason.</li>
+        <li>Your GitHub link must be public, so the reviewer can check your work.</li>
+      </ul>
+
+      <h3 id="eligibility">Who can join</h3>
+      <ul>
+        <li>Any teen aged 13 to 18. You sign in with your Hack Club account.</li>
+        <li>Battletown is free for teens, run by Hack Club.</li>
+        <li>It runs for at least a month. We may extend it if it goes well.</li>
+        <li>To spend coins, you verify your identity with Hack Club. If your account is not verified yet, your coins are saved for you.</li>
+      </ul>
+
+      <h2 id="fulfillment">Fulfillment</h2>
+      <p>Prizes and stickers are sent by the Battletown team.</p>
+
+      <h3 id="ordering">Ordering and addresses</h3>
+      <ul>
+        <li>For an item that is posted, you choose a delivery address when you order. Battletown does not keep your address on your account. We ask Hack Club Auth for the addresses you saved there, once, and keep only the one you choose for this order.</li>
+        <li>An address needs a name, a street, a city and a country. To add or fix one, use Hack Club Auth, then load your addresses again.</li>
+        <li><%= Orders::Config.current.address_notice_text %></li>
+        <li>For an item that is not posted, the team will message you on Slack to arrange delivery.</li>
+      </ul>
+
+      <h3 id="order-status">Order status</h3>
+      <p>Your orders page shows each order and what happened to it. An order is in one of these states:</p>
+      <ul>
+        <li><strong>Requested.</strong> The team has your order and will get to it soon.</li>
+        <li><strong>Shipped.</strong> Your order is on its way. When a tracking number is added, you see it on the order page.</li>
+        <li><strong>Fulfilled.</strong> Your order was handed over.</li>
+        <li><strong>Cancelled</strong> or <strong>refunded.</strong> Your coins are back.</li>
+      </ul>
+
+      <h3 id="duties">Import duties and customs</h3>
+      <p>Hack Club does not and cannot pay import duties or customs fees.</p>
+
+      <h2 id="legal">Terms, privacy and security</h2>
+      <p>These pages are run by Hack Club:</p>
+      <ul>
+        <li><%= link_to "Terms & Privacy", "https://hackclub.com/privacy-and-terms", rel: "noopener noreferrer" %></li>
+        <li><%= link_to "Fulfillment", "https://forms.hackclub.com/bounty", rel: "noopener noreferrer" %></li>
+        <li><%= link_to "Security", "https://security.hackclub.com", rel: "noopener noreferrer" %></li>
+      </ul>
+    </div>
+  </article>
+</div>

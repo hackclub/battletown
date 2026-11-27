@@ -1,0 +1,12 @@
+/* The public docs page (app/views/pages/docs.html.erb). It is the same panel and prose as the legal pages; this file only adds the
+   table of contents and the spacing of headings that anchor links jump to. Tokens only. */
+.docs .lead { max-width: 42rem; }
+.docs__toc { margin-bottom: var(--space-8); padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); background: var(--color-bg); }
+.docs__toc-title { margin: 0 0 var(--space-2); font-size: var(--text-lg); }
+.docs__toc :is(ol, ul) { margin: 0; padding-inline-start: var(--space-6); }
+.docs__toc ul { margin-block: var(--space-1); }
+.docs__toc li { margin: 0; }
+.docs__toc a { display: inline-block; padding-block: var(--space-1); }
+.docs .prose :is(h2, h3) { scroll-margin-top: var(--space-6); }
+.docs .prose h3 { margin: var(--space-6) 0 var(--space-2); font-size: var(--text-lg); }
+.docs .prose h2:first-child { margin-top: 0; }
