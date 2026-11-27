@@ -67,6 +67,10 @@
   --color-sign-blue-edge: var(--color-blue-edge);
   --color-sign-pink: var(--color-pink);
   --color-sign-pink-edge: var(--color-pink-edge);
+  --color-sign-green: #00704a; /* a roadside sign: the board that carries the "Fight together" text. White text on it 6.1:1 */
+  --color-sign-green-edge: #004d33; /* the green's darker shade: bottom edge of the board; white on it 10:1 */
+  --color-sign-post: #ddd0cc; /* the signpost pole's face (signpost.svg) */
+  --color-sign-post-edge: #b9aba7; /* the pole's shaded side */
 
   /* Boss health bar (152:545, 156:667) and goal progress */
   --color-hp-fill: var(--color-pink); /* Figma: pink = health remaining (INFERRED, the designer has not confirmed) */
