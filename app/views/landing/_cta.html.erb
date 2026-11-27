@@ -1,6 +1,7 @@
-<%# locals: (extra_class: nil) -%>
+<%# locals: (extra_class: nil, label: nil) -%>
 <%# Everyone starts onboarding first; signing in with Hack Club is one of its last steps, so the button just opens it.
+    label replaces the default wording (the hero's "Sign up for free stickers"); signed-in people still see "Continue setup".
     extra_class adds classes to the button (the big, tilted one in the last section).
     (The development-only Dev login lives in the header nav, once.) -%>
 <% classes = ["cta", extra_class].compact.join(" ") %>
-<%= link_to onboarding_path, class: classes do %><%= render "landing/cta_face", label: signed_in? ? "Continue setup" : join_cta_label %><% end %>
+<%= link_to onboarding_path, class: classes do %><%= render "landing/cta_face", label: signed_in? ? "Continue setup" : (label || join_cta_label) %><% end %>

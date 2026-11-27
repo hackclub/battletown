@@ -25,17 +25,16 @@
       <div class="hero__content">
         <h1 id="landing-title" class="hero__logo"><%= image_tag "design/logo.svg", alt: "Battletown", width: 580, height: 341 %></h1>
         <p class="hero__tagline">Build projects, <span>get gear</span></p>
-        <div class="<%= class_names("hero__actions", "hero__actions--count": @onboarded_fighters) %>">
-          <%= render "landing/cta" %>
-          <%# Three of Hack Club's own stickers as one fanned pile, with the words that explain them across its foot. They are
-              decoration (the words carry the meaning), so their alt is empty. %>
-          <div class="hero__pile">
+        <div class="hero__actions">
+          <%# Three of Hack Club's own stickers tucked behind the button, peeking out past its top and right edges. They are
+              decoration (the button's words carry the meaning), so their alt is empty and they never take a click. %>
+          <div class="hero__cta">
             <div class="hero__stickers" aria-hidden="true">
               <%= image_tag "landing/sticker-hack-macintosh.svg", alt: "", class: "hero__sticker-img hero__sticker-img--mac", width: 335, height: 432 %>
               <%= image_tag "landing/sticker-enjoy-hack-club.svg", alt: "", class: "hero__sticker-img hero__sticker-img--red", width: 586, height: 311 %>
               <%= image_tag "landing/sticker-stay-determined.svg", alt: "", class: "hero__sticker-img hero__sticker-img--black", width: 399, height: 173 %>
             </div>
-            <p class="hero__sticker"><span>free sticker!</span></p>
+            <%= render "landing/cta", label: "Sign up for free stickers" %>
           </div>
         </div>
       </div>
