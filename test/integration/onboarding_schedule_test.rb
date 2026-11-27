@@ -63,16 +63,16 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     visitor_through_project
     get onboarding_step_path("schedule")
     assert_select "h1", /How long is a coding day\?/
-    assert_select ".pace-choices input[type=radio][name='user[pace_minutes]']", 4
-    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .pace-choice__time", /1 hour/
-    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .pace-choice__days", /About \d+ days? to your /
+    assert_select ".choice-grid--rows input[type=radio][name='user[pace_minutes]']", 4
+    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__name", /1 hour/
+    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta", /About \d+ days? to your /
     assert_select "input[type=hidden][name='user[coding_day_names][]']", 7
     assert_select "input[type=hidden][name='user[coding_time]'][value='18:00']"
     assert_select "select#user_time_zone", 0 # the browser's zone is sent in a hidden field; nothing is asked
     assert_select "input[type=hidden][name='user[time_zone]']"
     assert_select "#pace-hint", 0
     assert_select "select, input[type=time], .day-times", 0 # no dropdown, no time pickers, no time zone select
-    assert_select ".pace-choices input[checked]", 0
+    assert_select ".choice-grid--rows input[checked]", 0
   end
 
   test "someone editing their plan still gets the daily pace as a select with the saved one chosen" do
@@ -95,7 +95,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     user.update!(prize_key: "tshirt", pace_minutes: 60, coding_days: 127, coding_time: "18:00", time_zone: "UTC", onboarding_step: 3)
     sign_in_as user
     get onboarding_step_path("schedule")
-    shown = css_select("label:has(input[name='user[pace_minutes]'][value='60']) .pace-choice__days").first.text[/\d+/].to_i
+    shown = css_select("label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta").first.text[/\d+/].to_i
     plan = Dashboard::Presenter.new(user: user).prize_pace.plan
     date = Date.strptime(plan[/around (\d+ \w+)/, 1], "%d %b")
     today = Dashboard::Presenter.new(user: user).today_date
@@ -110,8 +110,8 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
 
     get onboarding_step_path("schedule")
     assert_select "input[name='user[pace_minutes]'][value='120'][checked]"
-    assert_select ".pace-choices input[checked]", 1
-    assert_select "[class*=is-picked], .pace-choices [aria-pressed]", 0
+    assert_select ".choice-grid--rows input[checked]", 1
+    assert_select "[class*=is-picked], .choice-grid--rows [aria-pressed]", 0
 
     sign_in_as User.new(hca_uid: "ident!pace1")
     assert_equal 120, User.find_by!(hca_uid: "ident!pace1").pace_minutes
@@ -346,7 +346,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     prize = Prize.find(OnboardingDraft.new(session).prize_key)
     assert_select "h1 + .onboarding__encouragement, .onboarding__encouragement", /#{Regexp.escape(prize.name)}/
     days = (Rational(prize.coins * 3600, Game::Config.current.coins_per_hour) / (60 * 60)).ceil
-    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .pace-choice__days", "About #{days} #{"day".pluralize(days)} to your #{prize.name}"
+    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta", "About #{days} #{"day".pluralize(days)} to your #{prize.name}"
   end
 end
 

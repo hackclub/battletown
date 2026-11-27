@@ -91,8 +91,8 @@ class ButtonPressStylesheetTest < ActiveSupport::TestCase
   # The sign-up button on /onboarding/signup is .btn--primary.btn--lg.btn--raised on a blue page. A rule that paints its face with
   # a literal `background:` leaves --btn-bg (and so the derived edge) pink: a blue face on a pink strip. Page rules must set --btn-bg.
   # onboarding_world.css (the onboarding agent's) still does at the line below; delete it from this list when that line becomes
-  # `--btn-bg: var(--ob-pink);`.
-  KNOWN_FACE_PAINTS = [ "onboarding_world.css: .onboarding-page .btn--primary.btn--lg" ].freeze
+  # `--btn-bg: var(--ob-primary);`.
+  KNOWN_FACE_PAINTS = [].freeze
 
   test "no page rule paints a button face with a literal background that its edge would not follow" do
     paints = SHEETS.flat_map do |path|

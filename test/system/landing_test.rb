@@ -84,7 +84,7 @@ class LandingSystemTest < ApplicationSystemTestCase
     assert_selector "input[type=radio]:checked", count: 1
     assert_equal "120", find("input[type=radio]:checked", visible: :all).value
     white = "rgb(255, 255, 255)"
-    %w[.pace-choice__time .pace-choice__days].each do |line|
+    %w[.choice__name .choice__meta].each do |line|
       assert_equal white, page.evaluate_script("getComputedStyle(document.querySelector('input:checked + .choice__body #{line}')).color")
     end
     assert_no_selector "[class*=is-picked]"

@@ -1,47 +1,11 @@
 <%= render layout: "onboardings/frame", locals: { step: "project" } do %>
-  <% max = User.validators_on(:project_idea).first.options[:maximum] %>
-  <% idea_length = subject.project_idea.to_s.strip.length %>
-  <%= form_with model: subject, scope: :user, url: onboarding_step_path("project"), method: :patch,
-        data: { controller: "onboarding-idea required-choice", action: "change->required-choice#sync submit->required-choice#guard", onboarding_idea_max_value: max, onboarding_idea_over_class: "onboarding__counter--over" } do |f| %>
+  <%= form_with model: subject, scope: :user, url: onboarding_step_path("project"), method: :patch do |f| %>
     <%= render "onboardings/errors" %>
     <%= tag.fieldset class: "field onboarding__fieldset", aria: onboarding_aria(:project_kind, id: "kind").slice(:describedby) do %>
       <legend class="visually-hidden">What kind of project?</legend>
       <%= onboarding_field_error(:project_kind, id: "kind") %>
-      <div class="choice-grid choice-grid--kinds">
-        <% offered_project_kinds.each do |kind, info| %>
-          <label class="choice">
-            <%= radio_button_tag "user[project_kind]", kind, subject.project_kind == kind, id: "user_project_kind_#{kind}", class: "choice__input", data: { required_choice_target: "input" } %>
-            <span class="choice__body">
-              <span class="choice__name"><%= info[:name] %></span>
-              <%= onboarding_check %>
-            </span>
-          </label>
-        <% end %>
-      </div>
+      <%= render "onboardings/choice_group", name: "user[project_kind]", options: offered_project_kinds.map { |kind, info|
+            { value: kind, label: info[:name], id: "user_project_kind_#{kind}", checked: subject.project_kind == kind, apart: kind == "undecided" } } %>
     <% end %>
-
-    <%# The idea box comes with its starters right above it: tap one and it fills the box below, or joins what is already there. %>
-    <details class="idea-more" <%= "open" if idea_length.positive? || onboarding_errors(:project_idea).any? %>>
-    <summary class="idea-more__summary">Got an idea? (optional)</summary>
-    <div class="field onboarding__field <%= "field--invalid" if onboarding_errors(:project_idea).any? %>">
-      <%= f.label :project_idea, "Got an idea? (optional)", class: "visually-hidden" %>
-      <details class="sparks">
-        <summary class="sparks__summary" id="idea-presets-label">Need a spark? Tap one to start from it, or write your own.</summary>
-        <ul class="chips" aria-labelledby="idea-presets-label">
-          <% OnboardingsHelper::IDEA_PRESETS.each do |preset| %>
-            <li><button type="button" class="chip" data-action="onboarding-idea#fill" data-onboarding-idea-text-param="<%= preset %>"><%= preset %></button></li>
-          <% end %>
-        </ul>
-      </details>
-      <%# No maxlength attribute: a browser counts UTF-16 units and one line break, the server counts characters and the CRLF a
-          form sends, so the counter (onboarding-idea) shows the real figure and the server stays the judge. %>
-      <%= f.text_area :project_idea, rows: 3, placeholder: "A sentence is plenty.",
-            aria: onboarding_aria(:project_idea, id: "user_project_idea", hint: "project-idea-count"),
-            data: { onboarding_idea_target: "field", action: "input->onboarding-idea#count" } %>
-      <%= onboarding_field_error(:project_idea, id: "user_project_idea") %>
-      <p class="field__hint onboarding__counter <%= "onboarding__counter--over" if idea_length > max %>" id="project-idea-count" data-onboarding-idea-target="counter"><span data-onboarding-idea-target="count"><%= idea_length %></span> of <%= max %> characters<span data-onboarding-idea-target="excess"><%= ", too long by #{idea_length - max}" if idea_length > max %></span></p>
-    </div>
-    </details>
-    <div class="onboarding__actions"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>
 <% end %>

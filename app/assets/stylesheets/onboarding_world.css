@@ -11,8 +11,8 @@
   --ob-plate-edge: #03045e;
   --ob-navy: #10285a;
   --ob-yellow: #ffd000;
-  --ob-pink: #ff4797;
-  --ob-pink-edge: #ff2d84;
+  --ob-primary: #ff4797;
+  --ob-primary-edge: #ff2d84;
   --ob-cream: #fffef5;
 }
 
@@ -93,7 +93,7 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   gap: 0.36em;
   border: 0;
   border-radius: 0.58em;
-  background: var(--ob-pink);
+  --btn-bg: var(--ob-primary);
   color: var(--ob-cream);
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -183,8 +183,8 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 
 /* ---- Prize: nine short cards (emoji on a block at the left, the words at the right) filling the room under the heading.
    3 x 3 on a wide window, 2 columns on a phone; the one-line descriptions only where there is room for them ---- */
-.onboarding__panel > form > .onboarding__fieldset:has(.choice-grid--prizes) { flex: 1; min-height: min-content; display: flex; flex-direction: column; gap: var(--ob-gap); }
-.choice-grid--prizes {
+.onboarding__panel > form > .onboarding__fieldset:has(.choice-grid--cards) { flex: 1; min-height: min-content; display: flex; flex-direction: column; gap: var(--ob-gap); }
+.choice-grid--cards {
   flex: 1;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(min-content, 1fr));
@@ -193,7 +193,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   margin: -0.5rem;
 }
 
-.choice-grid--prizes .choice__body {
+.choice-grid--cards .choice__body {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
@@ -208,7 +208,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   color: var(--color-text);
   text-align: left;
 }
-.choice-grid--prizes .choice__art {
+.choice-grid--cards .choice__art {
   --art: clamp(2.25rem, 8.5vh, 6.5rem);
   grid-row: 1;
   width: var(--art);
@@ -218,9 +218,9 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   border-radius: clamp(0.625rem, 1.6vh, 1rem);
   background: var(--color-bg);
 }
-.choice-grid--prizes .choice__image { max-height: 80%; max-width: 80%; filter: none; }
-.choice-grid--prizes .choice__emoji { font-size: calc(var(--art) * 0.7); filter: none; }
-.choice-grid--prizes .choice__plate {
+.choice-grid--cards .choice__image { max-height: 80%; max-width: 80%; filter: none; }
+.choice-grid--cards .choice__emoji { font-size: calc(var(--art) * 0.7); filter: none; }
+.choice-grid--cards .choice__plate {
   grid-row: 1;
   display: flex;
   flex-direction: column;
@@ -232,31 +232,31 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   background: none;
   box-shadow: none;
 }
-.choice-grid--prizes .choice__name { color: var(--color-ink-blue); font-size: clamp(0.875rem, 2.2vh, 1.125rem); line-height: 1.12; overflow-wrap: break-word; }
-.choice-grid--prizes .choice__meta { padding: 0 var(--space-2); font-size: var(--text-sm); line-height: 1.35; }
-.choice-grid--prizes .choice__desc { display: none; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.25; }
-@media (min-width: 60rem) and (min-height: 44rem), (min-width: 40rem) and (min-height: 56rem) { .choice-grid--prizes .choice__desc { display: block; } }
+.choice-grid--cards .choice__name { color: var(--color-ink-blue); font-size: clamp(0.875rem, 2.2vh, 1.125rem); line-height: 1.12; overflow-wrap: break-word; }
+.choice-grid--cards .choice__meta { padding: 0 var(--space-2); font-size: var(--text-sm); line-height: 1.35; }
+.choice-grid--cards .choice__desc { display: none; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.25; }
+@media (min-width: 60rem) and (min-height: 44rem), (min-width: 40rem) and (min-height: 56rem) { .choice-grid--cards .choice__desc { display: block; } }
 /* A phone: three narrow columns, so each card stacks (emoji, name, hours) and is centered */
 @media (max-width: 39.99rem) {
-  .choice-grid--prizes { gap: 0.375rem; padding: 0.375rem; margin: -0.375rem; }
-  .choice-grid--prizes .choice__body { grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; row-gap: 0.125rem; padding: 0.375rem 0.25rem; text-align: center; }
-  .choice-grid--prizes .choice__art { --art: 2.5rem; grid-row: auto; background: none; }
-  .choice-grid--prizes .choice__plate { grid-row: auto; align-items: center; }
-  .choice-grid--prizes .choice__name { font-size: var(--text-sm); }
-  .choice-grid--prizes .choice__meta { align-self: center; padding: 0 var(--space-2); border-radius: 0.75rem; font-size: var(--text-sm); line-height: 1.2; text-align: center; }
-  .choice-grid--prizes .choice__input:checked + .choice__body::after { top: 0.125rem; right: 0.125rem; width: 1.25rem; height: 1.25rem; font-size: 0.75rem; }
+  .choice-grid--cards { gap: 0.375rem; padding: 0.375rem; margin: -0.375rem; }
+  .choice-grid--cards .choice__body { grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; row-gap: 0.125rem; padding: 0.375rem 0.25rem; text-align: center; }
+  .choice-grid--cards .choice__art { --art: 2.5rem; grid-row: auto; background: none; }
+  .choice-grid--cards .choice__plate { grid-row: auto; align-items: center; }
+  .choice-grid--cards .choice__name { font-size: var(--text-sm); }
+  .choice-grid--cards .choice__meta { align-self: center; padding: 0 var(--space-2); border-radius: 0.75rem; font-size: var(--text-sm); line-height: 1.2; text-align: center; }
+  .choice-grid--cards .choice__input:checked + .choice__body::after { top: 0.125rem; right: 0.125rem; width: 1.25rem; height: 1.25rem; font-size: 0.75rem; }
   .onboarding-page.container { padding-inline: 0.5rem; }
   .onboarding__panel { padding-inline: 0.75rem; }
   .onboarding-prize { gap: 0 var(--space-2); line-height: 1.2; }
   .toggle-group.days { gap: 2px; }
 }
 .onboarding__pair .field { align-content: start; }
-.choice-grid--prizes .choice__input:checked + .choice__body { background: var(--color-yellow); box-shadow: inset 0 -0.3rem 0 var(--color-yellow-edge); }
-.choice-grid--prizes .choice__input:checked + .choice__body .choice__desc { color: var(--color-text); }
-.choice-grid--prizes .choice__input:checked + .choice__body .choice__meta { background: var(--color-bg); }
-.choice-grid--prizes .choice__input:checked + .choice__body .choice__plate { background: none; }
-.choice-grid--prizes .choice__input:checked + .choice__body::after { top: 0.25rem; right: 0.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.875rem; }
-.choice-grid--prizes .choice:has(.choice__input:checked) { border-radius: clamp(0.875rem, 2.2vh, 1.4rem); }
+.choice-grid--cards .choice__input:checked + .choice__body { background: var(--color-yellow); box-shadow: inset 0 -0.3rem 0 var(--color-yellow-edge); }
+.choice-grid--cards .choice__input:checked + .choice__body .choice__desc { color: var(--color-text); }
+.choice-grid--cards .choice__input:checked + .choice__body .choice__meta { background: var(--color-bg); }
+.choice-grid--cards .choice__input:checked + .choice__body .choice__plate { background: none; }
+.choice-grid--cards .choice__input:checked + .choice__body::after { top: 0.25rem; right: 0.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.875rem; }
+.choice-grid--cards .choice:has(.choice__input:checked) { border-radius: clamp(0.875rem, 2.2vh, 1.4rem); }
 .onboarding__hint { flex: none; }
 
 /* "Working toward": a slim line; on a wide window it sits at the right of the heading row instead of taking a row of its own */
@@ -265,7 +265,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .onboarding__panel { position: relative; }
 
 /* Two widths in all: narrow (48rem) for the one-column steps, wide (64rem) for the prize grid and the two-column schedule */
-.onboarding-page:has(.choice-grid--prizes), .onboarding-page:has(.days) { --ob-fit-width: 64rem; }
+.onboarding-page:has(.choice-grid--cards), .onboarding-page:has(.days) { --ob-fit-width: 64rem; }
 .toggle-group--kinds .toggle__label { font-size: clamp(1rem, 2.4vh, 1.25rem); }
 .onboarding__legend { margin: 0 0 var(--space-2); font-size: clamp(1rem, 2.4vh, 1.25rem); }
 
@@ -496,31 +496,31 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 }
 @media (min-width: 40rem) { .onboarding-page { --card-r: var(--radius-lg); --card-pad: var(--space-3); } }
 .age-choice, .pace-choice { border-radius: var(--card-r); }
-.choice-grid--prizes .choice__body,
+.choice-grid--cards .choice__body,
 .choice-grid--kinds .choice__body {
   border-radius: var(--card-r);
   padding: var(--card-pad) var(--card-pad) calc(var(--card-pad) + var(--card-edge));
   box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--color-cream-edge);
   min-height: var(--tap-size);
 }
-.choice-grid--prizes .choice:has(.choice__input:checked), .choice-grid--kinds .choice:has(.choice__input:checked) { border-radius: var(--card-r); }
-.choice-grid--prizes .choice__input:checked + .choice__body,
+.choice-grid--cards .choice:has(.choice__input:checked), .choice-grid--kinds .choice:has(.choice__input:checked) { border-radius: var(--card-r); }
+.choice-grid--cards .choice__input:checked + .choice__body,
 .choice-grid--kinds .choice__input:checked + .choice__body { box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--color-yellow-edge); }
-.choice-grid--prizes { grid-template-rows: none; grid-auto-rows: 1fr; padding: 0; margin: 0; }
-.choice-grid--prizes .choice__art {
+.choice-grid--cards { grid-template-rows: none; grid-auto-rows: 1fr; padding: 0; margin: 0; }
+.choice-grid--cards .choice__art {
   --art: clamp(2.5rem, 8.5vh, 6.5rem);
   width: var(--art); height: var(--art); aspect-ratio: 1;
   border-radius: max(4px, calc(var(--card-r) - var(--card-pad)));
 }
-.choice-grid--prizes .choice__image { width: 80%; height: 80%; max-width: none; max-height: none; object-fit: contain; }
+.choice-grid--cards .choice__image { width: 80%; height: 80%; max-width: none; max-height: none; object-fit: contain; }
 /* one hierarchy: the name is the strong line; the hours and the description share one quiet style; all three share the left edge */
-.choice-grid--prizes .choice__plate { align-items: flex-start; text-align: left; }
-.choice-grid--prizes .choice__meta, .choice-grid--prizes .choice__desc {
+.choice-grid--cards .choice__plate { align-items: flex-start; text-align: left; }
+.choice-grid--cards .choice__meta, .choice-grid--cards .choice__desc {
   padding: 0; border-radius: 0; background: none;
   color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 500; line-height: 1.3;
 }
-.choice-grid--prizes .choice__input:checked + .choice__body :is(.choice__meta, .choice__desc) { background: none; color: var(--color-text); }
-.choice-grid--prizes .choice__input:checked + .choice__body .choice__plate { padding-inline-end: calc(var(--card-badge) + var(--space-1)); }
+.choice-grid--cards .choice__input:checked + .choice__body :is(.choice__meta, .choice__desc) { background: none; color: var(--color-text); }
+.choice-grid--cards .choice__input:checked + .choice__body .choice__plate { padding-inline-end: calc(var(--card-badge) + var(--space-1)); }
 /* the pick badge sits wholly inside the card, inset by the card's padding; its check is an inline SVG, centered in the circle */
 .choice-grid :is(.choice__input:checked + .choice__body)::after {
   content: "";
@@ -530,12 +530,12 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 }
 @media (max-width: 39.99rem) {
   .onboarding-page { --card-badge: 1.25rem; }
-  .choice-grid--prizes { gap: var(--space-2); }
-  .choice-grid--prizes .choice__body { padding: var(--card-pad) var(--space-1) calc(var(--card-pad) + var(--card-edge)); }
-  .choice-grid--prizes .choice__art { --art: 2.5rem; }
-  .choice-grid--prizes .choice__plate { align-items: center; text-align: center; }
-  .choice-grid--prizes .choice__input:checked + .choice__body .choice__plate { padding-inline-end: 0; }
-  .choice-grid--prizes .choice__meta { align-self: center; border-radius: 0; }
+  .choice-grid--cards { gap: var(--space-2); }
+  .choice-grid--cards .choice__body { padding: var(--card-pad) var(--space-1) calc(var(--card-pad) + var(--card-edge)); }
+  .choice-grid--cards .choice__art { --art: 2.5rem; }
+  .choice-grid--cards .choice__plate { align-items: center; text-align: center; }
+  .choice-grid--cards .choice__input:checked + .choice__body .choice__plate { padding-inline-end: 0; }
+  .choice-grid--cards .choice__meta { align-self: center; border-radius: 0; }
 }
 /* the reveal and the arrival: a picture tile in a card, with the same concentric rule (the card pads 24px) */
 .reveal__prize-image { border-radius: max(4px, calc(var(--radius-lg) - var(--space-6))); }
@@ -552,11 +552,11 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   --color-link-on-light: var(--color-blue-edge);
   --color-link-hover-on-light: var(--color-ink-blue);
   --color-sky-soft: var(--color-cool-tint-edge);
-  --ob-pink: var(--color-blue);
-  --ob-pink-edge: var(--color-blue-edge);
+  --ob-primary: var(--color-blue);
+  --ob-primary-edge: var(--color-blue-edge);
   --ob-cream: var(--color-surface);
 }
-.choice-grid--prizes .choice__input:checked + .choice__body,
+.choice-grid--cards .choice__input:checked + .choice__body,
 .choice-grid--kinds .choice__input:checked + .choice__body { background: var(--color-blue); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--color-blue-edge); color: var(--color-surface); }
 .choice-grid .choice__input:checked + .choice__body :is(.choice__name, .choice__meta, .choice__desc, .choice__emoji) { color: var(--color-surface); }
 .onboarding-page .btn--primary.btn--lg:focus-visible { outline-color: var(--color-ink-blue); }
@@ -586,10 +586,10 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .age-choice--primary:is(:hover, :focus-visible) { background: var(--pri-face-step); color: var(--pri-ink); }
 /* the pickers: every card rests secondary, the picked one is primary */
 .choice-grid :is(.choice__body) { background: var(--sec-face); color: var(--sec-ink); }
-.choice-grid--prizes .choice__body, .choice-grid--kinds .choice__body { background: var(--sec-face); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--sec-edge); }
+.choice-grid--cards .choice__body, .choice-grid--kinds .choice__body { background: var(--sec-face); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--sec-edge); }
 .choice-grid .choice:hover .choice__input:not(:checked) + .choice__body, .choice-grid .choice__input:not(:checked):focus-visible + .choice__body { background: var(--sec-face); box-shadow: none; }
 .choice-grid .choice__input:checked + .choice__body,
-.choice-grid--prizes .choice__input:checked + .choice__body,
+.choice-grid--cards .choice__input:checked + .choice__body,
 .choice-grid--kinds .choice__input:checked + .choice__body { background: var(--pri-face); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--pri-edge); color: var(--pri-ink); }
 .choice-grid .choice:hover .choice__input:checked + .choice__body { background: var(--pri-face-step); }
 @media (prefers-reduced-motion: no-preference) {
@@ -626,9 +626,9 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .onboarding-dock__image { display: block; width: 100%; height: 100%; object-fit: contain; }
 @media (max-width: 39.99rem) { .onboarding-dock { top: var(--space-2); left: var(--space-2); width: 5.75rem; height: 5.75rem; } }
 /* the picture tile is a step down from the white card, so it reads as a tile inside it (and white product shots do not vanish) */
-.choice-grid--prizes .choice__art { background: color-mix(in srgb, var(--color-cool-ground) 45%, var(--color-cool-tint)); }
-@media (max-width: 39.99rem) { .choice-grid--prizes .choice__art { background: none; } }
-.choice-grid--prizes .choice__input:checked + .choice__body .choice__art { background: var(--color-cool-tint); }
+.choice-grid--cards .choice__art { background: color-mix(in srgb, var(--color-cool-ground) 45%, var(--color-cool-tint)); }
+@media (max-width: 39.99rem) { .choice-grid--cards .choice__art { background: none; } }
+.choice-grid--cards .choice__input:checked + .choice__body .choice__art { background: var(--color-cool-tint); }
 
 /* ---- Motion: nothing snaps. The new question fades and rises in; a picked single-choice card turns primary over 150ms; Continue changes
    from off to on over 150ms; messages that appear fade in. Only opacity and translate move; all of it is off under reduced motion. ---- */
@@ -676,7 +676,7 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 
 .onboarding-page .choice__body,
 .onboarding-page .choice:is(:hover, :active) .choice__body { margin: 0; box-shadow: none; transition: none; }
-.onboarding-page .choice-grid--prizes .choice__body, .onboarding-page .choice-grid--kinds .choice__body { padding: var(--card-pad); }
+.onboarding-page .choice-grid--cards .choice__body, .onboarding-page .choice-grid--kinds .choice__body { padding: var(--card-pad); }
 .onboarding-page .choice-grid .choice:hover .choice__input:not(:checked) + .choice__body { background: var(--color-cool-hover); } /* hover: a slight blue tint, instantly; no ring, no outline */
 .onboarding-page .choice-grid .choice__input:checked + .choice__body { box-shadow: none; }
 .onboarding-page .choice__input:focus-visible + .choice__body { outline: 3px solid var(--color-focus-on-light); outline-offset: 2px; } /* the keyboard ring, never on mouse hover */
@@ -725,3 +725,34 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .onboarding-page .choice-grid .choice__input:checked + .choice__body { background: var(--pri-face); }
 .onboarding-page .choice-grid .choice:hover .choice__input:checked + .choice__body { background: var(--pri-face-step); }
 .onboarding-page .choice__input:checked + .choice__body .choice__meta, .onboarding-page .choice__input:checked + .choice__body .choice__desc { background: none; }
+
+/* ======================================================================================================================================
+   Single choice: the ONE block that styles every "pick one" question (age, prize, project kind, pace, editor), rendered by
+   onboardings/_choice_group. Two layouts only: rows (text options) and cards (the prize pictures). The picked look comes from the input's
+   :checked state (rules above); there is no check badge anywhere, the fill says it. Anatomy of a row: one height, one padding, one radius,
+   one gap; the label is vertically centered; the optional second line sits at the right on wide screens and stacked under the label on
+   narrow ones, with the pair centered as a block; the opt-out row is set apart by one extra gap.
+   ====================================================================================================================================== */
+.onboarding-page { --row-h: 4.25rem; --row-gap: var(--space-2); }
+.onboarding__panel:has(.choice-grid--rows):not(:has(.editor)) .onboarding__header { text-align: center; }
+.onboarding__panel > form:has(.choice-grid--rows), .onboarding__panel > form > .onboarding__fieldset:has(.choice-grid--rows) { flex: none; }
+.onboarding-page .choice-grid--rows { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; gap: var(--row-gap); width: 100%; max-width: 32rem; margin-inline: auto; padding: 0; }
+.onboarding-page .choice-grid--rows .choice--apart { margin-top: var(--space-3); }
+.onboarding-page .choice-grid--rows .choice__body {
+  box-sizing: border-box; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-3);
+  height: auto; min-height: var(--row-h); padding: 0 var(--space-4); border-radius: var(--radius-md); text-align: left;
+}
+.onboarding-page .choice-grid--rows .choice__name { margin: 0; color: var(--color-ink-blue); font-size: var(--text-lg); line-height: 1.2; text-align: left; }
+.onboarding-page .choice-grid--rows .choice__meta {
+  margin: 0; padding: 0; border-radius: 0; background: none; align-self: center;
+  color: var(--color-ink-blue); font-size: var(--text-sm); font-weight: 700; line-height: 1.25; text-align: right;
+}
+@media (max-width: 29.99rem) {
+  .onboarding-page .choice-grid--rows .choice__body { flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--space-1); }
+  .onboarding-page .choice-grid--rows .choice__meta { text-align: left; align-self: flex-start; }
+}
+
+/* Text never leaves a lone word on a line: headings balance, sub-lines and body wrap prettily, and a product name never breaks inside. */
+.onboarding__header h1, .transition__title, .pledge__heading { text-wrap: balance; }
+.onboarding__encouragement, .onboarding__hint, .onboarding__panel p { text-wrap: pretty; }
+.nowrap { white-space: nowrap; }

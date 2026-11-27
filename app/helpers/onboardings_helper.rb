@@ -238,7 +238,7 @@ module OnboardingsHelper
   # "About 14 days to your 8BitDo Pro 2" for a prize at a pace; nil when there is no paid prize to count toward.
   def onboarding_days_text(prize, minutes)
     days = onboarding_days_to_prize(prize, minutes)
-    "About #{pluralize(days, 'day')} to your #{prize.name}" if days
+    safe_join([ "About #{pluralize(days, 'day')} to your ", tag.span(prize.name, class: "nowrap") ]) if days
   end
 
   # "1 hour 30 minutes" for a daily pace given in minutes (the select's option text).

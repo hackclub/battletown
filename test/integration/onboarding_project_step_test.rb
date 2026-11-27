@@ -12,23 +12,6 @@ class OnboardingProjectStepTest < ActionDispatch::IntegrationTest
 
   def submit_idea(idea) = patch(onboarding_step_path("project"), params: { user: { project_kind: "game", project_idea: idea } })
 
-  test "the idea box hands its limit to the counter and has no maxlength that would count differently" do
-    visit_project_step
-    assert_select "form[data-controller~=onboarding-idea][data-onboarding-idea-max-value='500']"
-    assert_select "form[data-onboarding-idea-over-class]"
-    assert_select "textarea#user_project_idea[maxlength]", 0
-    assert_select "textarea#user_project_idea[data-onboarding-idea-target=field]"
-    assert_select "#project-idea-count[data-onboarding-idea-target=counter]", /0 of 500 characters/
-  end
-
-  test "every chip fills the box through the idea controller and is a real button" do
-    visit_project_step
-    assert_select "button.chip[type=button][data-action='onboarding-idea#fill']", OnboardingsHelper::IDEA_PRESETS.size
-    OnboardingsHelper::IDEA_PRESETS.each do |preset|
-      assert_select "button.chip[data-onboarding-idea-text-param=?]", preset
-    end
-  end
-
   test "the server limit is 500 characters, not bytes, counted after stripping surrounding whitespace" do
     visit_project_step
     submit_idea("  #{"a" * 500}\n ")
