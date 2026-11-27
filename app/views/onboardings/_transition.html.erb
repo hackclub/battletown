@@ -1,31 +1,15 @@
 <%# locals: (kind:) -%>
 <%# A full-screen moment over a step: the welcome splash ("welcome") or the "others like you" message after the prize
-    ("prize") and project ("project") steps. All timing is CSS (see onboarding.css); the transition controller only lets
+    (the "others like you" ones are off for now). All timing is CSS (see onboarding.css); the transition controller only lets
     people skip it (a click, or any key except browser shortcuts). Hidden from assistive tech on purpose: the frame says the same
     thing in .onboarding-note, so a screen reader hears it once, in the page, and not twice. The words are plain (no arrows),
     so they read the same with the pictures gone. %>
-<% proof = kind == "welcome" ? nil : onboarding_proof(kind) %>
-<div class="transition transition--<%= kind == "welcome" ? "welcome" : "proof" %>" data-turbo-temporary data-onboarding-transition-target="overlay"
+<div class="transition transition--welcome" data-turbo-temporary data-onboarding-transition-target="overlay"
      data-action="click->onboarding-transition#skip" aria-hidden="true">
   <div class="transition__body">
-    <% if proof %>
-      <% prize = proof[:prize] %>
-      <% if prize ? prize.image.present? : proof[:emoji] %>
-        <div class="transition__badge">
-          <% if prize %>
-            <%= image_tag prize.image, alt: "", class: "transition__badge-image" %>
-          <% else %>
-            <span class="transition__badge-emoji"><%= proof[:emoji] %></span>
-          <% end %>
-        </div>
-      <% end %>
-      <p class="transition__title"><%= proof[:headline] %></p>
-      <p class="transition__sub"><%= proof[:body] %></p>
-    <% else %>
-      <p class="transition__kicker">Welcome to</p>
-      <%= image_tag "design/logo.svg", alt: "", class: "transition__logo", width: 580, height: 341 %>
-      <p class="transition__title">Make projects, take down the boss, get gear</p>
-    <% end %>
+    <p class="transition__kicker">Welcome to</p>
+    <%= image_tag "design/logo.svg", alt: "", class: "transition__logo", width: 580, height: 341 %>
+    <p class="transition__title">Make projects, take down the boss, get gear</p>
     <p class="transition__hint">Click anywhere to skip</p>
   </div>
 </div>

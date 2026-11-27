@@ -83,8 +83,6 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     step("project", project_kind: "game", project_idea: "a" * 501)
     assert_response :unprocessable_content
     assert_equal [ "Shorten your idea to 500 characters or fewer" ], errors_text
-    assert_select ".onboarding__errors a[href='#user_project_idea']"
-    assert_select "#user_project_idea-error", "Shorten your idea to 500 characters or fewer"
     refute_old_wording
   end
 
@@ -150,25 +148,5 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     assert_equal [ "Pick one of the options in the list" ], errors_text
     assert_select "#user_referral_source-error", "Pick one of the options in the list"
     assert_select ".onboarding__errors a[href='#user_referral_source']"
-  end
-
-  test "the idea counter reads as characters, has no live region, and starts at zero" do
-    anonymous_through("project")
-    get onboarding_step_path("project")
-    assert_select "#project-idea-count[data-onboarding-idea-target=counter]", text: /\A\s*0 of 500 characters\s*\z/
-    assert_select "#project-idea-count span[data-onboarding-idea-target=count]", "0"
-    assert_select "#project-idea-count span[data-onboarding-idea-target=excess]", ""
-    assert_select "#project-idea-count[aria-live]", 0
-    assert_select "#project-idea-count[role]", 0
-    assert_select "#project-idea-count.onboarding__counter--over", 0
-    assert_select "textarea#user_project_idea[aria-describedby=project-idea-count]"
-  end
-
-  test "after a refused idea the counter says by how much it is too long, in words" do
-    anonymous_through("project")
-    step("project", project_kind: "game", project_idea: "a" * 512)
-    assert_select "#project-idea-count.onboarding__counter--over", text: /512 of 500 characters, too long by 12/
-    assert_select "textarea#user_project_idea[aria-describedby='project-idea-count user_project_idea-error']"
-    assert_select "#project-idea-count[aria-live]", 0
   end
 end

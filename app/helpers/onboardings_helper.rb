@@ -4,7 +4,7 @@ module OnboardingsHelper
     "prize" => { label: "Prize", title: "Pick your prize", encouragement: "Every hour you code gets you closer. Choose what you're working toward.", progress: "onboarding progress (the fun part: picking a prize)" },
     "project" => { label: "Project", title: "What are you making?", encouragement: "Nothing here is binding. You can change your mind later.", progress: "onboarding progress (nearly halfway there)" },
     "schedule" => { label: "Schedule", title: "When do you want to code?", encouragement: "Small, regular sessions beat big, rare ones. We'll nudge you on Slack.", progress: "onboarding progress (past halfway now)" },
-    "signup" => { label: "Sign up", title: "Lock in your plan", encouragement: "One quick sign-in with Hack Club and you're on the board. Your picks come with you.", progress: "onboarding progress (one quick sign in to go)" },
+    "signup" => { label: "Sign up", title: "Sign your pledge", encouragement: nil, progress: "onboarding progress (one quick sign in to go)" },
     "account" => { label: "Account", title: "Connect Hackatime", encouragement: "One last thing: Hackatime counts your coding time, so your hours show up on their own.", progress: "onboarding progress (almost done)" },
     "celebrate" => { label: "Go!", title: "You're in!", encouragement: "The town is better with you in it.", progress: "onboarding progress (done, you made it!)" }
   }.freeze
@@ -192,6 +192,29 @@ module OnboardingsHelper
   # The saved prize, so a rejected form submission can't change what the header shows.
   def onboarding_saved_prize = Prize.find(subject.prize_key_in_database)
 
+  # The six prizes the pick step shows first: config/game.yml `onboarding.featured_prizes` (shop item keys, in order). When the list is
+  # missing, short, or names a prize that is gone or archived, six are spread across the hours range instead (cheapest, dearest, four between).
+  FEATURED_PRIZE_COUNT = 6
+
+  def onboarding_featured_prizes
+    paid = Prize.paid
+    keys = Array(Rails.application.config_for(:game).dig(:onboarding, :featured_prizes)).map(&:to_s)
+    listed = keys.filter_map { |key| paid.find { |prize| prize.key == key } }.uniq
+    return listed.first(FEATURED_PRIZE_COUNT) if listed.size >= FEATURED_PRIZE_COUNT && listed.size == keys.size
+
+    sorted = paid.sort_by { |prize| [ prize.coins, prize.position ] }
+    return sorted if sorted.size <= FEATURED_PRIZE_COUNT
+
+    Array.new(FEATURED_PRIZE_COUNT) { |i| sorted[(i * (sorted.size - 1) / (FEATURED_PRIZE_COUNT - 1.0)).round] }.uniq
+  end
+
+  # The placeholder pictures of these shop items have wide transparent margins, so the pick step crops them to their content (the boxes are
+  # in onboarding_world.css, `.choice__crop--<key>`) and every product reads equally large. Delete the keys with the placeholder art: real art
+  # on the same key would be cropped to the wrong box. Any other picture is shown whole.
+  PRIZE_CROPPED = %w[headphones sticker_pack poster].freeze
+
+  def onboarding_prize_crop(prize) = (prize.key if PRIZE_CROPPED.include?(prize.key))
+
   def onboarding_prize_selection
     picked = subject.prize_key || session[:prize_key]
     picked if Prize.paid.any? { |prize| prize.key == picked } # an archived item can't be re-picked
@@ -235,10 +258,29 @@ module OnboardingsHelper
     [ (seconds / (minutes * 60)).ceil, 1 ].max
   end
 
+  # The pledge sentence, built only from what the person answered: the pace in human units, the prize by name, and the days the same arithmetic as the
+  # pace step gives. Parts nobody answered are left out (no invented pace, no invented prize).
+  def onboarding_pledge_sentence(subject)
+    prize = subject.prize
+    minutes = subject.pace.to_i
+    pace = "#{pace_text(minutes)} a day" if minutes.positive?
+    days = onboarding_days_to_prize(prize, minutes) if minutes.positive?
+    mark = ->(text) { tag.span(text, class: "pledge__mark") }
+    parts = [ "I'll code " ]
+    return "I'll show up and code." unless pace
+
+    parts << mark.(pace)
+    if prize
+      parts += [ " and earn my ", tag.span(prize.name, class: "pledge__mark nowrap") ]
+      parts += [ " in about ", mark.(pluralize(days, "day")) ] if days
+    end
+    safe_join(parts << ".")
+  end
+
   # "About 14 days to your 8BitDo Pro 2" for a prize at a pace; nil when there is no paid prize to count toward.
   def onboarding_days_text(prize, minutes)
     days = onboarding_days_to_prize(prize, minutes)
-    "About #{pluralize(days, 'day')} to your #{prize.name}" if days
+    safe_join([ "About #{pluralize(days, 'day')} to your ", tag.span(prize.name, class: "nowrap") ]) if days
   end
 
   # "1 hour 30 minutes" for a daily pace given in minutes (the select's option text).

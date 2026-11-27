@@ -54,7 +54,8 @@ class LandingSystemTest < ApplicationSystemTestCase
     find("label.choice", text: "1 hour").click
 
     assert_current_path "/onboarding/signup"
-    click_button "Sign up with Hack Club"
+    button = find(".pledge__hold")
+    page.driver.browser.action.click_and_hold(button.native).pause(duration: 1.6).release.perform # holding signs
     assert_current_path "/onboarding/account"
     assert_equal 1, User.where(hca_uid: "ident!system-test").count
     assert_equal "game", User.find_by!(hca_uid: "ident!system-test").project_kind
@@ -84,7 +85,7 @@ class LandingSystemTest < ApplicationSystemTestCase
     assert_selector "input[type=radio]:checked", count: 1
     assert_equal "120", find("input[type=radio]:checked", visible: :all).value
     white = "rgb(255, 255, 255)"
-    %w[.pace-choice__time .pace-choice__days].each do |line|
+    %w[.choice__name .choice__meta].each do |line|
       assert_equal white, page.evaluate_script("getComputedStyle(document.querySelector('input:checked + .choice__body #{line}')).color")
     end
     assert_no_selector "[class*=is-picked]"

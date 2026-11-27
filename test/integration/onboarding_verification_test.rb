@@ -71,8 +71,8 @@ class OnboardingVerificationTest < ActionDispatch::IntegrationTest
 
     get onboarding_step_path("signup")
     assert_response :success
-    assert_select ".checks p", "Signing in with Hack Club takes a few seconds and gets you a free sticker."
-    assert_select "button", "Sign up with Hack Club"
+    assert_select ".pledge__fine", "Free sticker when you sign up."
+    assert_select "button", /Hold to sign with Hack Club/
     assert_no_match(/verif|identity/i, css_select("main").text)
   end
 

@@ -38,35 +38,33 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
     File.write(File.join(dir, "#{name}.html"), response.body) if dir.present?
   end
 
-  test "the reveal shows the prize with its hours, the pace as days of coding, the project kind and this week's boss, and sign-in keeps it" do
-    make_boss
+  test "the sign-up step is a pledge built from the answers, with one hold-to-sign button that sends the same sign-up request" do
     visitor_to_reveal
     get onboarding_step_path("signup")
     assert_response :success
-    assert_select "#onboarding-prize-dock", 0 # the reveal shows the prize itself, not the slim line
-    assert_select ".reveal__plan" do
-      assert_select "dd", /Battletown T-shirt|8BitDo Pro 2/
-      assert_select "dd", /Game/
-      assert_select "dd", /60 minutes a day/
-      assert_select ".reveal__estimate", /About \d+ days? to your .+\. This is an estimate\./
-    end
-    assert_select ".reveal__boss .reveal__boss-name", "Funnel Boss"
-    assert_select ".reveal__boss", /100% left|Full health|health/i
-    assert_select "form[action='/auth/hack_club'] button", /Sign up with Hack Club/
-    save_shot("reveal")
+    assert_select "h1", "Sign your pledge"
+    assert_select ".pledge__text", /\AI'll code 1 hour a day and earn my .+ in about \d+ days?\.\z/
+    assert_select ".pledge__text .pledge__mark", 3
+    assert_select ".pledge__rules a[href='#{terms_path}']", "rules"
+    assert_select ".pledge__signature .pledge__name", 0 # nobody has signed yet; the line keeps its room
+    assert_select "form[action='/auth/hack_club'][method=post][data-turbo=false] button.btn--raised", /Hold to sign with Hack Club/
+    assert_select "button.btn--raised", 1
+    %w[reveal__plan reveal__boss celebration__summary checks].each { |gone| assert_select ".#{gone}", 0 }
+    save_shot("pledge")
   end
 
-  test "the reveal is honest when there is no boss: no boss block and no made-up one" do
-    visitor_to_reveal
-    get onboarding_step_path("signup")
-    assert_response :success
-    assert_select ".reveal__boss", 0
+  test "with no pace the pledge makes no promise about hours, and with a pace but no prize it names none" do
+    helpers = ApplicationController.helpers
+    none = Struct.new(:pace, :prize).new(nil, nil)
+    assert_equal "I'll show up and code.", helpers.onboarding_pledge_sentence(none).to_str
+    no_prize = Struct.new(:pace, :prize).new(120, nil)
+    assert_equal "I'll code 2 hours a day.", CGI.unescapeHTML(helpers.onboarding_pledge_sentence(no_prize).to_str.gsub(/<[^>]+>/, ""))
   end
 
-  test "the days of coding on the reveal are the same arithmetic the dashboard uses for a new person on that plan" do
+  test "the days in the pledge are the same arithmetic the dashboard uses for a new person on that plan" do
     visitor_to_reveal(pace: "120")
     get onboarding_step_path("signup")
-    shown = css_select(".reveal__estimate").first.text[/\d+/].to_i
+    shown = css_select(".pledge__text .pledge__mark").last.text[/\d+/].to_i
 
     sign_in_as User.new(hca_uid: "ident!reveal1")
     user = User.find_by!(hca_uid: "ident!reveal1")
@@ -75,21 +73,19 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
     assert_equal shown, (Date.new(presenter.today_date.year, date.month, date.day) - presenter.today_date).to_i
   end
 
-  test "the arrival shows the chosen prize, this week's boss and the one first thing, from what the dashboard has" do
-    make_boss(name: "Arrival Boss")
+  test "the last step has no pledge, only the way in" do
     visitor_to_reveal
     sign_in_as User.new(hca_uid: "ident!arrive1")
     user = User.find_by!(hca_uid: "ident!arrive1")
+    user.update!(display_name: "Ada Lovelace")
     connect_hackatime(user, uid: "9101")
     step("account")
     follow_redirect!
     get onboarding_step_path("celebrate")
     assert_response :success
-    assert_select ".arrival__prize .arrival__name"
-    assert_select ".reveal__boss-name", "Arrival Boss"
-    assert_select ".arrival__first .arrival__name"
+    assert_select ".pledge__text", 0
     assert_select "button", "Enter Battletown"
-    assert_select ".celebration__summary", 0 # the recap table is gone
+    assert_select ".arrival, .reveal__boss, .celebration__summary", 0
     save_shot("arrival")
   end
 

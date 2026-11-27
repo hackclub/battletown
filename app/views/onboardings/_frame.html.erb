@@ -63,7 +63,7 @@
 
         <header class="onboarding__header">
           <h1 tabindex="-1" data-onboarding-step-target="heading"><span class="onboarding__title"><%= title || copy[:title] %></span></h1>
-          <p class="lead onboarding__encouragement" id="onboarding-lead"><%= encouragement || copy[:encouragement] %></p>
+          <% if (lead = encouragement || copy[:encouragement]).present? %><p class="lead onboarding__encouragement" id="onboarding-lead"><%= lead %></p><% end %>
         </header>
 
         <%= yield %>

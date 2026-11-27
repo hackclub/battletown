@@ -1,0 +1,10 @@
+<%# locals: (subject:, name: nil) -%>
+<%# The pledge: one sentence built from the person's own answers (the parts they filled in are marked in blue), one short line for the rules,
+    and a signature line that keeps its room, so nothing shifts when a name goes on it. %>
+<div class="pledge__body">
+  <p class="pledge__text"><%= onboarding_pledge_sentence(subject) %></p>
+  <p class="pledge__rules">I'll follow the <%= link_to "rules", terms_path %> and stick to it.</p>
+  <div class="pledge__signature">
+    <% if name.present? %><span class="pledge__name" style="--chars: <%= name.length %>"><%= name %></span><% end %>
+  </div>
+</div>

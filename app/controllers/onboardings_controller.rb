@@ -5,7 +5,7 @@ class OnboardingsController < ApplicationController
   # Steps a signed-in user has no need for: the age gate is for visitors, and they are already signed up.
   SKIPPED_WHEN_SIGNED_IN = %w[age signup].freeze
   # Saving these plays a short "N others picked this too" transition over the next step (see OnboardingProof).
-  PROOF_AFTER = %w[prize project].freeze
+  PROOF_AFTER = [].freeze # the "others like you" splashes are off until the new answer screens replace them
 
   PERMITTED = {
     "age" => [],
@@ -28,11 +28,14 @@ class OnboardingsController < ApplicationController
 
   # Sends the user to the furthest step they have unlocked.
   def show
+    session[:pledge_moment] = true if signed_in? && !current_user.onboarded? # the way back from Hack Club sign-in lands here: show the signed pledge first
     redirect_to onboarding_step_path(current_user&.onboarded? ? STEPS.fetch(first_index) : STEPS.fetch(unlocked_index))
   end
 
   def step
     @transition = transition_for_step
+    return render "pledge_signed" if @step == "account" && signed_in? && !current_user.onboarded? && session.delete(:pledge_moment)
+
     render @step
   end
 

@@ -1,7 +1,6 @@
 <%# The first-run schedule step: one question, how long a coding day is. Days and time are not asked: they are sent with
     the answer (the days the person already has, else every day; the time they have, else 6 pm) so the same back end
-    accepts them. Each choice is a submit button, so a tap answers and moves on, and a keyboard moves through them
-    without submitting. The time zone is the browser's own, sent in a hidden field. %>
+    accepts them. The pace is the shared single-choice question: a pick answers and moves on. The time zone is the browser's own, sent in a hidden field. %>
 <% prize = onboarding_saved_prize if subject.prize_key_in_database.present? %>
 <% days = subject.coding_day_names.presence || User::DAYS %>
 <%= form_with model: subject, scope: :user, url: onboarding_step_path("schedule"), method: :patch, data: { controller: "browser-time-zone" } do |f| %>
@@ -11,20 +10,10 @@
   <%= tag.fieldset class: "onboarding__fieldset", aria: onboarding_aria(:pace_minutes, id: "pace").slice(:describedby) do %>
     <legend class="visually-hidden">Daily pace</legend>
     <%= onboarding_field_error(:pace_minutes, id: "pace") %>
-    <%# One native radio group: the browser keeps one pick, restores it on Back, and moves with the arrow keys. The look of a pick comes only from :checked. %>
-    <div class="choice-grid pace-choices">
-      <% OnboardingsHelper::ONBOARDING_PACES.each_with_index do |minutes, index| %>
-        <label class="choice">
-          <%= radio_button_tag "user[pace_minutes]", minutes, subject.pace_minutes == minutes, id: (index.zero? ? "user_pace_minutes" : "user_pace_minutes_#{minutes}"), class: "choice__input", data: { action: "change->onboarding-step#choose" } %>
-          <span class="choice__body pace-choice">
-            <span class="pace-choice__time"><%= pace_text(minutes) %></span>
-            <% if (line = onboarding_days_text(prize, minutes)) %><span class="pace-choice__days"><%= line %></span><% end %>
-          </span>
-        </label>
-      <% end %>
-    </div>
+    <%= render "onboardings/choice_group", name: "user[pace_minutes]", options: OnboardingsHelper::ONBOARDING_PACES.each_with_index.map { |minutes, index|
+          { value: minutes, label: pace_text(minutes), detail: onboarding_days_text(prize, minutes), checked: subject.pace_minutes == minutes,
+            id: (index.zero? ? "user_pace_minutes" : "user_pace_minutes_#{minutes}") } } %>
   <% end %>
-  <noscript><div class="onboarding__actions"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div></noscript>
 
   <%# No time zone is asked: the browser reports its own, and the server maps and checks it. %>
   <%= hidden_field_tag "user[time_zone]", subject.time_zone, id: nil, data: { browser_time_zone_target: "field" } %>

@@ -4,7 +4,7 @@ require "test_helper"
 # a picked card). These checks keep a white-on-light rule from coming back (it did, three times, when the ground changed).
 class DesignSystem::OnboardingThemeTest < ActiveSupport::TestCase
   LIGHT_TEXT = /(?<![-\w])color:\s*(var\(--color-bg\)|var\(--color-surface\)|var\(--ob-cream\)|var\(--color-cream\)|#fff\w*|white)/
-  ON_BLUE = /btn--primary|:checked|aria-pressed|age-choice:hover|pace-choice/
+  ON_BLUE = /btn--primary|:checked|aria-pressed/
 
   test "no onboarding rule sets white or cream text except on the blue fills" do
     css = Rails.root.join("app/assets/stylesheets/onboarding_world.css").read
