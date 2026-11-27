@@ -258,6 +258,7 @@ module OnboardingsHelper
     minutes = subject.pace.to_i
     pace = "#{pace_text(minutes)} a day" if minutes.positive?
     days = onboarding_days_to_prize(prize, minutes) if minutes.positive?
+    days = nil if prize && minutes.positive? && !Onboarding::DailyTime.reachable?(prize.hours, minutes) # past the end of the program: no day count
     mark = ->(text) { tag.span(text, class: "pledge__mark nowrap") }
     parts = [ "I'll code " ]
     return "I'll show up and code." unless pace
@@ -273,7 +274,10 @@ module OnboardingsHelper
   # "About 14 days to your 8BitDo Pro 2" for a prize at a pace; nil when there is no paid prize to count toward.
   def onboarding_days_text(prize, minutes)
     days = onboarding_days_to_prize(prize, minutes)
-    safe_join([ "About #{pluralize(days, 'day')} to your ", tag.span(prize.name, class: "nowrap") ]) if days
+    return unless days
+    return safe_join([ "Not in time for your ", tag.span(prize.name, class: "nowrap"), " by the end of the program" ]) unless Onboarding::DailyTime.reachable?(prize.hours, minutes)
+
+    safe_join([ "About #{pluralize(days, 'day')} to your ", tag.span(prize.name, class: "nowrap") ])
   end
 
   # "1 hour 30 minutes" for a daily pace given in minutes (the select's option text).

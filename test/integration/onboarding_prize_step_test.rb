@@ -47,6 +47,16 @@ class OnboardingPrizeStepTest < ActionDispatch::IntegrationTest
     assert_select "input[type=radio][value=tshirt][checked]"
   end
 
+  test "with an end date set a card says the time a day, and with none it says the total hours" do
+    get onboarding_step_path("prize")
+    assert_select ".option-card__note", /\Aabout \d+ hours?\z/
+    ENV["ONBOARDING_PROGRAM_ENDS_ON"] = (Time.zone.today + 29).iso8601
+    get onboarding_step_path("prize")
+    assert_select ".option-card__note", /a day\z/
+  ensure
+    ENV.delete("ONBOARDING_PROGRAM_ENDS_ON")
+  end
+
   private
 
   def with_featured_config(list)

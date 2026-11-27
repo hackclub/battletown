@@ -8,7 +8,7 @@
       <% selected = onboarding_prize_selection %>
       <% options = ->(list) { list.map { |prize|
             { value: prize.key, label: prize.name, id: "user_prize_key_#{prize.key}", checked: prize.key == selected, image: prize.image,
-              meta: onboarding_hours_text(prize) } } } %>
+              meta: onboarding_prize_meta(prize) } } } %>
       <% featured = onboarding_featured_prizes %>
       <% rest = Prize.paid - featured %>
       <%= render "onboardings/choice_group", layout: :cards, name: "user[prize_key]", options: options.call(featured), submit: rest.empty? %>
