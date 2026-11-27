@@ -131,14 +131,13 @@
         <button type="button" class="btn btn--lg">Large secondary</button>
       </div>
       <button type="button" class="btn btn--primary btn--block">Block button (full width)</button>
-      <p class="sg-note">The landing's wrapped cream CTA (Figma 138:172) is the <code>.cta</code> markup in <code>landing.css</code>:</p>
-      <div class="sg-row"><button type="button" class="cta"><span class="cta__face"><span class="cta__label">Join 150 other fighters</span><svg class="cta__arrow" viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg></span></button></div>
     </div>
     <h3>Raised (use sparingly)</h3>
     <div class="sg-demo">
-      <p class="sg-note">The animated 3D slab is opt-in with <code>btn--raised</code> and is only for the landing sign-up buttons (the hero and the final one, which use <code>.cta</code>) and the onboarding "Sign in with Hack Club". On hover the face rises and on press it sinks over a base that never moves. Do not use it for ordinary buttons.</p>
+      <p class="sg-note">The one raised button is <code>.slab-btn</code> (components.css), used by the landing sign-up buttons (pink) and the onboarding hold-to-sign (blue). The element is the base, a darker shade of the face's own color that never moves; the <code>.slab-btn__face</code> inside rises on hover and sinks on press. Color it with <code>--slab-face</code>, <code>--slab-base</code> and <code>--slab-fg</code>; size it with the font size. Do not use it for ordinary buttons.</p>
       <div class="sg-row">
-        <button type="button" class="btn btn--primary btn--lg btn--raised">Raised primary <%= arrow %></button>
+        <button type="button" class="slab-btn sg-slab"><span class="slab-btn__face">Raised pink</span></button>
+        <button type="button" class="slab-btn sg-slab sg-slab--blue"><span class="slab-btn__face">Raised blue</span></button>
       </div>
     </div>
     <h3>On a map band (focus ring flips to cream)</h3>

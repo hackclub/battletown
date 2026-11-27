@@ -5,12 +5,14 @@
     <%# Holding the button signs the pledge, and signing the pledge is signing in with Hack Club: the hold sends the same sign-up request the plain
         button did. A plain press works without JavaScript and with reduced motion. %>
     <div class="pledge__sign" data-controller="pledge-hold">
-      <%= button_to "/auth/hack_club", method: :post, class: "btn btn--primary btn--lg btn--raised pledge__hold",
+      <%= button_to "/auth/hack_club", method: :post, class: "slab-btn pledge__hold",
             form: { data: { turbo: false, pledge_hold_target: "form" } },
             data: { pledge_hold_target: "button",
                     action: "pointerdown->pledge-hold#start pointerup->pledge-hold#end pointercancel->pledge-hold#end pointerleave->pledge-hold#end keydown->pledge-hold#key keyup->pledge-hold#keyEnd click->pledge-hold#click contextmenu->pledge-hold#click" } do %>
-        <span class="pledge__clip" aria-hidden="true"><span class="pledge__fill"></span></span>
-        <span class="pledge__label">Hold to sign with Hack Club</span>
+        <span class="slab-btn__face pledge__face">
+          <span class="pledge__clip" aria-hidden="true"><span class="pledge__fill"></span></span>
+          <span class="pledge__label">Hold to sign with Hack Club</span>
+        </span>
       <% end %>
       <p class="pledge__hint" aria-live="polite" data-pledge-hold-target="hint">Press and hold to sign.</p>
     </div>

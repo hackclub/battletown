@@ -534,7 +534,7 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 
 /* ======================================================================================================================================
    Flat by default, vertical rows for text options, the body font on everything but headings and buttons, hard shadows only.
-   One raised slab is allowed in the onboarding: the reveal's "Sign up with Hack Club" (.btn--raised). Everything else is a flat fill:
+   One raised slab is allowed in the onboarding: the hold-to-sign button (.slab-btn). Everything else is a flat fill:
    no darker bottom edge, no rise, no sink. Hover is a one-step fill change plus a thick inner ring, with no transition at all.
    ====================================================================================================================================== */
 .onboarding-page { --card-edge: 0px; }
@@ -601,9 +601,15 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 }
 .pledge__day { font-size: var(--text-lg); font-weight: 700; color: var(--color-ink-blue); }
 .pledge__sign { display: grid; justify-items: center; gap: var(--space-2); width: 100%; }
-.pledge__hold { position: relative; width: 100%; max-width: 24rem; justify-content: center; overflow: visible; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+/* the hold-to-sign button is the shared .slab-btn (components.css) in the page's blue; the fill runs inside the face, clipped to its rounded shape, so it moves with the face */
+.pledge__hold {
+  --slab-face: var(--color-blue); --slab-base: var(--color-blue-edge); --slab-fg: var(--color-primary-contrast); --slab-focus: var(--color-ink-blue);
+  width: 100%; max-width: 26rem; font: 400 clamp(1.25rem, 5.4vw, 1.625rem)/1 var(--font-display); letter-spacing: -0.05em;
+  -webkit-user-select: none; user-select: none; touch-action: manipulation;
+}
+.pledge__face { flex: 1 1 auto; justify-content: center; }
 .pledge__clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
-.pledge__fill { position: absolute; inset: 0; transform-origin: left center; transform: scaleX(var(--hold, 0)); background: color-mix(in srgb, var(--btn-bg) 70%, var(--color-ink-blue)); }
+.pledge__fill { position: absolute; inset: 0; transform-origin: left center; transform: scaleX(var(--hold, 0)); background: color-mix(in srgb, var(--slab-face) 70%, var(--color-ink-blue)); }
 .pledge__label { position: relative; }
 .pledge__hint { font-size: var(--text-sm); color: var(--color-ink-blue); min-height: 1.25em; }
 .pledge__fine { font-size: var(--text-sm); color: var(--color-text-muted); }
