@@ -35,8 +35,8 @@
 /* Room around the heading and the cards (64rem up): a clear gap between the pillar's foot and "Pick a prize" (50 wu more above), and 30 wu
    more under the cards, which is the gap between the lowest card row and the shore curve (the sand piece hangs from the next section's top). */
 @media (min-width: 64rem) {
-  .landing .prizes .slab > .in { padding-top: calc(clamp(2.5rem, 5vw, 4.5rem) + var(--wu) * 50); padding-bottom: calc(var(--next, 0px) + clamp(3rem, 6vw, 5rem) + var(--wu) * 30); }
+  .landing .prizes .slab > .in { padding-top: calc(clamp(2.5rem, 5vw, 4.5rem) + var(--wu) * 50); padding-bottom: calc(var(--next, 0px) + clamp(var(--space-12), 6vw, 5rem) + var(--wu) * 30); }
 }/* Tablets: the lowest card row came within 25 px of the shore curve, so they get 70 wu more under the cards. */
 @media (min-width: 48rem) and (max-width: 63.99rem) {
-  .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) + clamp(3rem, 6vw, 5rem) + var(--wu) * 70); }
+  .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) + clamp(var(--space-12), 6vw, 5rem) + var(--wu) * 70); }
 }

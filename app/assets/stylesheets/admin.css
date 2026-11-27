@@ -12,7 +12,7 @@
 .admin-page.admin-only > .admin-back { margin-top: 0; }
 .admin-back { font-weight: 700; }
 .admin-back a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
-.admin-page h1, .dev-page h1 { font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem); }
+.admin-page h1, .dev-page h1 { font-size: clamp(var(--text-xl), 1.2rem + 2.4vw, var(--text-2xl)); }
 .admin-page h2, .dev-page h2 { font-size: var(--text-lg); }
 .admin-page h3 { font-size: var(--text-base); letter-spacing: 0; }
 .admin-dashboard__note, .dev-page__note { max-width: 48rem; color: var(--staff-ink); font-weight: 500; }
@@ -27,7 +27,7 @@
 .dev-page .card, .dev-page .table-wrap { border-bottom-color: var(--color-dev); color: var(--color-text); }
 
 /* Dashboard: section links as tappable cards (the heading link stretches over the whole card), then the stat tiles. */
-.admin-sections__title { margin: 1.5rem 0 0.5rem; font-size: 1.125rem; }
+.admin-sections__title { margin: var(--space-6) 0 var(--space-2); font-size: 1.125rem; }
 .admin-sections__title:first-child { margin-top: 0; }
 .admin-links { --grid-min: 14rem; margin: 0; padding: 0; list-style: none; }
 .admin-link { position: relative; display: grid; gap: var(--space-2); align-content: start; }

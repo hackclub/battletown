@@ -314,7 +314,7 @@
 
   /* Wavy cap above a band (like the pale wave on top of the map, Figma 152:469): the band's own colour is masked into
      a wave (design/wave-top.svg) that sits on the edge of the section above. Add .band--wave to the band. */
-  .band--wave { margin-top: clamp(2rem, 6vw, 5rem); }
+  .band--wave { margin-top: clamp(var(--space-8), 6vw, 5rem); }
   .band--wave::before {
     content: "";
     position: absolute;

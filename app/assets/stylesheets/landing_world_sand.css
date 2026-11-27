@@ -25,7 +25,7 @@
 
 /* The heading sits on the sand above the list, at the content column's left edge, as in the painting. landing.css
    hung it off the old river bank with a negative top. */
-.landing .faq__head { position: relative; left: auto; top: auto; translate: none; margin-bottom: 1.5rem; }
+.landing .faq__head { position: relative; left: auto; top: auto; translate: none; margin-bottom: var(--space-6); }
 
 /* The section's own height: sand under the list for the final band's overlap (it reaches up 200 design px), plus on
    phones room for the lower shell. */
@@ -34,7 +34,7 @@
 /* Phones and tablets: the list fills the width, so the shells sit where it is not. The upper one peeks in from the right above the
    heading, the lower one from the left below the list, both cut by the window edge and never under text. */
 @media (max-width: 63.99rem) {
-  .landing .faq .slab > .in { padding-bottom: calc(var(--wu) * 230 + 3rem); }
+  .landing .faq .slab > .in { padding-bottom: calc(var(--wu) * 230 + var(--space-12)); }
   .landing .world--sand .world__shell--1 { left: calc(100% - 4.7rem); top: 0.25rem; width: 5.5rem; }
   .landing .world--sand .world__shell--2 { left: -0.9rem; top: auto; bottom: calc(var(--wu) * 150 + 0.5rem); width: 5.25rem; }
 }

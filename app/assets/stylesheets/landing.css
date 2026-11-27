@@ -120,10 +120,10 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   box-shadow: inset 0 calc(-1 * (var(--cta-edge) + var(--press))) 0 var(--pink-shade);
 }
 .landing .cta__label { text-wrap: balance; } /* a long label ("Join 1,234 other fighters") wraps inside the button at large text sizes instead of running out of it */
-.landing .cta:has(.cta__count) { font-size: clamp(1.25rem, 6.2vw, 1.625rem); } /* a longer label: smaller on phones so it stays on one line */
+.landing .cta:has(.cta__count) { font-size: clamp(var(--text-lg), 6.2vw, 1.625rem); } /* a longer label: smaller on phones so it stays on one line */
 .landing .cta:has(.cta__count) .cta__label { white-space: nowrap; }
 .landing .cta__count { /* the count in the button: the page's blue, white number, a lighter top edge, no outline */
-  display: inline-block; padding: 0.04em 0.4em 0.1em; border-radius: 999px; background: var(--blue); color: var(--cream); white-space: nowrap;
+  display: inline-block; padding: 0.04em 0.4em 0.1em; border-radius: var(--radius-full); background: var(--blue); color: var(--cream); white-space: nowrap;
   box-shadow: inset 0 0.07em 0 rgb(255 255 255 / 0.3); font-variant-numeric: tabular-nums;
 }
 .landing .cta svg { width: 0.87em; height: 0.875em; overflow: visible; flex: none; }
@@ -138,15 +138,15 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .hero__stage { position: relative; display: flex; flex-direction: column; overflow: hidden; background: var(--sky); }
 .landing .hero__art {
   order: 3; display: block; width: 100%; height: clamp(15rem, calc(100svh - 21rem), 34rem);
-  object-fit: cover; object-position: 85% 100%; margin-top: -1.5rem;
+  object-fit: cover; object-position: 85% 100%; margin-top: calc(var(--space-6) * -1);
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%); mask-image: linear-gradient(to bottom, transparent, #000 35%);
 }
 .landing .hero__wash { display: none; }
-.landing .hero__content { order: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.25rem var(--side) 0; }
+.landing .hero__content { order: 2; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); padding: 1.25rem var(--side) 0; }
 .landing .hero__logo { width: min(72%, 19rem); line-height: 0; }
 .landing .hero__logo img { display: block; width: 100%; height: auto; }
 .landing .hero__tagline {
-  padding-left: 0.5rem;
+  padding-left: var(--space-2);
   font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--display);
 }
 /* the tagline's own text treatment: cream fill, royal-blue stroke, yellow accent */
@@ -158,7 +158,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .hero__swoosh { position: relative; z-index: 1; display: block; width: 100%; height: auto; margin-top: calc(100% * -234 / 1440); margin-bottom: -1px; }
 @media (min-width: 48rem) {
   .landing .hero { --swoosh-height: 14rem; --swoosh-overlap: 9.5rem; }
-  .landing .hero__stage { flex-direction: row; align-items: center; min-height: clamp(30rem, calc(100svh - 4.5rem), 52rem); padding-block: 4rem var(--swoosh-overlap); }
+  .landing .hero__stage { flex-direction: row; align-items: center; min-height: clamp(30rem, calc(100svh - 4.5rem), 52rem); padding-block: var(--space-16) var(--swoosh-overlap); }
   .landing .hero__art { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; object-position: 75% 48%; -webkit-mask-image: none; mask-image: none; }
   .landing .hero__wash { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
   .landing .hero__content { position: relative; gap: 1.25rem; padding: 0 var(--side); }
@@ -188,7 +188,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 }
 /* ---- How it works: just the signpost, on flat sky. Its top board pokes up over the hero's bottom edge. ---- */
 .landing .how { position: relative; background: var(--sky); color: var(--navy); }
-.landing .how__inner { display: flex; flex-direction: column; align-items: center; padding: 0 0.5rem calc(var(--edge-a) * 0.72 + 1.5vw); }
+.landing .how__inner { display: flex; flex-direction: column; align-items: center; padding: 0 var(--space-2) calc(var(--edge-a) * 0.72 + 1.5vw); }
 .landing .how__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* for screen readers; the boards say it */
 .landing .signpost {
@@ -215,7 +215,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 /* ---- Below the hero the page is one map you scroll down. Each section is a place on it, with its own ground colour and a curved edge. ---- */
 .landing { --edge-a: clamp(7rem, 16.7vw, 15rem); --edge-hp: clamp(10rem, 22.2vw, 20rem); --edge-c: clamp(6rem, 13.9vw, 12.5rem); --edge-d: clamp(5.5rem, 12.5vw, 11.25rem); }
 .landing .blk { position: relative; }
-.landing .slab > .in { position: relative; padding: clamp(2.5rem, 5vw, 4.5rem) 0 calc(var(--next, 0px) + clamp(3rem, 6vw, 5rem)); background: var(--bg); }
+.landing .slab > .in { position: relative; padding: clamp(2.5rem, 5vw, 4.5rem) 0 calc(var(--next, 0px) + clamp(var(--space-12), 6vw, 5rem)); background: var(--bg); }
 .landing .edge { position: absolute; left: 0; bottom: calc(100% - 1px); display: block; width: 100%; height: var(--h); pointer-events: none; overflow: visible; }
 .landing .edge__fill { fill: var(--bg); }
 .landing .edge--a { --h: var(--edge-a); }
@@ -295,11 +295,11 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 /* The keyboard photo carries a loose switch above its top-left corner and a row of spare keys below: show the keyboard alone, in the same box as the other art. */
 .landing .prize img[src*="keychron"] { clip-path: inset(33% 0 12% 0); translate: 0 calc(var(--aw) * 0.075); }
 .landing .prize__emoji { display: block; font-size: calc(var(--aw) * 0.8); line-height: 1; }
-.landing .prize__label { order: 3; margin-top: 0.6rem; padding-inline: 0.25rem; }
+.landing .prize__label { order: 3; margin-top: 0.6rem; padding-inline: var(--space-1); }
 .landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
-.landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.875rem; line-height: 1.2; overflow-wrap: anywhere; }
+.landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: var(--text-sm); line-height: 1.2; overflow-wrap: anywhere; }
 @media (max-width: 39.99rem) { .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55 + 2.5rem); } .landing .shelf { --u: calc(var(--wu) * 1.15); --lw: 10rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
-@media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(1rem, calc(100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
+@media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(var(--space-4), calc(100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
 @media (min-width: 40rem) {
   .landing .prize h3 { font-size: 1.375rem; }
   .landing .prize__hours { font-size: 0.9375rem; }
@@ -317,7 +317,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: var(--pink); --stone-shade: var(--color-sign-pink-edge); --ripple: transparent; } /* the question stones are the site's magenta (the button and the third signpost board), edge in the board's deeper pink; no halo, so no outline look */
 .landing .bank__face { fill: var(--royal-shade); }
 .landing .bank__foam { fill: none; stroke: #4f7fd9; stroke-width: clamp(3px, 0.4vw, 6px); stroke-linecap: round; stroke-dasharray: 70px 22px 26px 22px; vector-effect: non-scaling-stroke; }
-.landing .faq h2 { color: var(--yellow); font-size: clamp(2.5rem, 5.4vw, 4.25rem); }
+.landing .faq h2 { color: var(--yellow); font-size: clamp(var(--text-2xl), 5.4vw, 4.25rem); }
 .landing .faq__grid { display: grid; }
 /* The heading straddles the shore: half on the land above, half over the water. */
 .landing .faq__head { position: absolute; left: var(--side); top: calc(-1 * clamp(2.5rem, 5vw, 4.5rem) - var(--edge-c) * 0.27); translate: 0 -50%; }
@@ -344,7 +344,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .hop--4 { top: calc(100% + 1rem); --hx: 72%; }
 .landing .hop--5 { display: none; top: calc(100% + 4.2rem); --hx: 80%; width: 3.6rem; }
 .landing .faq summary {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
   padding: 0.85rem 0 0.9rem; cursor: pointer; list-style: none;
   font: 400 clamp(1.125rem, 1.6vw, 1.3125rem)/1.15 var(--display); letter-spacing: -0.03em;
 }
@@ -353,8 +353,8 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .faq details[open] summary::after { content: "\2212"; }
 .landing .faq summary { color: var(--cream); } /* cream on this magenta is 3.1:1 (the same cream as the button) */
 .landing .faq summary:focus-visible { outline: 3px solid var(--cream); outline-offset: 4px; border-radius: 0.4rem; }
-.landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: var(--cream); font-size: 1rem; font-weight: 700; } /* heavier, because cream on this magenta is only 3.1:1 */
-.landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: var(--cream); font-size: 1rem; font-weight: 700; } /* one rule per line; the markers keep it a list in every browser */
+.landing .faq details p { max-width: 34rem; margin-top: calc(var(--space-1) * -1); padding-bottom: var(--space-4); color: var(--cream); font-size: var(--text-base); font-weight: 700; } /* heavier, because cream on this magenta is only 3.1:1 */
+.landing .faq .faq__rules { display: grid; gap: var(--space-2); max-width: 34rem; margin-top: calc(var(--space-1) * -1); padding: 0 0 var(--space-4) 1.25rem; list-style: disc; color: var(--cream); font-size: var(--text-base); font-weight: 700; } /* one rule per line; the markers keep it a list in every browser */
 @media (min-width: 64rem) {
   /* The stones step in from the right, where the path comes down beside the prizes, and out again toward Orpheus. */
   .landing .hop--1 { --hx: calc(100% - 7.5rem); }
@@ -368,12 +368,12 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .final .in { padding-bottom: 66vw; }
 .landing .final .wrap { position: relative; z-index: 1; }
 .landing .final h2 { font-size: clamp(2.75rem, 6vw, 4.75rem); }
-.landing .cta--big { margin-top: clamp(1.5rem, 3vw, 2.25rem); font-size: clamp(1.5rem, 2.4vw, 1.75rem); }
-.landing .final__proof { margin-top: 1rem; font-weight: 700; }
+.landing .cta--big { margin-top: clamp(var(--space-6), 3vw, 2.25rem); font-size: clamp(var(--text-md), 2.4vw, var(--text-xl)); }
+.landing .final__proof { margin-top: var(--space-4); font-weight: 700; }
 .landing .final__orpheus { position: absolute; z-index: 1; right: 0; bottom: 0; width: var(--ow); max-width: none; height: auto; pointer-events: none; }
 @media (min-width: 64rem) {
   .landing .final { --ow: min(44vw, 35rem); }
-  .landing .final .in { min-height: calc(var(--ow) * 0.84 + 4rem); padding-bottom: clamp(5rem, 9vw, 8rem); }
+  .landing .final .in { min-height: calc(var(--ow) * 0.84 + 4rem); padding-bottom: clamp(5rem, 9vw, var(--space-32)); }
 }
 
 /* ---- Fills for the scenery sprite (the CSP forbids style attributes; colours come from each prop's own custom properties) ---- */

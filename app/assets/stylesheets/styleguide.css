@@ -23,9 +23,9 @@
 .sg-swatches { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); margin: 0; padding: 0; list-style: none; }
 .sg-swatch { display: grid; align-content: start; gap: var(--space-1); padding: var(--space-2); border-radius: var(--radius-md); background: var(--color-surface); font-size: var(--text-sm); }
 .sg-swatch__chip { display: block; height: 3.5rem; border: 2px solid var(--color-ink-brown); border-radius: var(--radius-sm); background: var(--sg); }
-.sg-swatch__name { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; overflow-wrap: anywhere; }
+.sg-swatch__name { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 700; overflow-wrap: anywhere; }
 .sg-swatch__hex { font-family: var(--font-mono); }
-.sg-swatch__use { color: var(--color-text-muted); font-size: 0.75rem; line-height: 1.35; }
+.sg-swatch__use { color: var(--color-text-muted); font-size: var(--text-xs); line-height: 1.35; }
 
 /* Contrast table: the sample cell shows the real pair */
 .sg-sample { display: inline-block; padding: 0.1em 0.6em; border-radius: var(--radius-sm); font-family: var(--font-display); }
@@ -34,11 +34,11 @@
 .sg-type { display: grid; gap: var(--space-1); padding-block: var(--space-3); border-bottom: 1px solid var(--color-ink-brown); }
 .sg-type__meta { color: var(--color-text-muted); font-family: var(--font-mono); font-size: var(--text-xs); }
 .sg-type__sample { margin: 0; font-family: var(--font-display); line-height: 1.1; overflow-wrap: anywhere; }
-.sg-type__sample--sign-number { font-size: clamp(3rem, 12vw, var(--text-sign-number)); letter-spacing: var(--tracking-display); }
-.sg-type__sample--hero-title { font-size: clamp(2.5rem, 9vw, var(--text-hero-title)); letter-spacing: var(--tracking-display); }
+.sg-type__sample--sign-number { font-size: clamp(var(--text-display), 12vw, var(--text-sign-number)); letter-spacing: var(--tracking-display); }
+.sg-type__sample--hero-title { font-size: clamp(var(--text-2xl), 9vw, var(--text-hero-title)); letter-spacing: var(--tracking-display); }
 .sg-type__sample--sign-title { font-size: clamp(2rem, 7vw, var(--text-sign-title)); letter-spacing: var(--tracking-display); }
-.sg-type__sample--display { font-size: clamp(1.75rem, 6vw, var(--text-display)); letter-spacing: var(--tracking-display); }
-.sg-type__sample--sign-body { font-size: clamp(1.5rem, 5vw, var(--text-sign-body)); letter-spacing: var(--tracking-display); }
+.sg-type__sample--display { font-size: clamp(var(--text-xl), 6vw, var(--text-display)); letter-spacing: var(--tracking-display); }
+.sg-type__sample--sign-body { font-size: clamp(var(--text-md), 5vw, var(--text-sign-body)); letter-spacing: var(--tracking-display); }
 .sg-type__sample--2xl { font-size: var(--text-2xl); }
 .sg-type__sample--3xl { font-size: var(--text-3xl); }
 .sg-type__sample--xl { font-size: var(--text-xl); }
