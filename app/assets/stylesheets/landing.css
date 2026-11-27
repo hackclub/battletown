@@ -99,25 +99,23 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing h2 { font: 400 clamp(2.25rem, 4.6vw, 3.75rem)/0.95 var(--display); letter-spacing: -0.04em; }
 /* ---- Button: pink face, edge in a darker pink, no outline ---- */
 .landing .cta {
-  display: inline-flex; max-width: 100%; padding: 0; border: 0; appearance: none; background: none;
+  --cta-edge: 0.1667em;
+  display: inline-flex; max-width: 100%; padding: 0 0 var(--cta-edge); border: 0; appearance: none; background: var(--pink-shade); /* the base: this link never moves or repaints, only the face on it does */
   border-radius: 0.58em;
   color: var(--cream); /* all text on this pink is cream (Armand, 2026-11-26: prettier than navy): the button, the FAQ rows and the third signpost board. 3.1:1, so it stays large or bold */
   font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display);
   letter-spacing: -0.05em;
   text-decoration: none; cursor: pointer;
 }
-/* The face is the slab (the .cta itself never moves, so the click area is steady and the stickers stay behind): on hover and
-   focus it grows taller, the face rising and the edge growing by the same amount; pressed, the face drops and the edge shrinks.
-   --press feeds the padding, margin, translate and edge, so the bottom of the edge stays on the same line (tokens.css). */
+/* The link is the base (its darker pink, static: no transition touches it, so the click area is steady and the stickers stay behind
+   it) and the face is the only thing that moves: on hover and focus the face rises, so the base shows more; pressed, the face drops
+   and only a sliver of base is left. One animated length, --press (tokens.css), drives the face. */
 .landing .cta__face {
-  --press: 0px; --cta-edge: 0.1667em;
   display: inline-flex; align-items: center; gap: 0.36em;
-  padding: 0.5em 0.75em calc(0.56em + var(--press));
-  margin-bottom: calc(-1 * var(--press));
-  translate: 0 calc(-1 * var(--press));
+  padding: 0.5em 0.75em calc(0.56em - var(--cta-edge));
+  translate: 0 calc(-1 * round(nearest, var(--press), 1px));
   border-radius: 0.58em;
   background: var(--pink);
-  box-shadow: inset 0 calc(-1 * (var(--cta-edge) + var(--press))) 0 var(--pink-shade);
 }
 .landing .cta__label { text-wrap: balance; } /* a long label ("Join 1,234 other fighters") wraps inside the button at large text sizes instead of running out of it */
 .landing .cta:has(.cta__count) { font-size: clamp(1.25rem, 6.2vw, 1.625rem); } /* a longer label: smaller on phones so it stays on one line */
@@ -129,7 +127,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .cta svg { width: 0.87em; height: 0.875em; overflow: visible; flex: none; }
 .landing .cta:focus-visible { outline: 3px solid var(--navy); outline-offset: calc(4px + var(--press-rise)); } /* clear of the face when it rises */
 @media (prefers-reduced-motion: no-preference) {
-  .landing .cta__face { transition: translate 120ms ease, margin-bottom 120ms ease, padding-bottom 120ms ease, box-shadow 120ms ease; }
+  .landing .cta__face { transition: --press 120ms ease; }
   .landing .cta:is(:hover, :focus-visible) .cta__face { --press: round(nearest, var(--press-rise), 1px); }
   .landing .cta:active .cta__face { --press: round(nearest, calc(var(--press-sink) - var(--cta-edge)), 1px); }
 }
