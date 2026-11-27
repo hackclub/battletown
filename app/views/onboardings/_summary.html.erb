@@ -1,9 +1,17 @@
 <%# locals: (subject:) -%>
-<dl class="celebration__summary card card--cream card--flat">
-  <% if (prize = subject.prize) %>
-    <div><dt class="eyebrow">Prize</dt><dd><%= prize.name %> (<%= onboarding_hours_text(prize) %>)</dd></div>
+<%# The answers given so far, each with what it means: the prize with its picture and hours, the pace as days of coding to that prize (an estimate). %>
+<% prize = subject.prize %>
+<dl class="celebration__summary card card--cream card--flat reveal__plan">
+  <% if prize %>
+    <div class="reveal__prize">
+      <% if prize.image.present? %><%= image_tag prize.image, alt: "", class: "reveal__prize-image" %><% end %>
+      <div><dt class="eyebrow">Prize</dt><dd><%= prize.name %> (<%= onboarding_hours_text(prize) %>)</dd></div>
+    </div>
   <% end %>
   <div><dt class="eyebrow">Project</dt><dd><%= OnboardingsHelper::PROJECT_KINDS.dig(subject.project_kind, :name) %></dd></div>
   <div><dt class="eyebrow">When</dt><dd><%= coding_schedule_text(subject) %>, <%= subject.time_zone %></dd></div>
-  <div><dt class="eyebrow">Pace</dt><dd><%= subject.pace %> minutes a day</dd></div>
+  <div>
+    <dt class="eyebrow">Pace</dt>
+    <dd><%= subject.pace %> minutes a day<% if (days = onboarding_days_text(prize, subject.pace)) %><span class="reveal__estimate"><%= days %> to your prize. This is an estimate.</span><% end %></dd>
+  </div>
 </dl>

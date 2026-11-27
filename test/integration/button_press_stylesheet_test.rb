@@ -21,14 +21,26 @@ class ButtonPressStylesheetTest < ActiveSupport::TestCase
     assert_empty offenders, "these state rules translate or transform the button, so its base would move: set --press instead (tokens.css)"
   end
 
-  test "the shared rule keeps the base fixed: every --press term moves together" do
+  test "--press is the one animated length: registered, and the only thing a transition on a button touches" do
+    tokens = File.read(Rails.root.join("app/assets/stylesheets/tokens.css"))
+    assert_match(/@property --press\s*\{[^}]*syntax:\s*"<length>"/m, tokens)
+    offenders = SHEETS.flat_map do |path|
+      rules(File.read(path)).select { |selector, body| selector.match?(/\.(btn|cta__face|age-choice|chip|choice__body)\b/) && body.match?(/transition:/) }
+        .reject { |_, body| body[/transition:\s*([^;]*)/, 1].strip.match?(/\A--press 120ms ease\z/) }
+        .map { |selector, _| "#{File.basename(path)}: #{selector}" }
+    end
+    assert_empty offenders, "a button may transition only --press (margin, padding, height or box-shadow moving the base for a frame is the bug)"
+  end
+
+  test "the shared rule keeps the base fixed: the face translates and the edge shadow is drawn the same amount lower" do
     css = File.read(Rails.root.join("app/assets/stylesheets/components.css"))
     btn = rules(css).find { |selector, _| selector == ".btn" }&.last or flunk("no .btn rule")
-    assert_match(/translate:\s*0 calc\(-1 \* var\(--press\)\)/, btn)
-    assert_match(/margin-bottom:\s*calc\(-1 \* var\(--press\)\)/, btn)
-    assert_match(/min-height:\s*calc\(var\(--btn-min-h\) \+ var\(--press\)\)/, btn)
-    assert_match(/padding:[^;]*calc\(var\(--btn-pb\) \+ var\(--press\)\)/, btn)
-    assert_match(/box-shadow:\s*inset 0 calc\(-1 \* \(var\(--btn-edge-size\) \+ var\(--press\)\)\)/, btn)
+    assert_match(/--btn-push:\s*round\(nearest, var\(--press\), 1px\)/, btn)
+    assert_match(/translate:\s*0 calc\(-1 \* var\(--btn-push\)\)/, btn)
+    assert_match(/box-shadow:\s*0 calc\(var\(--btn-edge-size\) \+ var\(--btn-push\)\) 0 var\(--btn-edge\)/, btn)
+    assert_no_match(/margin-bottom:[^;]*press|min-height:[^;]*press|padding:[^;]*press/, btn)
+    hit = rules(css).find { |selector, _| selector == ".btn::before" }&.last or flunk("no click-area rule")
+    assert_match(/translate:\s*0 var\(--btn-push\)/, hit)
   end
 
   test "hover, focus and press change --press and nothing else, and not on a disabled button" do
@@ -41,13 +53,15 @@ class ButtonPressStylesheetTest < ActiveSupport::TestCase
     end
   end
 
-  test "the landing call to action moves its face, never the link that holds the click area" do
+  test "the landing call to action never moves or repaints the link that holds the click area and the base" do
     css = File.read(Rails.root.join("app/assets/stylesheets/landing.css"))
+    link = rules(css).find { |selector, _| selector == ".landing .cta" }&.last or flunk("no .cta rule")
+    assert_match(/background: var\(--pink-shade\)/, link)
+    assert_no_match(/translate|transition/, link)
     states = rules(css).select { |selector, _| selector.include?(".cta") && selector.match?(/:(hover|active)/) }
     assert_operator states.size, :>=, 2
     states.each { |selector, _| assert_match(/\.cta__face\z/, selector) }
     face = rules(css).find { |selector, _| selector == ".landing .cta__face" }&.last or flunk("no .cta__face rule")
-    assert_match(/translate:\s*0 calc\(-1 \* var\(--press\)\)/, face)
-    assert_match(/margin-bottom:\s*calc\(-1 \* var\(--press\)\)/, face)
+    assert_match(/translate:\s*0 calc\(-1 \* round\(nearest, var\(--press\), 1px\)\)/, face)
   end
 end

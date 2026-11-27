@@ -32,12 +32,13 @@
    115 wu left of it, plus a gap), its width is 430 wu at most, and the type is sized from the board's own width, so the words always fit.
    The posts are the signpost's pole (face and shaded side, tokens), inset 14% from each end, on a flat soft patch of shade as the pole has. */
 .landing .fight__post {
-  position: absolute; top: 100%; width: var(--pw); height: calc(var(--W) * 0.09); isolation: isolate;
-  background: var(--color-sign-post); box-shadow: inset calc(var(--pw) * -0.23) 0 0 var(--color-sign-post-edge);
+  position: absolute; top: 100%; width: var(--pw); height: calc(var(--W) * 0.09);
 }
+/* The shade is painted first and the post over it, so the post stands ON its shade (the shade never lies across the post). */
+.landing .fight__post::after { content: ""; position: absolute; inset: 0; background: var(--color-sign-post); box-shadow: inset calc(var(--pw) * -0.23) 0 0 var(--color-sign-post-edge); }
 .landing .fight__post--l { left: 14%; }
 .landing .fight__post--r { right: 14%; }
-.landing .fight__post::after { content: ""; position: absolute; z-index: -1; left: 50%; bottom: calc(var(--pw) * -0.3); width: calc(var(--pw) * 3.2); height: calc(var(--pw) * 0.62); translate: -50% 0; border-radius: 50%; background: rgb(6 20 60 / 0.2); }
+.landing .fight__post::before { content: ""; position: absolute; left: 50%; bottom: calc(var(--pw) * -0.3); width: calc(var(--pw) * 3.2); height: calc(var(--pw) * 0.62); translate: -50% 0; border-radius: 50%; background: rgb(6 20 60 / 0.2); }
 @media (min-width: 48rem) {
   .landing .fight .fight__text {
     --r: calc(50vw - var(--wu) * 145);

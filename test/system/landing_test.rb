@@ -45,15 +45,15 @@ class LandingSystemTest < ApplicationSystemTestCase
     assert_current_path "/onboarding/project" # straight on: the "others like you" moment plays over this step
     assert_selector ".transition--proof"
     assert_no_selector ".transition", wait: 6 # and fades away by itself
-    find("label.toggle", text: "Game").click
+    find("label.choice", text: "Game").click
     click_button "Continue"
     assert_current_path "/onboarding/schedule"
     assert_selector ".transition--proof" # the "you'll be one of the first" moment plays over this step too
     assert_no_selector ".transition", wait: 6
-    find("label.day", text: "Mon").click
-    # No address to take a zone from, and a CI browser's own zone (UTC) is not in the list, so the zone picker is open and empty: choose one.
+    # No address to take a zone from, and a CI browser's own zone (UTC) is not in the list: open the zone picker and choose one, then pick a pace (the pace button sends the step).
+    find("summary", text: "Choose time zone").click
     select "Eastern Time (US & Canada)", from: "Your time zone"
-    click_button "Continue"
+    click_button "1 hour"
 
     assert_current_path "/onboarding/signup"
     click_button "Sign up with Hack Club"

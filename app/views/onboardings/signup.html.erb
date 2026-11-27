@@ -1,5 +1,8 @@
-<%= render layout: "onboardings/frame", locals: { step: "signup" } do %>
-  <%= render "onboardings/summary", subject: subject %>
+<%= render layout: "onboardings/frame", locals: { step: "signup", show_prize: false } do %>
+  <div class="reveal">
+    <%= render "onboardings/summary", subject: subject %>
+    <%= render "onboardings/boss", boss: onboarding_boss %>
+  </div>
   <ul class="checks">
     <li class="check"><p>Signing in with Hack Club takes a few seconds and gets you a free sticker.</p></li>
   </ul>

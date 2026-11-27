@@ -1,0 +1,39 @@
+<%# The editor question and the setup steps for the chosen editor. Steps are Hackatime's own (see OnboardingsHelper::HACKATIME_EDITORS);
+    the choice is kept in the browser only. Without JavaScript every editor's steps show. %>
+<section class="editor" data-controller="onboarding-editor" data-action="change->onboarding-editor#choose" aria-labelledby="editor-question">
+  <fieldset class="onboarding__fieldset">
+    <legend class="onboarding__legend" id="editor-question">Which editor do you use?</legend>
+    <div class="choice-grid choice-grid--kinds choice-grid--editors">
+      <% OnboardingsHelper::HACKATIME_EDITORS.each do |editor| %>
+        <label class="choice">
+          <%= radio_button_tag "editor", editor[:key], false, id: "editor_#{editor[:key]}", class: "choice__input", data: { onboarding_editor_target: "choice" } %>
+          <span class="choice__body"><span class="choice__name"><%= editor[:name] %></span></span>
+        </label>
+      <% end %>
+      <label class="choice">
+        <%= radio_button_tag "editor", "other", false, id: "editor_other", class: "choice__input", data: { onboarding_editor_target: "choice" } %>
+        <span class="choice__body"><span class="choice__name">Something else</span></span>
+      </label>
+    </div>
+  </fieldset>
+
+  <% OnboardingsHelper::HACKATIME_EDITORS.each do |editor| %>
+    <div class="editor__steps card card--cream card--flat" data-editor="<%= editor[:key] %>" data-onboarding-editor-target="panel" id="editor-steps-<%= editor[:key] %>">
+      <h2 class="check__title">Set up <%= editor[:name] %></h2>
+      <ol>
+        <li><%= link_to "Open Hackatime's setup page", OnboardingsHelper::HACKATIME_SETUP_URL, target: "_blank", rel: "noopener noreferrer" %> and follow it.</li>
+        <% editor[:steps].each_with_index do |text, index| %>
+          <li><%= text %><% if editor[:code] && index.zero? %><code class="editor__code"><%= editor[:code] %></code><% end %></li>
+        <% end %>
+      </ol>
+      <p class="muted small"><%= link_to "Hackatime's guide for #{editor[:name]}", editor[:url], target: "_blank", rel: "noopener noreferrer" %></p>
+    </div>
+  <% end %>
+  <div class="editor__steps card card--cream card--flat" data-editor="other" data-onboarding-editor-target="panel" id="editor-steps-other">
+    <h2 class="check__title">Set up another editor</h2>
+    <ol>
+      <li><%= link_to "Open Hackatime's setup page", OnboardingsHelper::HACKATIME_SETUP_URL, target: "_blank", rel: "noopener noreferrer" %> and follow it.</li>
+      <li>Find your editor in <%= link_to "Hackatime's editor guides", OnboardingsHelper::HACKATIME_EDITOR_GUIDES_URL, target: "_blank", rel: "noopener noreferrer" %> and follow its steps.</li>
+    </ol>
+  </div>
+</section>

@@ -107,6 +107,10 @@
 .sg-swatch[data-token="--color-sign-post-edge"]{--sg:var(--color-sign-post-edge)}
 .sg-swatch[data-token="--color-sign-yellow"]{--sg:var(--color-sign-yellow)}
 .sg-swatch[data-token="--color-sign-yellow-edge"]{--sg:var(--color-sign-yellow-edge)}
+.sg-swatch[data-token="--color-cool-ground"]{--sg:var(--color-cool-ground)}
+.sg-swatch[data-token="--color-cool-tint"]{--sg:var(--color-cool-tint)}
+.sg-swatch[data-token="--color-cool-tint-edge"]{--sg:var(--color-cool-tint-edge)}
+.sg-swatch[data-token="--color-logo-sky"]{--sg:var(--color-logo-sky)}
 .sg-swatch[data-token="--color-sign-blue"]{--sg:var(--color-sign-blue)}
 .sg-swatch[data-token="--color-sign-blue-edge"]{--sg:var(--color-sign-blue-edge)}
 .sg-swatch[data-token="--color-sign-pink"]{--sg:var(--color-sign-pink)}

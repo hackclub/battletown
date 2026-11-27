@@ -3,6 +3,8 @@
       form (a POST to Hackatime); the form holds the rest of the step and the Continue button. %>
   <% connection = current_user.hackatime_connection %>
   <% state = connection.nil? ? :missing : (connection.needs_reconnect? ? :reconnect : :connected) %>
+  <%= render "onboardings/editor_steps" %>
+
   <ul class="checks">
     <li class="check card card--cream card--flat" id="hackatime-check">
       <div class="check__head">
