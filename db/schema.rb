@@ -88,8 +88,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.index ["started_at"], name: "index_analytics_visits_on_started_at"
     t.index ["user_id"], name: "index_analytics_visits_on_user_id"
     t.index ["visit_key"], name: "index_analytics_visits_on_visit_key", unique: true
-    t.check_constraint "device_class::text = ANY (ARRAY['desktop'::character varying, 'mobile'::character varying, 'tablet'::character varying, 'unknown'::character varying]::text[])", name: "analytics_visits_device_class_check"
-    t.check_constraint "referrer_kind::text = ANY (ARRAY['direct'::character varying, 'search'::character varying, 'social'::character varying, 'hack_club'::character varying, 'other'::character varying]::text[])", name: "analytics_visits_referrer_kind_check"
+    t.check_constraint "device_class::text = ANY (ARRAY['desktop'::character varying::text, 'mobile'::character varying::text, 'tablet'::character varying::text, 'unknown'::character varying::text])", name: "analytics_visits_device_class_check"
+    t.check_constraint "referrer_kind::text = ANY (ARRAY['direct'::character varying::text, 'search'::character varying::text, 'social'::character varying::text, 'hack_club'::character varying::text, 'other'::character varying::text])", name: "analytics_visits_referrer_kind_check"
   end
 
   create_table "bosses", force: :cascade do |t|
@@ -131,12 +131,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.index ["reference_type", "reference_id"], name: "index_coin_transactions_on_reference_type_and_reference_id"
     t.index ["user_id", "created_at"], name: "index_coin_transactions_on_user_id_and_created_at"
     t.index ["user_id", "idempotency_key"], name: "index_coin_transactions_on_user_id_and_idempotency_key", unique: true
-    t.check_constraint "(kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'refund'::character varying, 'quest_reward'::character varying, 'team_bonus'::character varying]::text[])) AND amount > 0 OR kind::text = 'purchase'::text AND amount < 0 OR kind::text = 'adjustment'::text", name: "coin_transactions_sign_check"
+    t.check_constraint "(kind::text = ANY (ARRAY['ship_approval'::character varying::text, 'streak_bonus'::character varying::text, 'refund'::character varying::text, 'quest_reward'::character varying::text, 'team_bonus'::character varying::text])) AND amount > 0 OR kind::text = 'purchase'::text AND amount < 0 OR kind::text = 'adjustment'::text", name: "coin_transactions_sign_check"
     t.check_constraint "(reference_type IS NULL) = (reference_id IS NULL)", name: "coin_transactions_reference_check"
     t.check_constraint "amount <> 0", name: "coin_transactions_amount_check"
     t.check_constraint "char_length(idempotency_key::text) >= 1 AND char_length(idempotency_key::text) <= 120", name: "coin_transactions_idempotency_key_check"
     t.check_constraint "created_by IS NULL OR created_by::text ~ '^[a-z0-9_:.-]{1,40}$'::text", name: "coin_transactions_created_by_check"
-    t.check_constraint "kind::text = ANY (ARRAY['ship_approval'::character varying, 'streak_bonus'::character varying, 'purchase'::character varying, 'refund'::character varying, 'adjustment'::character varying, 'quest_reward'::character varying, 'team_bonus'::character varying]::text[])", name: "coin_transactions_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['ship_approval'::character varying::text, 'streak_bonus'::character varying::text, 'purchase'::character varying::text, 'refund'::character varying::text, 'adjustment'::character varying::text, 'quest_reward'::character varying::text, 'team_bonus'::character varying::text])", name: "coin_transactions_kind_check"
     t.check_constraint "note IS NULL OR char_length(note::text) <= 200", name: "coin_transactions_note_check"
   end
 
@@ -226,7 +226,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.index ["project_id"], name: "index_hackatime_links_on_project_id"
     t.index ["user_id", "hackatime_project"], name: "index_hackatime_links_on_user_and_name", unique: true
     t.check_constraint "char_length(hackatime_project::text) >= 1 AND char_length(hackatime_project::text) <= 120 AND hackatime_project::text !~ '[[:cntrl:]]'::text AND hackatime_project::text = btrim(hackatime_project::text)", name: "hackatime_links_name_check"
-    t.check_constraint "link_method::text = ANY (ARRAY['manual'::character varying, 'auto_repo'::character varying, 'confirmed'::character varying]::text[])", name: "hackatime_links_method_check"
+    t.check_constraint "link_method::text = ANY (ARRAY['manual'::character varying::text, 'auto_repo'::character varying::text, 'confirmed'::character varying::text])", name: "hackatime_links_method_check"
   end
 
   create_table "hour_entries", force: :cascade do |t|
@@ -249,7 +249,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.check_constraint "seconds <> 0 AND seconds >= '-86400'::integer AND seconds <= 86400", name: "hour_entries_seconds_check"
     t.check_constraint "source::text = 'adjustment'::text OR seconds > 0", name: "hour_entries_positive_unless_adjustment_check"
     t.check_constraint "source::text = 'hackatime'::text OR note IS NOT NULL", name: "hour_entries_note_required_check"
-    t.check_constraint "source::text = ANY (ARRAY['hackatime'::character varying, 'manual'::character varying, 'adjustment'::character varying]::text[])", name: "hour_entries_source_check"
+    t.check_constraint "source::text = ANY (ARRAY['hackatime'::character varying::text, 'manual'::character varying::text, 'adjustment'::character varying::text])", name: "hour_entries_source_check"
   end
 
   create_table "job_runs", force: :cascade do |t|
@@ -261,7 +261,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.jsonb "counts", default: {}, null: false
     t.index ["name", "started_at"], name: "index_job_runs_on_name_and_started_at", order: { started_at: :desc }
     t.check_constraint "jsonb_typeof(counts) = 'object'::text", name: "job_runs_counts_check"
-    t.check_constraint "status::text = ANY (ARRAY['running'::character varying, 'ok'::character varying, 'failed'::character varying]::text[])", name: "job_runs_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['running'::character varying::text, 'ok'::character varying::text, 'failed'::character varying::text])", name: "job_runs_status_check"
   end
 
   create_table "link_suggestions", force: :cascade do |t|
@@ -272,7 +272,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.datetime "updated_at", null: false
     t.index ["project_id", "hackatime_project"], name: "index_link_suggestions_on_project_and_name", unique: true
     t.check_constraint "char_length(hackatime_project::text) >= 1 AND char_length(hackatime_project::text) <= 120 AND hackatime_project::text !~ '[[:cntrl:]]'::text AND hackatime_project::text = btrim(hackatime_project::text)", name: "link_suggestions_name_check"
-    t.check_constraint "state::text = ANY (ARRAY['pending'::character varying, 'accepted'::character varying, 'declined'::character varying]::text[])", name: "link_suggestions_state_check"
+    t.check_constraint "state::text = ANY (ARRAY['pending'::character varying::text, 'accepted'::character varying::text, 'declined'::character varying::text])", name: "link_suggestions_state_check"
   end
 
   create_table "merch_claims", force: :cascade do |t|
@@ -292,7 +292,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.check_constraint "(status::text = 'cancelled'::text) = (cancelled_at IS NOT NULL)", name: "merch_claims_cancelled_at_check"
     t.check_constraint "(status::text = 'fulfilled'::text) = (fulfilled_at IS NOT NULL)", name: "merch_claims_fulfilled_at_check"
     t.check_constraint "char_length(item_key::text) >= 1 AND char_length(item_name::text) >= 1", name: "merch_claims_item_check"
-    t.check_constraint "status::text = ANY (ARRAY['requested'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying]::text[])", name: "merch_claims_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['requested'::character varying::text, 'fulfilled'::character varying::text, 'cancelled'::character varying::text])", name: "merch_claims_status_check"
   end
 
   create_table "notification_preferences", force: :cascade do |t|
@@ -303,8 +303,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.datetime "updated_at", null: false
     t.string "channel", default: "slack_dm", null: false
     t.index ["user_id", "kind", "channel"], name: "index_notification_preferences_on_user_kind_channel", unique: true
-    t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notification_preferences_channel_check"
-    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying, 'nps_prompt'::character varying, 'order_shipped'::character varying, 'order_fulfilled'::character varying, 'order_cancelled'::character varying, 'order_refunded'::character varying]::text[])", name: "notification_preferences_kind_check"
+    t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying::text, 'email'::character varying::text])", name: "notification_preferences_channel_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying::text, 'link_question'::character varying::text, 'ship_reminder'::character varying::text, 'ship_mvp'::character varying::text, 'ship_approved'::character varying::text, 'ship_rejected'::character varying::text, 'returning_nudge'::character varying::text, 'nps_prompt'::character varying::text, 'order_shipped'::character varying::text, 'order_fulfilled'::character varying::text, 'order_cancelled'::character varying::text, 'order_refunded'::character varying::text])", name: "notification_preferences_kind_check"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -322,15 +322,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.datetime "updated_at", null: false
     t.bigint "subject_id"
     t.index ["idempotency_key"], name: "index_notifications_on_idempotency_key", unique: true
-    t.index ["subject_id"], name: "index_notifications_on_pending_subject_id", where: "(((status)::text = 'pending'::text) AND (subject_id IS NOT NULL))"
     t.index ["status", "due_at"], name: "index_notifications_on_status_and_due_at"
+    t.index ["subject_id"], name: "index_notifications_on_pending_subject_id", where: "(((status)::text = 'pending'::text) AND (subject_id IS NOT NULL))"
     t.index ["user_id", "kind"], name: "index_notifications_one_pending_per_user_kind", unique: true, where: "(((status)::text = 'pending'::text) AND ((kind)::text = 'daily_reminder'::text))"
     t.index ["user_id"], name: "index_notifications_on_user_id"
     t.check_constraint "attempts >= 0 AND attempts <= 10", name: "notifications_attempts_check"
-    t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying, 'email'::character varying]::text[])", name: "notifications_channel_check"
-    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying, 'link_question'::character varying, 'ship_reminder'::character varying, 'ship_mvp'::character varying, 'ship_approved'::character varying, 'ship_rejected'::character varying, 'returning_nudge'::character varying, 'nps_prompt'::character varying, 'order_shipped'::character varying, 'order_fulfilled'::character varying, 'order_cancelled'::character varying, 'order_refunded'::character varying]::text[])", name: "notifications_kind_check"
+    t.check_constraint "channel::text = ANY (ARRAY['slack_dm'::character varying::text, 'email'::character varying::text])", name: "notifications_channel_check"
+    t.check_constraint "kind::text = ANY (ARRAY['daily_reminder'::character varying::text, 'link_question'::character varying::text, 'ship_reminder'::character varying::text, 'ship_mvp'::character varying::text, 'ship_approved'::character varying::text, 'ship_rejected'::character varying::text, 'returning_nudge'::character varying::text, 'nps_prompt'::character varying::text, 'order_shipped'::character varying::text, 'order_fulfilled'::character varying::text, 'order_cancelled'::character varying::text, 'order_refunded'::character varying::text])", name: "notifications_kind_check"
     t.check_constraint "last_error_code IS NULL OR last_error_code::text ~ '^[a-z0-9_]{1,40}$'::text", name: "notifications_last_error_code_check"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sent'::character varying, 'failed'::character varying, 'cancelled'::character varying, 'skipped'::character varying]::text[])", name: "notifications_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'sent'::character varying::text, 'failed'::character varying::text, 'cancelled'::character varying::text, 'skipped'::character varying::text])", name: "notifications_status_check"
   end
 
   create_table "nps_responses", force: :cascade do |t|
@@ -381,13 +381,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.datetime "created_at", null: false
     t.index ["actor_id"], name: "index_order_events_on_actor_id", where: "(actor_id IS NOT NULL)"
     t.index ["order_id", "created_at"], name: "index_order_events_on_order_id_and_created_at"
-    t.check_constraint "action::text = ANY (ARRAY['held'::character varying, 'released'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying, 'tracking_updated'::character varying, 'note_added'::character varying, 'address_changed'::character varying, 'address_revealed'::character varying, 'address_purged'::character varying]::text[])", name: "order_events_action_check"
+    t.check_constraint "action::text = ANY (ARRAY['held'::character varying::text, 'released'::character varying::text, 'shipped'::character varying::text, 'fulfilled'::character varying::text, 'cancelled'::character varying::text, 'refunded'::character varying::text, 'tracking_updated'::character varying::text, 'note_added'::character varying::text, 'address_changed'::character varying::text, 'address_revealed'::character varying::text, 'address_purged'::character varying::text])", name: "order_events_action_check"
     t.check_constraint "actor_kind::text = 'staff'::text OR actor_id IS NULL", name: "order_events_actor_check"
-    t.check_constraint "actor_kind::text = ANY (ARRAY['buyer'::character varying, 'staff'::character varying, 'system'::character varying]::text[])", name: "order_events_actor_kind_check"
-    t.check_constraint "from_status IS NULL OR (from_status::text = ANY (ARRAY['requested'::character varying, 'on_hold'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[]))", name: "order_events_from_status_check"
+    t.check_constraint "actor_kind::text = ANY (ARRAY['buyer'::character varying::text, 'staff'::character varying::text, 'system'::character varying::text])", name: "order_events_actor_kind_check"
+    t.check_constraint "from_status IS NULL OR (from_status::text = ANY (ARRAY['requested'::character varying::text, 'on_hold'::character varying::text, 'shipped'::character varying::text, 'fulfilled'::character varying::text, 'cancelled'::character varying::text, 'refunded'::character varying::text]))", name: "order_events_from_status_check"
     t.check_constraint "note IS NULL OR char_length(note::text) >= 1 AND char_length(note::text) <= 300 AND note::text !~ '[[:cntrl:]]'::text", name: "order_events_note_check"
     t.check_constraint "reason_code IS NULL OR reason_code::text ~ '^[a-z_]{2,30}$'::text", name: "order_events_reason_code_check"
-    t.check_constraint "to_status IS NULL OR (to_status::text = ANY (ARRAY['requested'::character varying, 'on_hold'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[]))", name: "order_events_to_status_check"
+    t.check_constraint "to_status IS NULL OR (to_status::text = ANY (ARRAY['requested'::character varying::text, 'on_hold'::character varying::text, 'shipped'::character varying::text, 'fulfilled'::character varying::text, 'cancelled'::character varying::text, 'refunded'::character varying::text]))", name: "order_events_to_status_check"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -412,7 +412,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.index ["user_id", "created_at"], name: "index_orders_on_user_id_and_created_at"
     t.index ["user_id", "idempotency_key"], name: "index_orders_on_user_id_and_idempotency_key", unique: true
     t.index ["user_id"], name: "index_orders_one_signup_sticker_per_user", unique: true, where: "((kind)::text = 'signup_sticker'::text)"
-    t.check_constraint "(status::text <> 'fulfilled'::text OR fulfilled_at IS NOT NULL) AND (fulfilled_at IS NULL OR (status::text = ANY (ARRAY['fulfilled'::character varying, 'refunded'::character varying]::text[])))", name: "orders_fulfilled_at_check"
+    t.check_constraint "(status::text <> 'fulfilled'::text OR fulfilled_at IS NOT NULL) AND (fulfilled_at IS NULL OR (status::text = ANY (ARRAY['fulfilled'::character varying::text, 'refunded'::character varying::text])))", name: "orders_fulfilled_at_check"
     t.check_constraint "(status::text = 'cancelled'::text) = (cancelled_at IS NOT NULL)", name: "orders_cancelled_at_check"
     t.check_constraint "(status::text = 'refunded'::text) = (refunded_at IS NOT NULL)", name: "orders_refunded_at_check"
     t.check_constraint "(tracking_carrier IS NULL) = (tracking_number IS NULL)", name: "orders_tracking_pair_check"
@@ -420,10 +420,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.check_constraint "char_length(prize_key::text) >= 1 AND char_length(prize_name::text) >= 1", name: "orders_prize_check"
     t.check_constraint "coins >= 0", name: "orders_coins_check"
     t.check_constraint "kind::text = 'signup_sticker'::text AND coins = 0 OR kind::text = 'purchase'::text AND coins > 0", name: "orders_kind_coins_check"
-    t.check_constraint "kind::text = ANY (ARRAY['purchase'::character varying, 'signup_sticker'::character varying]::text[])", name: "orders_kind_check"
-    t.check_constraint "shipped_at IS NULL OR (status::text = ANY (ARRAY['shipped'::character varying, 'fulfilled'::character varying, 'refunded'::character varying]::text[]))", name: "orders_shipped_at_status_check"
+    t.check_constraint "kind::text = ANY (ARRAY['purchase'::character varying::text, 'signup_sticker'::character varying::text])", name: "orders_kind_check"
+    t.check_constraint "shipped_at IS NULL OR (status::text = ANY (ARRAY['shipped'::character varying::text, 'fulfilled'::character varying::text, 'refunded'::character varying::text]))", name: "orders_shipped_at_status_check"
     t.check_constraint "status::text <> 'shipped'::text OR shipped_at IS NOT NULL", name: "orders_shipped_at_check"
-    t.check_constraint "status::text = ANY (ARRAY['requested'::character varying, 'on_hold'::character varying, 'shipped'::character varying, 'fulfilled'::character varying, 'cancelled'::character varying, 'refunded'::character varying]::text[])", name: "orders_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['requested'::character varying::text, 'on_hold'::character varying::text, 'shipped'::character varying::text, 'fulfilled'::character varying::text, 'cancelled'::character varying::text, 'refunded'::character varying::text])", name: "orders_status_check"
     t.check_constraint "tracking_carrier IS NULL OR tracking_carrier::text ~ '^[a-z_]{2,20}$'::text", name: "orders_tracking_carrier_check"
     t.check_constraint "tracking_label IS NULL OR tracking_carrier::text = 'other'::text AND char_length(tracking_label::text) >= 1 AND char_length(tracking_label::text) <= 40 AND tracking_label::text !~ '[[:cntrl:]]'::text", name: "orders_tracking_label_check"
     t.check_constraint "tracking_number IS NULL OR tracking_number::text ~ '^[A-Za-z0-9][A-Za-z0-9 -]{2,59}$'::text AND shipped_at IS NOT NULL", name: "orders_tracking_number_check"
@@ -464,7 +464,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.datetime "created_at", null: false
     t.index ["created_at"], name: "index_privacy_request_tokens_on_created_at"
     t.index ["jti"], name: "index_privacy_request_tokens_on_jti", unique: true
-    t.check_constraint "action IS NULL OR (action::text = ANY (ARRAY['delete'::character varying, 'export'::character varying]::text[]))", name: "privacy_request_tokens_action_check"
+    t.check_constraint "action IS NULL OR (action::text = ANY (ARRAY['delete'::character varying::text, 'export'::character varying::text]))", name: "privacy_request_tokens_action_check"
     t.check_constraint "length(jti::text) >= 1 AND length(jti::text) <= 255", name: "privacy_request_tokens_jti_check"
     t.check_constraint "request_id IS NULL OR length(request_id::text) <= 255", name: "privacy_request_tokens_request_id_check"
   end
@@ -479,7 +479,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.index ["reviewer_id"], name: "index_project_reviews_on_reviewer_id"
     t.check_constraint "note IS NULL OR char_length(note) <= 500", name: "project_reviews_note_length_check"
     t.check_constraint "status::text <> 'flagged'::text OR note IS NOT NULL AND note ~ '[^[:space:]]'::text", name: "project_reviews_flag_needs_note_check"
-    t.check_constraint "status::text = ANY (ARRAY['ok'::character varying, 'flagged'::character varying]::text[])", name: "project_reviews_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['ok'::character varying::text, 'flagged'::character varying::text])", name: "project_reviews_status_check"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -506,12 +506,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.check_constraint "char_length(idea) <= 500", name: "projects_idea_length_check"
     t.check_constraint "char_length(name::text) >= 1 AND char_length(name::text) <= 60 AND btrim(name::text) <> ''::text", name: "projects_name_check"
     t.check_constraint "demo_url IS NULL OR char_length(demo_url::text) <= 300 AND demo_url::text ~ '^https://[^[:space:]/?\#@]+([/?#][^[:space:]]*)?$'::text", name: "projects_demo_url_check"
-    t.check_constraint "guide_key IS NULL OR (guide_key::text = ANY (ARRAY['sd'::character varying, 'playground'::character varying]::text[]))", name: "projects_guide_key_check"
+    t.check_constraint "guide_key IS NULL OR (guide_key::text = ANY (ARRAY['sd'::character varying::text, 'playground'::character varying::text]))", name: "projects_guide_key_check"
     t.check_constraint "jsonb_typeof(todos) = 'array'::text AND jsonb_array_length(todos) <= 10", name: "projects_todos_check"
-    t.check_constraint "kind::text = ANY (ARRAY['game'::character varying, 'website'::character varying, 'app'::character varying, 'tool'::character varying, 'hardware'::character varying, 'undecided'::character varying]::text[])", name: "projects_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['game'::character varying::text, 'website'::character varying::text, 'app'::character varying::text, 'tool'::character varying::text, 'hardware'::character varying::text, 'undecided'::character varying::text])", name: "projects_kind_check"
     t.check_constraint "repo_url IS NULL OR char_length(repo_url::text) <= 300 AND repo_url::text ~ '^https://github\\.com/[a-z0-9-]{1,39}/(?!\\.+$)[a-z0-9._-]{1,100}$'::text", name: "projects_repo_url_check"
-    t.check_constraint "review_status::text = ANY (ARRAY['unreviewed'::character varying, 'ok'::character varying, 'flagged'::character varying]::text[])", name: "projects_review_status_check"
-    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "projects_status_check"
+    t.check_constraint "review_status::text = ANY (ARRAY['unreviewed'::character varying::text, 'ok'::character varying::text, 'flagged'::character varying::text])", name: "projects_review_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying::text, 'archived'::character varying::text])", name: "projects_status_check"
   end
 
   create_table "quest_completions", force: :cascade do |t|
@@ -537,7 +537,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.datetime "updated_at", null: false
     t.index ["starts_on"], name: "index_quests_on_starts_on", unique: true
     t.check_constraint "ends_on >= starts_on", name: "quests_dates_check"
-    t.check_constraint "goal_key::text = ANY (ARRAY['code_days'::character varying, 'streak_days'::character varying, 'ship_project'::character varying, 'link_hackatime'::character varying, 'add_project'::character varying]::text[])", name: "quests_goal_key_check"
+    t.check_constraint "goal_key::text = ANY (ARRAY['code_days'::character varying::text, 'streak_days'::character varying::text, 'ship_project'::character varying::text, 'link_hackatime'::character varying::text, 'add_project'::character varying::text])", name: "quests_goal_key_check"
     t.check_constraint "jsonb_typeof(goal_params) = 'object'::text", name: "quests_goal_params_check"
     t.check_constraint "reward_coins >= 1 AND reward_coins <= 1000", name: "quests_reward_coins_check"
   end
@@ -585,11 +585,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.datetime "updated_at", null: false
     t.string "hackatime_projects", default: [], null: false, array: true
     t.index ["project_id"], name: "index_ships_on_project_id"
-    t.index ["project_id"], name: "index_ships_one_open_per_project", unique: true, where: "((status)::text = ANY ((ARRAY['draft'::character varying, 'submitted'::character varying])::text[]))"
+    t.index ["project_id"], name: "index_ships_one_open_per_project", unique: true, where: "((status)::text = ANY (ARRAY[('draft'::character varying)::text, ('submitted'::character varying)::text]))"
     t.index ["reviewer_id"], name: "index_ships_on_reviewer_id"
     t.index ["status", "submitted_at"], name: "index_ships_on_status_and_submitted_at"
     t.index ["user_id", "created_at"], name: "index_ships_on_user_id_and_created_at"
-    t.check_constraint "(status::text <> ALL (ARRAY['approved'::character varying, 'rejected'::character varying]::text[])) OR reviewed_at IS NOT NULL", name: "ships_reviewed_at_check"
+    t.check_constraint "(status::text <> ALL (ARRAY['approved'::character varying::text, 'rejected'::character varying::text])) OR reviewed_at IS NOT NULL", name: "ships_reviewed_at_check"
     t.check_constraint "(status::text = 'approved'::text) = (approved_seconds IS NOT NULL)", name: "ships_approved_seconds_presence_check"
     t.check_constraint "(status::text = 'rejected'::text) = (rejection_reason IS NOT NULL)", name: "ships_rejection_reason_presence_check"
     t.check_constraint "approved_seconds IS NULL OR approved_seconds > 0 AND approved_seconds <= coded_seconds", name: "ships_approved_seconds_range_check"
@@ -603,7 +603,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.check_constraint "status::text = 'draft'::text OR description IS NOT NULL AND char_length(btrim(description)) >= 1", name: "ships_description_required_check"
     t.check_constraint "status::text = 'draft'::text OR repo_url IS NOT NULL", name: "ships_repo_required_check"
     t.check_constraint "status::text = 'draft'::text OR submitted_at IS NOT NULL", name: "ships_submitted_at_check"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'submitted'::character varying, 'approved'::character varying, 'rejected'::character varying, 'withdrawn'::character varying]::text[])", name: "ships_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'submitted'::character varying::text, 'approved'::character varying::text, 'rejected'::character varying::text, 'withdrawn'::character varying::text])", name: "ships_status_check"
     t.check_constraint "window_end_date >= window_start_date", name: "ships_window_dates_check"
   end
 
@@ -637,8 +637,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.check_constraint "image_content IS NULL AND image_width IS NULL AND image_height IS NULL AND image_byte_size IS NULL AND image_sha256 IS NULL OR image_content IS NOT NULL AND image_width > 0 AND image_height > 0 AND image_byte_size >= 1 AND image_byte_size <= 5000000 AND octet_length(image_content) = image_byte_size AND image_sha256::text ~ '^[0-9a-f]{64}$'::text AND SUBSTRING(image_content FROM 1 FOR 4) = '\\x52494646'::bytea AND SUBSTRING(image_content FROM 9 FOR 4) = '\\x57454250'::bytea", name: "shop_items_image_check"
     t.check_constraint "key::text ~ '^[a-z0-9_]{1,60}$'::text", name: "shop_items_key_check"
     t.check_constraint "kind::text = 'free_signup'::text AND coins = 0 OR kind::text = 'regular'::text AND coins > 0", name: "shop_items_kind_coins_check"
-    t.check_constraint "kind::text = ANY (ARRAY['regular'::character varying, 'free_signup'::character varying]::text[])", name: "shop_items_kind_check"
-    t.check_constraint "tier::text = ANY (ARRAY['daily'::character varying, 'weekly'::character varying, 'shop'::character varying]::text[])", name: "shop_items_tier_check"
+    t.check_constraint "kind::text = ANY (ARRAY['regular'::character varying::text, 'free_signup'::character varying::text])", name: "shop_items_kind_check"
+    t.check_constraint "tier::text = ANY (ARRAY['daily'::character varying::text, 'weekly'::character varying::text, 'shop'::character varying::text])", name: "shop_items_tier_check"
   end
 
   create_table "slack_profiles", force: :cascade do |t|
@@ -658,7 +658,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.index ["user_id"], name: "index_slack_profiles_on_user_id", unique: true
     t.check_constraint "(picture IS NULL) = (picture_sha256 IS NULL)", name: "slack_profiles_picture_pair_check"
     t.check_constraint "picture_bytes IS NULL OR picture_bytes >= 1 AND picture_bytes <= 100000", name: "slack_profiles_picture_bytes_check"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'ok'::character varying, 'no_picture'::character varying, 'missing_scope'::character varying, 'invalid_auth'::character varying, 'not_found'::character varying, 'no_token'::character varying, 'ratelimited'::character varying, 'error'::character varying]::text[])", name: "slack_profiles_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'ok'::character varying::text, 'no_picture'::character varying::text, 'missing_scope'::character varying::text, 'invalid_auth'::character varying::text, 'not_found'::character varying::text, 'no_token'::character varying::text, 'ratelimited'::character varying::text, 'error'::character varying::text])", name: "slack_profiles_status_check"
   end
 
   create_table "team_cooldowns", force: :cascade do |t|
@@ -750,8 +750,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_160000) do
     t.check_constraint "onboarding_step >= 0 AND onboarding_step <= 6", name: "users_onboarding_step_check"
     t.check_constraint "pace_minutes IS NULL OR (pace_minutes = ANY (ARRAY[15, 30, 45, 60, 90, 120, 180, 240]))", name: "users_pace_minutes_check"
     t.check_constraint "profile_name IS NULL OR char_length(profile_name::text) >= 1 AND char_length(profile_name::text) <= 30", name: "users_profile_name_length_check"
-    t.check_constraint "project_kind IS NULL OR (project_kind::text = ANY (ARRAY['game'::character varying, 'website'::character varying, 'app'::character varying, 'tool'::character varying, 'hardware'::character varying, 'undecided'::character varying]::text[]))", name: "users_project_kind_check"
-    t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying, 'pending'::character varying, 'verified'::character varying, 'ineligible'::character varying]::text[])", name: "users_verification_status_check"
+    t.check_constraint "project_kind IS NULL OR (project_kind::text = ANY (ARRAY['game'::character varying::text, 'website'::character varying::text, 'app'::character varying::text, 'tool'::character varying::text, 'hardware'::character varying::text, 'undecided'::character varying::text]))", name: "users_project_kind_check"
+    t.check_constraint "verification_status::text = ANY (ARRAY['needs_submission'::character varying::text, 'pending'::character varying::text, 'verified'::character varying::text, 'ineligible'::character varying::text])", name: "users_verification_status_check"
   end
 
   create_table "welcome_back_windows", force: :cascade do |t|

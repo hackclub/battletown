@@ -13,21 +13,53 @@
   <section class="card" aria-labelledby="bc-buttons">
     <header>
       <h2 id="bc-buttons">Buttons</h2>
-      <p>Pink face with white text and its own darker edge; no outline, no offset shadow.</p>
+      <p>Flat fills, no outline, no shadow. Hover and press are one step darker.</p>
     </header>
     <section class="flex flex-wrap items-center gap-3">
       <button type="button" class="btn">Primary</button>
       <button type="button" class="btn" data-variant="secondary">Secondary</button>
-      <button type="button" class="btn" data-variant="outline">Outline</button>
+      <button type="button" class="btn" data-variant="blue">Blue</button>
       <button type="button" class="btn" data-variant="ghost">Ghost</button>
       <button type="button" class="btn" data-variant="destructive">Destructive</button>
-      <button type="button" class="btn" data-variant="link">Link</button>
       <button type="button" class="btn" disabled>Disabled</button>
       <button type="button" class="btn" data-size="lg">Large</button>
-      <button type="button" class="btn" data-size="sm">Small</button>
       <span class="badge">Badge</span>
       <span class="badge" data-variant="secondary">Secondary</span>
       <span class="badge" data-variant="outline">Outline</span>
+    </section>
+  </section>
+
+  <section class="flex flex-col gap-6" aria-labelledby="bc-options">
+    <header>
+      <h2 id="bc-options">Choices</h2>
+      <p>A picked option is solid blue with all its text white. The native input's checked state does it, with no script.</p>
+    </header>
+    <section class="grid gap-8">
+      <fieldset class="option-list">
+        <legend class="label mb-3">One choice: full-width rows</legend>
+        <label class="option-row"><input type="radio" name="bc-pace" value="steady" checked><span>Steady</span><span class="option-row__note">About 5 hours a week</span></label>
+        <label class="option-row"><input type="radio" name="bc-pace" value="sprint"><span>Sprint</span><span class="option-row__note">About 10 hours a week</span></label>
+        <label class="option-row"><input type="radio" name="bc-pace" value="chill"><span>Chill</span><span class="option-row__note">An hour here and there</span></label>
+      </fieldset>
+
+      <fieldset class="option-list">
+        <legend class="label mb-3">Several choices: checkbox rows</legend>
+        <label class="option-row option-row--check"><input type="checkbox" name="bc-days[]" value="mon" checked><span class="option-row__mark" aria-hidden="true"></span><span>Monday</span><span class="option-row__note">After school</span></label>
+        <label class="option-row option-row--check"><input type="checkbox" name="bc-days[]" value="tue"><span class="option-row__mark" aria-hidden="true"></span><span>Tuesday</span></label>
+        <label class="option-row option-row--check"><input type="checkbox" name="bc-days[]" value="wed" checked><span class="option-row__mark" aria-hidden="true"></span><span>Wednesday</span></label>
+      </fieldset>
+
+      <fieldset class="option-cards">
+        <legend class="label mb-3">Picture cards (prizes)</legend>
+        <label class="option-card"><input type="radio" name="bc-prize" value="micro" checked><span class="option-card__art"><%= image_tag "prizes/placeholder/8bitdo-micro.webp", alt: "" %></span><span class="option-card__name">8BitDo Micro</span><span class="option-card__note">20 hours</span></label>
+        <label class="option-card"><input type="radio" name="bc-prize" value="pro2"><span class="option-card__art"><%= image_tag "prizes/placeholder/8bitdo-pro-2.webp", alt: "" %></span><span class="option-card__name">8BitDo Pro 2</span><span class="option-card__note">40 hours</span></label>
+        <label class="option-card"><input type="radio" name="bc-prize" value="ult2"><span class="option-card__art"><%= image_tag "prizes/placeholder/8bitdo-ultimate-2.webp", alt: "" %></span><span class="option-card__name">8BitDo Ultimate 2</span><span class="option-card__note">60 hours</span></label>
+      </fieldset>
+
+      <div class="grid gap-2">
+        <label for="bc-progress" class="label">Progress</label>
+        <progress id="bc-progress" class="progress" max="100" value="45">45 percent</progress>
+      </div>
     </section>
   </section>
 
