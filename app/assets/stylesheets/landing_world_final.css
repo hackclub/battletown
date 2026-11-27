@@ -40,6 +40,7 @@
 }
 .landing .world--final .shore--air { background: #d0e5ee; overflow: hidden; }
 /* Darker sand just inside the lip: three strips, each its own edge lifted 10, 6 and 3 design px, drawn under the sky so only the strip above the edge shows. */
+.landing .world--final .final__side { position: absolute; left: 50%; top: calc(var(--wu) * -66); width: calc(var(--wu) * 1576); height: auto; max-width: none; translate: -50% 0; pointer-events: none; } /* the sand's constructed side: top 14 wu below the box top (script/export_landing_world.py, 6c); the box top is 80 wu above the section */
 .landing .world--final .shore--shade { background: rgba(150, 105, 20, 0.07); }
 .landing .world--final .shore--shade1 { --o: -10; }
 .landing .world--final .shore--shade2 { --o: -6; }

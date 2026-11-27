@@ -218,6 +218,63 @@ def sand_cut(art_img, y0=5700, y1=7300):
 # --- sand-cut-end
 save("sand", "sand", sand_cut(art), keys="c")  # only @c: the page draws it inside an SVG clipped by the traced shore curve (see _sand.html.erb)
 
+# 6c. The sand's side (final band). The sand's tilted edge (the polygon in landing_world_final.css, listed here in wu from the page middle, y in
+#    wu below the final band's box top) gets a CONSTRUCTED front, the way the prize stones get theirs (script/export_prize_stones.py): under the
+#    top plane's edge a thin rim band, then one flat face, in flat tones of the sand family, ending in a base line that follows the edge loosely
+#    with a few calm, seeded, low-frequency irregularities. No gradient, texture, outline or shadow; antialiased shape edges only.
+#    The image is 3152 wide (the painting's width, 1 canvas px = 0.5 wu), laid under the edge, its top 1.5 wu above the edge so the sky
+#    never shows between sand and rim. Sky starts at the edge (the CSS clip) and shows below the base.
+# --- sand-side-begin
+SIDE_EDGE = [(-788, 64.5), (-638, 55), (-488, 48), (-338, 42), (-188, 37), (0, 31.5), (162, 27.5), (312, 25), (512, 22.5), (712, 20.5), (787.5, 19)]
+SIDE_TOP_WU = 14          # the image's top, wu below the final band's box top
+SIDE_RIM = (211, 175, 108)    # his darker sand #d3af6c
+SIDE_FACE = (192, 158, 102)   # the earth tone derived from his wall face
+SIDE_RIM_WU, SIDE_OVERLAP_WU = 9.0, 1.5
+SIDE_DEPTH = [(-788, 50), (-300, 58), (200, 78), (788, 86)]  # face height in wu: shallower under the heading, taller on the right; nothing under it but sky
+
+
+def sand_side(width=3152, supersample=1):
+    xs = np.arange(width)
+    xwu = xs / 2.0 - 788.0
+    ex, ey = zip(*SIDE_EDGE)
+    edge = np.interp(xwu, ex, ey)                      # the existing edge, in wu
+    dx, dy = zip(*SIDE_DEPTH)
+    depth = np.interp(xwu, dx, dy)
+    rng = np.random.default_rng(2026)
+
+    def noise(sigma, amp):
+        v = ndi_gauss(rng.standard_normal(width + 6 * sigma), sigma)[3 * sigma:3 * sigma + width]
+        return amp * v / (np.abs(v).max() + 1e-9)
+
+    base = edge + SIDE_RIM_WU + depth + noise(260, 4.5) + noise(90, 1.6)    # wu
+    rim = SIDE_RIM_WU + noise(70, 1.8) + noise(25, 0.5)                      # wu thickness
+    y_top = (edge - SIDE_OVERLAP_WU - SIDE_TOP_WU) * 2                      # canvas px from the image top
+    y_rim = (edge + rim - SIDE_TOP_WU) * 2
+    y_base = (base - SIDE_TOP_WU) * 2
+    h = int(np.ceil(y_base.max())) + 4
+    y = np.arange(h, dtype=np.float32)[:, None]
+
+    def cover(lo, hi):
+        return np.clip(np.minimum(y + 1, hi[None, :]) - np.maximum(y, lo[None, :]), 0, 1)
+
+    face_a = cover(y_top, y_base)          # the whole front
+    rim_a = cover(y_top, y_rim)            # the rim over its top
+    out = np.zeros((h, width, 4), np.float32)
+    # premultiplied "over": face first, rim on top (rim only where inside the front)
+    rim_a = np.minimum(rim_a, face_a)
+    col = (np.array(SIDE_FACE, np.float32)[None, None, :] * (face_a - rim_a)[..., None] + np.array(SIDE_RIM, np.float32)[None, None, :] * rim_a[..., None])
+    out[..., :3] = col / np.maximum(face_a, 1e-4)[..., None]
+    out[..., 3] = face_a * 255
+    return Image.fromarray(out.clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def ndi_gauss(v, sigma):
+    r = int(4 * sigma)
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
+    return np.convolve(v, k / k.sum(), mode="same")
+# --- sand-side-end
+save("final", "sand-side", sand_side())
+
 # 7. Shells: layers 25 and 26, recolored with the page's own palette. The painted shell has three tones (flat fills of the painter's
 #    brush shapes): light (181,135,37) luminance 137.6, mid (154,104,13) 108.6 and a dark shaded edge (146,82,2) 92, plus an orange
 #    rim (174,112,10) between mid and light. Each pixel's luminance is mapped piecewise-linearly onto dark -> mid -> light of the new hue,
