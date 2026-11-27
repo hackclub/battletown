@@ -19,7 +19,9 @@
   <%= render "onboardings/transition", kind: @transition if @transition %>
 
   <div class="onboarding-page__content stack <%= "transition-enter" if @transition %>">
-    <div class="onboarding-top">
+    <%# Kept in place by Turbo between steps (data-turbo-permanent): the onboarding-top controller moves its bar to the new step's value, so the fill slides instead of being redrawn. %>
+    <div class="onboarding-top" id="onboarding-top" data-turbo-permanent data-controller="onboarding-top"
+         data-action="turbo:before-render@document->onboarding-top#prepare turbo:render@document->onboarding-top#update">
       <% if back %>
         <%= link_to back, class: "onboarding-top__back", "aria-label": "Go back" do %><span aria-hidden="true">‹</span><% end %>
       <% else %>
