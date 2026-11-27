@@ -557,15 +557,15 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .onboarding-dock {
   position: fixed;
   z-index: 101; /* above the full-screen moment (100), so the flight is seen */
-  top: var(--space-6);
+  top: var(--space-2); /* its center (top + half the size) is the logo center, 58px */
   left: var(--space-6);
-  width: 9.5rem;
-  height: 9.5rem;
+  width: 6.25rem;
+  height: 6.25rem;
   background: none;
   box-shadow: none;
 }
 .onboarding-dock__image { display: block; width: 100%; height: 100%; object-fit: contain; }
-@media (max-width: 39.99rem) { .onboarding-dock { top: var(--space-2); left: var(--space-2); width: 5.75rem; height: 5.75rem; } }
+@media (max-width: 39.99rem) { .onboarding-dock { top: calc(var(--space-1) + 0.125rem); left: var(--space-2); width: 5rem; height: 5rem; } }
 /* the picture tile is a step down from the white card, so it reads as a tile inside it (and white product shots do not vanish) */
 .choice-grid--cards .choice__art { background: color-mix(in srgb, var(--color-cool-ground) 45%, var(--color-cool-tint)); }
 @media (max-width: 39.99rem) { .choice-grid--cards .choice__art { background: none; } }
