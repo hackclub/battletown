@@ -71,5 +71,5 @@
       <p class="alert alert--warning onboarding__note" role="note">Your Hack Club account isn't linked to a Slack account yet, so we can't DM you. Your plan is saved for when it is.</p>
     <% end %>
     <%# TODO: SMS reminders, pending a privacy decision. %>
-    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
+    <div class="onboarding__actions"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>

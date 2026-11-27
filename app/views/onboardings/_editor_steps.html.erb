@@ -7,12 +7,12 @@
       <% OnboardingsHelper::HACKATIME_EDITORS.each do |editor| %>
         <label class="choice">
           <%= radio_button_tag "editor", editor[:key], false, id: "editor_#{editor[:key]}", class: "choice__input", data: { onboarding_editor_target: "choice" } %>
-          <span class="choice__body"><span class="choice__name"><%= editor[:name] %></span></span>
+          <span class="choice__body"><span class="choice__name"><%= editor[:name] %></span><%= onboarding_check %></span>
         </label>
       <% end %>
       <label class="choice">
         <%= radio_button_tag "editor", "other", false, id: "editor_other", class: "choice__input", data: { onboarding_editor_target: "choice" } %>
-        <span class="choice__body"><span class="choice__name">Something else</span></span>
+        <span class="choice__body"><span class="choice__name">Something else</span><%= onboarding_check %></span>
       </label>
     </div>
   </fieldset>

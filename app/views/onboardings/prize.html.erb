@@ -22,12 +22,12 @@
                 <span class="choice__meta"><%= onboarding_hours_text(prize) %></span>
                 <span class="choice__desc"><%= prize.description %></span>
               </span>
+              <%= onboarding_check %>
             </span>
           </label>
         <% end %>
       </div>
-      <p class="onboarding__hint"><%= OnboardingDesignHelper::HOURS_NOTE %></p>
     <% end %>
-    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
+    <div class="onboarding__actions"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>
 <% end %>

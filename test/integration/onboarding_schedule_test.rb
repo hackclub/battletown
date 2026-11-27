@@ -63,15 +63,16 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     visitor_through_project
     get onboarding_step_path("schedule")
     assert_select "h1", /How long is a coding day\?/
-    assert_select ".pace-choices button[type=submit][name='user[pace_minutes]']", 4
-    assert_select "button[name='user[pace_minutes]'][value='60']", /1 hour/
-    assert_select "button[name='user[pace_minutes]'][value='60'] .pace-choice__days", /About \d+ days? of coding/
+    assert_select ".pace-choices input[type=radio][name='user[pace_minutes]']", 4
+    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .pace-choice__time", /1 hour/
+    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .pace-choice__days", /About \d+ days? to your /
     assert_select "input[type=hidden][name='user[coding_day_names][]']", 7
     assert_select "input[type=hidden][name='user[coding_time]'][value='18:00']"
-    assert_select "select#user_time_zone[name='user[time_zone]']"
-    assert_select "#pace-hint", "This is the pace your prize check on the dashboard uses. You can change it any time."
-    assert_select "select, input[type=time], .day-times", 1 # only the time zone select: no dropdown for pace, no time pickers
-    assert_select "button[aria-pressed=true]", 0
+    assert_select "select#user_time_zone", 0 # the browser's zone is sent in a hidden field; nothing is asked
+    assert_select "input[type=hidden][name='user[time_zone]']"
+    assert_select "#pace-hint", 0
+    assert_select "select, input[type=time], .day-times", 0 # no dropdown, no time pickers, no time zone select
+    assert_select ".pace-choices input[checked]", 0
   end
 
   test "someone editing their plan still gets the daily pace as a select with the saved one chosen" do
@@ -94,7 +95,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     user.update!(prize_key: "tshirt", pace_minutes: 60, coding_days: 127, coding_time: "18:00", time_zone: "UTC", onboarding_step: 3)
     sign_in_as user
     get onboarding_step_path("schedule")
-    shown = css_select("button[name='user[pace_minutes]'][value='60'] .pace-choice__days").first.text[/\d+/].to_i
+    shown = css_select("label:has(input[name='user[pace_minutes]'][value='60']) .pace-choice__days").first.text[/\d+/].to_i
     plan = Dashboard::Presenter.new(user: user).prize_pace.plan
     date = Date.strptime(plan[/around (\d+ \w+)/, 1], "%d %b")
     today = Dashboard::Presenter.new(user: user).today_date
@@ -108,8 +109,9 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     assert_equal 120, draft_pace
 
     get onboarding_step_path("schedule")
-    assert_select "button[name='user[pace_minutes]'][value='120'][aria-pressed=true]", /2 hours/
-    assert_select "button[aria-pressed=true]", 1
+    assert_select "input[name='user[pace_minutes]'][value='120'][checked]"
+    assert_select ".pace-choices input[checked]", 1
+    assert_select "[class*=is-picked], .pace-choices [aria-pressed]", 0
 
     sign_in_as User.new(hca_uid: "ident!pace1")
     assert_equal 120, User.find_by!(hca_uid: "ident!pace1").pace_minutes
@@ -316,6 +318,36 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
   test "the database refuses a coding_times that is not an object" do
     assert_raises(ActiveRecord::StatementInvalid) { users(:onboarded).update_column(:coding_times, [ "17:00" ]) }
   end
+
+  # -- the browser's time zone is sent with the pace step and never asked ----------------------------------
+
+  def pace_with_zone(zone)
+    visitor_through_project
+    step("schedule", pace_minutes: "60", coding_day_names: User::DAYS, coding_time: "18:00", time_zone: zone)
+    OnboardingDraft.new(session).time_zone
+  end
+
+  test "a known IANA zone from the browser is saved as the app's zone name" do
+    assert_equal "Eastern Time (US & Canada)", pace_with_zone("America/New_York")
+  end
+
+  test "UTC from a CI browser maps cleanly" do
+    assert_equal "UTC", pace_with_zone("UTC")
+  end
+
+  test "a missing or unknown IANA zone falls back to UTC and never to the raw value" do
+    assert_equal "UTC", pace_with_zone("")
+    assert_equal "UTC", pace_with_zone("Mars/Olympus")
+  end
+
+  test "the pace line names the picked prize and counts the days to it, and no prize gives no days line" do
+    visitor_through_project
+    get onboarding_step_path("schedule")
+    prize = Prize.find(OnboardingDraft.new(session).prize_key)
+    assert_select "h1 + .onboarding__encouragement, .onboarding__encouragement", /#{Regexp.escape(prize.name)}/
+    days = (Rational(prize.coins * 3600, Game::Config.current.coins_per_hour) / (60 * 60)).ceil
+    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .pace-choice__days", "About #{days} #{"day".pluralize(days)} to your #{prize.name}"
+  end
 end
 
 class OnboardingsHelperScheduleTest < ActionView::TestCase
@@ -342,4 +374,5 @@ class OnboardingsHelperScheduleTest < ActionView::TestCase
     assert_equal "Mon at 5:00 pm, Tue at 6:00 pm", plan(%w[monday tuesday], nil, { "monday" => "17:00", "tuesday" => "18:00" })
     assert_equal "Mon at 5:00 pm, Tue", plan(%w[monday tuesday], nil, { "monday" => "17:00" })
   end
+
 end

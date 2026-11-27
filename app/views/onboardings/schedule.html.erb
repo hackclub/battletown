@@ -1,5 +1,6 @@
 <% editing = current_user&.onboarded? %>
+<% prize = onboarding_saved_prize if subject.prize_key_in_database.present? %>
 <%# Someone already in (changing their plan from the dashboard or settings) still gets every field; the first run is one question. %>
-<%= render layout: "onboardings/frame", locals: editing ? { step: "schedule" } : { step: "schedule", title: "How long is a coding day?" } do %>
+<%= render layout: "onboardings/frame", locals: editing ? { step: "schedule" } : { step: "schedule", title: "How long is a coding day?", encouragement: (prize ? "Pick the pace that gets you your #{prize.name}." : nil) } do %>
   <%= render(editing ? "onboardings/schedule_full" : "onboardings/schedule_pace") %>
 <% end %>
