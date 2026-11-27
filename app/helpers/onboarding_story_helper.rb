@@ -9,6 +9,25 @@ module OnboardingStoryHelper
     wish if Onboarding::Story.dated_paces(answers.prize&.hours).any? { |value, _| value == wish }
   end
 
+  COMING_WHEN = { "before_school" => "Before school", "after_school" => "After school", "late" => "Late at night", "weekends" => "Weekends" }.freeze
+
+  # The next seven days from today for the summary's week strip: [{ date:, short:, long:, coding:, today:, boss_end: }]. A coding day is one of the saved coding days
+  # (every day until they pick), or Saturday and Sunday only when they said they usually code on weekends. boss_end marks the day this week's boss ends, when it ends inside
+  # these seven days.
+  def onboarding_week
+    today = Time.zone.today
+    boss = onboarding_boss
+    boss_end = (today + boss.days_left - 1) if boss.boss? && boss.days_left.positive?
+    names = answers["coding_when"] == "weekends" ? %w[saturday sunday] : (subject.coding_day_names.presence || User::DAYS)
+    (0..6).map do |offset|
+      date = today + offset
+      { date: date, short: date.strftime("%a"), long: date.strftime("%A"), coding: names.include?(date.strftime("%A").downcase), today: offset.zero?, boss_end: date == boss_end }
+    end
+  end
+
+  # How tall a day's bar is: the pace's place among the four real choices (1 to 4).
+  def onboarding_bar_step(minutes) = [ Onboarding::DailyTime::PACES.index(minutes).to_i + 1, 1 ].max
+
   def onboarding_pace_minutes = answers.pace_minutes || User::PACE_DEFAULT
 
   def onboarding_reflection

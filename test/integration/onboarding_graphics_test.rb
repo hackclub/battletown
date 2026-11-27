@@ -103,4 +103,28 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     get onboarding_step_path("schedule")
     assert_select "input[type=range][value='1']", 1 # going back restores the stop
   end
+
+  test "the summary shows the next seven days, a bar on each coding day, today marked" do
+    open_step("summary")
+    assert_select ".week .week__day", 7
+    assert_select ".week__day--today", 1
+    assert_select ".week__bar", minimum: 1 # one per saved coding day
+    assert_select ".week__day--boss", 0 # no boss covers today
+    assert_no_inline_style
+  end
+
+  test "the summary strip marks only the saved coding days and flags the day this week's boss ends" do
+    today = Date.current
+    friday = today - ((today.wday - 5) % 7)
+    Boss.create!(name: "Strip Boss", art_key: "placeholder", hp_seconds: 100 * 3600, starts_on: friday, ends_on: friday + 6)
+    begin_quiz
+    reach_quiz_step("schedule", project_kind: "game")
+    patch onboarding_step_path("schedule"), params: { user: { pace_minutes: 60, coding_day_names: %w[monday wednesday], coding_time: "18:00", time_zone: "UTC" } }
+    reach_quiz_step("summary", project_kind: "game")
+    get onboarding_step_path("summary")
+    assert_select ".week__bar", 2
+    assert_select ".week__day--boss", 1
+    assert_select ".week__flag svg", 1
+    assert_no_inline_style
+  end
 end

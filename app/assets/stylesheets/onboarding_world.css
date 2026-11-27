@@ -869,6 +869,24 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .kind__edge { fill: var(--color-cool-tint-edge); } .kind__yellow { fill: var(--color-yellow); }
 .kind__line { fill: none; stroke: var(--color-yellow); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
 @media (prefers-reduced-motion: no-preference) { .kind__art { animation: trail-pop 0.45s cubic-bezier(.3, 1.6, .5, 1) 0.25s both; } }
+/* summary: the next seven days. Bars are as tall as the pace is big (four steps); today is marked; the boss's last day carries a flag. Flat; pops in left to right. */
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-2); margin: 0; padding: 0; list-style: none; width: min(100%, 28rem); }
+.week__day { display: grid; grid-template-rows: 1.25rem var(--week-well, 4.5rem) auto auto; justify-items: center; gap: var(--space-1); padding: var(--space-2) 0; border-radius: var(--radius-md); background: transparent; color: var(--color-ink-blue); }
+.week__day--today { background: var(--color-surface); }
+.week--1 { --week-well: 1.25rem; } .week--2 { --week-well: 2.25rem; } .week--3 { --week-well: 3.5rem; }
+.week__flag svg { display: block; width: 0.9rem; height: 1.15rem; }
+.week__pole { stroke: var(--color-navy); stroke-width: 2; stroke-linecap: round; fill: none; } .week__cloth { fill: var(--color-yellow); }
+.week__well { display: flex; align-items: flex-end; width: 100%; justify-content: center; }
+.week__bar { display: block; width: 55%; border-radius: var(--radius-sm); background: var(--color-blue); transform-origin: bottom center; }
+.week__bar--1 { height: 1.25rem; } .week__bar--2 { height: 2.25rem; } .week__bar--3 { height: 3.5rem; } .week__bar--4 { height: 4.5rem; }
+.week__mins { min-height: 1em; font-weight: 700; font-size: var(--text-sm); line-height: 1; }
+.week__name { font-weight: 800; font-size: var(--text-sm); line-height: 1; }
+.week__caption { margin: 0; font-weight: 600; color: var(--color-ink-blue); }
+@media (prefers-reduced-motion: no-preference) {
+  .week__bar { animation: bar-grow 0.45s cubic-bezier(.3, 0, .2, 1) both; }
+  .week__day:nth-child(1) .week__bar { animation-delay: 0.25s; } .week__day:nth-child(2) .week__bar { animation-delay: 0.32s; } .week__day:nth-child(3) .week__bar { animation-delay: 0.39s; }
+  .week__day:nth-child(4) .week__bar { animation-delay: 0.46s; } .week__day:nth-child(5) .week__bar { animation-delay: 0.53s; } .week__day:nth-child(6) .week__bar { animation-delay: 0.6s; } .week__day:nth-child(7) .week__bar { animation-delay: 0.67s; }
+}
 @media (max-width: 39.99rem) {
   .info { gap: var(--space-4); }
   .info__prize { width: min(14rem, 70%); }
