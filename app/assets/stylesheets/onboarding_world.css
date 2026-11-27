@@ -633,16 +633,13 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   
   top: var(--space-6);
   left: var(--space-6);
-  display: grid;
-  place-items: center;
-  width: 6rem;
-  height: 6rem;
-  border-radius: var(--radius-lg);
-  background: var(--sec-face);
-  box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--sec-edge);
+  width: 9.5rem;
+  height: 9.5rem;
+  background: none;
+  box-shadow: none;
 }
-.onboarding-dock__image { display: block; width: 80%; height: 80%; object-fit: contain; }
-@media (max-width: 39.99rem) { .onboarding-dock { top: var(--space-4); left: var(--space-4); width: 4rem; height: 4rem; border-radius: var(--radius-md); } }
+.onboarding-dock__image { display: block; width: 100%; height: 100%; object-fit: contain; }
+@media (max-width: 39.99rem) { .onboarding-dock { top: var(--space-2); left: var(--space-2); width: 5.75rem; height: 5.75rem; } }
 .age-choice:not(.age-choice--primary):not([aria-pressed="true"]):is(:hover, :focus-visible) { box-shadow: inset 0 0 0 2px var(--sec-ring), 0 calc(var(--age-edge) + var(--age-push)) 0 var(--age-edge-color); } /* the ring is on the face; the base is the same shadow as at rest */
 /* the picture tile is a step down from the white card, so it reads as a tile inside it (and white product shots do not vanish) */
 .choice-grid--prizes .choice__art { background: color-mix(in srgb, var(--color-cool-ground) 45%, var(--color-cool-tint)); }
