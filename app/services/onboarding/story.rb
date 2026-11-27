@@ -22,7 +22,7 @@ module Onboarding
     FIRST_PROJECTS = [
       { label: "5 hours or less", percent: 54.2 },
       { label: "5 to 10 hours", percent: 19.7 },
-      { label: "More than 10 hours", percent: 26.1 }
+      { label: "Over 10 hours", percent: 26.1 }
     ].freeze
     FIRST_PROJECT_MEDIAN = 4.8
 
