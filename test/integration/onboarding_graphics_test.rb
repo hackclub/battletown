@@ -55,4 +55,17 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     assert_select "ul.help li.help__row:first-child strong", "Losing motivation?"
     assert_no_inline_style
   end
+
+  test "the first projects screen sits right before the pace question and carries Hack Club's numbers with their footnote" do
+    open_step("small")
+    assert_select "h1", "First projects are small"
+    assert_select ".bars__value", 3
+    assert_select ".bars__value", "54.2%"
+    assert_select ".bars__value", "73.9%"
+    assert_select ".bars__median-text", /4\.8 hours/
+    assert_select ".info__note", "*Based on 17,053 first projects approved by Hack Club."
+    assert_no_inline_style
+    patch onboarding_step_path("small")
+    assert_redirected_to onboarding_step_path("schedule")
+  end
 end

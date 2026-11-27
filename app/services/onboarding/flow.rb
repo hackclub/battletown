@@ -35,6 +35,7 @@ module Onboarding
       step("idea", :choice, 2, question: true, show: ->(a) { a.kind == "undecided" }), # only the "Not sure yet" path: elsewhere "started" covers it
       step("editor", :choice, 2, question: true),
       step("coding_when", :choice, 2, question: true),
+      step("small", :info, 2),
       step("schedule", :choice, 3, question: true),
       step("pace_date", :info, 3),
       step("stops", :multi, 3, question: true),

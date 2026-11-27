@@ -803,6 +803,24 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   .help__row { animation: how-in 0.35s ease-out both; }
   .help__row:nth-child(1) { animation-delay: 0.25s; } .help__row:nth-child(2) { animation-delay: 0.5s; } .help__row:nth-child(3) { animation-delay: 0.75s; }
 }
+/* small: three flat bars from the baseline, then their values. The finished state is the base style. */
+.bars { display: grid; gap: var(--space-2); width: min(100%, 28rem); margin: 0; }
+.bars__svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bars__base { fill: var(--color-cool-tint-edge); }
+.bars__bar { fill: var(--color-blue); transform-box: fill-box; transform-origin: bottom center; }
+.bars__group--3 .bars__bar { fill: var(--color-cool-tint-edge); }
+.bars__value { font-family: var(--font-body); font-weight: 800; font-size: 14px; fill: var(--color-ink-blue); }
+.bars__dot { fill: var(--color-yellow); }
+.bars__median-text { font-family: var(--font-body); font-weight: 800; font-size: 11px; fill: var(--color-surface); }
+.bars__labels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding-inline: 0; text-align: center; font-weight: 700; font-size: var(--text-sm); color: var(--color-ink-blue); text-wrap: balance; }
+.bars__labels > span { padding-inline: var(--space-1); }
+.info__note { margin: 0; font-size: var(--text-sm); color: var(--color-ink-blue); text-wrap: balance; }
+@media (prefers-reduced-motion: no-preference) {
+  .bars__bar { animation: bar-grow 0.7s cubic-bezier(.3, 0, .2, 1) 0.25s both; }
+  .bars__group--2 .bars__bar { animation-delay: 0.45s; } .bars__group--3 .bars__bar { animation-delay: 0.65s; }
+  .bars__value, .bars__median { animation: trail-fade 0.3s ease-out 1.2s both; }
+}
+@keyframes bar-grow { from { scale: 1 0; } to { scale: 1 1; } }
 @media (max-width: 39.99rem) {
   .info { gap: var(--space-4); }
   .info__prize { width: min(14rem, 70%); }
