@@ -22,7 +22,7 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 /* ---- Top strip: a hairline progress bar across the whole top of the window, then one row: back at the left, the logo in the
    middle, "Sign in" as plain text at the right (only for someone not signed in). No label, no count: the numbers are there for
    screen readers only. The strip is fixed and Turbo keeps it, so it never resizes between steps and the fill slides ---- */
-.onboarding-page { --ob-top: 3.75rem; --ob-bar-fill: var(--color-yellow); --ob-bar-track: var(--color-navy-edge); }
+.onboarding-page { --ob-top: 4.5rem; --ob-bar-fill: var(--color-yellow); --ob-bar-track: var(--color-navy-edge); }
 .onboarding-top {
   position: fixed;
   inset: 0 0 auto 0;
@@ -57,17 +57,16 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   min-height: var(--ob-top);
   align-items: center;
   gap: var(--space-3);
-  max-width: 72rem;
-  margin-inline: auto;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-6);
 }
 .onboarding-top__logo { display: block; line-height: 0; }
-.onboarding-top__logo img { display: block; width: auto; height: 2.25rem; }
+.onboarding-top__logo img { display: block; width: auto; height: 3.5rem; }
+@media (max-width: 39.99rem) { .onboarding-page { --ob-top: 3.75rem; } .onboarding-top__logo img { height: 2.75rem; } }
 .onboarding-top__logo:focus-visible { outline: 3px solid var(--color-yellow); outline-offset: 3px; }
 .onboarding-top__side { justify-self: end; }
 .onboarding-top__signin-form { display: block; margin: 0; }
-.onboarding-top__signin { padding: var(--space-2); border: 0; background: none; box-shadow: none; color: var(--color-bg); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; }
-.onboarding-top__signin:hover { color: var(--color-yellow); }
+.onboarding-top__signin { padding: var(--space-2); border: 0; background: none; box-shadow: none; color: var(--color-bg); font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+.onboarding-top__signin:hover { color: var(--color-yellow); text-decoration: underline; text-underline-offset: 0.2em; }
 .onboarding-top__signin:focus-visible { outline: 3px solid var(--color-yellow); outline-offset: 2px; }
 
 /* ---- The panel: a bigger, chunkier card, with the big display heading and a yellow marker under it ---- */
@@ -476,3 +475,11 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .onboarding-page:has(.arrival) { --ob-fit-width: 64rem; }
 .arrival.reveal { grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 52rem) { .arrival.reveal:has(.reveal__boss) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---- The welcome and "others like you" moments: the same flat navy as the page, the words in cream, no painting and no card ---- */
+.transition { background: var(--color-navy); }
+.transition__art, .transition::before { display: none; }
+.transition__body { background: none; box-shadow: none; color: var(--color-bg); }
+.transition__kicker, .transition__title { color: var(--color-bg); }
+.transition__hint { color: var(--color-sky); }
+.transition--proof .transition__badge { background: var(--color-bg); box-shadow: none; }

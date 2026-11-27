@@ -7,7 +7,6 @@
 <% proof = kind == "welcome" ? nil : onboarding_proof(kind) %>
 <div class="transition transition--<%= kind == "welcome" ? "welcome" : "proof" %>" data-turbo-temporary data-onboarding-transition-target="overlay"
      data-action="click->onboarding-transition#skip" aria-hidden="true">
-  <%= image_tag "landing/hero-art-1920.webp", alt: "", class: "transition__art", srcset: hero_art_srcset, sizes: "100vw", width: 1920, height: 1236 %>
   <div class="transition__body">
     <% if proof %>
       <% prize = proof[:prize] %>
