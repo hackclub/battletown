@@ -84,4 +84,23 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     assert_equal (total / 2.0).round, position
     assert_no_inline_style
   end
+
+  test "the pace step is a four-stop slider with the stop that meets the wish preselected, and its Continue posts the same param" do
+    begin_quiz(prize: "mechanical_keyboard")
+    reach_quiz_step("when")
+    patch onboarding_step_path("when"), params: { answer: { value: "month" } }
+    reach_quiz_step("schedule")
+    get onboarding_step_path("schedule")
+    assert_select "input[type=range][min='0'][max='2'][step='1'][value='0']", 1 # 30 hours: 1, 2 and 3 hours a day finish in time; a month needs 1 hour
+    assert_select ".slider__stop", 3
+    assert_select ".slider__stop[data-minutes='60'][data-finish^='About 30 days']"
+    assert_select "input[type=hidden][name='user[pace_minutes]'][value='60']", 1
+    assert_select ".onboarding__actions .btn", /Continue/
+    assert_select ".onboarding__encouragement", "You wanted it in a month."
+    assert_no_inline_style
+    patch onboarding_step_path("schedule"), params: { user: { pace_minutes: 120, coding_day_names: %w[monday], coding_time: "18:00", time_zone: "UTC" } }
+    assert_redirected_to onboarding_step_path("pace_date")
+    get onboarding_step_path("schedule")
+    assert_select "input[type=range][value='1']", 1 # going back restores the stop
+  end
 end

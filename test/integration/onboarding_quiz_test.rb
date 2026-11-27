@@ -116,7 +116,8 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
     reach_quiz_step("schedule")
     get onboarding_step_path("schedule")
     assert_select ".onboarding__encouragement", /Pick the pace that gets you your/
-    assert_select ".choice-grid--rows input[checked]", 0
+    assert_select "input[type=range]", 1
+    assert_select "input[type=hidden][name='user[pace_minutes]'][value='30']", 1 # no wish: the smallest pace is the default
   end
 
   test "the time frame question lists real hours a day for this prize and preselects the matching pace" do
@@ -158,7 +159,8 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
       begin_quiz(prize: prize)
       reach_quiz_step("schedule")
       get onboarding_step_path("schedule")
-      assert_equal paces, css_select("input[name='user[pace_minutes]']").map { |i| i["value"].to_i }, prize
+      assert_equal paces, css_select(".slider__stop").map { |li| li["data-minutes"].to_i }, prize
+      assert_select "input[type=range][max='#{paces.size - 1}'][step='1']", 1
     end
   end
 

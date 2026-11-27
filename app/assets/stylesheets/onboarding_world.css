@@ -834,6 +834,34 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   .medal__pop { animation: trail-pop 0.5s cubic-bezier(.3, 1.6, .5, 1) 0.25s both; }
   .medal__line { animation: trail-fade 0.3s ease-out 0.6s both; }
 }
+/* the pace slider: a flat four-stop slider of minutes a day. Track a darker shade of the ground, filled part and thumb in the primary blue, stop marks and
+   labels evenly spaced under it (inset by half a thumb, so each mark sits under the thumb's center). The thumb is a 44 px touch target. */
+.slider { --thumb: 2.75rem; display: grid; gap: var(--space-6); width: 100%; }
+.slider__body { display: grid; gap: var(--space-4); }
+.slider__readout { display: grid; gap: var(--space-1); margin: 0; text-align: center; color: var(--color-ink-blue); }
+.slider__pace { font-size: var(--text-xl); font-weight: 800; line-height: 1.1; }
+.slider__finish { font-weight: 600; }
+.slider__track { --pos: 0; position: relative; display: grid; align-items: center; height: var(--thumb); }
+.slider__track::before { content: ""; position: absolute; inset-inline: 0; top: 50%; height: 0.75rem; translate: 0 -50%; border-radius: var(--radius-full); background: var(--color-cool-tint-edge); }
+.slider__fill { position: absolute; left: 0; top: 50%; height: 0.75rem; translate: 0 -50%; width: calc(var(--thumb) / 2 + var(--pos) * (100% - var(--thumb))); border-radius: var(--radius-full); background: var(--color-blue); }
+.onboarding-page .slider .slider__input { position: relative; width: 100%; height: var(--thumb); min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; appearance: none; cursor: pointer; }
+.slider__input::-webkit-slider-runnable-track { height: var(--thumb); background: transparent; border: 0; }
+.slider__input::-moz-range-track { height: var(--thumb); background: transparent; border: 0; }
+.slider__input::-webkit-slider-thumb { appearance: none; width: var(--thumb); height: var(--thumb); border: 0; border-radius: 50%; background: var(--color-blue); }
+.slider__input::-moz-range-thumb { width: var(--thumb); height: var(--thumb); box-sizing: border-box; border: 0; border-radius: 50%; background: var(--color-blue); }
+.slider__input:focus { outline: none; }
+.slider__input:focus::-webkit-slider-thumb { box-shadow: 0 0.25rem 0 var(--color-navy); }
+.slider__input:focus::-moz-range-thumb { box-shadow: 0 0.25rem 0 var(--color-navy); }
+.slider__stops { display: flex; justify-content: space-between; margin: 0; padding: 0 calc(var(--thumb) / 2); list-style: none; }
+.slider__stop { display: grid; justify-items: start; gap: var(--space-2); width: 0; overflow: visible; }
+.slider__stop > * { translate: -50% 0; }
+.slider__mark { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--color-cool-tint-edge); }
+.slider__label { white-space: nowrap; font-weight: 700; font-size: var(--text-sm); color: var(--color-ink-blue); }
+@media (prefers-reduced-motion: no-preference) {
+  .slider__fill { transition: width 0.12s ease-out; }
+  .slider__readout--swap > * { animation: slider-swap 0.18s ease-out both; }
+}
+@keyframes slider-swap { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 39.99rem) {
   .info { gap: var(--space-4); }
   .info__prize { width: min(14rem, 70%); }

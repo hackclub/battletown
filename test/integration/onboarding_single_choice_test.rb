@@ -35,7 +35,7 @@ class OnboardingSingleChoiceTest < ActionDispatch::IntegrationTest
     patch onboarding_step_path("project"), params: { user: { project_kind: "game" } }
     walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
-    check("user[pace_minutes]")
+    assert_select "input[type=range]", 1 # the slider step is the one accepted exception: it has a Continue button and no radios
   end
 
   private
