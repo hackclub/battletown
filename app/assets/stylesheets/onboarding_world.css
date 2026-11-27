@@ -618,3 +618,9 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   box-shadow: none;
   cursor: not-allowed;
 }
+
+/* The logo's white outline and its white "HackClub" word need a little separation from the pale ground: a soft blue-navy drop shadow that
+   follows the logo's own shape (filter, not box-shadow), scaled with the logo's size. The art itself is untouched. */
+.onboarding-top__logo img { filter: drop-shadow(0 2px 5px rgb(16 40 90 / 0.3)); }
+.transition__logo { filter: drop-shadow(0 4px 10px rgb(16 40 90 / 0.3)); }
+@media (max-width: 39.99rem) { .onboarding-top__logo img { filter: drop-shadow(0 1px 3px rgb(16 40 90 / 0.3)); } }
