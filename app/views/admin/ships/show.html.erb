@@ -20,7 +20,7 @@
     <div class="admin-grid grid grid--2">
       <section class="card admin-panel" aria-labelledby="ship-who">
         <h2 id="ship-who" class="card__title">Teen and project</h2>
-        <dl class="admin-dl">
+        <dl class="dl dl--key-10">
           <dt>Name</dt><dd><%= ship.user.display_name.presence || "No name" %></dd>
           <dt>Identity</dt><dd><%= ship.user.verification_status.humanize %><%= " (coins stay locked until verified)" unless ship.user.verification_verified? %><% if feature?(:eligibility_gate, ship.user) %> <span class="admin-eligibility">YSWS eligible: <%= ship.user.ysws_eligible? ? "yes" : "no" %><%= ", verification needs a re-check" if ship.user.verification_verified? && ship.user.verification_stale? %><%= " (coins stay locked)" if ship.user.spend_state == :not_eligible %></span><% end %></dd>
           <dt>Project</dt><dd><%= ship.project.name %> (<%= project_kind_info(ship.project.kind)[:name] %>)</dd>
@@ -34,7 +34,7 @@
 
       <section class="card admin-panel" aria-labelledby="ship-hours">
         <h2 id="ship-hours" class="card__title">Hours</h2>
-        <dl class="admin-dl">
+        <dl class="dl dl--key-10">
           <dt>Coded</dt><dd><%= ship_hours(ship.coded_seconds) %></dd>
           <dt>Window (local dates)</dt><dd><%= ship_dates_text(ship.window_start_date, ship.window_end_date) %></dd>
           <dt>Submitted</dt><dd><%= ship.submitted_at.utc.strftime("%b %-d, %Y %H:%M UTC") %></dd>

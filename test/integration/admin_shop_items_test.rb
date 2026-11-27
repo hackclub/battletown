@@ -246,10 +246,10 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
       post "/admin/shop", params: item_params(key: "Bad Key", name: "", coins: "0", description: "d" * 201)
     end
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", /Key can only use lowercase letters/
-    assert_select ".admin-form__errors li", /Name can't be blank/
-    assert_select ".admin-form__errors li", /Coins must be more than 0/
-    assert_select ".admin-form__errors li", /Description is too long/
+    assert_select ".error-summary li", /Key can only use lowercase letters/
+    assert_select ".error-summary li", /Name can't be blank/
+    assert_select ".error-summary li", /Coins must be more than 0/
+    assert_select ".error-summary li", /Description is too long/
     assert_select "input[name='shop_item[key]'][value='Bad Key']"
   end
 
@@ -257,7 +257,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     admin!
     post "/admin/shop", params: item_params(key: "tshirt")
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", /Key is already used/
+    assert_select ".error-summary li", /Key is already used/
   end
 
   test "an item can be added archived, and stays out of the shop until restored" do
@@ -278,7 +278,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
 
     post "/admin/shop", params: item_params(key: "second_sticker", kind: "free_signup", coins: "9")
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", /already a free signup item/
+    assert_select ".error-summary li", /already a free signup item/
 
     ShopItem.where(kind: "free_signup").delete_all
     get "/admin/shop/new"
@@ -361,7 +361,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     admin!
     patch "/admin/shop/tshirt", params: { shop_item: { name: "", coins: "-3", lock_version: shop_items(:tshirt).lock_version } }
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", /Name can't be blank/
+    assert_select ".error-summary li", /Name can't be blank/
     assert_select "h1", "Edit 8BitDo Pro 2"
     assert_equal [ "8BitDo Pro 2", 50 ], ShopItem.find_by!(key: "tshirt").then { |item| [ item.name, item.coins ] }
   end
@@ -434,7 +434,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
         post "/admin/shop", params: item_params(image: upload_file(bytes, name: name, type: type))
       end
       assert_response :unprocessable_content, label
-      assert_select ".admin-form__errors li", /The picture:/, label
+      assert_select ".error-summary li", /The picture:/, label
     end
   end
 
@@ -445,13 +445,13 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     big = png_bytes(10, 10) + ("\0".b * (config.max_upload_bytes + 1))
     post "/admin/shop", params: item_params(image: upload_file(big))
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", /MB; the limit is 2 MB for each picture/
+    assert_select ".error-summary li", /MB; the limit is 2 MB for each picture/
 
     bomb = png_bytes(5000, 5000)
     assert_operator bomb.bytesize, :<, config.max_upload_bytes, "a decompression bomb is tiny on the wire"
     post "/admin/shop", params: item_params(image: upload_file(bomb))
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", /too large \(25 megapixels\)/
+    assert_select ".error-summary li", /too large \(25 megapixels\)/
     assert_nil ShopItem.find_by(key: "pixel_pin")
   end
 
@@ -459,7 +459,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     admin!
     post "/admin/shop", params: item_params(image: "<script>")
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", /wasn't a file we could read/
+    assert_select ".error-summary li", /wasn't a file we could read/
   end
 
   test "replacing a picture changes its version; removing it brings the emoji back" do

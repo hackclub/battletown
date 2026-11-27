@@ -68,7 +68,7 @@ class ButtonPressStylesheetTest < ActiveSupport::TestCase
   test "the landing call to action is the shared slab, colored by variables, and never moves or repaints its link" do
     css = File.read(Rails.root.join("app/assets/stylesheets/landing.css"))
     link = rule(css, ".landing .cta")
-    assert_match(/--slab-base:\s*var\(--pink-shade\)/, link)
+    assert_match(/--slab-base:\s*var\(--color-pink-edge\)/, link)
     assert_no_match(/translate|transition|background:/, link)
     assert_match(/slab-btn/, File.read(Rails.root.join("app/views/landing/_cta.html.erb")))
     assert_match(/slab-btn__face/, File.read(Rails.root.join("app/views/landing/_cta_face.html.erb")))

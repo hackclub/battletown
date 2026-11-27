@@ -1,6 +1,5 @@
 /* Notification settings (/settings/notifications). Each choice is one tappable row: the whole row toggles its checkbox
    (the label's ::after covers the row), and a ticked row is also tinted. Tokens only. */
-.notification-settings { max-width: 48rem; }
 .notification-settings__form { display: grid; gap: var(--space-6); }
 .notification-settings__fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .notification-settings__legend { margin-bottom: var(--space-3); padding: 0; font-family: var(--font-display); font-size: var(--text-lg); }

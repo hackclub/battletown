@@ -25,7 +25,7 @@
     <div class="admin-grid grid grid--2">
       <section class="card admin-panel" aria-labelledby="user-profile">
         <h2 id="user-profile" class="card__title">Profile</h2>
-        <dl class="admin-dl">
+        <dl class="dl dl--key-10">
           <dt>Display name</dt><dd><%= user.display_name.presence || "None" %></dd>
           <dt>Email</dt><dd><%= user.email.presence || "None" %></dd>
           <dt>Slack id</dt><dd><%= user.slack_id.presence || "None" %></dd>
@@ -55,7 +55,7 @@
         <h2 id="user-streak" class="card__title">Streak</h2>
         <% if profile.streak %>
           <% streak = profile.streak %>
-          <dl class="admin-dl">
+          <dl class="dl dl--key-10">
             <dt>Last settled day</dt><dd><%= streak.local_date.strftime("%-d %b %Y") %></dd>
             <dt>15-minute streak</dt><dd><%= streak.streak_15 %> <%= streak.streak_15 == 1 ? "day" : "days" %></dd>
             <dt>Daily-goal streak</dt><dd><%= streak.goal_streak %> <%= streak.goal_streak == 1 ? "day" : "days" %></dd>

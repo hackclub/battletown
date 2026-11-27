@@ -74,7 +74,9 @@
   <section class="card" aria-labelledby="ship-form-heading">
     <h2 id="ship-form-heading" class="card__title">Tell the reviewer</h2>
     <%= form_with model: ship, scope: :ship, url: (ship.persisted? ? ship_path(ship) : project_ships_path(project)), method: (ship.persisted? ? :patch : :post), multipart: feature?(:ship_screenshots), class: "projects-form ship-form stack" do |f| %>
-      <%= render "projects/errors", record: ship, messages: ship_error_messages(ship), title: "This ship was not sent yet" %>
+      <% if ship.errors.any? %>
+        <%= render "shared/error_summary", title: "This ship was not sent yet", items: ship_error_messages(ship).map { |message| [ message, nil ] } %>
+      <% end %>
 
       <div class="field">
         <%= f.label :description, "What did you build? (required)" %>

@@ -368,14 +368,14 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     step("schedule", coding_day_names: %w[monday], coding_time: "18:00", time_zone: "not a zone")
     assert_response :unprocessable_content
-    assert_select ".onboarding__errors[role=alert][tabindex='-1'][data-onboarding-step-target=errors]" do
+    assert_select ".error-summary[role=alert][tabindex='-1'][data-onboarding-step-target=errors]" do
       assert_select "a[href='#user_time_zone']", /Choose your time zone from the list/
     end
     assert_select "select#user_time_zone[aria-invalid=true][aria-describedby=user_time_zone-error]"
     assert_select "#user_time_zone-error.field__error", /Choose your time zone from the list/
 
     step("schedule", coding_time: "18:00", time_zone: "UTC")
-    assert_select ".onboarding__errors", /Pick at least one day/ # the first-run form always sends days; the server still refuses none
+    assert_select ".error-summary", /Pick at least one day/ # the first-run form always sends days; the server still refuses none
   end
 
   test "every single-choice step is native radios that send on their own: no Continue, and the server still validates" do
@@ -404,12 +404,12 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     user = users(:new_user)
     sign_in_as user
     step("prize")
-    assert_select ".onboarding__errors a[href='#user_prize_key_#{Prize.paid.first.key}']", "Pick a prize to continue"
+    assert_select ".error-summary a[href='#user_prize_key_#{Prize.paid.first.key}']", "Pick a prize to continue"
     assert_select "#user_prize_key_#{Prize.paid.first.key}"
 
     finish_through(user, "prize")
     step("project")
-    assert_select ".onboarding__errors a[href='#user_project_kind_game']", "Pick a kind of project"
+    assert_select ".error-summary a[href='#user_project_kind_game']", "Pick a kind of project"
     assert_select "#user_project_kind_game"
   end
 
@@ -762,7 +762,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     step("prize", prize_key: "tshirt")
     step("project", project_kind: "game", project_idea: "😀" * 500)
     assert_response :unprocessable_content
-    assert_select ".onboarding__errors", /too many emoji/
+    assert_select ".error-summary", /too many emoji/
   end
 
   test "the splash and its skip live inside one controller, so the skip actually works; the step is not hidden by its own animation" do
@@ -783,7 +783,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "input[name='user[project_kind]'][value=hardware]", 0
     step("project", project_kind: "hardware")
     assert_response :unprocessable_content
-    assert_select ".onboarding__errors", /Pick another kind of project/
+    assert_select ".error-summary", /Pick another kind of project/
   end
 
   test "a signed-out visitor sent here by a sign-in-to-continue redirect gets a Sign in; the landing page itself has none" do

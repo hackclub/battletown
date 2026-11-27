@@ -1,5 +1,7 @@
 <%= form_with model: project, scope: :project, url: (project.persisted? ? project_path(project) : projects_path), class: "projects-form stack" do |f| %>
-  <%= render "projects/errors", record: project %>
+  <% if project.errors.any? %>
+    <%= render "shared/error_summary", title: "Let's fix a couple of things", items: project_error_messages(project).map { |message| [ message, nil ] } %>
+  <% end %>
 
   <div class="field">
     <%= f.label :name, "Project name" %>

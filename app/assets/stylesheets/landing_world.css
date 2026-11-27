@@ -102,6 +102,6 @@ body:has(.landing) { background: var(--world-final); }
 
 /* Text that sat on blue grounds sits on teal and sand now, so it needs dark ink (yellow on teal is 1.6:1, cream 2.3:1,
    yellow on sand 1:1; navy on both is 5:1 or better). The painted navy floor keeps its yellow heading. */
-.landing .faq h2 { color: var(--navy); }
+.landing .faq h2 { color: var(--color-navy); }
 .landing .fight h2,
 .landing .fight__text p { color: var(--color-surface); } /* they sit on the green sign board (cliff band), so white */

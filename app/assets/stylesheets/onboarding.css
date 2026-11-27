@@ -135,10 +135,6 @@
 .onboarding__counter { text-align: end; }
 .onboarding__counter--over { color: var(--color-danger-ink); font-weight: 700; }
 .onboarding__note { margin: 0 0 var(--space-3); }
-.onboarding__errors { margin-bottom: var(--space-6); }
-.onboarding__errors:focus { outline: 3px solid var(--color-focus); outline-offset: 3px; }
-.onboarding__errors ul { margin: 0; padding-left: var(--space-6); }
-.onboarding__errors a { font-weight: 700; }
 .onboarding__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-6); }
 .onboarding__fieldset > .field__error { margin-bottom: var(--space-3); }
 /* On phones the primary action stays in reach: pinned to the bottom of the screen while the form is on it. */
