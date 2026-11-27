@@ -17,10 +17,11 @@ module Onboarding
     FRAMES = [ [ "two_weeks", "In 2 weeks", 14 ], [ "month", "In a month", 30 ], [ "program", "By the end of the program", :program ], [ "no_rush", "No rush", nil ] ].freeze
 
     # Hack Club's own numbers for the "first projects are small" screen: each person's first approved project, reviewed hours, n = 17,053
-    # (research 2026-11-27, hack-club-stats.md row 14). The last share is what is left over (100 - 73.9).
+    # (research 2026-11-27, hack-club-stats.md row 14: 54.2% took 5 hours or less, 73.9% took 10 hours or less). The bars are separate groups that add
+    # to 100%, both derived by subtraction from those same 17,053 projects: 73.9 - 54.2 = 19.7 took more than 5 and up to 10 hours, 100 - 73.9 = 26.1 took more.
     FIRST_PROJECTS = [
       { label: "5 hours or less", percent: 54.2 },
-      { label: "10 hours or less", percent: 73.9 },
+      { label: "5 to 10 hours", percent: 19.7 },
       { label: "More than 10 hours", percent: 26.1 }
     ].freeze
     FIRST_PROJECT_MEDIAN = 4.8

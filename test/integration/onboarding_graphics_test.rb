@@ -61,7 +61,9 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     assert_select "h1", "First projects are small"
     assert_select ".bars__value", 3
     assert_select ".bars__value", "54.2%"
-    assert_select ".bars__value", "73.9%"
+    assert_select ".bars__value", "19.7%"
+    assert_select ".bars__value", "26.1%"
+    assert_equal 100.0, Onboarding::Story::FIRST_PROJECTS.sum { |bar| bar[:percent] }.round(1)
     assert_select ".bars__median-text", /4\.8 hours/
     assert_select ".info__note", "*Based on 17,053 first projects approved by Hack Club."
     assert_no_inline_style

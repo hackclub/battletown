@@ -811,7 +811,6 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .bars__svg { display: block; width: 100%; height: auto; overflow: visible; }
 .bars__base { fill: var(--color-cool-tint-edge); }
 .bars__bar { fill: var(--color-blue); transform-box: fill-box; transform-origin: bottom center; }
-.bars__group--3 .bars__bar { fill: var(--color-cool-tint-edge); }
 .bars__value { font-family: var(--font-body); font-weight: 800; font-size: 14px; fill: var(--color-ink-blue); }
 .bars__dot { fill: var(--color-yellow); }
 .bars__median-text { font-family: var(--font-body); font-weight: 800; font-size: 11px; fill: var(--color-surface); }
