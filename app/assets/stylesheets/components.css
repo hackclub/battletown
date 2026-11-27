@@ -105,8 +105,8 @@
      padding, minimum height, margin, translate and edge in .btn above, so the bottom edge never moves. */
   @media (prefers-reduced-motion: no-preference) {
     .btn { transition: translate 120ms ease, margin-bottom 120ms ease, min-height 120ms ease, padding-bottom 120ms ease, box-shadow 120ms ease, filter 120ms ease; }
-    .btn:is(:hover, :focus-visible):not(:disabled, [aria-disabled="true"]) { --press: var(--press-rise); }
-    .btn:active:not(:disabled, [aria-disabled="true"]) { --press: calc(var(--press-sink) - var(--btn-edge-size)); }
+    .btn:is(:hover, :focus-visible):not(:disabled, [aria-disabled="true"]) { --press: round(nearest, var(--press-rise), 1px); }
+    .btn:active:not(:disabled, [aria-disabled="true"]) { --press: round(nearest, calc(var(--press-sink) - var(--btn-edge-size)), 1px); }
   }
 }
 

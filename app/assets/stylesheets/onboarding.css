@@ -203,8 +203,8 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .choice__body { transition: translate 120ms ease, box-shadow 120ms ease; }
-  .choice:hover .choice__body { --press: var(--press-rise); }
-  .choice:active .choice__body { --press: calc(var(--press-sink) - 0.4rem); }
+  .choice:hover .choice__body { --press: round(nearest, var(--press-rise), 1px); }
+  .choice:active .choice__body { --press: round(nearest, calc(var(--press-sink) - 0.4rem), 1px); }
 }
 /* Picked = the card fills yellow (see onboarding_world.css) and shows the tick; there is no ring around it. */
 .choice__input:checked + .choice__body::after {
@@ -278,8 +278,8 @@
 .placeholder-link { max-width: 100%; white-space: normal; }
 @media (prefers-reduced-motion: no-preference) {
   .chip { transition: translate 120ms ease, margin-bottom 120ms ease, min-height 120ms ease, padding-bottom 120ms ease, box-shadow 120ms ease; }
-  .chip:is(:hover, :focus-visible) { --press: var(--press-rise); }
-  .chip:active { --press: calc(var(--press-sink) - 0.2em); }
+  .chip:is(:hover, :focus-visible) { --press: round(nearest, var(--press-rise), 1px); }
+  .chip:active { --press: round(nearest, calc(var(--press-sink) - 0.2em), 1px); }
 }
 
 /* Days: the shared .toggle pills, plus the "Every day" toggle, which looks like one with a dashed edge */

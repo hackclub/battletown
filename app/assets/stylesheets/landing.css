@@ -30,7 +30,7 @@ body:has(.landing) {
   --display: var(--font-display);
   --body: var(--font-body);
   --gutter: clamp(1.25rem, 5vw, 4rem);
-  --side: max(var(--gutter), calc((100vw - 72rem) / 2)); /* content sits in a centred column, 72rem at most */
+  --side: max(var(--gutter), calc(100vw - 72rem) / 2)); /* content sits in a centred column, 72rem at most */
   --v: min(1vw, 0.9rem);
   background: var(--sky);
 }
@@ -130,8 +130,8 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .cta:focus-visible { outline: 3px solid var(--navy); outline-offset: calc(4px + var(--press-rise)); } /* clear of the face when it rises */
 @media (prefers-reduced-motion: no-preference) {
   .landing .cta__face { transition: translate 120ms ease, margin-bottom 120ms ease, padding-bottom 120ms ease, box-shadow 120ms ease; }
-  .landing .cta:is(:hover, :focus-visible) .cta__face { --press: var(--press-rise); }
-  .landing .cta:active .cta__face { --press: calc(var(--press-sink) - var(--cta-edge)); }
+  .landing .cta:is(:hover, :focus-visible) .cta__face { --press: round(nearest, var(--press-rise), 1px); }
+  .landing .cta:active .cta__face { --press: round(nearest, calc(var(--press-sink) - var(--cta-edge)), 1px); }
 }
 /* ---- Hero: same as the build ---- */
 .landing .hero { position: relative; }
@@ -299,7 +299,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
 .landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.875rem; line-height: 1.2; overflow-wrap: anywhere; }
 @media (max-width: 39.99rem) { .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55 + 2.5rem); } .landing .shelf { --u: calc(var(--wu) * 1.15); --lw: 10rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
-@media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(1rem, calc((100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
+@media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(1rem, calc(100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
 @media (min-width: 40rem) {
   .landing .prize h3 { font-size: 1.375rem; }
   .landing .prize__hours { font-size: 0.9375rem; }

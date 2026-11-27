@@ -125,8 +125,8 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .age-choice { border-radius: 1.5rem; font-size: var(--text-xl); letter-spacing: -0.02em; }
 @media (prefers-reduced-motion: no-preference) {
   .age-choice { transition: translate 120ms ease, margin-bottom 120ms ease, min-height 120ms ease, padding-bottom 120ms ease, box-shadow 120ms ease, background-color 120ms ease; }
-  .age-choice:is(:hover, :focus-visible) { --press: var(--press-rise); }
-  .age-choice:active { --press: calc(var(--press-sink) - var(--age-edge)); }
+  .age-choice:is(:hover, :focus-visible) { --press: round(nearest, var(--press-rise), 1px); }
+  .age-choice:active { --press: round(nearest, calc(var(--press-sink) - var(--age-edge)), 1px); }
 }
 
 /* ---- Different times on some days: one compact row per day (the day on the left, a short time field on the right) ---- */
@@ -450,3 +450,29 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .onboarding__panel :is(.check, .onboarding-prize) { color: var(--color-text); }
 .choice-grid--kinds .choice__body { grid-template-columns: minmax(0, 1fr); padding: var(--space-2); }
 .choice-grid--kinds .choice__name { text-align: center; }
+
+/* ---- The reveal (the sign-up step): the plan the answers made, and this week's boss, side by side when there is room ---- */
+.reveal { display: grid; gap: var(--ob-gap); grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 52rem) { .reveal:has(.reveal__boss) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.reveal__prize { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-4); }
+.reveal__prize-image { flex: none; width: clamp(3.5rem, 11vh, 6rem); height: clamp(3.5rem, 11vh, 6rem); object-fit: contain; border-radius: var(--radius-md); background: var(--color-bg); }
+.reveal__estimate { display: block; margin-top: var(--space-1); color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 500; }
+.reveal__boss { display: flex; align-items: center; gap: var(--space-4); }
+.reveal__boss-art { flex: none; width: clamp(5rem, 16vh, 9rem); height: auto; }
+.reveal__boss-text { display: grid; gap: var(--space-1); min-width: 0; }
+.reveal__boss-text > * { margin: 0; }
+.reveal__boss-name { font-size: clamp(1.25rem, 3vh, 1.75rem); color: var(--color-bg); }
+.reveal__boss-text .eyebrow { color: var(--color-sky); }
+.reveal__boss-how, .reveal__boss-none { color: var(--color-sky); font-size: var(--text-sm); }
+.onboarding-page:has(.reveal__boss) { --ob-fit-width: 64rem; }
+@media (min-width: 52rem) { .reveal__boss { align-self: center; } }
+.celebration__summary .reveal__prize { display: flex; }
+/* Arrival (the last step): the prize and the boss side by side, the first thing to do under them */
+.arrival__prize { display: flex; align-items: center; gap: var(--space-4); }
+.arrival__prize > div { display: grid; gap: var(--space-1); min-width: 0; }
+.arrival__prize p, .arrival__first p { margin: 0; }
+.arrival__name { font-size: var(--text-lg); font-weight: 700; }
+.arrival__first { display: grid; gap: var(--space-1); }
+.onboarding-page:has(.arrival) { --ob-fit-width: 64rem; }
+.arrival.reveal { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 52rem) { .arrival.reveal:has(.reveal__boss) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
