@@ -51,8 +51,8 @@ module Onboarding
 
     KEYS = STEPS.map(&:key).freeze
     HALFWAY = "halfway".freeze
-    # Steps that carry a prize picture of their own: the docked corner picture is hidden on them.
-    PRIZE_PICTURE_STEPS = %w[cost reflect pace_date summary].freeze
+    # Steps that carry a prize picture of their own: the docked corner picture is hidden on them (reflect draws the project kind instead, so the dock stays).
+    PRIZE_PICTURE_STEPS = %w[cost pace_date summary].freeze
 
     module_function
 

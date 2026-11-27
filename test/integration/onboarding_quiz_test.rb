@@ -65,7 +65,8 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("reflect")
     follow_redirect!
     assert_select "h1", /A puzzle game for your friends, a few weeks of work\./
-    assert_select "#onboarding-prize-dock", 0
+    assert_select "svg.kind", 1
+    assert_select "img.info__prize", 0
   end
 
   test "the obstacle question takes several picks, and its answer screen names only real features" do
