@@ -157,6 +157,8 @@ Rails.application.routes.draw do
     resource :boss, only: :show, controller: "bosses"
     resource :coins, only: :create, controller: "coins"
     resource :styleguide, only: :show, controller: "styleguide"
+    # The Tailwind + Basecoat theme preview (development only, its own layout; nothing else uses Basecoat yet).
+    resource :basecoat, only: :show, controller: "basecoat"
     # The dashboard's event simulator panel: simulated players "sim!..." that ship, and the numbers back (JSON, development only).
     resource :simulator, only: [], controller: "simulator" do
       get :status, action: :numbers
