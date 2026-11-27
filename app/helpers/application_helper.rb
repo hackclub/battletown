@@ -14,6 +14,13 @@ module ApplicationHelper
     "#{page ? CGI.unescapeHTML(page.to_s) : 'Home'} - #{TITLE_BRAND}"
   end
 
+  # The one arrow icon, drawn as on the landing page's call to action (a bold chevron on a 41.778 x 42 box, the shape centered in it).
+  # Every arrow inside a button uses it; `css_class` sets the size rule that applies to it (cta__arrow, btn__arrow).
+  def arrow_icon(css_class)
+    tag.svg(tag.path(d: "M4 21H37.778M20.778 38L37.778 21L20.778 4", fill: "none", stroke: "currentColor", "stroke-width": 8, "stroke-linecap": "round", "stroke-linejoin": "round"),
+            class: css_class, viewBox: "0 0 41.778 42", "aria-hidden": "true", focusable: "false")
+  end
+
   # A header link that says which page you are on: aria-current="page" on the current section, so screen readers and
   # the stylesheet agree. `section` is the path prefix that counts as "this page" (the link's own path by default).
   def nav_link(label, path, section: path)

@@ -222,15 +222,22 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--color-navy
 /* The bar is the real boss's health (a native progress element: pink is health left). Its label sits on top, un-skewed. */
 .landing .fight__health {
   position: absolute; left: 18%; right: 14%; bottom: calc(var(--aw) * 0.92); margin: 0;
-  border: 0.25rem solid var(--color-hp-outline); background: var(--color-hp-empty); color: var(--color-bg); transform: skewX(-24deg);
+  --boss-skew: -24deg; /* the dashboard's boss bar (.progress--boss, components.css) leans -15deg */
+  border: 0.25rem solid var(--color-hp-outline); background: var(--color-hp-empty); color: var(--color-bg); transform: skewX(var(--boss-skew));
   font: 400 clamp(0.8rem, 1.5vw, 1.05rem)/1.2 var(--font-display); letter-spacing: -0.03em;
 }
-.landing .fight__bar { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; appearance: none; background: var(--color-hp-empty); color: var(--color-hp-fill); }
-.landing .fight__bar::-webkit-progress-bar { background: var(--color-hp-empty); }
-.landing .fight__bar::-webkit-progress-value { background: var(--color-hp-fill); } /* the one pink, same as the dashboard bar; cream label 3.14:1 */
-.landing .fight__bar::-moz-progress-bar { background: var(--color-hp-fill); }
+/* The bar is the shared .progress__bar (components.css): pink fill on the deep-pink track, no rim of its own (the box around it has it), square, filling the box. */
+.landing .fight__bar {
+  --progress-fill: var(--color-hp-fill); /* the one pink, same as the dashboard bar; cream label 3.14:1 */
+  --progress-track: var(--color-hp-empty);
+  --progress-rim: 0px;
+  --progress-radius: 0;
+  --progress-shadow: none;
+  --progress-height: 100%;
+  position: absolute; inset: 0; color: var(--color-hp-fill);
+}
 .landing .fight__label { position: relative; margin: 0; padding: 0.3em 1.4em; }
-.landing .fight__label span { display: inline-block; transform: skewX(24deg); }
+.landing .fight__label span { display: inline-block; transform: skewX(calc(var(--boss-skew) * -1)); }
 .landing .fight__boss { position: absolute; left: calc(56% - var(--boss-w) / 2); bottom: 41%; width: var(--boss-w); max-width: none; height: auto; pointer-events: none; }
 @media (min-width: 64rem) {
   .landing .fight { --aw: min(52vw, 40rem); }

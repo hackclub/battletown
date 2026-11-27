@@ -5,21 +5,7 @@
 .admin-metrics__definition { max-width: 48rem; font-size: var(--text-sm); }
 .admin-metrics__table tbody th { white-space: nowrap; }
 .admin-metrics__bar-cell { width: 30%; }
-.admin-metrics__bar {
-  -webkit-appearance: none;
-  appearance: none;
-  display: block;
-  width: 100%;
-  min-width: var(--space-16);
-  height: var(--space-3);
-  border: 2px solid var(--color-admin-ink);
-  border-radius: var(--radius-full);
-  background: var(--color-admin-bg);
-  overflow: hidden;
-}
-.admin-metrics__bar::-webkit-progress-bar { background: var(--color-admin-bg); }
-.admin-metrics__bar::-webkit-progress-value { background: var(--color-admin); border-radius: var(--radius-full); }
-.admin-metrics__bar::-moz-progress-bar { background: var(--color-admin); border-radius: var(--radius-full); }
+.admin-metrics__bar-cell .progress__bar { min-width: var(--space-16); }
 
 /* On a phone the bars give way so the numbers fit without scrolling sideways. */
 @media (max-width: 40rem) {

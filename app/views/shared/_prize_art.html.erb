@@ -1,0 +1,4 @@
+<%# locals: (image:, emoji:, image_class:, emoji_class:, image_options: {}) -%>
+<%# The picture of a prize: its photo when it has one, otherwise its emoji. The size, tile and crop come from the page's own classes
+    (shop-item__image / shop-item__emoji in the shop, stage__prize-* on the dashboard, a bare image on the landing podiums). -%>
+<% if image.present? %><%= image_tag image, alt: "", class: image_class, **image_options %><% else %><span class="<%= emoji_class %>" aria-hidden="true"><%= emoji %></span><% end %>

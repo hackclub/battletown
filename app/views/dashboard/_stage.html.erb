@@ -14,7 +14,7 @@
         <%= link_to shop_path, class: "stage__prize" do %>
           <span class="stage__prize-label">Prize</span>
           <span class="stage__prize-box" aria-hidden="true">
-            <% if prize.image.present? %><%= image_tag prize.image, alt: "", class: "stage__prize-image" %><% else %><span class="stage__prize-emoji"><%= prize.emoji %></span><% end %>
+            <%= render "shared/prize_art", image: prize.image, emoji: prize.emoji, image_class: "stage__prize-image", emoji_class: "stage__prize-emoji" %>
           </span>
           <span class="visually-hidden"><%= prize.name %>, <%= prize.free ? "free" : prize.progress_text %>. Open the shop.</span>
         <% end %>

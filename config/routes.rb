@@ -133,7 +133,6 @@ Rails.application.routes.draw do
   # Development-only tools (404 everywhere else, enforced in the controller).
   namespace :dev do
     resource :hours, only: %i[show create], controller: "hours"
-    resource :boss, only: :show, controller: "bosses"
     resource :coins, only: :create, controller: "coins"
     resource :styleguide, only: :show, controller: "styleguide"
     # The Tailwind + Basecoat theme preview (development only, its own layout; nothing else uses Basecoat yet).

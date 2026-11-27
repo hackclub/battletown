@@ -71,19 +71,13 @@
 .multi__label { display: block; margin-bottom: var(--space-1); font-weight: 700; }
 .multi__box { position: relative; }
 .multi__summary {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  min-height: var(--tap-size);
   padding: var(--space-2) var(--space-4);
   border: 2px solid var(--color-field-border);
   border-radius: var(--radius-md);
   background: var(--color-bg);
-  cursor: pointer;
-  list-style: none;
 }
-.multi__summary::-webkit-details-marker { display: none; }
 .multi__summary::after { content: ""; flex: none; inline-size: 0.6rem; block-size: 0.6rem; border: solid currentcolor; border-width: 0 3px 3px 0; transform: translateY(-0.15rem) rotate(45deg); }
 .multi__box[open] > .multi__summary::after { transform: translateY(0.1rem) rotate(-135deg); }
 .multi__panel { margin-top: var(--space-2); padding: var(--space-3); border: 2px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
