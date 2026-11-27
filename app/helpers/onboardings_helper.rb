@@ -258,13 +258,13 @@ module OnboardingsHelper
     minutes = subject.pace.to_i
     pace = "#{pace_text(minutes)} a day" if minutes.positive?
     days = onboarding_days_to_prize(prize, minutes) if minutes.positive?
-    mark = ->(text) { tag.span(text, class: "pledge__mark") }
+    mark = ->(text) { tag.span(text, class: "pledge__mark nowrap") }
     parts = [ "I'll code " ]
     return "I'll show up and code." unless pace
 
     parts << mark.(pace)
     if prize
-      parts += [ " and earn my ", tag.span(prize.name, class: "pledge__mark nowrap") ]
+      parts += [ " and earn my ", mark.(prize.name) ]
       parts += [ " in about ", mark.(pluralize(days, "day")) ] if days
     end
     safe_join(parts << ".")

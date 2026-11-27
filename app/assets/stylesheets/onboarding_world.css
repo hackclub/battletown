@@ -617,7 +617,11 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .onboarding-page .option-row { min-height: 4.25rem; padding-block: var(--space-3); }
 .onboarding-page .option-row .choice__name { font-size: var(--text-lg); }
 .onboarding-page .option-row .option-row__note { flex: 0 1 auto; text-align: right; }
-.onboarding-page .option-row.choice--apart { margin-top: var(--space-3); } /* the opt-out row, set slightly apart */
+/* a hover fades the fill in and out over 120ms (the color is the theme's hover token, #9cc7ff); a pick fades the fill and the text over 150ms; no ring, no outline */
+@media (prefers-reduced-motion: no-preference) {
+  .onboarding-page :is(.option-row, .option-card) { transition: background-color 120ms ease; }
+  .onboarding-page :is(.option-row, .option-card):has(> input:checked) { transition: background-color 150ms ease, color 150ms ease; }
+}
 @media (max-width: 39.99rem) {
   .onboarding-page .option-row { flex-wrap: wrap; justify-content: flex-start; row-gap: 0; }
   .onboarding-page .option-row .option-row__note { flex-basis: 100%; text-align: left; }

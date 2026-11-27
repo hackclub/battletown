@@ -24,7 +24,7 @@
   --color-cool-ground: #d4e6fc; /* derived: a pale tint of the logo blue, dark enough that the logo outline white still reads on it; the flat ground of every onboarding step */
   --color-cool-tint: #ffffff; /* the card face on the cool ground (white is 1.27:1 against it, the edge below 1.52:1) */
   --color-cool-tint-edge: #9dbde6; /* the tint's darker shade: the raised edge of its cards and the progress track */
-  --color-cool-hover: #edf4fe; /* derived: a card face under the pointer, a small step of blue from white; 1.2:1 against the ground, navy on it 15:1 */
+  --color-cool-hover: #9cc7ff; /* derived: a card face under the pointer, a saturated blue clearly deeper than the ground (1.4:1 against it) so the row never melts into the page; navy on it 8:1 */
   --color-logo-edge: #4a96e4; /* the lightest logo-family blue that is 3.1:1 against white: the thin edge that sets the logo's white sticker edge apart from the pale ground */
   --color-logo-sky: #03bdfc; /* sampled: the light blue at the bottom of the logo letters; navy on it 6.6:1 */
   --color-cream-edge: #ecd5b8; /* the cream's darker shade: bottom edge of cream buttons and pills, so they read on white and cream cards */
