@@ -17,6 +17,14 @@
          <% if @transition %>data-action="keydown@window->onboarding-transition#skip turbo:before-cache@document->onboarding-transition#skip"<% end %>>
   <%= render "onboardings/transition", kind: @transition if @transition %>
 
+  <%# The picked prize, docked at the top left on every step after the pick. Kept by Turbo like the strip; when the pick changes, the prize-dock controller swaps the picture and flies it in from the card. The name is the picture's alt text and tooltip. %>
+  <% if index.positive? && index < total - 1 && show_prize && (prize = onboarding_saved_prize) && prize.image.present? %>
+    <div class="onboarding-dock" id="onboarding-prize-dock" data-turbo-permanent data-controller="prize-dock" data-prize-key="<%= prize.key %>"
+         data-action="turbo:before-render@document->prize-dock#prepare turbo:render@document->prize-dock#update" title="<%= prize.name %>, <%= onboarding_hours_text(prize) %>">
+      <%= image_tag prize.image, alt: prize.name, class: "onboarding-dock__image", data: { prize_dock_target: "image" } %>
+    </div>
+  <% end %>
+
   <div class="onboarding-page__content stack <%= "transition-enter" if @transition %>">
     <%# Kept in place by Turbo between steps (data-turbo-permanent): the onboarding-top controller moves its bar to the new step's value, so the fill slides instead of being redrawn. The count and the step's name are for screen readers only. %>
     <div class="onboarding-top" id="onboarding-top" data-turbo-permanent data-controller="onboarding-top"
@@ -45,15 +53,6 @@
           <p class="onboarding-note">Welcome to Battletown. Make projects, take down the boss, get gear.</p>
         <% elsif @transition %>
           <p class="onboarding-note"><%= onboarding_proof(@transition)[:headline] %></p>
-        <% end %>
-
-        <%# The celebration shows the prize in its own summary. %>
-        <% if index.positive? && index < total - 1 && show_prize && (prize = onboarding_saved_prize) %>
-          <p class="onboarding-prize">
-            <span class="onboarding-prize__label">Working toward</span>
-            <strong><% if prize.image.present? %><%= image_tag prize.image, alt: "", class: "onboarding-prize__image" %><% end %><%= prize.name %></strong>
-            <span class="onboarding-prize__hours"><%= onboarding_hours_text(prize) %></span>
-          </p>
         <% end %>
 
         <%# What happened on the way here (for example after Hackatime): inside the step, announced and focused, because the

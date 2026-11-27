@@ -43,7 +43,7 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
     visitor_to_reveal
     get onboarding_step_path("signup")
     assert_response :success
-    assert_select ".onboarding-prize", 0 # the reveal shows the prize itself, not the slim line
+    assert_select "#onboarding-prize-dock", 0 # the reveal shows the prize itself, not the slim line
     assert_select ".reveal__plan" do
       assert_select "dd", /Battletown T-shirt|8BitDo Pro 2/
       assert_select "dd", /Game/

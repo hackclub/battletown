@@ -70,7 +70,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("project")
     follow_redirect!
     assert_select ".transition--proof .transition__title", /8BitDo Pro 2/ # the "others like you" moment plays over the next step
-    assert_select ".onboarding-prize", /8BitDo Pro 2/
+    assert_select "#onboarding-prize-dock", (Prize.find("tshirt").image.present? ? 1 : 0) # the docked picture, only for a prize that has one
 
     step("project", project_kind: "game", project_idea: "A farming game")
     assert_redirected_to onboarding_step_path("schedule")
@@ -454,7 +454,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     assert_select ".arrival__prize", /8BitDo Pro 2/
     assert_select ".arrival__first"
-    assert_select ".onboarding-prize", 0
+    assert_select "#onboarding-prize-dock", 0
     assert_select "button.celebration__sound[aria-pressed=true]", /Sound\s+on/
     assert_select "form[action='#{onboarding_step_path("celebrate")}'] button", "Enter Battletown"
   end
