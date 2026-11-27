@@ -1,19 +1,43 @@
+<%# Today and then: a winding path of stepping stones. You stand on the first stone today; the prize waits on the last one, on the day the pace screen
+    computed. The picture is the real prize, once, on the page (never in a container). Two drawings of the same path (wide, and taller for a phone) share
+    the HTML on top of them; where things stand comes from the stylesheet, and the motion is CSS only (off under reduced motion). %>
 <% prize = answers.prize %>
 <% phrase = onboarding_project_phrase || "Your project" %>
+<% date = (Onboarding::Story.date_text(onboarding_prize_date) if prize) %>
+<%# Stone centers and half-sizes in each drawing's own units (wide 400x240, tall 240x400): [x, y, rx, ry]. The path runs through them in order. %>
+<% shapes = {
+     wide: { box: "0 0 400 240", path: "M-10 232 C 25 226 35 212 45 205 C 75 190 90 180 115 170 C 150 156 160 192 190 192 C 220 192 232 158 258 150 C 290 140 315 150 340 140",
+             stones: [ [ 45, 205, 38, 13 ], [ 115, 170, 38, 13 ], [ 190, 192, 38, 13 ], [ 258, 150, 38, 13 ], [ 340, 140, 62, 17 ] ] },
+     tall: { box: "0 0 240 400", path: "M-10 392 C 20 385 40 375 50 365 C 80 350 120 345 150 322 C 175 300 60 305 75 270 C 90 240 150 255 160 222 C 170 195 100 205 110 178",
+             stones: [ [ 50, 365, 36, 12 ], [ 150, 322, 36, 12 ], [ 75, 270, 36, 12 ], [ 160, 222, 36, 12 ], [ 110, 178, 52, 15 ] ] }
+   } %>
 <div class="summary">
-  <%= render "onboardings/info/prize", prize: prize %>
-  <div class="summary__cols">
-    <section class="summary__col" aria-label="Today">
-      <h2 class="summary__head">Today</h2>
-      <p>No prize yet</p>
-      <p><%= phrase %></p>
-      <p>0 hours</p>
-    </section>
-    <section class="summary__col" aria-label="<%= Onboarding::Story.date_text(onboarding_prize_date) if prize %>">
-      <h2 class="summary__head"><%= Onboarding::Story.date_text(onboarding_prize_date) if prize %></h2>
-      <p><%= prize&.name %></p>
-      <p><%= phrase %>, shipped</p>
-      <p><%= prize&.hours_text %> coded</p>
-    </section>
+  <div class="trail" role="img" aria-label="<%= "You today, and your #{prize&.name} on #{date}" if prize %>">
+    <% shapes.each do |name, shape| %>
+      <svg class="trail__svg trail__svg--<%= name %>" viewBox="<%= shape[:box] %>" aria-hidden="true" focusable="false">
+        <path class="trail__path" d="<%= shape[:path] %>" pathLength="1"/>
+        <% shape[:stones].each_with_index do |(x, y, rx, ry), i| %>
+          <g class="trail__stone trail__stone--<%= i + 1 %>">
+            <ellipse class="trail__edge" cx="<%= x %>" cy="<%= y + 7 %>" rx="<%= rx %>" ry="<%= ry %>"/>
+            <ellipse class="trail__top" cx="<%= x %>" cy="<%= y %>" rx="<%= rx %>" ry="<%= ry %>"/>
+          </g>
+        <% end %>
+      </svg>
+    <% end %>
+
+    <span class="trail__today">Today</span>
+    <span class="trail__you">
+      <svg class="trail__pin" viewBox="0 0 24 34" aria-hidden="true" focusable="false"><path class="trail__pin-body" d="M12 33 C 12 33 2 21 2 12 A10 10 0 0 1 22 12 C 22 21 12 33 12 33 Z"/><circle class="trail__pin-dot" cx="12" cy="12" r="4"/></svg>
+      <span class="visually-hidden">You</span>
+    </span>
+    <% if prize %>
+      <div class="trail__prize">
+        <span class="trail__date"><%= date %></span>
+        <% if prize.image.present? %>
+          <span class="trail__picture"><span class="choice__crop" data-controller="prize-crop"><%= image_tag prize.image, alt: prize.name, class: "choice__image", data: { prize_crop_target: "image" } %></span></span>
+        <% end %>
+      </div>
+    <% end %>
   </div>
+  <p class="info__line"><%= phrase %>, shipped. <%= prize&.hours_text %> coded.</p>
 </div>
