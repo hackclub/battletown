@@ -129,7 +129,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     get shop_path
     assert_select "#coin-spendable", text: "40 coins"
-    assert_select ".shop-item__name", text: "Battletown T-shirt"
+    assert_select ".shop-item__name", text: "8BitDo Pro 2"
     assert_select ".shop-item__price", text: "50 coins"
     assert_select ".shop-item__price", text: "10 coins"
     assert_select ".shop-tier", 0, "the plain shop tier is not worth a label on every card"
@@ -199,7 +199,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     get shop_item_path("tshirt")
     assert_response :success
-    assert_select "h1", /Battletown T-shirt/
+    assert_select "h1", /8BitDo Pro 2/
     assert_select "#confirm-price", text: "50 coins"
     assert_select "#confirm-after", text: "30 coins"
     assert_select ".address-step", /Where should we send it/
@@ -243,12 +243,12 @@ class ShopTest < ActionDispatch::IntegrationTest
     assert_redirected_to order_path(Order.last)
     follow_redirect!
     assert_select ".flash--notice", /Order placed/
-    assert_select "h1", /Battletown T-shirt/
+    assert_select "h1", /8BitDo Pro 2/
     assert_select ".shop-status--requested", text: "Requested"
     assert_select ".shop-note", /The team will post it to the address you chose/
     get orders_path
     assert_select ".shop-order", 1
-    assert_select ".shop-order__name", /Battletown T-shirt/
+    assert_select ".shop-order__name", /8BitDo Pro 2/
     assert_select ".shop-lead strong", text: "30 coins"
     assert_equal 30, Coins::Balance.total(@user)
   end

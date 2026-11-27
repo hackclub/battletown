@@ -69,8 +69,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     step("prize", prize_key: "tshirt")
     assert_redirected_to onboarding_step_path("project")
     follow_redirect!
-    assert_select ".transition--proof .transition__title", /Battletown T-shirt/ # the "others like you" moment plays over the next step
-    assert_select ".onboarding-prize", /Battletown T-shirt/
+    assert_select ".transition--proof .transition__title", /8BitDo Pro 2/ # the "others like you" moment plays over the next step
+    assert_select ".onboarding-prize", /8BitDo Pro 2/
 
     step("project", project_kind: "game", project_idea: "A farming game")
     assert_redirected_to onboarding_step_path("schedule")
@@ -456,7 +456,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     get onboarding_step_path("celebrate")
 
     assert_select "dl.celebration__summary" do
-      assert_select "dd", /Battletown T-shirt/
+      assert_select "dd", /8BitDo Pro 2/
       assert_select "dd", "Game"
       assert_select "dd", /Every day at 6:30 pm, UTC/
     end
@@ -609,7 +609,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     end
     get onboarding_step_path("signup")
     assert_response :success
-    assert_select ".celebration__summary", /Battletown T-shirt/
+    assert_select ".celebration__summary", /8BitDo Pro 2/
     assert_select ".celebration__summary", /Game/
     assert_select ".celebration__summary", /Monday and Friday at 6:30 pm, UTC/
     assert_select "form[action='/auth/hack_club'][method=post][data-turbo=false] button", "Sign up with Hack Club"
@@ -689,9 +689,9 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("project") # straight to the next step: no page to click through
     follow_redirect!
     assert_response :success
-    assert_select ".transition--proof[data-turbo-temporary][aria-hidden=true] .transition__title", /Hardly anyone has chosen the Battletown T-shirt yet/ # a handful of people is never quoted as a number
-    assert_select ".transition__badge", /🏷️|Battletown T-shirt|👕/
-    assert_select "p.onboarding-note", /Hardly anyone has chosen the Battletown T-shirt yet/ # the same words for screen readers and reduced motion
+    assert_select ".transition--proof[data-turbo-temporary][aria-hidden=true] .transition__title", /Hardly anyone has chosen the 8BitDo Pro 2 yet/ # a handful of people is never quoted as a number
+    assert_select ".transition__badge", /🏷️|8BitDo Pro 2|👕/
+    assert_select "p.onboarding-note", /Hardly anyone has chosen the 8BitDo Pro 2 yet/ # the same words for screen readers and reduced motion
     assert_select ".transition-enter .onboarding-top" # the step waits underneath, then rises in
     assert_select "progress.onboarding-top__bar[value='3']"
     assert_select "h1", "What are you making?"
@@ -713,7 +713,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     anonymous_through("age")
     step("prize", prize_key: "tshirt")
     follow_redirect!
-    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the Battletown T-shirt too!"
+    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the 8BitDo Pro 2 too!"
     step("project", project_kind: "game")
     follow_redirect!
     assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other teens are building a game too!"
@@ -724,7 +724,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     sign_in_as user
     step("prize", prize_key: "tshirt")
     follow_redirect!
-    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the Battletown T-shirt too!"
+    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the 8BitDo Pro 2 too!"
   end
 
   test "the transition is only for someone still onboarding, never for editing a finished profile, and does not leak to other steps" do

@@ -62,7 +62,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     give_coins(buyer, 1000)
     Order::STATUSES.each_with_index do |status, index|
       stamp = { "fulfilled" => :fulfilled_at, "cancelled" => :cancelled_at, "shipped" => :shipped_at, "refunded" => :refunded_at }[status]
-      attrs = { user: buyer, prize_key: "keychain", prize_name: "Keychain", coins: 30, kind: "purchase", idempotency_key: "six-#{index}", status: status }
+      attrs = { user: buyer, prize_key: "keychain", prize_name: "8BitDo Ultimate 2C", coins: 30, kind: "purchase", idempotency_key: "six-#{index}", status: status }
       attrs[stamp] = Time.current if stamp
       Order.create!(attrs)
     end
@@ -325,8 +325,8 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/admin/shop?view=active"
 
     old_order.reload
-    assert_equal [ 50, "Battletown T-shirt" ], [ old_order.coins, old_order.prize_name ]
-    assert_equal "Battletown T-shirt", old_order.display_name, "the order still reads as it was ordered"
+    assert_equal [ 50, "8BitDo Pro 2" ], [ old_order.coins, old_order.prize_name ]
+    assert_equal "8BitDo Pro 2", old_order.display_name, "the order still reads as it was ordered"
     assert_equal 250, Coins::Balance.total(buyer)
 
     new_order = buy(buyer, "tshirt")
@@ -354,7 +354,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     assert_select "[data-controller=shop-item-preview][data-shop-item-preview-coins-per-hour-value='10']"
     assert_select ".admin-shop-preview .shop-item .shop-item__price", "50 coins"
     assert_select "strong[data-shop-item-preview-target=hours]", "5 hours"
-    assert_select ".admin-shop-preview .shop-item__name", "Battletown T-shirt"
+    assert_select ".admin-shop-preview .shop-item__name", "8BitDo Pro 2"
   end
 
   test "an invalid edit is refused and the saved item is untouched" do
@@ -362,8 +362,8 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     patch "/admin/shop/tshirt", params: { shop_item: { name: "", coins: "-3", lock_version: shop_items(:tshirt).lock_version } }
     assert_response :unprocessable_content
     assert_select ".admin-form__errors li", /Name can't be blank/
-    assert_select "h1", "Edit Battletown T-shirt"
-    assert_equal [ "Battletown T-shirt", 50 ], ShopItem.find_by!(key: "tshirt").then { |item| [ item.name, item.coins ] }
+    assert_select "h1", "Edit 8BitDo Pro 2"
+    assert_equal [ "8BitDo Pro 2", 50 ], ShopItem.find_by!(key: "tshirt").then { |item| [ item.name, item.coins ] }
   end
 
   test "the free signup item is edited like the others but stays free and keeps its kind" do
@@ -387,9 +387,9 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     patch "/admin/shop/keychain", params: { shop_item: { coins: "99", name: "Overwritten", lock_version: stale_version } }
     assert_redirected_to "/admin/shop/keychain/edit"
     follow_redirect!
-    assert_select ".flash, .alert", /Someone else changed Keychain while you were editing/
+    assert_select ".flash, .alert", /Someone else changed 8BitDo Ultimate 2C while you were editing/
     item = ShopItem.find_by!(key: "keychain")
-    assert_equal [ "Keychain", 35 ], [ item.name, item.coins ]
+    assert_equal [ "8BitDo Ultimate 2C", 35 ], [ item.name, item.coins ]
     assert_select "input[name='shop_item[coins]'][value='35']"
   end
 
@@ -615,7 +615,7 @@ class AdminShopItemsTest < ActionDispatch::IntegrationTest
     admin!
     post "/admin/shop", params: item_params(name: "")
     patch "/admin/shop/#{Prize.paid.first.key}/move", params: { direction: "up" }
-    patch "/admin/shop/tshirt", params: { shop_item: { name: "Battletown T-shirt", lock_version: shop_items(:tshirt).lock_version } }
+    patch "/admin/shop/tshirt", params: { shop_item: { name: "8BitDo Pro 2", lock_version: shop_items(:tshirt).lock_version } }
     patch "/admin/shop/keychain/restore"
     assert_equal 0, AdminAuditEvent.count
   end

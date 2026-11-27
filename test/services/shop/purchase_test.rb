@@ -12,7 +12,7 @@ class Shop::PurchaseTest < ActiveSupport::TestCase
     order = buy(@user, "tshirt", key: "k1")
 
     assert_predicate order, :persisted?
-    assert_equal [ "purchase", "requested", 50, "tshirt", "Battletown T-shirt" ], [ order.kind, order.status, order.coins, order.prize_key, order.prize_name ]
+    assert_equal [ "purchase", "requested", 50, "tshirt", "8BitDo Pro 2" ], [ order.kind, order.status, order.coins, order.prize_key, order.prize_name ]
     assert_equal 30, Coins::Balance.total(@user)
     debit = CoinTransaction.find_by(user: @user, kind: "purchase")
     assert_equal(-50, debit.amount)

@@ -40,7 +40,7 @@ class OnboardingTransitionTest < ActionDispatch::IntegrationTest
     assert_select ".transition--proof .transition__body > .transition__sub"
     assert_select ".transition--proof .transition__body > .transition__hint", "Click anywhere to skip"
     assert_select ".transition--proof .transition__badge img[alt=''], .transition--proof .transition__badge-emoji"
-    assert_select "p.onboarding-note", /Battletown T-shirt/ # the frame mirrors it for screen readers
+    assert_select "p.onboarding-note", /8BitDo Pro 2/ # the frame mirrors it for screen readers
   end
 
   test "the panel behind the words is nearly solid white with rounded corners and a lift" do
