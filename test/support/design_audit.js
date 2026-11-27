@@ -26,9 +26,11 @@
   // Justified exceptions. Each: rule, a regex on the selector, and why. Keep this short and honest.
   const ALLOW = [
     { rule: "*", sel: /^(html|body)$/, why: "the document" },
+    { rule: "targets", sel: /notification-settings__box|preferences_/, why: "the checkbox is 24px but the whole settings row is its label (::after covers the row, 44px tall)" },
     { rule: "targets", sel: /\bsr-only\b|\bvisually-hidden\b|skip-link/, why: "visually hidden or skip links reveal on focus" },
     { rule: "even-inset", sel: /\b(btn|cta|chip|choice|age-choice|pill|badge)\b/, why: "raised buttons fold the edge into their bottom padding (--press)" },
     { rule: "concentric", sel: /\b(sg-swatch)\b/, why: "styleguide swatches are demo chips" },
+    { rule: "even-inset", sel: /fight__text/, why: "the sign board paints its bottom edge as an inset shadow, so its bottom padding is larger by the edge on purpose" },
     { rule: "badge", sel: /fight__post/, why: "signpost poles are painted art standing on the sign board, not badges" },
   ];
   const allowed = (rule, sel) => ALLOW.some((a) => (a.rule === "*" || a.rule === rule) && a.sel.test(sel));
@@ -188,6 +190,29 @@
         const zero = canvas.measureText("0").width || px(cs.fontSize) * 0.55;
         const chars = widest / zero;
         if (chars > 75) add("measure", el, `${Math.round(chars)}ch (${fmt(widest)}px)`, "at most 75ch", total.slice(0, 30));
+      }
+    }
+
+    // 5b: orphans. A heading or a centered short paragraph whose last row is a lone word or fragment (under 15% of the row above).
+    if (/^(H1|H2|H3|H4|H5|H6|LEGEND|P|DIV|SPAN)$/.test(el.tagName) && (/^H[1-6]$|^LEGEND$/.test(el.tagName) || /card__title|__title|__heading|__head$/.test(el.className) || (cs.textAlign === "center" && el.tagName === "P"))) {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const rows = new Map();
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        if (!n.textContent.trim()) continue;
+        const range = document.createRange();
+        range.selectNodeContents(n);
+        for (const rect of range.getClientRects()) {
+          if (rect.width < 1) continue;
+          const key = Math.round(rect.top / 4);
+          const row = rows.get(key) || { left: rect.left, right: rect.right };
+          row.left = Math.min(row.left, rect.left); row.right = Math.max(row.right, rect.right);
+          rows.set(key, row);
+        }
+      }
+      const ordered = [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v.right - v.left);
+      if (ordered.length >= 2) {
+        const last = ordered[ordered.length - 1], prev = ordered[ordered.length - 2];
+        if (last < prev * 0.15) add("orphan", el, `last row ${fmt(last)}px of ${fmt(prev)}px above (${Math.round((last / prev) * 100)}%)`, "at least 15% of the row above (text-wrap: balance or pretty)", (el.textContent || "").trim().slice(-24));
       }
     }
 

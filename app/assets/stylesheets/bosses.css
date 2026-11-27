@@ -82,7 +82,7 @@
   margin-bottom: var(--space-3);
   font-size: clamp(2rem, 1.2rem + 3.6vw, var(--text-3xl));
   letter-spacing: var(--tracking-display);
-  text-shadow: 0 0.06em 0 var(--color-navy-edge);
+  text-shadow: 0 0.1em 0 var(--color-navy-edge);
 }
 .boss-card__lead { max-width: 32rem; font-size: var(--text-lg); }
 
@@ -123,9 +123,9 @@
   --badge-border: var(--color-sign-yellow-edge);
   --badge-bg: var(--color-highlight);
   --badge-fg: var(--color-text);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--text-base);
-  font-weight: 400;
+  font-weight: 700;
 }
 
 /* Your own hits and the headcount, as two quiet chips on the map. */

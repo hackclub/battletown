@@ -229,7 +229,8 @@
     background: var(--color-bg);
     box-shadow: inset 0 -0.2em 0 var(--color-cream-edge);
     color: var(--color-ink-blue);
-    font-family: var(--font-display);
+    font-family: var(--font-body);
+    font-weight: 700;
     line-height: 1.2;
   }
   .toggle__input:hover + .toggle__label { background: var(--color-surface); }
@@ -270,7 +271,7 @@
   .card--flat { border-bottom-width: 0; box-shadow: none; }
   .card--sky { background: var(--color-sky); border-bottom-color: var(--color-sky-soft); }
   .card--tight { padding: var(--space-4); }
-  .card__title { margin-bottom: var(--space-2); font-family: var(--font-display); font-size: var(--text-lg); }
+  .card__title { margin-bottom: var(--space-2); font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); }
   .card__media { display: block; width: 100%; height: auto; margin-bottom: var(--space-4); border-radius: var(--radius-md); }
 
   /* Chunky blue card (the shop / prize card, 156:665): face, extruded base, product image and a pale-blue title. */
@@ -420,7 +421,7 @@
   }
   .progress--boss .progress__bar::-webkit-progress-value { border-radius: 0; }
   .progress--boss .progress__bar::-moz-progress-bar { border-radius: 0; }
-  .progress--boss .progress__label { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
+  .progress--boss .progress__label { font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); }
   .progress--boss.progress--sm .progress__bar { height: 1.5rem; border-width: 3px; }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -441,14 +442,14 @@
     box-shadow: var(--shadow-sm);
   }
   .table { width: 100%; border-collapse: collapse; }
-  .table caption { padding: var(--space-3) var(--space-4); font-family: var(--font-display); font-size: var(--text-lg); text-align: start; }
+  .table caption { padding: var(--space-3) var(--space-4); font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); text-align: start; }
   .table th, .table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); text-align: start; vertical-align: top; }
   .table thead th {
     background: var(--color-surface-raised);
     color: var(--color-ink-brown);
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: var(--text-base);
-    font-weight: 400;
+    font-weight: 700;
     white-space: nowrap;
   }
   .table tbody tr:last-child > * { border-bottom: 0; }
@@ -479,7 +480,7 @@
   .alert > :last-child { margin-bottom: 0; }
   .flash { margin: 0; text-align: center; }
   .alert a, .flash a { color: inherit; }
-  .alert__title { margin: 0 0 var(--space-1); font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
+  .alert__title { margin: 0 0 var(--space-1); font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); }
   .alert--success, .flash--notice, .flash--success { --alert-bg: var(--color-success-bg); --alert-ink: var(--color-success-ink); --alert-edge: var(--color-success); }
   .alert--danger, .flash--alert, .flash--error { --alert-bg: var(--color-danger-bg); --alert-ink: var(--color-danger-ink); --alert-edge: var(--color-danger); }
   .alert--warning, .flash--warning { --alert-bg: var(--color-warning-bg); --alert-ink: var(--color-warning-ink); --alert-edge: var(--color-warning-ink); }

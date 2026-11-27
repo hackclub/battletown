@@ -24,7 +24,8 @@
   border-radius: var(--radius-full);
   background: var(--color-surface);
   color: var(--color-ink-brown);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: var(--text-lg);
   line-height: 1;
 }
@@ -38,7 +39,7 @@
 .merch-day.is-today .merch-day__name { color: var(--color-ink-brown); }
 
 .merch-legend { color: var(--color-text-muted); font-size: var(--text-sm); }
-.merch-count strong { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 400; letter-spacing: var(--tracking-heading); }
+.merch-count strong { font-family: var(--font-body); font-weight: 700; font-size: var(--text-xl); letter-spacing: var(--tracking-heading); }
 .merch-count__rule { display: block; color: var(--color-text-muted); font-size: var(--text-sm); }
 
 .merch-item { display: flex; align-items: center; gap: var(--space-3); }

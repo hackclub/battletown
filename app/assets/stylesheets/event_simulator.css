@@ -70,7 +70,7 @@
   border-bottom: 1px solid color-mix(in srgb, var(--color-bg) 50%, transparent);
 }
 .event-simulator__group { display: grid; gap: var(--space-2); margin: 0; padding: var(--space-3); border: 1px solid color-mix(in srgb, var(--color-bg) 50%, transparent); border-radius: var(--radius-md); }
-.event-simulator__title { margin: 0; font-family: var(--font-display); font-size: var(--text-base); font-weight: 400; }
+.event-simulator__title { margin: 0; font-family: var(--font-body); font-weight: 700; font-size: var(--text-base); }
 .event-simulator__hint { margin: 0; color: var(--color-bg); }
 .event-simulator__hint--warn { color: var(--color-highlight); }
 .event-simulator__field { display: grid; gap: var(--space-1); }
@@ -138,7 +138,8 @@
   border-radius: var(--radius-md);
   background: var(--color-ink-brown);
   color: var(--color-highlight);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: var(--text-xl);
   line-height: 1.2;
   white-space: nowrap;

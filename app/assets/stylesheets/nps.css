@@ -16,7 +16,7 @@
 .nps__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 
 /* Staff page: the headline number and the comment list. */
-.admin-nps__score { margin: 0; font-family: var(--font-display); font-size: var(--text-sign-title); line-height: 1; }
+.admin-nps__score { margin: 0; font-family: var(--font-body); font-weight: 700; font-size: var(--text-sign-title); line-height: 1; }
 .admin-nps__comments { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
 .admin-nps__comment { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 2px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
 .admin-nps__text { margin: 0; overflow-wrap: anywhere; white-space: pre-line; }
