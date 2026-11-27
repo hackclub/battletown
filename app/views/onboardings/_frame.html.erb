@@ -1,4 +1,4 @@
-<%# locals: (step:, title: nil, encouragement: nil, tone: "cream") -%>
+<%# locals: (step:, title: nil, encouragement: nil) -%>
 <%# Shared chrome for every step: a round back button and the progress bar across the top, then the heading, the
     saved prize and the step itself. @transition (set by the controller) plays
     a short full-screen moment over the step (the welcome splash, or "others like you" after the prize and project
@@ -35,7 +35,7 @@
     </div>
 
     <div class="onboarding stack">
-      <div class="panel onboarding__panel <%= "onboarding__panel--blue" if tone == "blue" %>">
+      <div class="panel onboarding__panel">
         <%# The transition's message, for screen readers and for people who have motion turned down (CSS shows it only then). %>
         <% if @transition == "welcome" %>
           <p class="onboarding-note">Welcome to Battletown. Make projects, take down the boss, get gear.</p>

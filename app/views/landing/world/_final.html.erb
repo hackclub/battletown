@@ -1,6 +1,8 @@
 <%# Final band (owner: final agent): the sand's own tilted edge sits over painted sky, like a dune crest. The sky and clouds are the sky band's own files; the edge is a CSS clip. See landing_world_final.css, which also documents the empty slot for a future painting. -%>
 <% sky_sizes = "(min-width: 37rem) 1576px, calc((100vw - 1rem) * 1576 / 576)" %>
-<div class="world__shore shore--sand"></div>
+<% %w[1 2 3].each do |n| %>
+  <div class="world__shore shore--shade shore--shade<%= n %>"></div>
+<% end %>
 <div class="world__shore shore--air">
   <div class="island__skybox">
     <%= image_tag "landing/world/sky/sky@c.webp", alt: "", class: "island__sky", width: 3152, height: 1202, loading: "lazy", decoding: "async",
@@ -12,5 +14,3 @@
     <%= image_tag "landing/world/sky/cloud@c.webp", alt: "", class: "island__cloud island__cloud--#{id}", width: 748, height: 194, loading: "lazy", decoding: "async", srcset: cloud_srcset, sizes: "(min-width: 48rem) 300px, 130px" %>
   <% end %>
 </div>
-<%# The sand's wall ending: one run of his real plateau wall, recolored into the sand family. Not clipped, so it covers the sand and sky edge. -%>
-<%= image_tag "landing/world/final/sand-wall@c.webp", alt: "", class: "final__wall", width: 3152, height: 360, loading: "lazy", decoding: "async" %>

@@ -144,12 +144,12 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   padding-left: 0.5rem;
   font: 400 clamp(1.5rem, 7vw, 2rem)/1.2 var(--display);
 }
-/* the tagline's own text treatment (cream fill, royal-blue stroke, yellow accent) is shared with the free-sticker tag */
-.landing :is(.hero__tagline, .hero__sticker) {
+/* the tagline's own text treatment: cream fill, royal-blue stroke, yellow accent */
+.landing .hero__tagline {
   color: var(--cream); letter-spacing: -0.05em;
   -webkit-text-stroke: 0.16em var(--blue); paint-order: stroke fill;
 }
-.landing :is(.hero__tagline, .hero__sticker) span { color: var(--yellow); }
+.landing .hero__tagline span { color: var(--yellow); }
 .landing .hero__swoosh { position: relative; z-index: 1; display: block; width: 100%; height: auto; margin-top: calc(100% * -234 / 1440); margin-bottom: -1px; }
 @media (min-width: 48rem) {
   .landing .hero { --swoosh-height: 14rem; --swoosh-overlap: 9.5rem; }
@@ -161,33 +161,22 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   .landing .hero__tagline { padding: 0; font-size: 2rem; white-space: nowrap; }
   .landing .hero__swoosh { height: var(--swoosh-height); margin-top: calc(var(--swoosh-overlap) * -1); object-fit: fill; }
 }
-/* The call to action with Hack Club's three stickers as one fanned pile (Armand's mockup, 2026-11-26) and, under it, "Join N other
-   fighters" when more than 50 people finished onboarding. The pile sits beside the button from 64rem up and under it below that.
-   The caption wears the tagline's text treatment; the stickers get the button's kind of soft shadow. Sized in em: one font-size scales the pile. */
-.landing .hero__actions { display: grid; justify-items: start; gap: 0.875rem; }
-.landing .hero__pile { position: relative; width: 15em; height: 10.4em; margin: 0.5rem 0 1rem 0; font-size: 0.8rem; }
-.landing .hero__stickers { position: absolute; inset: 0; }
-.landing .hero__sticker-img { position: absolute; display: block; height: auto; filter: drop-shadow(0 0.15em 0.3em rgb(10 30 60 / 0.35)); }
-.landing .hero__sticker-img--mac { width: 5.8em; left: 7.6em; top: 0; transform: rotate(12deg); }
-.landing .hero__sticker-img--red { width: 9.4em; left: 0; top: 3.4em; transform: rotate(4deg); }
-.landing .hero__sticker-img--black { width: 9.4em; left: 5.4em; top: 5.7em; transform: rotate(-10deg); }
-.landing .hero__sticker { /* a small tag across the pile's lower-left edge */
-  position: absolute; z-index: 1; left: 0.2rem; bottom: -0.9rem; margin: 0; transform: rotate(-4deg); white-space: nowrap;
-  font: 400 clamp(1.1rem, 4.6vw, 1.45rem)/1.1 var(--display);
-  letter-spacing: -0.02em; word-spacing: 0.14em;
-}
-@media (min-width: 48rem) {
-  .landing .hero__pile { font-size: 1rem; }
-}
-@media (min-width: 90rem) {
-  .landing .hero__actions:not(.hero__actions--count) { grid-template-columns: max-content max-content; column-gap: 1rem; align-items: center; }
-  .landing .hero__actions:not(.hero__actions--count) .cta { grid-column: 1; grid-row: 1; }
-  .landing .hero__actions:not(.hero__actions--count) .hero__pile { grid-column: 2; grid-row: 1; margin: -4rem 0; }
-}
-@media (min-width: 170rem) { /* with the count the button is wider, so the pile only goes beside it where the painted ribbon is further right */
-  .landing .hero__actions--count { grid-template-columns: max-content max-content; column-gap: 1rem; align-items: center; }
-  .landing .hero__actions--count .cta { grid-column: 1; grid-row: 1; }
-  .landing .hero__actions--count .hero__pile { grid-column: 2; grid-row: 1; margin: -4rem 0; }
+/* The call to action, with Hack Club's three stickers tucked behind it so they peek out past its top and right edges (Armand,
+   2026-11-26). The stickers are decoration: behind the button, never taking a click, with the soft shadow they always had. */
+.landing .hero__actions { display: grid; justify-items: start; }
+.landing .hero__cta { position: relative; isolation: isolate; display: inline-block; max-width: 100%; margin-top: 2rem; }
+.landing .hero__cta .cta { position: relative; z-index: 1; }
+.landing .hero__stickers { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.landing .hero__sticker-img { position: absolute; display: block; height: auto; pointer-events: none; filter: drop-shadow(0 0.15rem 0.3rem rgb(10 30 60 / 0.35)); }
+/* narrow and mid widths (the character's hand is right beside the button at tablet width): all three peek out of the top edge, fanned */
+.landing .hero__sticker-img--red { width: 6rem; left: 2%; top: -1.9rem; transform: rotate(-8deg); }
+.landing .hero__sticker-img--mac { width: 4.2rem; left: 35%; top: -2.2rem; transform: rotate(6deg); }
+.landing .hero__sticker-img--black { width: 5.4rem; left: 59%; right: auto; top: -1.8rem; transform: rotate(7deg); }
+@media (min-width: 64rem) { /* room to the right of the button: the stickers peek out of its top and right edges */
+  .landing .hero__cta { margin-top: 1.75rem; }
+  .landing .hero__sticker-img--mac { width: 5.2rem; left: auto; right: 7.6rem; top: -2.5rem; transform: rotate(-8deg); }
+  .landing .hero__sticker-img--red { width: 8.4rem; left: auto; right: -3.9rem; top: -0.9rem; transform: rotate(7deg); }
+  .landing .hero__sticker-img--black { width: 7.6rem; left: auto; right: -3.8rem; top: 1.9rem; transform: rotate(-8deg); }
 }
 /* ---- How it works: just the signpost, on flat sky. Its top board pokes up over the hero's bottom edge. ---- */
 .landing .how { position: relative; background: var(--sky); color: var(--navy); }
@@ -279,7 +268,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 }
 /* ---- Prizes: each one stands on a pebble cut from the painted floor, with its name and hours as plain white text on the floor below it. ---- */
 .landing .prizes { --bg: var(--royal); --next: var(--edge-c); }
-.landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) + 1rem); } /* the sand follows the last row sooner */
+.landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55); } /* the sand follows the last row sooner */
 .landing .prizes h2 { color: var(--yellow); }
 /* The stones are real cells of his pebble layer (script/export_prize_stones.py), each used once, shrunk uniformly and sized in world units like
    the other props: --w x --h wu is the whole picture, --t the height of its top face (the rest is the side). They lie loosely, so each
@@ -287,12 +276,12 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .shelf { --u: var(--wu); display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: calc(var(--u) * 26) calc(var(--u) * 20); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
 .landing .prize {
   position: relative; isolation: isolate; flex: none; display: flex; flex-direction: column; align-items: center; text-align: center;
-  width: max(calc(var(--u) * var(--w)), var(--lw, 10.5rem)); margin-top: calc(var(--u) * var(--dy));
-  --stone-text: #fff; --aw: calc(var(--u) * var(--w) * 0.64);
+  width: max(calc(var(--u) * var(--w)), var(--lw, 12.25rem)); margin-top: calc(var(--u) * var(--dy));
+  --stone-text: #fff; --aw: calc(var(--u) * var(--w) * 0.54);
 }
 /* The stone: his cell's own outline, a lit lavender top and the same shape lower in the mid violet as its side (two flat tones, all in the picture). The
    prize stands on the middle of the top face, its foot a little below the middle. */
-.landing .prize::before { content: ""; order: 2; width: calc(var(--u) * var(--w)); height: calc(var(--u) * var(--h)); margin-top: calc(var(--u) * var(--t) * -0.56); background: var(--stone) center / 100% 100% no-repeat; }
+.landing .prize::before { content: ""; order: 2; width: calc(var(--u) * var(--w)); height: calc(var(--u) * var(--h)); margin-top: calc(var(--u) * var(--t) * -0.6); background: var(--stone) center / 100% 100% no-repeat; }
 .landing .prize img, .landing .prize__emoji { order: 1; position: relative; z-index: 1; }
 .landing .prize img { display: block; width: var(--aw); aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
 /* The keyboard photo carries a loose switch above its top-left corner and a row of spare keys below: show the keyboard alone, in the same box as the other art. */
@@ -301,20 +290,20 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .prize__label { order: 3; margin-top: 0.6rem; padding-inline: 0.25rem; }
 .landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
 .landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.875rem; line-height: 1.2; overflow-wrap: anywhere; }
-@media (max-width: 39.99rem) { .landing .shelf { --u: calc(var(--wu) * 1.3); --lw: 8.75rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
+@media (max-width: 39.99rem) { .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55 + 2.5rem); } .landing .shelf { --u: calc(var(--wu) * 1.3); --lw: 10rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
 @media (min-width: 40rem) {
   .landing .prize h3 { font-size: 1.375rem; }
   .landing .prize__hours { font-size: 0.9375rem; }
 }
-.landing .prize:nth-child(1) { --w: 138.7; --h: 160; --t: 147; --dy: 0; --stone: image-set(url("landing/world/stones/stone-1@a.webp") 1x, url("landing/world/stones/stone-1@b.webp") 1.3x, url("landing/world/stones/stone-1@c.webp") 2x); }
-.landing .prize:nth-child(2) { --w: 161.8; --h: 126.8; --t: 113.8; --dy: 20; --stone: image-set(url("landing/world/stones/stone-2@a.webp") 1x, url("landing/world/stones/stone-2@b.webp") 1.3x, url("landing/world/stones/stone-2@c.webp") 2x); }
-.landing .prize:nth-child(3) { --w: 178.2; --h: 129.2; --t: 116.2; --dy: 6; --stone: image-set(url("landing/world/stones/stone-3@a.webp") 1x, url("landing/world/stones/stone-3@b.webp") 1.3x, url("landing/world/stones/stone-3@c.webp") 2x); }
-.landing .prize:nth-child(4) { --w: 157.8; --h: 120.3; --t: 107.3; --dy: 26; --stone: image-set(url("landing/world/stones/stone-4@a.webp") 1x, url("landing/world/stones/stone-4@b.webp") 1.3x, url("landing/world/stones/stone-4@c.webp") 2x); }
-.landing .prize:nth-child(5) { --w: 160.5; --h: 148.7; --t: 135.7; --dy: 10; --stone: image-set(url("landing/world/stones/stone-5@a.webp") 1x, url("landing/world/stones/stone-5@b.webp") 1.3x, url("landing/world/stones/stone-5@c.webp") 2x); }
-.landing .prize:nth-child(6) { --w: 201.3; --h: 161.9; --t: 148.9; --dy: 24; --stone: image-set(url("landing/world/stones/stone-6@a.webp") 1x, url("landing/world/stones/stone-6@b.webp") 1.3x, url("landing/world/stones/stone-6@c.webp") 2x); }
-.landing .prize:nth-child(7) { --w: 167.3; --h: 113.8; --t: 100.8; --dy: 2; --stone: image-set(url("landing/world/stones/stone-7@a.webp") 1x, url("landing/world/stones/stone-7@b.webp") 1.3x, url("landing/world/stones/stone-7@c.webp") 2x); }
-.landing .prize:nth-child(8) { --w: 140.1; --h: 141.6; --t: 128.6; --dy: 18; --stone: image-set(url("landing/world/stones/stone-8@a.webp") 1x, url("landing/world/stones/stone-8@b.webp") 1.3x, url("landing/world/stones/stone-8@c.webp") 2x); }
-.landing .prize:nth-child(9) { --w: 141.4; --h: 169.5; --t: 156.5; --dy: 8; --stone: image-set(url("landing/world/stones/stone-9@a.webp") 1x, url("landing/world/stones/stone-9@b.webp") 1.3x, url("landing/world/stones/stone-9@c.webp") 2x); }
+.landing .prize:nth-child(1) { --w: 153.7; --h: 139.1; --t: 107.4; --dy: 0; --stone: image-set(url("landing/world/stones/stone-1@a.webp") 1x, url("landing/world/stones/stone-1@b.webp") 1.3x, url("landing/world/stones/stone-1@c.webp") 2x); }
+.landing .prize:nth-child(2) { --w: 173.8; --h: 151.9; --t: 118.5; --dy: 20; --stone: image-set(url("landing/world/stones/stone-2@a.webp") 1x, url("landing/world/stones/stone-2@b.webp") 1.3x, url("landing/world/stones/stone-2@c.webp") 2x); }
+.landing .prize:nth-child(3) { --w: 173.9; --h: 134.8; --t: 103.4; --dy: 6; --stone: image-set(url("landing/world/stones/stone-3@a.webp") 1x, url("landing/world/stones/stone-3@b.webp") 1.3x, url("landing/world/stones/stone-3@c.webp") 2x); }
+.landing .prize:nth-child(4) { --w: 151.9; --h: 136.3; --t: 104.5; --dy: 26; --stone: image-set(url("landing/world/stones/stone-4@a.webp") 1x, url("landing/world/stones/stone-4@b.webp") 1.3x, url("landing/world/stones/stone-4@c.webp") 2x); }
+.landing .prize:nth-child(5) { --w: 167.8; --h: 169.5; --t: 131.5; --dy: 10; --stone: image-set(url("landing/world/stones/stone-5@a.webp") 1x, url("landing/world/stones/stone-5@b.webp") 1.3x, url("landing/world/stones/stone-5@c.webp") 2x); }
+.landing .prize:nth-child(6) { --w: 197.5; --h: 170.9; --t: 131.9; --dy: 24; --stone: image-set(url("landing/world/stones/stone-6@a.webp") 1x, url("landing/world/stones/stone-6@b.webp") 1.3x, url("landing/world/stones/stone-6@c.webp") 2x); }
+.landing .prize:nth-child(7) { --w: 179.8; --h: 136; --t: 104.5; --dy: 2; --stone: image-set(url("landing/world/stones/stone-7@a.webp") 1x, url("landing/world/stones/stone-7@b.webp") 1.3x, url("landing/world/stones/stone-7@c.webp") 2x); }
+.landing .prize:nth-child(8) { --w: 157.8; --h: 160.6; --t: 123.9; --dy: 18; --stone: image-set(url("landing/world/stones/stone-8@a.webp") 1x, url("landing/world/stones/stone-8@b.webp") 1.3x, url("landing/world/stones/stone-8@c.webp") 2x); }
+.landing .prize:nth-child(9) { --w: 152; --h: 151; --t: 116.2; --dy: 8; --stone: image-set(url("landing/world/stones/stone-9@a.webp") 1x, url("landing/world/stones/stone-9@b.webp") 1.3x, url("landing/world/stones/stone-9@c.webp") 2x); }
 /* ---- FAQ: the river. The questions are stepping stones across it, and the path picks up again on the far bank. ---- */
 .landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: var(--pink); --stone-shade: var(--color-sign-pink-edge); --ripple: transparent; } /* the question stones are the site's magenta (the button and the third signpost board), edge in the board's deeper pink; no halo, so no outline look */
 .landing .bank__face { fill: var(--royal-shade); }

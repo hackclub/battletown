@@ -1,4 +1,4 @@
-<%= render layout: "onboardings/frame", locals: { step: "prize", tone: "blue" } do %>
+<%= render layout: "onboardings/frame", locals: { step: "prize" } do %>
   <%= form_with model: subject, scope: :user, url: onboarding_step_path("prize"), method: :patch,
         data: { controller: "required-choice", action: "change->required-choice#sync submit->required-choice#guard" } do |f| %>
     <%= render "onboardings/errors" %>
@@ -28,7 +28,7 @@
           </label>
         <% end %>
       </div>
-      <p class="onboarding__hint onboarding__hint--light"><%= OnboardingDesignHelper::HOURS_NOTE %></p>
+      <p class="onboarding__hint"><%= OnboardingDesignHelper::HOURS_NOTE %></p>
     <% end %>
     <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>
