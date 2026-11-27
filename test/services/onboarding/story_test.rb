@@ -36,11 +36,27 @@ class Onboarding::StoryTest < ActiveSupport::TestCase
     today = Date.new(2026, 12, 1)
     options = S.frame_options(10, ends_on: nil, today: today)
     assert_equal %w[two_weeks month no_rush], options.map(&:first) # no end date: no "end of the program"
-    assert_equal "about 45 minutes a day", options.find { |o| o.first == "two_weeks" }.last # 10 h / 14 days = 43 min
+    assert_equal "about 1 hour a day", options.find { |o| o.first == "two_weeks" }.last # 10 h / 14 days = 43 min, rounded up to a pace choice
     assert_equal "about 30 minutes a day", options.find { |o| o.first == "month" }.last # 20 min a day rounds up to 30... 10h/30d = 20 min
     assert_nil options.last.last
     # a prize too big for a fortnight at 8 hours a day is not offered that frame
     assert_not_includes S.frame_options(200, ends_on: nil, today: today).map(&:first), "two_weeks"
+  end
+
+  test "the wish line names the picked frame, and No rush or nothing gives none" do
+    assert_equal "You wanted it in a month.", S.wish_line("month")
+    assert_equal "You wanted it in 2 weeks.", S.wish_line("two_weeks")
+    assert_equal "You wanted it by the end of the program.", S.wish_line("program")
+    assert_nil S.wish_line("no_rush")
+    assert_nil S.wish_line(nil)
+  end
+
+  test "every a-day figure the earlier screens show is a pace the pace question offers" do
+    [ 1, 3, 5, 6, 10, 30, 50 ].each do |hours|
+      figures = S.frame_options(hours, ends_on: nil, today: Date.new(2026, 12, 1)).filter_map(&:last)
+      figures << Onboarding::DailyTime.text(Onboarding::DailyTime.minutes_a_day(hours, ends_on: nil))
+      figures.compact.each { |text| assert_includes Onboarding::DailyTime::PACES.map { |pace| Onboarding::DailyTime.text(pace) }, text, "#{hours} h" }
+    end
   end
 
   test "with an end date, frames past it are not offered and the end of the program is" do

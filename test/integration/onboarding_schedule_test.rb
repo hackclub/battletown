@@ -353,7 +353,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
     prize = Prize.find(OnboardingDraft.new(session).prize_key)
-    assert_select "h1 + .onboarding__encouragement, .onboarding__encouragement", /#{Regexp.escape(prize.name)}/
+    assert_select ".onboarding__encouragement", "You wanted it in 2 weeks." # the wish the walk picked, named on the pace step
     days = (Rational(prize.coins * 3600, Game::Config.current.coins_per_hour) / (60 * 60)).ceil
     assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta", "About #{days} #{"day".pluralize(days)}, by #{Onboarding::Story.date_text(Time.zone.today + days - 1)}"
   end

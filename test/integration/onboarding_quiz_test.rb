@@ -87,7 +87,7 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
     begin_quiz
     reach_quiz_step("stops")
     patch onboarding_step_path("stops"), params: { answer: { values: %w[idea none] } }
-    assert_redirected_to onboarding_step_path("how")
+    assert_redirected_to onboarding_step_path("summary")
   end
 
   test "restarting from the landing resumes at the first unanswered screen" do
@@ -99,7 +99,7 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
 
   test "a screen further on cannot be opened before the ones before it" do
     begin_quiz
-    get onboarding_step_path("how")
+    get onboarding_step_path("summary")
     assert_redirected_to onboarding_step_path("use")
   end
 

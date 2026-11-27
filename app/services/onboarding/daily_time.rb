@@ -3,8 +3,9 @@ module Onboarding
   # ONBOARDING_PROGRAM_ENDS_ON environment variable for a local look). Nothing here invents an end date: with none set, or one that
   # has passed, the time-a-day methods count against the stand-in or return nil and callers keep the total-hours wording.
   module DailyTime
-    STEPS = [ 15, 30, 45, 60, 90 ].freeze # then whole hours
-    MAX_MINUTES = 8 * 60
+    # The minutes a day the pace question really offers (OnboardingsHelper::ONBOARDING_PACES is this list). Every "about N minutes a day" a person
+    # reads before that question rounds UP to one of these, so each figure shown is one they can pick; a need above the last one is not offered.
+    PACES = [ 30, 60, 120, 180 ].freeze
 
     module_function
 
@@ -31,18 +32,17 @@ module Onboarding
     # True when the end date is real (set), false while the stand-in is used.
     def real_date? = ends_on.present?
 
-    # Minutes a day, rounded UP to a step (15, 30, 45, 60, 90, then whole hours); nil for a past date or more than 8 hours a day (against the stand-in length when no date is set).
+    # Minutes a day, rounded UP to the nearest real pace choice (PACES); nil for a past date or more than the biggest choice a day (against the stand-in length when no date is set).
     def minutes_a_day(hours, today: Time.zone.today, ends_on: self.ends_on)
       minutes_over(hours, card_days(today: today, ends_on: ends_on))
     end
 
-    # The same for any number of days: the minutes a day that earn `hours` in `days`, rounded up to a step; nil over 8 hours a day.
+    # The same for any number of days: the minutes a day that earn `hours` in `days`, rounded up to a pace choice; nil over the biggest.
     def minutes_over(hours, days)
       return unless days&.positive? && hours.to_f.positive?
 
       raw = (hours.to_r * 60 / days).ceil
-      minutes = STEPS.find { |step| raw <= step } || (raw / 60.0).ceil * 60
-      minutes unless minutes > MAX_MINUTES
+      PACES.find { |pace| raw <= pace }
     end
 
     # "about 30 minutes a day", "about 1.5 hours a day", "about 2 hours a day".

@@ -56,7 +56,7 @@ module Onboarding
     def date_text(date) = date.strftime("%B %-d")
 
     # [[value, label, detail]] for "When do you want it?". Each detail is the time a day that frame needs for THIS prize, computed. A frame
-    # that needs over 8 hours a day, or lies past the end date when one is set, is not offered.
+    # that needs more than the biggest pace choice a day (DailyTime::PACES), or lies past the end date when one is set, is not offered.
     def frame_options(hours, ends_on: DailyTime.ends_on, today: self.today)
       left = DailyTime.days_left(today: today, ends_on: ends_on)
       return [] if ends_on && !left.to_i.positive?
@@ -75,6 +75,12 @@ module Onboarding
 
         [ value, label, DailyTime.text(minutes) ]
       end
+    end
+
+    # "You wanted it in a month." for the pace step, from the time frame they picked; nil for "No rush" or nothing picked.
+    def wish_line(frame)
+      _, label, days = FRAMES.find { |value, _, _| value == frame }
+      "You wanted it #{label.sub(/\A./, &:downcase)}." if label && days
     end
 
     # The pace (from the pace step's choices) that meets a time frame: the smallest that earns the prize in time, else the biggest.

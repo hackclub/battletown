@@ -41,14 +41,21 @@ class Onboarding::FlowTest < ActiveSupport::TestCase
 
   test "question and info screens per branch, with the crew question off and on" do
     without_feature(:team) do
-      %w[game website app tool].each { |kind| assert_equal [ 15, 6 ], counts(kind), kind }
+      %w[game website app tool].each { |kind| assert_equal [ 14, 6 ], counts(kind), kind }
       assert_equal [ 11, 4 ], counts("undecided", stops: %w[none]), "undecided with nothing stopping them: no obstacle answer screen"
       assert_equal [ 11, 5 ], counts("undecided")
     end
     with_feature(:team) do
-      %w[game website app tool].each { |kind| assert_equal [ 16, 6 ], counts(kind), kind }
+      %w[game website app tool].each { |kind| assert_equal [ 15, 6 ], counts(kind), kind }
       assert_equal [ 11, 5 ], counts("undecided")
     end
+  end
+
+  test "the screens tell one story in this order, and the idea question is only for Not sure yet" do
+    decided = Flow.visible(answers_for(kind: "game", stops: %w[time])).map(&:key)
+    assert_equal %w[age prize use cost how when made project detail audience started size reflect editor coding_when schedule pace_date stops stops_answer summary signup account celebrate], decided
+    undecided = Flow.visible(answers_for(kind: "undecided", stops: %w[time])).map(&:key)
+    assert_equal %w[age prize use cost how when made project idea editor coding_when schedule pace_date stops stops_answer summary signup account celebrate], undecided
   end
 
   test "next and previous skip hidden screens in both directions" do

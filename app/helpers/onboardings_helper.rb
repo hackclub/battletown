@@ -2,8 +2,8 @@ module OnboardingsHelper
   STEP_COPY = {
     "age" => { label: "Age", title: "How old are you?", encouragement: "Battletown is only for teens aged 13–18, and is run by Hack Club, a nonprofit for teens, by teens.", progress: "onboarding progress (this will be quick, we promise)" },
     "prize" => { label: "Prize", title: "Pick your prize", encouragement: "Every hour you code gets you closer. Choose what you're working toward.", progress: "onboarding progress (the fun part: picking a prize)" },
-    "project" => { label: "Project", title: "What are you making?", encouragement: "Nothing here is binding. You can change your mind later.", progress: "onboarding progress (nearly halfway there)" },
-    "schedule" => { label: "Schedule", title: "When do you want to code?", encouragement: "Small, regular sessions beat big, rare ones. We'll nudge you on Slack.", progress: "onboarding progress (past halfway now)" },
+    "project" => { label: "Project", title: "What are you making?", encouragement: "Nothing here is binding. You can change your mind later.", progress: "onboarding progress" },
+    "schedule" => { label: "Schedule", title: "When do you want to code?", encouragement: "Small, regular sessions beat big, rare ones. We'll nudge you on Slack.", progress: "onboarding progress" },
     "signup" => { label: "Sign up", title: "Sign your pledge", encouragement: nil, progress: "onboarding progress (one quick sign in to go)" },
     "account" => { label: "Account", title: "Connect Hackatime", encouragement: "One last thing: Hackatime counts your coding time, so your hours show up on their own.", progress: "onboarding progress (almost done)" },
     "celebrate" => { label: "Go!", title: "You're in!", encouragement: "The town is better with you in it.", progress: "onboarding progress (done, you made it!)" }
@@ -239,7 +239,7 @@ module OnboardingsHelper
   def day_label(day) = day.capitalize
 
   # The pace question's choices, in minutes a coding day (all are in User::PACES).
-  ONBOARDING_PACES = [ 30, 60, 120, 180 ].freeze
+  ONBOARDING_PACES = Onboarding::DailyTime::PACES
   # What the days and time are before the person has chosen any: every day at 6 pm. The pace step does not ask for them
   # but the schedule still needs them (see OnboardingsController REQUIRED), so they are sent with the answer.
   DEFAULT_CODING_TIME = "18:00".freeze

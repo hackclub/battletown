@@ -7,7 +7,7 @@ class Onboarding::DailyTimeTest < ActiveSupport::TestCase
   test "with no end date the daily time counts against the stand-in length" do
     assert_equal 30, DT.card_days(today: TODAY, ends_on: nil)
     assert_equal 60, DT.minutes_a_day(30, today: TODAY, ends_on: nil) # 30 hours in 30 days
-    assert_nil DT.minutes_a_day(300, today: TODAY, ends_on: nil) # over 8 hours a day: total hours instead
+    assert_nil DT.minutes_a_day(300, today: TODAY, ends_on: nil) # over the biggest pace choice a day: total hours instead
     assert_nil DT.days_left(today: TODAY, ends_on: nil)
     assert DT.reachable?(30, 15, today: TODAY, ends_on: nil)
   end
@@ -20,18 +20,18 @@ class Onboarding::DailyTimeTest < ActiveSupport::TestCase
   test "today counts as a day and the result rounds up to a step" do
     ends = TODAY + 9 # ten days left, today included
     assert_equal 10, DT.days_left(today: TODAY, ends_on: ends)
-    assert_equal 15, DT.minutes_a_day(1, today: TODAY, ends_on: ends)   # 6 min -> 15
-    assert_equal 30, DT.minutes_a_day(5, today: TODAY, ends_on: ends)   # 30 -> 30 (edge: exactly a step)
-    assert_equal 45, DT.minutes_a_day(5.1, today: TODAY, ends_on: ends) # 30.6 -> 45
+    assert_equal 30, DT.minutes_a_day(1, today: TODAY, ends_on: ends)   # 6 min -> the smallest pace choice, 30
+    assert_equal 30, DT.minutes_a_day(5, today: TODAY, ends_on: ends)   # 30 -> 30 (edge: exactly a choice)
+    assert_equal 60, DT.minutes_a_day(5.1, today: TODAY, ends_on: ends) # 30.6 -> 60
     assert_equal 60, DT.minutes_a_day(10, today: TODAY, ends_on: ends)
-    assert_equal 90, DT.minutes_a_day(15, today: TODAY, ends_on: ends)
-    assert_equal 120, DT.minutes_a_day(16, today: TODAY, ends_on: ends) # 96 -> whole hours
+    assert_equal 120, DT.minutes_a_day(15, today: TODAY, ends_on: ends) # 90 -> 120
+    assert_equal 120, DT.minutes_a_day(16, today: TODAY, ends_on: ends) # 96 -> 120
     assert_equal 180, DT.minutes_a_day(30, today: TODAY, ends_on: ends)
   end
 
-  test "over eight hours a day falls back to nothing" do
-    assert_equal 480, DT.minutes_a_day(80, today: TODAY, ends_on: TODAY + 9)
-    assert_nil DT.minutes_a_day(81, today: TODAY, ends_on: TODAY + 9)
+  test "more than the biggest pace choice a day falls back to nothing" do
+    assert_equal 180, DT.minutes_a_day(30, today: TODAY, ends_on: TODAY + 9)
+    assert_nil DT.minutes_a_day(31, today: TODAY, ends_on: TODAY + 9)
   end
 
   test "the wording" do
