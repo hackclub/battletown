@@ -486,6 +486,11 @@
   .flash { margin: 0; text-align: center; }
   .alert a, .flash a { color: inherit; }
   .alert__title { margin: 0 0 var(--space-1); font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
+  /* The one error box (views/shared/_error_summary): a list of lines, each optionally a link to its field; it takes focus on a refused submit. */
+  .error-summary { margin-bottom: var(--space-6); }
+  .error-summary:focus { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+  .error-summary ul { margin: 0; padding-left: var(--space-6); }
+  .error-summary a { font-weight: 700; }
   .alert--success, .flash--notice, .flash--success { --alert-bg: var(--color-success-bg); --alert-ink: var(--color-success-ink); --alert-edge: var(--color-success); }
   .alert--danger, .flash--alert, .flash--error { --alert-bg: var(--color-danger-bg); --alert-ink: var(--color-danger-ink); --alert-edge: var(--color-danger); }
   .alert--warning, .flash--warning { --alert-bg: var(--color-warning-bg); --alert-ink: var(--color-warning-ink); --alert-edge: var(--color-warning-ink); }

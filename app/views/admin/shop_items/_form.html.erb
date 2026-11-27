@@ -2,14 +2,7 @@
 <% picture = ShopItems::Config.current %>
 <% free = item.free_signup? %>
 <% if item.errors.any? %>
-  <div class="alert alert--danger admin-form__errors" role="alert">
-    <p class="alert__title">That was not saved</p>
-    <ul>
-      <% item.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
-  </div>
+  <%= render "shared/error_summary", title: "That was not saved", items: item.errors.full_messages.map { |message| [ message, nil ] } %>
 <% end %>
 
 <div class="admin-shop-edit" data-controller="shop-item-preview" data-shop-item-preview-coins-per-hour-value="<%= Game::Config.current.coins_per_hour %>">

@@ -8,7 +8,7 @@
   <div class="card">
     <%= form_with url: link_project_path(@project), method: :patch, class: "projects-form stack" do %>
       <% if @error %>
-        <div class="alert alert--danger projects-errors" role="alert"><p class="alert__title"><%= @error %></p></div>
+        <%= render "shared/error_summary", title: @error %>
       <% end %>
 
       <div class="field">

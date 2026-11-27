@@ -87,8 +87,7 @@
 /* Forms: boss edit, approve, reject, order filter, dev hours. */
 .admin-form-card, .dev-form { max-width: 32rem; }
 .admin-form__hint { display: block; }
-.admin-form__errors { margin: 0; max-width: 32rem; }
-.admin-form__errors ul { margin: 0; padding-inline-start: var(--space-6); font-weight: 500; }
+.admin-form__errors { margin: 0; max-width: 32rem; } /* the warning note above the shop item form */
 .admin-form--inline { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-3) var(--space-4); max-width: none; }
 .admin-form--inline .field { flex: 1 1 12rem; }
 .admin-form--inline .btn { flex: none; }

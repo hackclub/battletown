@@ -42,7 +42,7 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def errors_text = css_select(".onboarding__errors li").map { |li| li.text.squish }
+  def errors_text = css_select(".error-summary li").map { |li| li.text.squish }
 
   def refute_old_wording
     assert_no_match(/can't be blank|is too long|must include|must look like|is not included|is invalid|17:30/, response.body)
@@ -53,7 +53,7 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     step("prize")
     assert_response :unprocessable_content
     assert_equal [ "Pick a prize to continue" ], errors_text
-    assert_select ".onboarding__errors a[href='#user_prize_key_#{Prize.paid.first.key}']", "Pick a prize to continue"
+    assert_select ".error-summary a[href='#user_prize_key_#{Prize.paid.first.key}']", "Pick a prize to continue"
     assert_select "#prize-error", "Pick a prize to continue"
     refute_old_wording
   end
@@ -68,7 +68,7 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     anonymous_through("project")
     step("project", project_idea: "x")
     assert_equal [ "Pick a kind of project" ], errors_text
-    assert_select ".onboarding__errors a[href='#user_project_kind_game']", "Pick a kind of project"
+    assert_select ".error-summary a[href='#user_project_kind_game']", "Pick a kind of project"
     assert_select "#kind-error", "Pick a kind of project"
     refute_old_wording
   end
@@ -148,6 +148,6 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_equal [ "Pick one of the options in the list" ], errors_text
     assert_select "#user_referral_source-error", "Pick one of the options in the list"
-    assert_select ".onboarding__errors a[href='#user_referral_source']"
+    assert_select ".error-summary a[href='#user_referral_source']"
   end
 end

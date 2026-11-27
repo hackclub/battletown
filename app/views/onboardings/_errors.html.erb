@@ -1,18 +1,6 @@
-<%# Error summary: announced on render (role=alert) and focused by onboarding-step; each line links to its field. %>
+<%# Error summary for the onboarding steps: the shared box, fed with this step's lines. The onboarding-step controller focuses it. %>
 <% errors = onboarding_errors %>
 <% if errors.any? %>
-  <div class="alert alert--danger onboarding__errors" role="alert" tabindex="-1" data-onboarding-step-target="errors">
-    <p class="alert__title">Let's fix a couple of things:</p>
-    <ul>
-      <% errors.each do |attribute, message| %>
-        <li>
-          <% if (anchor = onboarding_error_anchor(attribute)) %>
-            <a href="#<%= anchor %>"><%= message %></a>
-          <% else %>
-            <%= message %>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-  </div>
+  <%= render "shared/error_summary", title: "Let's fix a couple of things:", focus: false, data: { onboarding_step_target: "errors" },
+        items: errors.map { |attribute, message| [ message, onboarding_error_anchor(attribute) ] } %>
 <% end %>
