@@ -772,8 +772,11 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .blocks__group:nth-child(1) { --g: 0; } .blocks__group:nth-child(2) { --g: 1; } .blocks__group:nth-child(3) { --g: 2; } .blocks__group:nth-child(4) { --g: 3; } .blocks__group:nth-child(5) { --g: 4; }
 .blocks__group:nth-child(6) { --g: 5; } .blocks__group:nth-child(7) { --g: 6; } .blocks__group:nth-child(8) { --g: 7; } .blocks__group:nth-child(9) { --g: 8; } .blocks__group:nth-child(10) { --g: 9; }
 .blocks__block:nth-child(1) { --j: 0; } .blocks__block:nth-child(2) { --j: 1; } .blocks__block:nth-child(3) { --j: 2; } .blocks__block:nth-child(4) { --j: 3; } .blocks__block:nth-child(5) { --j: 4; }
+/* the groups share about 0.72 s whatever their number, so the whole fill-in ends within about 1.2 s (the last block starts by 0.9 s and takes 0.25 s) */
+.blocks--n-1 { --gstep: 0s; } .blocks--n-2 { --gstep: 0.2s; } .blocks--n-3 { --gstep: 0.2s; } .blocks--n-4 { --gstep: 0.18s; } .blocks--n-5 { --gstep: 0.144s; }
+.blocks--n-6 { --gstep: 0.12s; } .blocks--n-7 { --gstep: 0.103s; } .blocks--n-8 { --gstep: 0.09s; } .blocks--n-9 { --gstep: 0.08s; } .blocks--n-10 { --gstep: 0.072s; }
 @media (prefers-reduced-motion: no-preference) {
-  .blocks__block { animation: block-in 0.25s cubic-bezier(.3, 1.4, .5, 1) calc(0.1s + var(--g, 0) * 0.14s + var(--j, 0) * 0.025s) both; }
+  .blocks__block { animation: block-in 0.25s cubic-bezier(.3, 1.4, .5, 1) calc(0.1s + var(--g, 0) * var(--gstep, 0.08s) + var(--j, 0) * 0.02s) both; }
 }
 @keyframes block-in { from { scale: 1 0; opacity: 0; } to { scale: 1 1; opacity: 1; } }
 /* how it works: four numbered flat tiles in a row (two by two on a phone), each with a small drawing. The finished state is the base style. */
@@ -793,7 +796,7 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 }
 @keyframes how-in { from { opacity: 0; translate: 0 0.75rem; } to { opacity: 1; translate: 0 0; } }
 /* stops_answer: a flat icon badge on each row; rows appear in order. The finished state is the base style. */
-.help__row { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-4); }
+.info__pairs .help__row { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-4); } /* the badge-to-text gap matches the row's inner rhythm */
 .help__badge { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--color-blue); }
 .help__badge svg { display: block; width: 1.5rem; height: 1.5rem; }
 .help__white { fill: var(--color-surface); }
