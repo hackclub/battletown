@@ -52,6 +52,8 @@ module OnboardingStoryHelper
     prize = answers.prize
     daily = Onboarding::DailyTime.text(Onboarding::DailyTime.minutes_a_day(prize.hours)) if prize
     ends = Onboarding::DailyTime.ends_on
-    daily ? "That is #{daily} until #{Onboarding::Story.date_text(ends)}." : "Every hour you code counts toward it."
+    return "Every hour you code counts toward it." unless daily
+
+    ends ? "That is #{daily} until #{Onboarding::Story.date_text(ends)}." : "That is #{daily}."
   end
 end

@@ -4,8 +4,10 @@ class Onboarding::DailyTimeTest < ActiveSupport::TestCase
   DT = Onboarding::DailyTime
   TODAY = Date.new(2026, 12, 1)
 
-  test "with no end date there is no daily time" do
-    assert_nil DT.minutes_a_day(30, today: TODAY, ends_on: nil)
+  test "with no end date the daily time counts against the stand-in length" do
+    assert_equal 30, DT.card_days(today: TODAY, ends_on: nil)
+    assert_equal 60, DT.minutes_a_day(30, today: TODAY, ends_on: nil) # 30 hours in 30 days
+    assert_nil DT.minutes_a_day(300, today: TODAY, ends_on: nil) # over 8 hours a day: total hours instead
     assert_nil DT.days_left(today: TODAY, ends_on: nil)
     assert DT.reachable?(30, 15, today: TODAY, ends_on: nil)
   end

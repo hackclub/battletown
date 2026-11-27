@@ -331,14 +331,14 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the prize cards show hours and each radio sits directly before its card body" do
+  test "the prize cards show the time needed and each radio sits directly before its card body" do
     sign_in_as users(:new_user)
     get onboarding_step_path("prize")
 
     assert_select "fieldset legend", "Prize"
     assert_select "label.choice", Prize.paid.size
     Prize.paid.each do |prize|
-      assert_select "label.choice:has(input.choice__input[type=radio][name='user[prize_key]'][value='#{prize.key}'])", /#{Regexp.escape(prize.hours_text)}/
+      assert_select "label.choice:has(input.choice__input[type=radio][name='user[prize_key]'][value='#{prize.key}'])", /#{Regexp.escape(prize.hours_text)}|a day/ # hours a day (against the stand-in), the total hours when that is over 8 a day
     end
   end
 

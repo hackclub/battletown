@@ -1,7 +1,7 @@
 module Onboarding
   # The time a day a prize takes to earn by the end of the program (config/game.yml `onboarding.program_ends_on`, or the
   # ONBOARDING_PROGRAM_ENDS_ON environment variable for a local look). Nothing here invents an end date: with none set, or one that
-  # has passed, every method returns nil and callers keep the total-hours wording.
+  # has passed, the time-a-day methods count against the stand-in or return nil and callers keep the total-hours wording.
   module DailyTime
     STEPS = [ 15, 30, 45, 60, 90 ].freeze # then whole hours
     MAX_MINUTES = 8 * 60
@@ -20,9 +20,20 @@ module Onboarding
       (ends_on - today).to_i + 1 if ends_on
     end
 
-    # Minutes a day, rounded UP to a step (15, 30, 45, 60, 90, then whole hours); nil with no date, a past date, or more than 8 hours a day.
+    # The days a prize card counts against: the real days left, else the stand-in length from today (config onboarding.program_length_stand_in_days)
+    # while no real end date is set. Nil once a real date has passed.
+    def card_days(today: Time.zone.today, ends_on: self.ends_on)
+      return days_left(today: today, ends_on: ends_on) if ends_on
+
+      Rails.application.config_for(:game).dig(:onboarding, :program_length_stand_in_days).to_i.then { |days| days if days.positive? }
+    end
+
+    # True when the end date is real (set), false while the stand-in is used.
+    def real_date? = ends_on.present?
+
+    # Minutes a day, rounded UP to a step (15, 30, 45, 60, 90, then whole hours); nil for a past date or more than 8 hours a day (against the stand-in length when no date is set).
     def minutes_a_day(hours, today: Time.zone.today, ends_on: self.ends_on)
-      minutes_over(hours, days_left(today: today, ends_on: ends_on))
+      minutes_over(hours, card_days(today: today, ends_on: ends_on))
     end
 
     # The same for any number of days: the minutes a day that earn `hours` in `days`, rounded up to a step; nil over 8 hours a day.

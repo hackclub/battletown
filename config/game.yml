@@ -30,10 +30,13 @@ shared:
   # behind "See all prizes". Chosen to span the hours range (1, 3, 5, 6, 30 and 50 hours at 10 coins an hour). A missing, short or
   # outdated list falls back to six prizes spread from the cheapest to the dearest.
   onboarding:
-    # The last day of the program (YYYY-MM-DD), empty until it is known. With a date, each prize card on the pick step says the time a
-    # day needed to earn that prize by then (app/services/onboarding/daily_time.rb); with none, or a past date, it says the total hours.
-    # Do not guess a date here: no end date exists anywhere else in the app.
+    # The last day of the program (YYYY-MM-DD). EMPTY UNTIL THE REAL DATE IS KNOWN, and full launch must not go ahead while it is (run
+    # `bin/rails launch:check`). With a date, each prize card says the time a day needed to earn that prize by then, and the quiz offers "by the end of
+    # the program" and says when a pace is too slow (app/services/onboarding/daily_time.rb). With none, the cards still say a time a day, counted
+    # against the stand-in below; a past date, or more than 8 hours a day, falls back to the total hours.
     program_ends_on:
+    # STAND-IN until program_ends_on is set (Armand, 2026-11-27: about a month): the number of days the prize cards count against.
+    program_length_stand_in_days: 30
     featured_prizes:
       - custom_sticker
       - keychain
