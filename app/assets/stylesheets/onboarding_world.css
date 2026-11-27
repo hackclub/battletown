@@ -710,9 +710,14 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .onboarding__legend { font-weight: 800; }
 
 /* -- hard shadows only: zero blur, a solid darker blue, a clear offset -- */
-.onboarding-top__logo img { filter: drop-shadow(0 4px 0 var(--color-blue-edge)); }
-.transition__logo { filter: drop-shadow(0 7px 0 var(--color-blue-edge)); }
-@media (max-width: 39.99rem) { .onboarding-top__logo img { filter: drop-shadow(0 3px 0 var(--color-blue-edge)); } }
+/* The logo's white sticker edge against the pale ground: a thin hard edge on every side (zero blur), the lightest logo-family blue that is 3:1 against the white. */
+.onboarding-top__logo img, .transition__logo {
+  --edge: 1.5px;
+  filter: drop-shadow(var(--edge) 0 0 var(--color-logo-edge)) drop-shadow(calc(-1 * var(--edge)) 0 0 var(--color-logo-edge))
+          drop-shadow(0 var(--edge) 0 var(--color-logo-edge)) drop-shadow(0 calc(-1 * var(--edge)) 0 var(--color-logo-edge));
+}
+.transition__logo { --edge: 2px; }
+@media (max-width: 39.99rem) { .onboarding-top__logo img { --edge: 1px; } }
 
 /* -- one rule for a picked option: the container's colors, and every piece of text and every icon inside it inherits them (no per-element color to miss) -- */
 .onboarding-page .choice-grid .choice__input:checked + .choice__body,
