@@ -648,3 +648,13 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .choice-grid--prizes .choice__art { background: color-mix(in srgb, var(--color-cool-ground) 45%, var(--color-cool-tint)); }
 @media (max-width: 39.99rem) { .choice-grid--prizes .choice__art { background: none; } }
 .choice-grid--prizes .choice__input:checked + .choice__body .choice__art { background: var(--color-cool-tint); }
+
+/* ---- Motion: nothing snaps. The new question fades and rises in; a picked single-choice card turns primary over 150ms; Continue changes
+   from off to on over 150ms; messages that appear fade in. Only opacity and translate move; all of it is off under reduced motion. ---- */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes ob-enter { from { opacity: 0; translate: 0 8px; } }
+  .onboarding__panel { animation: ob-enter 220ms ease-out both; }
+  .onboarding__panel .alert, .onboarding__panel .field__error, .reveal { animation: ob-enter 200ms ease-out both; }
+  .onboarding-page .btn--primary.btn--lg { transition: --press 120ms ease, background-color 150ms ease, color 150ms ease; }
+}
+.age-choice.is-picked { --age-edge-color: var(--pri-edge); background: var(--pri-face); color: var(--pri-ink); }
