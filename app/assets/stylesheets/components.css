@@ -18,7 +18,7 @@
     --btn-bg: var(--color-bg);
     --btn-fg: var(--color-ink-blue);
     --btn-border: var(--btn-bg); /* no outline: the border is the fill's own color */
-    --btn-edge: var(--color-cream-edge); /* used only by .btn--raised */
+    --btn-edge: color-mix(in oklab, var(--btn-bg) 87%, black); /* the raised edge is ALWAYS the button's own fill, darker: a page that changes --btn-bg (or --color-primary) changes the edge with it. Never set an edge color by hand (ghost: transparent) */
     --btn-edge-size: 0.2em;
     --btn-rim: 2px;
     --btn-min-h: var(--tap-size);
@@ -55,8 +55,6 @@
   .btn--primary {
     --btn-bg: var(--color-primary);
     --btn-fg: var(--color-primary-contrast);
-    --btn-border: var(--color-primary);
-    --btn-edge: var(--color-pink-edge);
   }
 
   /* Large / CTA: the Figma pink CTA (151:271), the same pink as .btn--primary (cream label 3.14:1, the owner's choice). */
@@ -73,8 +71,6 @@
   .btn--primary.btn--lg, .btn--cta {
     --btn-bg: var(--color-cta);
     --btn-fg: var(--color-primary-contrast);
-    --btn-border: var(--color-cta);
-    --btn-edge: var(--color-pink-edge);
   }
 
   .btn--sm { --btn-pt: 0.3em; --btn-px: 1em; --btn-pb: 0.3em; font-size: var(--text-sm); }
@@ -83,8 +79,6 @@
   .btn--danger {
     --btn-bg: var(--color-danger);
     --btn-fg: var(--color-primary-contrast);
-    --btn-border: var(--color-danger);
-    --btn-edge: var(--edge-shade);
   }
 
   /* Ghost: no fill, no edge; underline on hover. For header buttons, "Cancel" and other quiet actions. */
