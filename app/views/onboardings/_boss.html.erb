@@ -1,0 +1,16 @@
+<%# locals: (boss:) -%>
+<%# This week's boss as the dashboard draws it (same picture, same health words), small, with one true line about how it is hurt. %>
+<% if boss.boss? %>
+  <% art_path, art_width, art_height = boss.stage_art %>
+  <section class="reveal__boss" aria-labelledby="reveal-boss-name">
+    <%= image_tag art_path, alt: boss.art_alt, class: "reveal__boss-art", width: art_width, height: art_height %>
+    <div class="reveal__boss-text">
+      <p class="eyebrow">This week's boss</p>
+      <h2 class="reveal__boss-name" id="reveal-boss-name"><%= boss.boss_name %></h2>
+      <p><%= boss.summary %></p>
+      <p class="reveal__boss-how">Hours from projects you ship take health off the boss.</p>
+    </div>
+  </section>
+<% elsif boss.upcoming_text %>
+  <p class="reveal__boss-none"><%= boss.upcoming_text %></p>
+<% end %>

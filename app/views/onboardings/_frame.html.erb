@@ -1,4 +1,4 @@
-<%# locals: (step:, title: nil, encouragement: nil) -%>
+<%# locals: (step:, title: nil, encouragement: nil, show_prize: true) -%>
 <%# Shared chrome for every step: a round back button and the progress bar across the top, then the heading, the
     saved prize and the step itself. @transition (set by the controller) plays
     a short full-screen moment over the step (the welcome splash, or "others like you" after the prize and project
@@ -48,7 +48,7 @@
         <% end %>
 
         <%# The celebration shows the prize in its own summary. %>
-        <% if index.positive? && index < total - 1 && (prize = onboarding_saved_prize) %>
+        <% if index.positive? && index < total - 1 && show_prize && (prize = onboarding_saved_prize) %>
           <p class="onboarding-prize">
             <span class="onboarding-prize__label">Working toward</span>
             <strong><% if prize.image.present? %><%= image_tag prize.image, alt: "", class: "onboarding-prize__image" %><% end %><%= prize.name %></strong>

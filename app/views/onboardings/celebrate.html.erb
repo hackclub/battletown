@@ -1,10 +1,32 @@
 <%= render layout: "onboardings/frame", locals: { step: "celebrate" } do %>
   <div data-controller="onboarding-celebration" data-action="turbo:before-cache@document->onboarding-celebration#clearConfetti" class="celebration">
     <div class="confetti" aria-hidden="true" data-onboarding-celebration-target="confetti"></div>
+    <%# What the dashboard already knows about this person on their first look: the prize and what it takes at their pace, this
+        week's boss, and the one thing the dashboard's big button asks for first. Nothing here is a new system. %>
+    <% d = Dashboard::Presenter.new(user: current_user) %>
+    <% prize = d.prize %>
+    <% pace = d.prize_pace %>
     <div class="celebration__layout">
       <div class="celebration__main">
-        <p class="celebration__lead">Welcome to Battletown<%= ", #{current_user.display_name}" if current_user.display_name.present? %>. Here's your plan:</p>
-        <%= render "onboardings/summary", subject: current_user %>
+        <p class="celebration__lead">Welcome to Battletown<%= ", #{current_user.display_name}" if current_user.display_name.present? %>.</p>
+        <div class="reveal arrival">
+          <% if prize %>
+            <section class="arrival__prize card card--cream card--flat" aria-label="Your prize">
+              <% if prize.image.present? %><%= image_tag prize.image, alt: "", class: "reveal__prize-image" %><% end %>
+              <div>
+                <p class="eyebrow">Prize</p>
+                <p class="arrival__name"><%= prize.name %></p>
+                <% if pace %><p class="reveal__estimate"><%= pace.to_go %><%= " #{pace.bonus}" if pace.bonus %>. <%= pace.plan %>.</p><% end %>
+              </div>
+            </section>
+          <% end %>
+          <%= render "onboardings/boss", boss: d.boss %>
+        </div>
+        <section class="arrival__first card card--cream card--flat" aria-labelledby="arrival-first">
+          <p class="eyebrow" id="arrival-first">First thing to do</p>
+          <p class="arrival__name"><%= %i[link add_project].include?(d.stage.cta) ? d.stage.cta_label : d.stage.headline %></p>
+          <% if d.stage.reason %><p class="reveal__estimate"><%= d.stage.reason %></p><% end %>
+        </section>
       </div>
     </div>
 
