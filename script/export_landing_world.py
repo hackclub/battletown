@@ -218,66 +218,62 @@ def sand_cut(art_img, y0=5700, y1=7300):
 # --- sand-cut-end
 save("sand", "sand", sand_cut(art), keys="c")  # only @c: the page draws it inside an SVG clipped by the traced shore curve (see _sand.html.erb)
 
-# 6b. The sand's wall ending (final band): ONE continuous run of the plateau's own wall, cut at the painting's scale (1 canvas px stays
-#    1 canvas px, never enlarged, mirrored, repeated or stretched). The run is the whole width of the painting (canvas x 0..3152), from the
-#    left diagonal, through the chasm with its ledges, to the flat right run. For every column the LOWEST contiguous run of wall pixels
-#    is kept (wall = blue above green in the composite, so the teal top surface and the green ledge are left out), with its real
-#    anti-aliased alpha. Recolor: luminance mapped between the wall's dark top line and its face onto a darker, browner step of the
-#    sand family; no gradient, no redraw. No cast shadow: nothing lies under the wall but sky. The sand is a flat fill that runs
-#    down behind the wall; the sky starts at the wall's own bottom edge (landing_world_final.css clips the sky to it).
-# --- sand-wall-begin
-WALL_Y0, WALL_Y1 = 2300, 3150
-WALL_DARK, WALL_LIGHT = (128, 98, 62), (192, 158, 102)  # the line and the face, in the sand's family (sand is 235,213,131)
-WALL_LUM = (0.299 * 99 + 0.587 * 92 + 0.114 * 134, 0.299 * 151 + 0.587 * 147 + 0.114 * 170)  # the painting's top line and face
+# 6c. The sand's side (final band). The sand's tilted edge (the polygon in landing_world_final.css, listed here in wu from the page middle, y in
+#    wu below the final band's box top) gets a CONSTRUCTED front, the way the prize stones get theirs (script/export_prize_stones.py): under the
+#    top plane's edge a thin rim band, then one flat face, in flat tones of the sand family, ending in a base line that follows the edge loosely
+#    with a few calm, seeded, low-frequency irregularities. No gradient, texture, outline or shadow; antialiased shape edges only.
+#    The image is 3152 wide (the painting's width, 1 canvas px = 0.5 wu), laid under the edge, its top 1.5 wu above the edge so the sky
+#    never shows between sand and rim. Sky starts at the edge (the CSS clip) and shows below the base.
+# --- sand-side-begin
+SIDE_EDGE = [(-788, 64.5), (-638, 55), (-488, 48), (-338, 42), (-188, 37), (0, 31.5), (162, 27.5), (312, 25), (512, 22.5), (712, 20.5), (787.5, 19)]
+SIDE_TOP_WU = 14          # the image's top, wu below the final band's box top
+SIDE_RIM = (211, 175, 108)    # his darker sand #d3af6c
+SIDE_FACE = (192, 158, 102)   # the earth tone derived from his wall face
+SIDE_RIM_WU, SIDE_OVERLAP_WU = 9.0, 1.5
+SIDE_DEPTH = [(-788, 50), (-300, 58), (200, 78), (788, 86)]  # face height in wu: shallower under the heading, taller on the right; nothing under it but sky
 
 
-def sand_wall(art_img, a29):
-    a = np.asarray(art_img.convert("RGB")).astype(np.float32)[WALL_Y0:WALL_Y1]
-    a29 = a29[WALL_Y0:WALL_Y1] / 255.0
-    R, G, B = a[..., 0], a[..., 1], a[..., 2]
-    # the painting's own anti-aliasing: a pixel between the teal top and the wall's dark line is a mix, its coverage read from green
-    # (teal 233, wall at most 150); the green ledge (R 45) is not wall
-    cov = np.clip((233 - G) / 83, 0, 1) * np.clip((R - 50) / 20, 0, 1)
-    wall = cov * a29
-    h, w = wall.shape
-    sil = np.full(w, -1)
-    ends = np.full(w, -1)
-    for x in range(w):
-        col = wall[:, x] > 0.5
-        ys = np.nonzero(col)[0]
-        if len(ys):
-            y = end = ys[-1]
-            while y > 0 and col[max(y - 25, 0):y].any():  # a painted white glint in the ledge splits the run: bridge gaps up to 24 rows
-                y -= 1
-                while y > 0 and not col[y]:
-                    y -= 1
-            sil[x], ends[x] = y, end
-    # a thin brush flick above the run (a few columns wide) is not the run's edge: cut it
-    pad = np.pad(sil, 20, mode="edge")
-    med = np.array([int(np.median(pad[i:i + 41])) for i in range(w)])
-    sil = np.where(med - sil > 30, med, sil)
-    face = np.zeros_like(wall)
-    glint = (a29 < 0.5) & (B > G) & (R > 150)  # the painting's white glint inside the ledge: part of the run, its own pixels
-    for x in range(w):
-        y0 = max(sil[x] - 2, 0)
-        face[y0:ends[x] + 3, x] = np.maximum(wall[y0:ends[x] + 3, x], glint[y0:ends[x] + 3, x])
-    # undo the teal in mixed edge pixels, so the edge keeps the line's color instead of a pale halo
-    teal = np.array((103, 233, 215), np.float32)
-    k = np.clip(cov, 0.05, 1)[..., None]
-    pure = np.where((cov < 0.97)[..., None] & (cov > 0.02)[..., None], (a - (1 - k) * teal) / k, a)
-    lum = (pure[..., :3] * np.array([0.299, 0.587, 0.114], np.float32)).sum(-1)
-    t = np.clip((lum - WALL_LUM[0]) / (WALL_LUM[1] - WALL_LUM[0]), 0, 1)[..., None]
-    dark, light = np.array(WALL_DARK, np.float32), np.array(WALL_LIGHT, np.float32)
-    face_rgba = np.dstack([dark + (light - dark) * t, face * 255])
-    rows = np.nonzero((face > 0.02).any(1))[0]
-    t0, t1 = int(rows.min()), int(rows.max()) + 1
-    solid = face > 0.5
-    bottom = h - 1 - np.argmax(solid[::-1], axis=0)  # his real painted bottom edge, straight onto the sky (no cast shadow: nothing under it but sky)
-    return Image.fromarray(face_rgba[t0:t1].clip(0, 255).astype(np.uint8), "RGBA"), bottom - t0
-# --- sand-wall-end
-_wall, _wall_bottom = sand_wall(art, np.array(layer_full(29).getchannel("A")))
-save("final", "sand-wall", _wall, keys="c")
-print("sand wall: piece", _wall.size, "bottom edge (canvas px from the piece top): min", int(_wall_bottom.min()), "max", int(_wall_bottom.max()))
+def sand_side(width=3152, supersample=1):
+    xs = np.arange(width)
+    xwu = xs / 2.0 - 788.0
+    ex, ey = zip(*SIDE_EDGE)
+    edge = np.interp(xwu, ex, ey)                      # the existing edge, in wu
+    dx, dy = zip(*SIDE_DEPTH)
+    depth = np.interp(xwu, dx, dy)
+    rng = np.random.default_rng(2026)
+
+    def noise(sigma, amp):
+        v = ndi_gauss(rng.standard_normal(width + 6 * sigma), sigma)[3 * sigma:3 * sigma + width]
+        return amp * v / (np.abs(v).max() + 1e-9)
+
+    base = edge + SIDE_RIM_WU + depth + noise(260, 4.5) + noise(90, 1.6)    # wu
+    rim = SIDE_RIM_WU + noise(70, 1.8) + noise(25, 0.5)                      # wu thickness
+    y_top = (edge - SIDE_OVERLAP_WU - SIDE_TOP_WU) * 2                      # canvas px from the image top
+    y_rim = (edge + rim - SIDE_TOP_WU) * 2
+    y_base = (base - SIDE_TOP_WU) * 2
+    h = int(np.ceil(y_base.max())) + 4
+    y = np.arange(h, dtype=np.float32)[:, None]
+
+    def cover(lo, hi):
+        return np.clip(np.minimum(y + 1, hi[None, :]) - np.maximum(y, lo[None, :]), 0, 1)
+
+    face_a = cover(y_top, y_base)          # the whole front
+    rim_a = cover(y_top, y_rim)            # the rim over its top
+    out = np.zeros((h, width, 4), np.float32)
+    # premultiplied "over": face first, rim on top (rim only where inside the front)
+    rim_a = np.minimum(rim_a, face_a)
+    col = (np.array(SIDE_FACE, np.float32)[None, None, :] * (face_a - rim_a)[..., None] + np.array(SIDE_RIM, np.float32)[None, None, :] * rim_a[..., None])
+    out[..., :3] = col / np.maximum(face_a, 1e-4)[..., None]
+    out[..., 3] = face_a * 255
+    return Image.fromarray(out.clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def ndi_gauss(v, sigma):
+    r = int(4 * sigma)
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
+    return np.convolve(v, k / k.sum(), mode="same")
+# --- sand-side-end
+save("final", "sand-side", sand_side())
 
 # 7. Shells: layers 25 and 26, recolored with the page's own palette. The painted shell has three tones (flat fills of the painter's
 #    brush shapes): light (181,135,37) luminance 137.6, mid (154,104,13) 108.6 and a dark shaded edge (146,82,2) 92, plus an orange
