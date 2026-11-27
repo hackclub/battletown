@@ -107,6 +107,9 @@ export default class extends Controller {
     this.raf = requestAnimationFrame(step)
   }
 
-  paint() { this.buttonTarget.style.setProperty("--hold", this.p.toFixed(3)) }
+  paint() {
+    this.buttonTarget.style.setProperty("--hold", this.p.toFixed(3))
+    this.dispatch("progress", { detail: { p: this.p } }) // the signature line listens (whoami_signature_controller.js)
+  }
   say(key) { if (this.hasHintTarget) this.hintTarget.textContent = HINTS[key] }
 }

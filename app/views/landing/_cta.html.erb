@@ -4,4 +4,5 @@
     extra_class adds classes to the button (the big, tilted one in the last section).
     (The development-only Dev login lives in the header nav, once.) -%>
 <% classes = ["cta", extra_class].compact.join(" ") %>
-<%= link_to onboarding_path, class: classes do %><%= render "landing/cta_face", label: signed_in? ? "Continue setup" : (label || join_cta_label) %><% end %>
+<%# A visitor Hack Club Auth already knows gets the log-in wording and the sign-in request once its answer arrives (whoami_login_controller.js); until then, and without an answer, this is the plain link. -%>
+<%= link_to onboarding_path, class: classes, data: whoami_login_data do %><%= render "landing/cta_face", label: signed_in? ? "Continue setup" : (label || join_cta_label) %><% end %>

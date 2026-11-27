@@ -34,6 +34,12 @@ module Battletown
     # Hack Club Auth (see config/initializers/omniauth.rb).
     config.x.hca.issuer = ENV.fetch("HCA_ISSUER", "https://auth.hackclub.com")
     config.x.hca.redirect_uri = "#{ENV.fetch("APP_URL", "http://localhost:3000")}/auth/hack_club/callback"
+    # "Who is this visitor?" (Hack Club Auth's browser whoami endpoint, called from the page itself: app/javascript/controllers/whoami_client.js).
+    # It answers only for an origin an Auth admin has set as the app's `whoami_allowed_origin`, and only on a hackclub.com host, so it is OFF in
+    # production until HCA_WHOAMI=1. In development and test it is on only when HCA_WHOAMI_STUB_URL names a stub (never read in production).
+    whoami_stub = ENV["HCA_WHOAMI_STUB_URL"].presence unless Rails.env.production?
+    config.x.hca.whoami_url = whoami_stub || "#{ENV.fetch("HCA_ISSUER", "https://auth.hackclub.com")}/api/external/whoami"
+    config.x.hca.whoami_enabled = whoami_stub.present? || (Rails.env.production? && ENV["HCA_WHOAMI"] == "1")
     # The Hack Club Auth app's credentials (also used by the address lookup, which revokes its one-time token).
     config.x.hca.client_id = ENV["HCA_CLIENT_ID"].presence
     config.x.hca.client_secret = ENV["HCA_CLIENT_SECRET"].presence

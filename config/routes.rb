@@ -3,6 +3,9 @@ Rails.application.routes.draw do
 
   root "landing#show"
 
+  # A stand-in for Hack Club Auth's whoami, for the browser tests only (test/support/whoami_stub_controller.rb).
+  get "test_support/whoami/:mode", to: "whoami_stub#show" if Rails.env.test?
+
   get "dashboard", to: "dashboard#show"
   patch "dashboard/todos", to: "dashboard_todos#update", as: :dashboard_todos
   get "onboarding", to: "onboardings#show", format: false

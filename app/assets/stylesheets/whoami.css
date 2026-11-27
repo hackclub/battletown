@@ -1,0 +1,7 @@
+/* A name Hack Club Auth gave the browser, written on the pledge's signature line as the hold fills (whoami_signature_controller.js).
+   It looks like the signed pledge's name (.pledge__name) but is revealed by the hold, not by a timed animation. */
+.pledge__signed-name { font-family: var(--font-display); font-size: 2rem; line-height: 1.2; color: var(--color-ink-blue); max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; clip-path: inset(0 100% 0 0); }
+
+/* The landing button once it says "Log in": the face fills the reserved width and keeps the label centered. */
+.landing .cta[data-whoami-state="login"] .cta__face { flex: 1; justify-content: center; }
+.landing .cta[data-whoami-state="login"] .cta__label { white-space: nowrap; }

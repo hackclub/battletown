@@ -3,6 +3,7 @@ require_relative "../config/environment"
 require "rails/test_help"
 require_relative "support/features_helper"
 require_relative "support/stub_method"
+require_relative "support/whoami_stub_controller"
 
 module ActiveSupport
   class TestCase

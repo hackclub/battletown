@@ -4,7 +4,8 @@
 <div class="pledge__body">
   <p class="pledge__text"><%= onboarding_pledge_sentence(subject) %></p>
   <p class="pledge__rules">I'll follow the <%= link_to "rules", terms_path %> and stick to it.</p>
-  <div class="pledge__signature">
+  <%# No name yet and Hack Club Auth may know it: the signature controller writes it here as the hold fills (text only). %>
+  <%= tag.div class: "pledge__signature", data: (name.blank? ? whoami_data("whoami-signature", action: "pledge-hold:progress@window->whoami-signature#progress") : nil) do %>
     <% if name.present? %><span class="pledge__name" style="--chars: <%= name.length %>"><%= name %></span><% end %>
-  </div>
+  <% end %>
 </div>

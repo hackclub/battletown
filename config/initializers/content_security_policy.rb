@@ -9,7 +9,8 @@ Rails.application.configure do
     policy.img_src :self, :data
     policy.font_src :self
     policy.media_src :self
-    policy.connect_src :self
+    # The page asks Hack Club Auth who is visiting (see config.x.hca.whoami_enabled); only then may it reach the issuer.
+    policy.connect_src(*[ :self, (Rails.configuration.x.hca.issuer if Rails.configuration.x.hca.whoami_enabled && Rails.env.production?) ].compact)
     policy.object_src :none
     policy.base_uri :self
     policy.frame_ancestors :none
