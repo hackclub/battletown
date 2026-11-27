@@ -1,3 +1,14 @@
+<%# The prize's hours as equal flat blocks, one per hour, in groups of five; they fill in one after another (CSS only, shown whole when motion is reduced). %>
 <% prize = answers.prize %>
 <%= render "onboardings/info/prize", prize: prize %>
+<% if prize && (hours = prize.hours.to_f.round).positive? %>
+  <% groups = (1..hours).each_slice(5).to_a %>
+  <div class="blocks blocks--cols-<%= [ groups.size, 5 ].min %>" role="img" aria-label="<%= "#{prize.hours_text}: #{hours} #{'block'.pluralize(hours)}, one for each hour" %>">
+    <% groups.each do |group| %>
+      <div class="blocks__group" aria-hidden="true">
+        <% group.each do %><span class="blocks__block"></span><% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
 <p class="info__line"><%= onboarding_cost_line %></p>

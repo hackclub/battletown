@@ -24,4 +24,15 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     assert_select ".hline[role=img][aria-label^='From today, 0 hours, to ']"
     assert_no_inline_style
   end
+
+  test "the cost screen shows one block per hour in groups of five, and never more than five groups across" do
+    open_step("cost", prize: "tshirt")
+    assert_select ".blocks .blocks__block", 5
+    assert_select ".blocks__group", 1
+    assert_no_inline_style
+    open_step("cost", prize: "headphones")
+    assert_select ".blocks .blocks__block", 50
+    assert_select ".blocks__group", 10
+    assert_select ".blocks--cols-5"
+  end
 end
