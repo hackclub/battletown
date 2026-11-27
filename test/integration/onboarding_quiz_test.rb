@@ -60,6 +60,8 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
     answer("audience", "friends")
     answer("started", "plan")
     answer("size", "weeks")
+    assert_redirected_to onboarding_step_path("halfway") # the middle of this person's screens
+    patch onboarding_step_path("halfway")
     assert_redirected_to onboarding_step_path("reflect")
     follow_redirect!
     assert_select "h1", /A puzzle game for your friends, a few weeks of work\./

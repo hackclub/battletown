@@ -821,6 +821,17 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   .bars__value, .bars__median { animation: trail-fade 0.3s ease-out 1.2s both; }
 }
 @keyframes bar-grow { from { scale: 1 0; } to { scale: 1 1; } }
+/* halfway: a flat rosette badge that pops in, then the prize line. The finished state is the base style. */
+.medal { display: block; width: 9rem; height: 9rem; overflow: visible; }
+.medal__pop { transform-box: fill-box; transform-origin: center; }
+.medal__edge { fill: var(--color-yellow-edge); }
+.medal__face { fill: var(--color-yellow); }
+.medal__disc { fill: var(--color-blue); }
+.medal__half { fill: var(--color-surface); }
+@media (prefers-reduced-motion: no-preference) {
+  .medal__pop { animation: trail-pop 0.5s cubic-bezier(.3, 1.6, .5, 1) 0.25s both; }
+  .medal__line { animation: trail-fade 0.3s ease-out 0.6s both; }
+}
 @media (max-width: 39.99rem) {
   .info { gap: var(--space-4); }
   .info__prize { width: min(14rem, 70%); }
