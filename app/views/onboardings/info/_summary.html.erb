@@ -1,0 +1,17 @@
+<% prize = answers.prize %>
+<% phrase = onboarding_project_phrase || "Your project" %>
+<div class="summary">
+  <section class="summary__col" aria-label="Today">
+    <h2 class="summary__head">Today</h2>
+    <p>No prize yet</p>
+    <p><%= phrase %></p>
+    <p>0 hours</p>
+  </section>
+  <section class="summary__col summary__col--then" aria-label="<%= Onboarding::Story.date_text(onboarding_prize_date) if prize %>">
+    <h2 class="summary__head"><%= Onboarding::Story.date_text(onboarding_prize_date) if prize %></h2>
+    <%= render "onboardings/info/prize", prize: prize %>
+    <p><%= prize&.name %></p>
+    <p><%= phrase %>, shipped</p>
+    <p><%= prize&.hours_text %> coded</p>
+  </section>
+</div>

@@ -37,7 +37,7 @@ export default class extends Controller {
   choose(event) {
     const input = event.target
     const form = input.form
-    if (!form || form.dataset.sending) return
+    if (!form || form.dataset.sending || !input.checked) return
     form.dataset.sending = "true"
     if (reduced()) return form.requestSubmit()
     setTimeout(() => form.requestSubmit(), BEAT)

@@ -22,7 +22,10 @@ class ReminderWiringTest < ActionDispatch::IntegrationTest
     follow_redirect!
   end
 
-  def step(name, params = {}) = patch(onboarding_step_path(name), params: { user: params })
+  def step(name, params = {})
+    walk_quiz_to(name) unless %w[age prize].include?(name)
+    patch(onboarding_step_path(name), params: { user: params })
+  end
 
   def pending_for(user) = Notification.pending.where(user_id: user.id, kind: "daily_reminder")
 

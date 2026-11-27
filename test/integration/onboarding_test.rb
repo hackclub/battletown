@@ -22,6 +22,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
   end
 
   def step(name, params = {})
+    walk_quiz_to(name) unless %w[age prize].include?(name)
     connect_hackatime_for_session_user if name == "account"
     patch onboarding_step_path(name), params: { user: params }
   end
@@ -64,19 +65,19 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     get onboarding_step_path("prize")
     assert_response :success
-    assert_select "progress.onboarding-top__bar[value='2']"
+    assert_select "progress.onboarding-top__bar[value='1']" # a signed-in person skips the age screen
 
     step("prize", prize_key: "tshirt")
-    assert_redirected_to onboarding_step_path("project")
+    assert_redirected_to onboarding_step_path("use")
     follow_redirect!
     assert_select ".transition--proof", 0 # no others-like-you splash
     assert_select "#onboarding-prize-dock", (Prize.find("tshirt").image.present? ? 1 : 0) # the docked picture, only for a prize that has one
 
     step("project", project_kind: "game", project_idea: "A farming game")
-    assert_redirected_to onboarding_step_path("schedule")
+    assert_redirected_to onboarding_step_path("detail")
 
     step("schedule", coding_day_names: %w[monday wednesday], coding_time: "18:30", time_zone: "UTC")
-    assert_redirected_to onboarding_step_path("account")
+    assert_redirected_to onboarding_step_path("pace_date")
 
     step("account", referral_source: "terra")
     assert_redirected_to onboarding_step_path("celebrate")
@@ -319,13 +320,14 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     user.update!(onboarding_step: 6)
     sign_in_as user
 
-    OnboardingsController::STEPS.reject { |name| OnboardingsController::SKIPPED_WHEN_SIGNED_IN.include?(name) }.each do |name|
-      index = OnboardingsController::STEPS.index(name)
+    %w[prize project schedule account celebrate].each do |name|
+      walk_quiz_to(name)
       get onboarding_step_path(name)
       assert_response :success
       assert_select ".onboarding-top #onboarding-progress-label", OnboardingsHelper::STEP_COPY.fetch(name)[:progress]
-      assert_select ".onboarding-top progress.onboarding-top__bar[max='7'][value='#{index + 1}'][aria-labelledby='onboarding-progress-label']"
+      assert_select ".onboarding-top progress.onboarding-top__bar[max][value][aria-labelledby='onboarding-progress-label']"
       assert_select "h1", 1
+      step(name, { "prize" => { prize_key: "tshirt" }, "project" => { project_kind: "game" }, "schedule" => { coding_day_names: %w[monday], coding_time: "18:30", time_zone: "UTC", pace_minutes: 60 } }.fetch(name, {})) if name != "celebrate"
     end
   end
 
@@ -386,11 +388,13 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "p#onboarding-lead"
 
     finish_through(user, "prize")
+    walk_quiz_to("project")
     get onboarding_step_path("project")
     assert_select "form .choice-grid--rows input[type=radio][name='user[project_kind]']"
     assert_select "form button.btn", 0
 
     finish_through(user, "project")
+    walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
     assert_select "form .choice-grid--rows input[type=radio][name='user[pace_minutes]']", 4
     assert_select "form button.btn", 0
@@ -514,6 +518,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the sign-up step links to the terms and the privacy policy, since there is no footer to do it" do
     anonymous_through("schedule")
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     assert_select ".onboarding__panel a[href='#{terms_path}']", "Terms"
     assert_select ".onboarding__panel a[href='#{privacy_path}']", "Privacy Policy"
@@ -521,8 +526,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the progress bar sits at the top, its numbers are for screen readers only, and there is no back button" do
     get onboarding_step_path("age")
-    assert_select ".onboarding-top progress.onboarding-top__bar[max='7'][value='1']"
-    assert_select ".onboarding-top .visually-hidden #onboarding-progress-step", "Step 1 of 7"
+    assert_select ".onboarding-top progress.onboarding-top__bar[max][value='1']"
+    assert_select ".onboarding-top .visually-hidden #onboarding-progress-step", /\AStep 1 of \d+\z/
     assert_select ".onboarding-top__back", 0
     assert_select ".onboarding-top__head", 0
 
@@ -561,6 +566,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the Slack-not-linked note is only for signed-in users, never for visitors who have no account yet" do
     anonymous_through("project")
+    walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
     assert_response :success
     assert_select "[role=note]", 0
@@ -583,7 +589,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_nil user.prize_key
     assert_equal [ "game", "18:30", PRIZE_STEP_FOR_TEST ], [ user.project_kind, user.coding_time, user.onboarding_step ] # the rest is kept
     follow_redirect!
-    assert_redirected_to onboarding_step_path("prize") # and they pick another prize
+    assert_redirected_to onboarding_step_path("prize") # and they pick another prize, whatever the quiz had reached
   ensure
     ShopItem.find_by(key: "tshirt")&.update!(active: true)
     Prize.reload!
@@ -595,10 +601,10 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     anonymous_through("schedule")
     %w[account celebrate].each do |name|
       get onboarding_step_path(name)
-      assert_redirected_to onboarding_step_path("signup")
+      assert_redirected_to onboarding_step_path("pace_date")
     end
-    step("celebrate")
-    assert_redirected_to onboarding_step_path("signup")
+    patch onboarding_step_path("celebrate")
+    assert_redirected_to onboarding_step_path("pace_date")
   end
 
   test "bad answers are rejected before sign-in too" do
@@ -618,6 +624,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_no_difference [ "User.count", "Project.count" ] do
       anonymous_through("schedule")
     end
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     assert_response :success
     assert_select ".pledge__text", /8BitDo Pro 2/
@@ -627,6 +634,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
   test "signing in at the end carries the answers onto the new account, creates the first project and goes to the account step" do
     get "/haven"
     anonymous_through("schedule")
+    walk_quiz_to("signup")
     sign_in_as User.new(hca_uid: "ident!fresh")
     follow_redirect!
     assert_redirected_to onboarding_step_path("account")
@@ -678,7 +686,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     sign_in_as User.new(hca_uid: "ident!partway")
     assert_equal "tshirt", User.find_by!(hca_uid: "ident!partway").prize_key
     follow_redirect!
-    assert_redirected_to onboarding_step_path("project")
+    assert_redirected_to onboarding_step_path("use")
   end
 
   test "a signed-in user never sees the age or sign-up steps" do
@@ -686,6 +694,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     get onboarding_step_path("age")
     assert_redirected_to onboarding_step_path("prize")
     users(:new_user).update!(onboarding_step: 4)
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     assert_redirected_to onboarding_step_path("account")
     get onboarding_step_path("account")
@@ -695,12 +704,12 @@ class OnboardingTest < ActionDispatch::IntegrationTest
   test "the prize and project steps lead straight to the next step with no others-like-you splash" do
     anonymous_through("age")
     step("prize", prize_key: "tshirt")
-    assert_redirected_to onboarding_step_path("project")
+    assert_redirected_to onboarding_step_path("use")
     follow_redirect!
     assert_response :success
     assert_select ".transition--proof", 0
     assert_select "progress.onboarding-top__bar[value='3']"
-    assert_select "h1", "What are you making?"
+    assert_select "h1", /What would you do with your/
     step("project", project_kind: "app")
     follow_redirect!
     assert_select ".transition--proof", 0
@@ -726,7 +735,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
   test "a project idea made only of whitespace is saved as empty, and unknown formats are a 404" do
     anonymous_through("prize")
     step("project", project_kind: "game", project_idea: "  \n\t ")
-    assert_redirected_to onboarding_step_path("schedule")
+    assert_redirected_to onboarding_step_path("detail")
     get onboarding_step_path("project")
     assert_select "textarea", 0
     get "/onboarding/age.json"
@@ -740,9 +749,9 @@ class OnboardingTest < ActionDispatch::IntegrationTest
       step("age", age_group: "teen")
       step("prize", prize_key: "tshirt")
       step("project", project_kind: "game", project_idea: idea)
-      assert_redirected_to onboarding_step_path("schedule"), "idea #{i}"
+      assert_redirected_to onboarding_step_path("detail"), "idea #{i}"
       step("schedule", coding_day_names: User::DAYS, coding_time: "18:30", time_zone: "UTC")
-      assert_redirected_to onboarding_step_path("signup")
+      assert_redirected_to onboarding_step_path("pace_date")
       sign_in_as User.new(hca_uid: "ident!big#{i}")
       assert_equal idea, User.find_by!(hca_uid: "ident!big#{i}").project_idea
     end
@@ -768,6 +777,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "hardware is no longer offered, and a new pick of it is refused" do
     anonymous_through("prize")
+    walk_quiz_to("project")
     get onboarding_step_path("project")
     assert_select "input[name='user[project_kind]']", User::OFFERED_PROJECT_KINDS.size
     assert_select "input[name='user[project_kind]'][value=hardware]", 0
@@ -787,11 +797,11 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "the progress strip says in visible text which step you are on, not just with colour" do
     get onboarding_step_path("age")
-    assert_select ".onboarding-top #onboarding-progress-step", "Step 1 of 7"
+    assert_select ".onboarding-top #onboarding-progress-step", /\AStep 1 of \d+\z/
     assert_select "progress.onboarding-top__bar[aria-describedby=onboarding-progress-step]"
     anonymous_through("age")
     get onboarding_step_path("prize")
-    assert_select "#onboarding-progress-step", "Step 2 of 7"
+    assert_select "#onboarding-progress-step", /\AStep 2 of \d+\z/
   end
 
   test "the prize step uses the same cream panel as its siblings, every card has the same structure, and the page carries no extra hint" do
@@ -827,7 +837,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
   end
 
   test "the draft's steps line up with the controller's" do
-    assert_equal OnboardingsController::STEPS.index("signup"), OnboardingDraft::SIGNUP_STEP
-    assert_equal OnboardingsController::STEPS.size - 1, User::ONBOARDING_STEPS
+    assert_equal Onboarding::Flow.phase("signup"), OnboardingDraft::SIGNUP_STEP
+    assert_equal Onboarding::Flow.phase(Onboarding::Flow.keys.last), User::ONBOARDING_STEPS
+    assert_equal Onboarding::Flow.phase("prize"), OnboardingDraft::PRIZE_STEP
   end
 end

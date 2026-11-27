@@ -4,8 +4,8 @@
   <fieldset class="onboarding__fieldset">
     <legend class="onboarding__legend" id="editor-question">Which editor do you use?</legend>
     <%= render "onboardings/choice_group", name: "editor", auto: false, input_data: { onboarding_editor_target: "choice" },
-          options: OnboardingsHelper::HACKATIME_EDITORS.map { |editor| { value: editor[:key], label: editor[:name], id: "editor_#{editor[:key]}", checked: false } } +
-                   [ { value: "other", label: "Something else", id: "editor_other", checked: false, apart: true } ] %>
+          options: OnboardingsHelper::HACKATIME_EDITORS.map { |editor| { value: editor[:key], label: editor[:name], id: "editor_#{editor[:key]}", checked: answers["editor"] == editor[:key] } } +
+                   [ { value: "other", label: "Something else", id: "editor_other", checked: answers["editor"] == "other", apart: true } ] %>
   </fieldset>
 
   <% OnboardingsHelper::HACKATIME_EDITORS.each do |editor| %>

@@ -12,13 +12,17 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
     OmniAuth.config.mock_auth[:hack_club] = nil
   end
 
-  def step(name, params = {}) = patch(onboarding_step_path(name), params: { user: params })
+  def step(name, params = {})
+    walk_quiz_to(name) unless %w[age prize].include?(name)
+    patch(onboarding_step_path(name), params: { user: params })
+  end
 
   def visitor_to_reveal(pace: "60")
     step("age", age_group: "teen")
     step("prize", prize_key: "tshirt")
     step("project", project_kind: "game", project_idea: "A farming game")
     step("schedule", coding_day_names: User::DAYS, coding_time: "18:00", time_zone: "UTC", pace_minutes: pace)
+    walk_quiz_to("signup")
   end
 
   def sign_in_as(user)
@@ -40,6 +44,7 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
 
   test "the sign-up step is a pledge built from the answers, with one hold-to-sign button that sends the same sign-up request" do
     visitor_to_reveal
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     assert_response :success
     assert_select "h1", "Sign your pledge"
@@ -63,6 +68,7 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
 
   test "the days in the pledge are the same arithmetic the dashboard uses for a new person on that plan" do
     visitor_to_reveal(pace: "120")
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     shown = css_select(".pledge__text .pledge__mark").last.text[/\d+/].to_i
 

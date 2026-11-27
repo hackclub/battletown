@@ -50,7 +50,7 @@ class OnboardingVerificationTest < ActionDispatch::IntegrationTest
   test "every onboarding step a signed-in person sees is free of verification prompts" do
     STATUSES.each do |status|
       user = users(:new_user)
-      user.update!(onboarding_step: OnboardingsController::STEPS.index("celebrate"), verification_status: status, onboarded_at: nil)
+      user.update!(onboarding_step: User::ONBOARDING_STEPS, verification_status: status, onboarded_at: nil)
       sign_in_with(user.hca_uid, "verification_status" => status)
       # (the account step needs Hackatime, so someone at the last step has it)
       HackatimeConnection.create!(user: user, hackatime_uid: "8181", access_token: "t" * 20, scopes: "profile read", connected_at: Time.current) if user.hackatime_connection.nil?
@@ -66,8 +66,12 @@ class OnboardingVerificationTest < ActionDispatch::IntegrationTest
   test "the sign-up step does not mention verification" do
     patch onboarding_step_path("age"), params: { user: { age_group: "teen" } }
     patch onboarding_step_path("prize"), params: { user: { prize_key: "tshirt" } }
+    walk_quiz_to("project")
     patch onboarding_step_path("project"), params: { user: { project_kind: "game", project_idea: "A farming game" } }
+    walk_quiz_to("schedule")
     patch onboarding_step_path("schedule"), params: { user: { coding_day_names: %w[monday friday], coding_time: "18:30", time_zone: "UTC" } }
+
+    walk_quiz_to("signup")
 
     get onboarding_step_path("signup")
     assert_response :success

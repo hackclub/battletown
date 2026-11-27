@@ -1,0 +1,3 @@
+<%# locals: (prize:) -%>
+<%# The prize picture of an info screen: large, once, on the page itself (never in a container). %>
+<% if prize&.image.present? %><%= image_tag prize.image, alt: prize.name, class: "info__prize" %><% end %>

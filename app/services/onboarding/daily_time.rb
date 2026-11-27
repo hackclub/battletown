@@ -22,7 +22,11 @@ module Onboarding
 
     # Minutes a day, rounded UP to a step (15, 30, 45, 60, 90, then whole hours); nil with no date, a past date, or more than 8 hours a day.
     def minutes_a_day(hours, today: Time.zone.today, ends_on: self.ends_on)
-      days = days_left(today: today, ends_on: ends_on)
+      minutes_over(hours, days_left(today: today, ends_on: ends_on))
+    end
+
+    # The same for any number of days: the minutes a day that earn `hours` in `days`, rounded up to a step; nil over 8 hours a day.
+    def minutes_over(hours, days)
       return unless days&.positive? && hours.to_f.positive?
 
       raw = (hours.to_r * 60 / days).ceil

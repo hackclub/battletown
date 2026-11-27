@@ -1,0 +1,2 @@
+<%= render "onboardings/info/prize", prize: answers.prize %>
+<p class="info__line">Every hour you code on it turns into coins once you ship<%= answers.prize ? safe_join([ ", toward your ", tag.span(answers.prize.name, class: "nowrap") ]) : "" %>.</p>

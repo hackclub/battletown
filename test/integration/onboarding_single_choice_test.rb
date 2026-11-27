@@ -29,9 +29,11 @@ class OnboardingSingleChoiceTest < ActionDispatch::IntegrationTest
     patch onboarding_step_path("age"), params: { user: { age_group: "teen" } }
     { "prize" => "user[prize_key]" }.each { |step, field| get onboarding_step_path(step); check(field) }
     patch onboarding_step_path("prize"), params: { user: { prize_key: "tshirt" } }
+    walk_quiz_to("project")
     get onboarding_step_path("project")
     check("user[project_kind]")
     patch onboarding_step_path("project"), params: { user: { project_kind: "game" } }
+    walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
     check("user[pace_minutes]")
   end

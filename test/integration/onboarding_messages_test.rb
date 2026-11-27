@@ -19,6 +19,7 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
   end
 
   def step(name, params = {})
+    walk_quiz_to(name) unless %w[age prize].include?(name)
     connect_hackatime_for_session_user if name == "account"
     patch(onboarding_step_path(name), params: { user: params })
   end

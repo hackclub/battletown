@@ -1,0 +1,27 @@
+<%# Every step without a page of its own: a single choice (:choice), several picks (:multi) or a plain Continue (:info). What it says lives in
+    Onboarding::Questions (the questions) and the partials in onboardings/info (the info screens); the order and kinds in Onboarding::Flow. %>
+<% flow_step = Onboarding::Flow.find(@step) %>
+<% if flow_step.kind == :info %>
+  <% title = onboarding_info_title(@step) %>
+  <%= render layout: "onboardings/frame", locals: { step: @step, title: title, encouragement: "", show_prize: !Onboarding::Flow::PRIZE_PICTURE_STEPS.include?(@step) } do %>
+    <%= form_with url: onboarding_step_path(@step), method: :patch, scope: :answer, class: "info info--#{@step.dasherize}" do %>
+      <%= render "onboardings/info/#{@step}" %>
+      <div class="onboarding__actions"><%= button_tag onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div>
+    <% end %>
+  <% end %>
+<% else %>
+  <% question = Onboarding::Questions.for(@step, answers) %>
+  <%= render layout: "onboardings/frame", locals: { step: @step, title: question.title, encouragement: question.lead.to_s } do %>
+    <%= form_with url: onboarding_step_path(@step), method: :patch, scope: :answer do %>
+      <% if flash.now[:alert].blank? && response.status == 422 %><p class="field__error" role="alert">Pick an option to continue.</p><% end %>
+      <% multi = flow_step.kind == :multi %>
+      <% picked = multi ? answers.multi(@step) : [ answers[@step] ] %>
+      <%= tag.fieldset class: "onboarding__fieldset" do %>
+        <legend class="visually-hidden"><%= question.title %></legend>
+        <%= render "onboardings/choice_group", name: (multi ? "answer[values][]" : "answer[value]"), layout: question.layout, multi: multi, auto: !multi,
+              options: question.options.map { |option| option.merge(id: "answer_#{@step}_#{option[:value]}", checked: picked.include?(option[:value])) } %>
+      <% end %>
+      <% if multi %><div class="onboarding__actions"><%= button_tag onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div><% end %>
+    <% end %>
+  <% end %>
+<% end %>

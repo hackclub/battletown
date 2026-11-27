@@ -11,6 +11,7 @@ class OnboardingTransitionTest < ActionDispatch::IntegrationTest
   CONTROLLER = Rails.root.join("app/javascript/controllers/onboarding_transition_controller.js")
 
   def step(name, params = {})
+    walk_quiz_to(name) unless %w[age prize].include?(name)
     patch onboarding_step_path(name), params: { user: params }
   end
 

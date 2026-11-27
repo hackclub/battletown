@@ -75,7 +75,9 @@ module OnboardingsHelper
     referral_source: { inclusion: "Pick one of the options in the list", invalid: "Pick one of the options in the list" }
   }.freeze
 
-  def onboarding_copy(step) = STEP_COPY.fetch(step)
+  GENERIC_COPY = { label: "Question", progress: "onboarding progress" }.freeze
+
+  def onboarding_copy(step) = STEP_COPY.fetch(step, GENERIC_COPY)
 
   # Inline SVG icons for the onboarding, drawn on a 24-unit box with the shape centered in it, so a grid or flex box centers them exactly.
   def onboarding_arrow
@@ -271,13 +273,14 @@ module OnboardingsHelper
     safe_join(parts << ".")
   end
 
-  # "About 14 days to your 8BitDo Pro 2" for a prize at a pace; nil when there is no paid prize to count toward.
+  # The pace row's second line: "About 14 days, by December 12". When the pace cannot earn the prize by the end of the program it says so
+  # plainly (no day count past the end); nil when there is no paid prize to count toward.
   def onboarding_days_text(prize, minutes)
     days = onboarding_days_to_prize(prize, minutes)
     return unless days
-    return safe_join([ "Not in time for your ", tag.span(prize.name, class: "nowrap"), " by the end of the program" ]) unless Onboarding::DailyTime.reachable?(prize.hours, minutes)
+    return "Not in time for the end of the program" unless Onboarding::DailyTime.reachable?(prize.hours, minutes)
 
-    safe_join([ "About #{pluralize(days, 'day')} to your ", tag.span(prize.name, class: "nowrap") ])
+    "About #{pluralize(days, 'day')}, by #{Onboarding::Story.date_text(Onboarding::Story.date_at(prize.hours, minutes))}"
   end
 
   # "1 hour 30 minutes" for a daily pace given in minutes (the select's option text).

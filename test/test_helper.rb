@@ -3,6 +3,7 @@ require_relative "../config/environment"
 require "rails/test_help"
 require_relative "support/features_helper"
 require_relative "support/stub_method"
+require_relative "support/onboarding_quiz"
 
 module ActiveSupport
   class TestCase
@@ -21,3 +22,5 @@ end
 
 # Throttle counters would leak across tests; the throttling test turns Rack::Attack back on explicitly.
 Rack::Attack.enabled = false
+
+ActionDispatch::IntegrationTest.include OnboardingQuiz

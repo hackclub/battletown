@@ -1,7 +1,10 @@
 class OnboardingsController < ApplicationController
   # Age, prize, project and schedule are answered before anyone has an account. Signing in with Hack Club is the
   # step after them; account (identity check, how you found us) and celebrate need the signed-in user.
-  STEPS = %w[age prize project schedule signup account celebrate].freeze
+  # The list itself lives in Onboarding::Flow (one ordered list read by this controller, the progress bar and the tests).
+  STEPS = Onboarding::Flow::KEYS
+  # The screens with a page of their own; every other step renders the generic choice, multi or info page.
+  OWN_PAGE = %w[age prize project schedule signup account celebrate].freeze
   # Steps a signed-in user has no need for: the age gate is for visitors, and they are already signed up.
   SKIPPED_WHEN_SIGNED_IN = %w[age signup].freeze
   # Saving these plays a short "N others picked this too" transition over the next step (see OnboardingProof).
@@ -21,7 +24,7 @@ class OnboardingsController < ApplicationController
     "schedule" => %i[coding_time time_zone]
   }.freeze
 
-  helper_method :subject
+  helper_method :subject, :answers
 
   before_action :set_step, only: %i[step update]
   before_action :enforce_progress, only: %i[step update]
@@ -36,11 +39,12 @@ class OnboardingsController < ApplicationController
     @transition = transition_for_step
     return render "pledge_signed" if @step == "account" && signed_in? && !current_user.onboarded? && session.delete(:pledge_moment)
 
-    render @step
+    OWN_PAGE.include?(@step) ? render(@step) : render("generic")
   end
 
   def update
     return complete if @step == "celebrate"
+    return update_generic unless OWN_PAGE.include?(@step)
     return redirect_to onboarding_step_path(@step) if @step == "signup"
     return answer_age if @step == "age"
     return hackatime_required if @step == "account" && !hackatime_ready?
@@ -73,6 +77,10 @@ class OnboardingsController < ApplicationController
     @subject ||= current_user || OnboardingDraft.new(session)
   end
 
+  def answers = @answers ||= Onboarding::Answers.new(session, subject)
+
+  def signed_in_flow? = signed_in?
+
   def set_step
     @step = STEPS.find { |step| step == params[:step] } || (return head :not_found)
     @index = STEPS.index(@step)
@@ -80,10 +88,12 @@ class OnboardingsController < ApplicationController
 
   # Order is enforced here, never by the client: a step is only reachable once the previous ones were saved.
   def enforce_progress
-    if @step == "celebrate" && current_user&.onboarded?
+    if (@step == "celebrate" || !OWN_PAGE.include?(@step)) && current_user&.onboarded?
       redirect_to dashboard_path
     elsif signed_in? && SKIPPED_WHEN_SIGNED_IN.include?(@step)
       redirect_to onboarding_step_path(STEPS.fetch(current_user.onboarded? ? first_index : unlocked_index))
+    elsif !Onboarding::Flow.visible?(Onboarding::Flow.find(@step), answers, signed_in: signed_in?)
+      redirect_to onboarding_step_path(Onboarding::Flow.from(@index, answers, signed_in: signed_in?)) # a screen these answers make pointless
     elsif @index > unlocked_index
       redirect_to onboarding_step_path(STEPS.fetch(unlocked_index))
     elsif @step == "celebrate" && signed_in? && !hackatime_ready?
@@ -91,19 +101,50 @@ class OnboardingsController < ApplicationController
     end
   end
 
-  def first_index = STEPS.index { |step| !(signed_in? && SKIPPED_WHEN_SIGNED_IN.include?(step)) }
+  def first_index = Onboarding::Flow.index(Onboarding::Flow.from(0, answers, signed_in: signed_in?))
 
-  # The furthest step reachable: what was saved, moved past the steps a signed-in user never sees.
+  # The furthest step reachable: the step the person reached (kept in the session), or, with none (an account saved before the quiz, or a new
+  # session), the step the saved phase names (the old column: age, prize, project, schedule, signup, account, celebrate). Past the quiz the saved
+  # phase always counts. Moved on past the steps these answers or being signed in make pointless.
   def unlocked_index
-    index = subject.onboarding_step
-    index += 1 while signed_in? && SKIPPED_WHEN_SIGNED_IN.include?(STEPS[index])
-    index
+    saved = subject.onboarding_step.to_i
+    floor = Onboarding::Flow.index(OWN_PAGE.fetch(saved, OWN_PAGE.last))
+    floor = 0 if answers.pos && saved == 2 # inside the project phase the session knows better than the column
+    reached = answers.pos ? Onboarding::Flow.index(answers.pos).to_i : 0
+    reached = [ reached, Onboarding::Flow.index("prize") ].min if subject.prize_key.blank? # a prize that is gone sends them back to pick another
+    Onboarding::Flow.index(Onboarding::Flow.from([ floor, reached ].max, answers, signed_in: signed_in?))
   end
 
-  def next_index
-    index = @index + 1
-    index += 1 while signed_in? && SKIPPED_WHEN_SIGNED_IN.include?(STEPS[index])
-    index
+  def next_index = Onboarding::Flow.index(Onboarding::Flow.next_key(@step, answers, signed_in: signed_in?))
+
+  # Moves the person's place on to the step after this one: the saved phase (so the old column keeps its meaning) and the session's furthest step.
+  def advance
+    following = STEPS.fetch(next_index)
+    answers.pos = following if next_index > (answers.pos ? Onboarding::Flow.index(answers.pos).to_i : 0)
+    subject.onboarding_step = [ subject.onboarding_step.to_i, Onboarding::Flow.phase(following) ].max
+  end
+
+  # A step on the generic page: a pick (:choice), several picks (:multi) or a plain Continue (:info). Only values the screen offered are kept.
+  def update_generic
+    step = Onboarding::Flow.find(@step)
+    raw = params[:answer].is_a?(ActionController::Parameters) ? params[:answer] : ActionController::Parameters.new
+    allowed = Onboarding::Questions.for(@step, answers)&.options&.map { |option| option[:value] } || []
+    case step.kind
+    when :choice
+      value = raw[:value].to_s
+      return render("generic", status: :unprocessable_content) unless allowed.include?(value)
+
+      answers[@step] = value
+    when :multi
+      values = Array(raw[:values]).map(&:to_s) & allowed
+      values = %w[none] if values.include?("none")
+      return render("generic", status: :unprocessable_content) if values.empty?
+
+      answers[@step] = values
+    end
+    advance
+    subject.save
+    redirect_to onboarding_step_path(STEPS.fetch(next_index))
   end
 
   def step_params
@@ -122,7 +163,7 @@ class OnboardingsController < ApplicationController
   def answer_age
     raw = params[:user] # a scalar `user=...` is just a wrong answer, not an error
     if raw.is_a?(ActionController::Parameters) && raw[:age_group] == "teen" && subject.valid?
-      subject.onboarding_step = [ subject.onboarding_step, next_index ].max
+      advance
       subject.save
       redirect_to onboarding_step_path(STEPS.fetch(next_index))
     else
@@ -141,7 +182,7 @@ class OnboardingsController < ApplicationController
     user.errors.add(:referral_source, :inclusion) if user.referral_source && !ReferralSource.find(user.referral_source)
     return false if user.errors.any?
 
-    user.onboarding_step = [ user.onboarding_step, next_index ].max
+    advance
     # The project step also creates or updates a signed-in user's first project (the old user columns stay populated);
     # a visitor's project is created when they sign up.
     saved = false

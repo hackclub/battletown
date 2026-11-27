@@ -6,6 +6,7 @@ class OnboardingProjectStepTest < ActionDispatch::IntegrationTest
   def visit_project_step
     patch onboarding_step_path("age"), params: { user: { age_group: "teen" } }
     patch onboarding_step_path("prize"), params: { user: { prize_key: "tshirt" } }
+    walk_quiz_to("project")
     get onboarding_step_path("project")
     assert_response :success
   end
@@ -15,15 +16,15 @@ class OnboardingProjectStepTest < ActionDispatch::IntegrationTest
   test "the server limit is 500 characters, not bytes, counted after stripping surrounding whitespace" do
     visit_project_step
     submit_idea("  #{"a" * 500}\n ")
-    assert_redirected_to onboarding_step_path("schedule")
+    assert_redirected_to onboarding_step_path("detail")
 
     visit_project_step
     submit_idea("é" * 500) # two bytes each
-    assert_redirected_to onboarding_step_path("schedule")
+    assert_redirected_to onboarding_step_path("detail")
 
     visit_project_step
     submit_idea("😀" * 300) # one character each, though two UTF-16 units (600) and four bytes
-    assert_redirected_to onboarding_step_path("schedule")
+    assert_redirected_to onboarding_step_path("detail")
 
     visit_project_step
     submit_idea("a" * 501)

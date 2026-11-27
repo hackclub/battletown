@@ -1,0 +1,5 @@
+<ul class="info__pairs">
+  <% Onboarding::Story.obstacle_lines(answers.multi("stops")).each do |acknowledgement, feature| %>
+    <li><strong><%= acknowledgement %></strong> <span><%= feature %></span></li>
+  <% end %>
+</ul>

@@ -27,7 +27,9 @@ class ApplicationController < ActionController::Base
 
   # Fixation-safe: always start a fresh session before attaching the user.
   def sign_in(user)
+    quiz = session[Onboarding::Answers::SESSION_KEY] # the quiz answers outlive the sign-in (the editor answer prefills the Hackatime step)
     reset_session
+    session[Onboarding::Answers::SESSION_KEY] = quiz if quiz
     session[:user_id] = user.id
   end
 

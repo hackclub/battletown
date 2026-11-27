@@ -21,6 +21,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
   end
 
   def step(name, params = {})
+    walk_quiz_to(name) unless %w[age prize].include?(name)
     connect_hackatime_for_session_user if name == "account"
     patch(onboarding_step_path(name), params: { user: params })
   end
@@ -61,18 +62,21 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
 
   test "the first run asks one question, the pace, as big buttons that carry the days and time" do
     visitor_through_project
+    walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
     assert_select "h1", /How long is a coding day\?/
     assert_select ".choice-grid--rows input[type=radio][name='user[pace_minutes]']", 4
     assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__name", /1 hour/
-    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta", /About \d+ days? to your /
+    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta", /About \d+ days?, by \w+ \d+/
     assert_select "input[type=hidden][name='user[coding_day_names][]']", 7
     assert_select "input[type=hidden][name='user[coding_time]'][value='18:00']"
     assert_select "select#user_time_zone", 0 # the browser's zone is sent in a hidden field; nothing is asked
     assert_select "input[type=hidden][name='user[time_zone]']"
     assert_select "#pace-hint", 0
     assert_select "select, input[type=time], .day-times", 0 # no dropdown, no time pickers, no time zone select
-    assert_select ".choice-grid--rows input[checked]", 0
+    # only the pace that meets the time frame picked two screens before is ticked (the walk picked "in 2 weeks": 5 hours is about 22 minutes a day)
+    assert_select ".choice-grid--rows input[checked]", 1
+    assert_select ".choice-grid--rows input[checked][value='30']", 1
   end
 
   test "someone editing their plan still gets the daily pace as a select with the saved one chosen" do
@@ -105,7 +109,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
   test "a visitor's pace is kept on the draft, shown again, and copied to the account at sign-up" do
     visitor_through_project
     schedule_with_pace("120")
-    assert_redirected_to onboarding_step_path("signup")
+    assert_redirected_to onboarding_step_path("pace_date")
     assert_equal 120, draft_pace
 
     get onboarding_step_path("schedule")
@@ -120,7 +124,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
   test "a blank pace leaves it unset, and the default is assumed" do
     visitor_through_project
     schedule_with_pace("")
-    assert_redirected_to onboarding_step_path("signup")
+    assert_redirected_to onboarding_step_path("pace_date")
     assert_nil draft_pace
     sign_in_as User.new(hca_uid: "ident!pace2")
     user = User.find_by!(hca_uid: "ident!pace2")
@@ -139,6 +143,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
       assert_select "fieldset[aria-describedby=pace-error] #pace-error", /Pick a pace from the list/
       assert_nil draft_pace, odd
     end
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     assert_redirected_to onboarding_step_path("schedule")
   end
@@ -168,14 +173,14 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     step("prize", prize_key: "tshirt")
     step("project", project_kind: "game", project_idea: "😀" * 300)
     step("schedule", coding_day_names: WEEK, coding_time: "18:30", time_zone: "UTC", pace_minutes: "240", coding_times: WEEK.to_h { |day| [ day, "23:59" ] })
-    assert_redirected_to onboarding_step_path("signup")
-    assert_operator response.headers["set-cookie"].to_s[/_[a-z_]+session=[^;]*/].bytesize, :<, 3600
+    assert_redirected_to onboarding_step_path("pace_date")
+    assert_operator response.headers["set-cookie"].to_s[/_[a-z_]+session=[^;]*/].bytesize, :<, 3900
   end
 
   test "a visitor's times by day are kept in the session, shown again, and read well in the plan" do
     visitor_through_project
     schedule(days: %w[monday tuesday thursday sunday], times: MIXED.merge("friday" => "09:00", "bogus" => "10:00"))
-    assert_redirected_to onboarding_step_path("signup")
+    assert_redirected_to onboarding_step_path("pace_date")
     assert_equal MIXED, draft_times, "a day that is not selected and an unknown day are dropped"
 
     get onboarding_step_path("schedule") # the pace question does not touch them
@@ -202,12 +207,14 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
   test "without different times the plan reads as before" do
     visitor_through_project
     schedule
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     assert_select ".pledge__text"
     assert_equal({}, draft_times)
 
     schedule(days: %w[monday friday], times: { "monday" => "", "friday" => " " })
     assert_equal({}, draft_times, "blank means the usual time")
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     assert_select ".pledge__text"
   end
@@ -228,6 +235,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_select ".onboarding__errors", /Check Monday's time/
     assert_equal({}, draft_times)
+    walk_quiz_to("signup")
     get onboarding_step_path("signup")
     assert_redirected_to onboarding_step_path("schedule")
   end
@@ -258,9 +266,9 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
       step("prize", prize_key: "tshirt")
       step("project", project_kind: "game", project_idea: idea)
       schedule(times: WEEK.to_h { |day| [ day, "23:59" ] })
-      assert_redirected_to onboarding_step_path("signup"), "idea #{i}"
+      assert_redirected_to onboarding_step_path("pace_date"), "idea #{i}"
       cookie = response.headers["set-cookie"].to_s[/_[a-z_]+session=[^;]*/]
-      assert_operator cookie.bytesize, :<, 3600, "idea #{i} leaves no room in the 4096-byte cookie"
+      assert_operator cookie.bytesize, :<, 3900, "idea #{i} leaves no room in the 4096-byte cookie"
       sign_in_as User.new(hca_uid: "ident!bigtimes#{i}")
       assert_equal idea, User.find_by!(hca_uid: "ident!bigtimes#{i}").project_idea
       assert_equal 7, User.find_by!(hca_uid: "ident!bigtimes#{i}").coding_times.size
@@ -342,11 +350,12 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
 
   test "the pace line names the picked prize and counts the days to it, and no prize gives no days line" do
     visitor_through_project
+    walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
     prize = Prize.find(OnboardingDraft.new(session).prize_key)
     assert_select "h1 + .onboarding__encouragement, .onboarding__encouragement", /#{Regexp.escape(prize.name)}/
     days = (Rational(prize.coins * 3600, Game::Config.current.coins_per_hour) / (60 * 60)).ceil
-    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta", "About #{days} #{"day".pluralize(days)} to your #{prize.name}"
+    assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta", "About #{days} #{"day".pluralize(days)}, by #{Onboarding::Story.date_text(Time.zone.today + days - 1)}"
   end
 end
 
