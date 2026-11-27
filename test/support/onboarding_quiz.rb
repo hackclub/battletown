@@ -8,10 +8,8 @@ module OnboardingQuiz
   end
 
   def walk_quiz_to(target = nil)
-    following = nil
     40.times do
-      key = following || current_quiz_step # a screen can sit before the furthest one reached (the halfway screen), so follow each answer's own redirect
-      following = nil
+      key = current_quiz_step
       return key if key.nil? || key == target || OnboardingsController::OWN_PAGE.include?(key)
 
       get onboarding_step_path(key)
@@ -19,8 +17,6 @@ module OnboardingQuiz
       params = input ? { input["name"].delete_suffix("[]").then { |name| name.sub(/\A(\w+)\[(\w+)\]\z/, '\1[\2]') } => (input["name"].end_with?("[]") ? [ input["value"] ] : input["value"]) } : {}
       patch onboarding_step_path(key), params: Rack::Utils.parse_nested_query(params.map { |k, v| Array(v).map { |x| "#{k}#{'[]' if v.is_a?(Array)}=#{Rack::Utils.escape(x)}" } }.flatten.join("&"))
       raise "the quiz stuck on #{key}: #{response.status}" if response.status >= 400
-
-      following = URI(response.location).path.split("/").last if response.redirect?
     end
     raise "the quiz did not end"
   end

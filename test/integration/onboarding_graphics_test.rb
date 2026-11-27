@@ -71,20 +71,6 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("schedule")
   end
 
-  test "the halfway screen shows a badge and the prize with its hours, and its place is the middle of the progress bar" do
-    begin_quiz(prize: "tshirt")
-    reach_quiz_step("halfway")
-    get onboarding_step_path("halfway")
-    assert_response :success
-    assert_select "h1", "Halfway there"
-    assert_select "svg.medal"
-    assert_select ".medal__line", "8BitDo Pro 2, about 5 hours of coding."
-    assert_select "img.info__prize", 0 # the docked prize is the one picture on the screen
-    position, total = css_select("#onboarding-progress-step").first.text.scan(/\d+/).map(&:to_i)
-    assert_equal (total / 2.0).round, position
-    assert_no_inline_style
-  end
-
   test "the pace step is a four-stop slider with the stop that meets the wish preselected, and its Continue posts the same param" do
     begin_quiz(prize: "mechanical_keyboard")
     reach_quiz_step("when")

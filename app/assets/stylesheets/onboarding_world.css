@@ -533,8 +533,6 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 
 /* -- icons: every inline SVG has a size and its fill rules here, in the stylesheet this page loads -- */
 
-.btn__arrow { flex: none; display: block; width: 1.1em; height: 1.1em; }
-
 /* -- flat buttons (the slab one is exempt) -- */
 .onboarding-page .btn--primary.btn--lg { font-size: var(--text-lg); letter-spacing: -0.02em; border-radius: var(--radius-md); }
 .onboarding-page .btn--primary:not([aria-disabled="true"]):hover { background: var(--pri-face-step); }
@@ -823,17 +821,7 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   .bars__value, .bars__median { animation: trail-fade 0.3s ease-out 1.2s both; }
 }
 @keyframes bar-grow { from { scale: 1 0; } to { scale: 1 1; } }
-/* halfway: a flat rosette badge that pops in, then the prize line. The finished state is the base style. */
-.medal { display: block; width: 9rem; height: 9rem; overflow: visible; }
-.medal__pop { transform-box: fill-box; transform-origin: center; }
-.medal__edge { fill: var(--color-yellow-edge); }
-.medal__face { fill: var(--color-yellow); }
-.medal__disc { fill: var(--color-blue); }
-.medal__half { fill: var(--color-surface); }
-@media (prefers-reduced-motion: no-preference) {
-  .medal__pop { animation: trail-pop 0.5s cubic-bezier(.3, 1.6, .5, 1) 0.25s both; }
-  .medal__line { animation: trail-fade 0.3s ease-out 0.6s both; }
-}
+
 /* the pace slider: a flat four-stop slider of minutes a day. Track a darker shade of the ground, filled part and thumb in the primary blue, stop marks and
    labels evenly spaced under it (inset by half a thumb, so each mark sits under the thumb's center). The thumb is a 44 px touch target. */
 .slider { --thumb: 2.75rem; display: grid; gap: var(--space-6); width: 100%; }

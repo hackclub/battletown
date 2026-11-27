@@ -20,9 +20,6 @@ module Onboarding
     STEPS = [
       step("age", :choice, 0, question: true),
       step("prize", :prize, 1, question: true),
-      # Its place in the list is computed (see `visible`). This slot only fixes its number in the fixed order: early, so it never counts as "reached" ahead of
-      # the steps before it in the computed order.
-      step("halfway", :info, 2, show: ->(a) { a.prize.present? }),
       step("use", :choice, 2, question: true),
       step("cost", :info, 2),
       step("how", :info, 2),
@@ -50,7 +47,6 @@ module Onboarding
     ].freeze
 
     KEYS = STEPS.map(&:key).freeze
-    HALFWAY = "halfway".freeze
     # Steps that carry a prize picture of their own: the docked corner picture is hidden on them (reflect draws the project kind instead, so the dock stays).
     PRIZE_PICTURE_STEPS = %w[cost pace_date summary].freeze
 
@@ -67,15 +63,8 @@ module Onboarding
       step.if.nil? || step.if.call(answers)
     end
 
-    # The screens this person will see, in order. "halfway" is placed at the real middle of that list (its own place counted), so hidden screens shift it.
-    def visible(answers, signed_in: false)
-      list = STEPS.select { |step| visible?(step, answers, signed_in: signed_in) }
-      half = list.find { |step| step.key == HALFWAY }
-      return list unless half
-
-      list.delete(half)
-      list.insert(((list.size + 1) / 2.0).round - 1, half)
-    end
+    # The screens this person will see, in order.
+    def visible(answers, signed_in: false) = STEPS.select { |step| visible?(step, answers, signed_in: signed_in) }
 
     # The first visible step at or after `index`.
     def from(index, answers, signed_in: false)
