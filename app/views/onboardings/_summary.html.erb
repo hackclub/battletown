@@ -12,6 +12,6 @@
   <div><dt class="eyebrow">When</dt><dd><%= coding_schedule_text(subject) %>, <%= subject.time_zone %></dd></div>
   <div>
     <dt class="eyebrow">Pace</dt>
-    <dd><%= subject.pace %> minutes a day<% if (days = onboarding_days_text(prize, subject.pace)) %><span class="reveal__estimate"><%= days %> to your prize. This is an estimate.</span><% end %></dd>
+    <dd><%= subject.pace %> minutes a day<% if (days = onboarding_days_text(prize, subject.pace)) %><span class="reveal__estimate"><%= days %>. This is an estimate.</span><% end %></dd>
   </div>
 </dl>

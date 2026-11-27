@@ -111,8 +111,7 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     anonymous_through("schedule")
     step("schedule", coding_time: "", time_zone: "")
     assert_response :unprocessable_content
-    assert_equal [ "Choose a time to code", "Choose your time zone", "Pick at least one day" ].sort, errors_text.sort
-    assert_select "#user_time_zone-error", "Choose your time zone" # the first-run form has no day or time fields to point at
+    assert_equal [ "Choose a time to code", "Pick at least one day" ].sort, errors_text.sort # a missing zone is not an error: the browser's zone, else the saved one, else UTC
     refute_old_wording
   end
 
@@ -124,7 +123,7 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
 
   test "an unknown time zone says to choose from the list" do
     anonymous_through("schedule")
-    step("schedule", coding_day_names: %w[monday], coding_time: "18:00", time_zone: "Mars/Olympus")
+    step("schedule", coding_day_names: %w[monday], coding_time: "18:00", time_zone: "not a zone")
     assert_equal [ "Choose your time zone from the list" ], errors_text
   end
 

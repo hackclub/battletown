@@ -5,7 +5,7 @@
         data: { controller: "onboarding-idea required-choice", action: "change->required-choice#sync submit->required-choice#guard", onboarding_idea_max_value: max, onboarding_idea_over_class: "onboarding__counter--over" } do |f| %>
     <%= render "onboardings/errors" %>
     <%= tag.fieldset class: "field onboarding__fieldset", aria: onboarding_aria(:project_kind, id: "kind").slice(:describedby) do %>
-      <legend class="onboarding__legend">What kind of project?</legend>
+      <legend class="visually-hidden">What kind of project?</legend>
       <%= onboarding_field_error(:project_kind, id: "kind") %>
       <div class="choice-grid choice-grid--kinds">
         <% offered_project_kinds.each do |kind, info| %>
@@ -13,6 +13,7 @@
             <%= radio_button_tag "user[project_kind]", kind, subject.project_kind == kind, id: "user_project_kind_#{kind}", class: "choice__input", data: { required_choice_target: "input" } %>
             <span class="choice__body">
               <span class="choice__name"><%= info[:name] %></span>
+              <%= onboarding_check %>
             </span>
           </label>
         <% end %>
@@ -41,6 +42,6 @@
       <p class="field__hint onboarding__counter <%= "onboarding__counter--over" if idea_length > max %>" id="project-idea-count" data-onboarding-idea-target="counter"><span data-onboarding-idea-target="count"><%= idea_length %></span> of <%= max %> characters<span data-onboarding-idea-target="excess"><%= ", too long by #{idea_length - max}" if idea_length > max %></span></p>
     </div>
     </details>
-    <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
+    <div class="onboarding__actions"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>
 <% end %>

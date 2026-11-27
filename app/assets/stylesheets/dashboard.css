@@ -299,7 +299,6 @@
   --btn-fg: color-mix(in srgb, var(--color-bg) 70%, var(--color-map));
   --btn-border: color-mix(in srgb, var(--color-bg) 35%, var(--color-map));
   --btn-edge: transparent;
-  --btn-edge-size: 0px; --btn-rim: 0px;
   border-style: dashed;
   box-shadow: none;
   opacity: 1;

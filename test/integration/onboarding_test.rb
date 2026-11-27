@@ -117,7 +117,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     finish_through(user, "project")
     step("schedule", coding_day_names: %w[monday], coding_time: "25:99", time_zone: "UTC")
     assert_response :unprocessable_content
-    step("schedule", coding_day_names: %w[monday], coding_time: "18:00", time_zone: "Mars/Olympus")
+    step("schedule", coding_day_names: %w[monday], coding_time: "18:00", time_zone: "not a zone")
     assert_response :unprocessable_content
     step("schedule", coding_day_names: %w[funday], coding_time: "18:00", time_zone: "UTC")
     assert_response :unprocessable_content
@@ -355,7 +355,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     get onboarding_step_path("schedule")
     assert_select "legend", "Daily pace"
-    assert_select ".pace-choices button[name='user[pace_minutes]']", 4
+    assert_select ".pace-choices input[type=radio][name='user[pace_minutes]']", 4
 
     get onboarding_step_path("account")
     assert_select "label[for=user_referral_source]", /How did you hear about us/
@@ -363,10 +363,10 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
   test "an invalid step shows a summary that links to the field, and marks the field invalid" do
     user = users(:new_user)
-    user.update!(onboarding_step: 3)
+    user.update!(onboarding_step: 6, onboarded_at: Time.current) # editing: the full form, which still has the zone picker
     sign_in_as user
 
-    step("schedule", coding_day_names: %w[monday], coding_time: "18:00", time_zone: "Mars/Olympus")
+    step("schedule", coding_day_names: %w[monday], coding_time: "18:00", time_zone: "not a zone")
     assert_response :unprocessable_content
     assert_select ".onboarding__errors[role=alert][tabindex='-1'][data-onboarding-step-target=errors]" do
       assert_select "a[href='#user_time_zone']", /Choose your time zone from the list/
@@ -396,7 +396,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     finish_through(user, "project")
     get onboarding_step_path("schedule")
-    assert_select "form .pace-choices button[type=submit][name='user[pace_minutes]']", 4 # a tap on a choice is the answer: no Continue to wire
+    assert_select "form .pace-choices input[type=radio][name='user[pace_minutes]']", 4 # a tap on a choice is the answer: no Continue to wire
   end
 
   test "a missing prize or project type is reported against the first option" do
@@ -828,7 +828,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "#onboarding-progress-step", "Step 2 of 7"
   end
 
-  test "the prize step uses the same cream panel as its siblings, every card has the same structure, and hours are only a guide" do
+  test "the prize step uses the same cream panel as its siblings, every card has the same structure, and the page carries no extra hint" do
     anonymous_through("age")
     get onboarding_step_path("prize")
     assert_select ".onboarding__panel"
@@ -836,7 +836,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select ".choice-grid--prizes .choice", Prize.paid.size
     assert_select ".choice-grid--prizes .choice .choice__art + .choice__plate .choice__name", Prize.paid.size
     assert_select ".choice__meta", /\Aabout /, Prize.paid.size
-    assert_select "p.onboarding__hint", OnboardingDesignHelper::HOURS_NOTE
+    assert_select "p.onboarding__hint", 0 # the page keeps only its heading, one sub-line and the options
   end
 
   test "the progress label says something different at each step, always starting with 'onboarding progress'" do

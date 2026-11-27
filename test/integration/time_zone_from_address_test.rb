@@ -101,8 +101,9 @@ class TimeZoneFromAddressTest < ActionDispatch::IntegrationTest
 
   # -- schedule step ---------------------------------------------------------------------------------
 
+  # Someone already in gets the full schedule form (the time zone picker lives there; the first run asks nothing about zones).
   def at_schedule_step(user)
-    user.update!(onboarding_step: 3)
+    user.update!(onboarding_step: 6, onboarded_at: Time.current)
     sign_in_with(uid: user.hca_uid)
     get onboarding_step_path("schedule")
     assert_response :success
@@ -132,7 +133,7 @@ class TimeZoneFromAddressTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{onboarding_step_path("schedule")}'] details select[name='user[time_zone]']:not([disabled])"
 
     patch onboarding_step_path("schedule"), params: { user: { coding_day_names: %w[monday], coding_time: "18:00", time_zone: "Tokyo" } }
-    assert_redirected_to onboarding_step_path("account")
+    assert_redirected_to dashboard_path
     assert_equal "Tokyo", user.reload.time_zone
   end
 
@@ -146,7 +147,7 @@ class TimeZoneFromAddressTest < ActionDispatch::IntegrationTest
 
   test "schedule step preselects the zone derived at first sign-in" do
     sign_in_with(uid: "ident!tz-step", raw_info: { "address" => address(region: "CA") })
-    User.find_by!(hca_uid: "ident!tz-step").update!(onboarding_step: 3)
+    User.find_by!(hca_uid: "ident!tz-step").update!(onboarding_step: 6, onboarded_at: Time.current)
     get onboarding_step_path("schedule")
     assert_response :success
     assert_select "summary strong", "Pacific Time (US & Canada)"
@@ -157,7 +158,7 @@ class TimeZoneFromAddressTest < ActionDispatch::IntegrationTest
     user = users(:new_user)
     user.update!(time_zone: "Eastern Time (US & Canada)")
     at_schedule_step(user)
-    patch onboarding_step_path("schedule"), params: { user: { coding_day_names: %w[monday], coding_time: "18:00", time_zone: "Mars/Olympus" } }
+    patch onboarding_step_path("schedule"), params: { user: { coding_day_names: %w[monday], coding_time: "18:00", time_zone: "not a zone" } }
     assert_response :unprocessable_content
     assert_select "details.timezone[open]"
   end
@@ -184,7 +185,7 @@ class TimeZoneFromAddressTest < ActionDispatch::IntegrationTest
     user = users(:new_user)
     at_schedule_step(user)
     patch onboarding_step_path("schedule"), params: { user: { coding_day_names: User::DAYS, coding_time: "18:00", time_zone: "UTC" } }
-    assert_redirected_to onboarding_step_path("account")
+    assert_redirected_to dashboard_path
     assert_equal 127, user.reload.coding_days
   end
 end
