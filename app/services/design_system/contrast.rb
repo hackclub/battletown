@@ -29,6 +29,8 @@ module DesignSystem
       Pair.new(label: "Ink blue on sign yellow", fg: "--color-ink-blue", bg: "--color-sign-yellow", need: TEXT),
       Pair.new(label: "Cream on sign blue", fg: "--color-primary-contrast", bg: "--color-sign-blue", need: TEXT),
       Pair.new(label: "Cream on sign pink", fg: "--color-primary-contrast", bg: "--color-sign-pink", need: LARGE, note: "accepted at 3.14:1"),
+      Pair.new(label: "White on sign green (the Fight together board)", fg: "--color-surface", bg: "--color-sign-green", need: TEXT),
+      Pair.new(label: "White on sign green edge", fg: "--color-surface", bg: "--color-sign-green-edge", need: TEXT),
       Pair.new(label: "Cream on boss health empty", fg: "--color-primary-contrast", bg: "--color-hp-empty", need: TEXT),
       Pair.new(label: "Boss health fill vs empty (non-text)", fg: "--color-hp-fill", bg: "--color-hp-empty", need: LARGE, note: "non-text"),
       Pair.new(label: "Card title on chunky card", fg: "--color-card-title", bg: "--color-card-blue", need: TEXT),

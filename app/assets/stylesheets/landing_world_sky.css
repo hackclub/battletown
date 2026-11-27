@@ -24,8 +24,12 @@
    The signpost's own box ends about 9 wu below the foot, so this much room under it: */
 .landing .how__inner { padding-bottom: calc(var(--wu) * 60); }
 
-/* Breathing room above the signpost (64rem up): the painted sky is taller than .how at these widths (601 wu against about 456 px), so
-   lengthening .how by 110 wu only shows more of the painting (its top part was hidden behind the hero), never flat color. */
-@media (min-width: 64rem) {
-  .landing .how__inner { padding-top: calc(var(--wu) * 110); }
+/* The signpost peeks over the pink swoosh (Armand, 2026-11-12 and 11-27: "it should peek over just a tiny teensy bit"). The swoosh's pink band
+   is 16 px thick at the pole on tablet and up (7 px on a phone) and its bottom edge is level with the box at the same place at every width, so the
+   pole's top stands above the band's top by about 0.4 of its own width: the post, and at most the top edge of the first board, draw over the
+   pink (the signpost is above the swoosh), and the board's words stay clear below. The offset is in world units so it follows the scale.
+   (Before this, 110 wu of padding above the signpost on desktop had moved it fully below the swoosh.) */
+.landing .signpost { margin-top: calc(-2.25rem - var(--wu) * 69); }
+@media (min-width: 48rem) {
+  .landing .signpost { margin-top: calc(-10.5rem - var(--wu) * 15); }
 }

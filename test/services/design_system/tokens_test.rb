@@ -41,4 +41,13 @@ class DesignSystemTokensTest < ActiveSupport::TestCase
     missing = DesignSystem::Tokens.colors.map(&:name).reject { |name| css.include?(%(.sg-swatch[data-token="#{name}"])) }
     assert_empty missing
   end
+
+  test "the Fight together sign board has its green pair, white text passes on both, and the pair is registered" do
+    assert_equal "#00704a", DesignSystem::Tokens.resolve("--color-sign-green")
+    assert_equal "#004d33", DesignSystem::Tokens.resolve("--color-sign-green-edge")
+    assert_operator DesignSystem::Contrast.ratio("--color-surface", "--color-sign-green"), :>=, 4.5
+    assert_operator DesignSystem::Contrast.ratio("--color-surface", "--color-sign-green-edge"), :>=, 4.5
+    labels = DesignSystem::Contrast::PAIRS.map(&:bg)
+    assert_includes labels, "--color-sign-green"
+  end
 end
