@@ -122,7 +122,11 @@
             for (let k = 0; k < 4; k++) {
               if (pc[k] <= 0 || gaps[k] < -1 || gaps[k] >= pc[k]) continue;
               const expected = Math.min(Math.min(r.width, r.height) / 2, Math.max(radiusFloor, pc[k] - Math.max(0, gaps[k])));
-              if (Math.abs(c[k] - expected) > 2) {
+              // Near the corner (gap under half the outer radius) the child must match within 2px. Farther in, the outer curve is
+              // distant, so the child may be rounder than the formula by up to a third of the outer radius, but not by more.
+              const far = gaps[k] >= pc[k] / 2;
+              const bad = far ? c[k] - expected > Math.max(2, pc[k] * 0.35) : Math.abs(c[k] - expected) > 2;
+              if (bad) {
                 add("concentric", el, `${fmt(c[k])}px ${names[k]}`, `${fmt(expected)}px (parent ${fmt(pc[k])} - gap ${fmt(Math.max(0, gaps[k]))})`, `inside ${shortSel(parent)}`);
               }
             }
