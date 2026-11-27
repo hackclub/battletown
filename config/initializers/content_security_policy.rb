@@ -10,7 +10,7 @@ Rails.application.configure do
     policy.font_src :self
     policy.media_src :self
     # The page asks Hack Club Auth who is visiting (see config.x.hca.whoami_enabled); only then may it reach the issuer.
-    policy.connect_src(*[ :self, (Rails.configuration.x.hca.issuer if Rails.configuration.x.hca.whoami_enabled && Rails.env.production?) ].compact)
+    policy.connect_src(*[ :self, (URI(Rails.configuration.x.hca.whoami_url).then { |u| "#{u.scheme}://#{u.host}#{":#{u.port}" unless u.port == u.default_port}" } if Rails.configuration.x.hca.whoami_enabled && Rails.configuration.x.hca.whoami_url.start_with?("http")) ].compact)
     policy.object_src :none
     policy.base_uri :self
     policy.frame_ancestors :none

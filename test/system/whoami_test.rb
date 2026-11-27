@@ -41,18 +41,21 @@ class WhoamiSystemTest < ApplicationSystemTestCase
     end
   end
 
+  # One click advances each single-choice step (no Continue).
   def walk_to_the_pledge
     visit "/onboarding/age"
-    find(".transition--welcome").click
-    click_button "I'm a teen aged 13–18!"
+    find(".transition--welcome", wait: 2).click if page.has_selector?(".transition--welcome", wait: 2)
+    assert_no_selector ".transition"
     find("label.choice", match: :first).click
-    click_button "Continue"
+    assert_current_path "/onboarding/prize", wait: 8
+    find("label.choice", match: :first).click
+    assert_current_path "/onboarding/project", wait: 8
     assert_no_selector ".transition", wait: 6
     find("label.choice", text: "Game").click
-    click_button "Continue"
+    assert_current_path "/onboarding/schedule", wait: 8
     assert_no_selector ".transition", wait: 6
     find("label.choice", text: "1 hour").click
-    assert_current_path "/onboarding/signup"
+    assert_current_path "/onboarding/signup", wait: 8
   end
 
   test "the pledge writes the first name on the signature line as the hold fills" do
@@ -65,11 +68,14 @@ class WhoamiSystemTest < ApplicationSystemTestCase
     page.driver.browser.action.release.perform
   end
 
-  test "with no name known the signature line stays empty, and a very long name is cut" do
+  test "with no name known the signature line stays empty" do
     stub!("signed_out")
     walk_to_the_pledge
     page.driver.browser.action.click_and_hold(find(".pledge__hold").native).pause(duration: 0.5).release.perform
     assert_no_selector ".pledge__signed-name", wait: 0
+  end
+
+  test "a very long name is cut to 40 characters" do
     stub!("signed_in_long")
     walk_to_the_pledge
     page.driver.browser.action.click_and_hold(find(".pledge__hold").native).pause(duration: 0.5).perform
