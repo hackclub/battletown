@@ -119,6 +119,26 @@ for n, (name, x0, y0, target) in enumerate(STONES):
     cell = ndi.binary_closing(np.pad(cell, 20), disk)[20:-20, 20:-20]   # fills a speck-sized notch; a real bite is left (pick another cell)
     cov = cov_all[ys_, xs_] * cell + (cell & (cov_all[ys_, xs_] < 0.5)) * 1.0
     cov = level(cov)
+    # Hand-painted slab: the outline is pulled in by a low-frequency seeded wobble around the center (a few flatter stretches and soft corners),
+    # and some stones get one small chip. It only ever shrinks the shape, so the width and height ratio stay and the size assert still holds.
+    _r = np.random.default_rng(7000 + n)
+    _py = max(8, int(0.12 * cov.shape[0])); _px = max(8, int(0.12 * cov.shape[1]))
+    cov = np.pad(cov, ((_py, _py), (_px, _px)))
+    _ys, _xs = np.nonzero(cov > 0.5)
+    _cy, _cx = (_ys.min() + _ys.max()) / 2, (_xs.min() + _xs.max()) / 2
+    _th = np.linspace(0, 2 * np.pi, 720, endpoint=False)
+    _a = np.zeros_like(_th)
+    for _k, _amp in ((2, 0.010), (3, 0.016), (4, 0.016), (5, 0.010)):
+        _a += _amp * np.cos(_k * _th + _r.uniform(0, 2 * np.pi)) * _r.uniform(0.5, 1.0)
+    if n in (1, 3, 4, 6, 8):                                   # a small chip: a shallow soft dent somewhere on the edge
+        _c = _r.uniform(0, 2 * np.pi); _w = _r.uniform(0.10, 0.16)
+        _a -= 0.04 * np.exp(-(((_th - _c + np.pi) % (2 * np.pi) - np.pi) / _w) ** 2)
+    _a -= _a.max()                                              # never larger than the cell
+    _yy, _xx = np.mgrid[0:cov.shape[0], 0:cov.shape[1]].astype(np.float32)
+    _dy, _dx = _yy - _cy, _xx - _cx
+    _ang = np.arctan2(_dy, _dx) % (2 * np.pi)
+    _sc = 1.0 / (1.0 + np.interp(_ang, np.append(_th, 2 * np.pi), np.append(_a, _a[0])))
+    cov = ndi.map_coordinates(cov, [_cy + _dy * _sc, _cx + _dx * _sc], order=1, mode="constant")
     on = np.nonzero(cov.max(axis=0) > 0.5)[0]
     rows = np.nonzero(cov.max(axis=1) > 0.5)[0]
     cov = cov[max(0, rows[0] - 4):rows[-1] + 5, max(0, on[0] - 4):on[-1] + 5]
@@ -151,9 +171,8 @@ for n, (name, x0, y0, target) in enumerate(STONES):
     D = SIDE_FRACTION * top_h                         # the side's height in the middle
     flat = float(bot_y[cols].max())
     # The base: the top's front curve loosely (about half of it, the rest a flat line), dropped by D, with bumps at three scales. Not a parallel copy.
-    base = 0.5 * bot_y + 0.5 * flat + D
-    base = base + D * noise([0.16 * W_px, 0.05 * W_px, 0.018 * W_px], [0.10, 0.06, 0.035])
-    base = np.maximum(base, bot_y + 0.55 * D)
+    base = bot_y + D                                  # the top's own front arc moved straight down: the base bows with the same perspective
+    base = base + 0.05 * D * noise([0.12 * W_px, 0.04 * W_px], [0.7, 0.3])   # only a calm hand wobble on top of the arc
     y_c = float(bot_y[cols[:12]].mean())              # where the top is widest: the walls start here
     # The walls drop nearly straight from the widest points (a lean of at most 6% of the width per side over their whole height).
     lean = LEAN * W_px
