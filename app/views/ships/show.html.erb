@@ -13,7 +13,7 @@
     <section class="card ship-result stack" aria-labelledby="ship-result-heading">
       <h2 id="ship-result-heading" class="card__title">Approved</h2>
       <p class="ship-result__line">
-        <%= ship_hours(@ship.approved_seconds) %> approved <span aria-hidden="true">&rarr;</span><span class="visually-hidden">gives</span>
+        <%= ship_hours(@ship.approved_seconds) %> approved <span class="ship-result__arrow" data-icon-box data-icon-axis="y" aria-hidden="true"><%= icon(:arrow_right) %></span><span class="visually-hidden">gives</span>
         <%= @breakdown[:base] %> base <%= "coin".pluralize(@breakdown[:base]) %> + <%= @breakdown[:bonus] %> streak bonus <%= "coin".pluralize(@breakdown[:bonus]) %>
         = <strong><%= @breakdown[:total] %> <%= "coin".pluralize(@breakdown[:total]) %></strong>
       </p>

@@ -1,7 +1,7 @@
 <% content_for :title, "Style guide" %>
 <%# Development-only (the controller 404s elsewhere). Everything here uses the real shared classes; the colour list and
     contrast table are read from tokens.css. Markup for each component is documented in projects/battletown/specs/contract.md. %>
-<% arrow = capture do %><svg class="icon" viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg><% end %>
+<% arrow = icon(:arrow_right) %>
 
 <div class="container sg">
   <%= dev_tool(:header, class: "stack stack--sm") do %>
@@ -126,18 +126,18 @@
       <div class="sg-row">
         <button type="button" class="btn btn--primary btn--sm">Small</button>
         <button type="button" class="btn btn--primary">Medium (default)</button>
-        <button type="button" class="btn btn--primary btn--lg">Large CTA <%= arrow %></button>
-        <button type="button" class="btn btn--cta">Join the fight <%= arrow %></button>
+        <button type="button" class="btn btn--primary btn--lg" data-icon-box data-icon-axis="y">Large CTA <%= arrow %></button>
+        <button type="button" class="btn btn--cta" data-icon-box data-icon-axis="y">Join the fight <%= arrow %></button>
         <button type="button" class="btn btn--lg">Large secondary</button>
       </div>
       <button type="button" class="btn btn--primary btn--block">Block button (full width)</button>
       <p class="sg-note">The landing's wrapped cream CTA (Figma 138:172) is the <code>.cta</code> markup in <code>landing.css</code>:</p>
-      <div class="sg-row"><button type="button" class="cta"><span class="cta__face"><span class="cta__label">Join 150 other fighters</span><svg class="cta__arrow" viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg></span></button></div>
+      <div class="sg-row"><button type="button" class="cta"><span class="cta__face"><span class="cta__label">Join 150 other fighters</span><svg class="cta__arrow" data-icon-skip viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg></span></button></div>
     </div>
     <h3>On a map band (focus ring flips to cream)</h3>
     <div class="band band--map sg-demo">
       <div class="sg-row">
-        <button type="button" class="btn btn--cta">Join the fight <%= arrow %></button>
+        <button type="button" class="btn btn--cta" data-icon-box data-icon-axis="y">Join the fight <%= arrow %></button>
         <button type="button" class="btn btn--primary">Primary</button>
         <button type="button" class="btn">Secondary</button>
         <button type="button" class="btn btn--ghost">Ghost</button>
@@ -158,7 +158,7 @@
       <div class="field field--invalid">
         <label for="sg-repo">Repository link</label>
         <input id="sg-repo" class="input" type="url" value="not a link" aria-invalid="true" aria-describedby="sg-repo-err">
-        <p class="field__error" id="sg-repo-err">Enter a GitHub repository link, like https://github.com/you/your-project.</p>
+        <p class="field__error" id="sg-repo-err"><span class="field__error-mark" data-icon-box><%= icon(:exclaim) %></span>Enter a GitHub repository link, like https://github.com/you/your-project.</p>
       </div>
       <div class="field">
         <label for="sg-idea">Idea</label>
@@ -183,9 +183,9 @@
         <legend>Pill toggles (the day picker)</legend>
         <div class="toggle-group">
           <% %w[Mon Tue Wed Thu Fri Sat Sun].each_with_index do |day, index| %>
-            <label class="toggle"><input class="toggle__input" type="checkbox" <%= "checked" if index < 5 %>><span class="toggle__label"><%= day %></span></label>
+            <label class="toggle"><input class="toggle__input" type="checkbox" <%= "checked" if index < 5 %>><span class="toggle__label" data-icon-box data-icon-axis="y"><%= icon(:check, class: "toggle__check") %><%= day %></span></label>
           <% end %>
-          <label class="toggle"><input class="toggle__input" type="checkbox" disabled><span class="toggle__label">Disabled</span></label>
+          <label class="toggle"><input class="toggle__input" type="checkbox" disabled><span class="toggle__label" data-icon-box data-icon-axis="y"><%= icon(:check, class: "toggle__check") %>Disabled</span></label>
         </div>
       </fieldset>
       <div class="cluster">

@@ -45,8 +45,8 @@
 .event-simulator__readout { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 400; opacity: 0.9; }
 .event-simulator__readout:not(:empty)::before { content: "\00b7\00a0"; }
 /* Open/closed marker (a flex summary has none of its own). */
-.event-simulator__toggle::after { flex: none; margin-inline-start: auto; content: "\25B8"; }
-.event-simulator[open] > .event-simulator__toggle::after { content: "\25BE"; }
+.event-simulator__marker { margin-inline-start: auto; }
+.event-simulator[open] > .event-simulator__toggle .event-simulator__marker { rotate: 90deg; }
 /* The body scrolls on its own, inside the most the panel may be. */
 .event-simulator__body {
   display: grid;

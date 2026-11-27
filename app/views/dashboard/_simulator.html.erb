@@ -9,9 +9,10 @@
          data-event-simulator-players-url-value="<%= create_players_dev_simulator_path %>"
          data-event-simulator-ship-url-value="<%= ship_dev_simulator_path %>"
          data-event-simulator-reset-url-value="<%= reset_dev_simulator_path %>">
-  <summary class="event-simulator__toggle" title="Development only, local database only">
+  <summary class="event-simulator__toggle" data-icon-box data-icon-axis="y" title="Development only, local database only">
     <span class="event-simulator__label">event simulator</span>
     <span class="event-simulator__readout" role="status" data-event-simulator-target="readout"></span>
+    <%= icon(:triangle_right, class: "event-simulator__marker") %>
   </summary>
   <div class="event-simulator__body">
     <div class="event-simulator__live">

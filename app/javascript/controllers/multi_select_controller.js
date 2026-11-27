@@ -4,7 +4,7 @@ import { Controller } from "@hotwired/stimulus"
 // the summary says what is ticked, Escape or a click outside closes it. Without JavaScript the list stays open and every
 // checkbox works as a normal form field; the search box only appears once this runs.
 export default class extends Controller {
-  static targets = ["box", "summary", "filter", "option", "empty", "status"]
+  static targets = ["box", "summary", "summaryText", "filter", "option", "empty", "status"]
 
   connect() {
     this.filterTarget.hidden = false
@@ -45,7 +45,7 @@ export default class extends Controller {
 
   count() {
     const names = this.optionTargets.map((option) => option.querySelector("input")).filter((box) => box.checked).map((box) => box.dataset.label)
-    this.summaryTarget.textContent = names.length === 0 ? "Choose projects" : names.length <= 2 ? names.join(", ") : `${names.length} projects chosen`
+    this.summaryTextTarget.textContent = names.length === 0 ? "Choose projects" : names.length <= 2 ? names.join(", ") : `${names.length} projects chosen`
     this.statusTarget.textContent = names.length === 0 ? "Pick every Hackatime project that belongs to this one." : `${names.length} chosen: ${names.join(", ")}`
   }
 }

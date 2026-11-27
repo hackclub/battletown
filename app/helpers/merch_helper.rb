@@ -1,8 +1,8 @@
 # Markup helpers for the weekly merch track (app/views/merch, app/views/dashboard/_merch). Every state is said in words;
 # the dot glyphs and colours are decoration on top of that.
 module MerchHelper
-  # The glyph inside a day's dot: a different shape per state, so the dots read without colour.
-  DAY_MARKS = { met: "✓", missed: "–", pending: "…", future: "", not_counted: "·" }.freeze
+  # The icon inside a day's dot: a different shape per state, so the dots read without colour (see IconHelper).
+  DAY_MARKS = { met: :check, missed: :minus, pending: :ellipsis, future: nil, not_counted: :dot }.freeze
 
   # The screen-reader (and tooltip-free) text for one day.
   DAY_TEXT = {
@@ -24,7 +24,10 @@ module MerchHelper
     fresh_start: [ "Fresh start next week", "badge--muted" ]
   }.freeze
 
-  def merch_day_mark(day) = DAY_MARKS.fetch(day.state)
+  def merch_day_mark(day)
+    name = DAY_MARKS.fetch(day.state)
+    icon(name) if name
+  end
 
   # "Friday 13 November: goal met" (plus "today" on today's dot).
   def merch_day_text(day)

@@ -141,7 +141,7 @@ module OnboardingsHelper
     messages = onboarding_errors(attribute).map(&:last)
     return if messages.empty?
 
-    tag.p(safe_join(messages, tag.br), class: "field__error", id: "#{id}-error")
+    tag.p(safe_join([ tag.span(icon(:exclaim), class: "field__error-mark", data: { icon_box: true }), safe_join(messages, tag.br) ]), class: "field__error", id: "#{id}-error")
   end
 
   # aria-invalid and aria-describedby for a control, merged with an optional hint id.

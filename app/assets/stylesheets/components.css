@@ -99,7 +99,9 @@
 
   .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; filter: none; }
 
-  .btn__arrow, .btn .icon { flex: none; width: 1em; height: 1em; }
+  /* Every icon (IconHelper#icon): an inline SVG drawn centered in its viewBox. display: block so no baseline gap pushes it
+     off-center in its box; the box (marked data-icon-box) centers it with grid or flex. */
+  .icon { display: block; flex: none; width: 1em; height: 1em; }
 
   /* Motion only for people who allow it. The slab grows on hover and focus and squashes when pressed; --press feeds the
      padding, minimum height, margin, translate and edge in .btn above, so the bottom edge never moves. */
@@ -159,8 +161,7 @@
     font-size: var(--text-sm);
     font-weight: 700;
   }
-  .field__error::before {
-    content: "!" / "";
+  .field__error-mark {
     flex: none;
     display: inline-grid;
     place-items: center;
@@ -170,8 +171,8 @@
     background: var(--color-danger);
     color: var(--color-primary-contrast);
     font-size: 0.85em;
-    line-height: 1;
   }
+  .field__error-mark .icon { width: 0.9em; height: 0.9em; }
   .field :is(input, textarea, select):not([type="checkbox"], [type="radio"]) { width: 100%; }
   .field--invalid :is(input, textarea, select) { border-color: var(--color-danger); }
   fieldset.field { padding: 0; border: 0; margin: 0; }
@@ -226,7 +227,9 @@
     box-shadow: inset 0 -0.2em 0 var(--color-pink-edge);
     color: var(--color-primary-contrast);
   }
-  .toggle__input:checked + .toggle__label::before { content: "\2713" / ""; }
+  /* The tick (IconHelper#icon(:check), class toggle__check) is in the markup of every toggle and shows only when it is picked. */
+  .toggle__label .toggle__check { display: none; width: 0.9em; height: 0.9em; }
+  .toggle__input:checked + .toggle__label .toggle__check { display: block; }
   .toggle__input:focus-visible + .toggle__label { outline: 3px solid var(--color-focus); outline-offset: 3px; }
   .toggle__input:disabled + .toggle__label { opacity: 0.55; cursor: not-allowed; }
   .toggle__input:disabled { cursor: not-allowed; }

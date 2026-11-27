@@ -7,7 +7,7 @@
   <%= nav_link "Ships", ships_path %>
   <%= nav_link "Shop", shop_path %>
   <details class="site-menu">
-    <summary class="<%= "is-current" if settings_menu_current? %>">Settings</summary>
+    <summary class="<%= "is-current" if settings_menu_current? %>" data-icon-box data-icon-axis="y">Settings<%= icon(:triangle_down, class: "site-menu__caret") %></summary>
     <div class="site-menu__panel">
       <%= nav_link "Hackatime", hackatime_path %>
       <%= nav_link "Notifications", settings_notifications_path %>

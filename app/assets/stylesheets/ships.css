@@ -31,6 +31,7 @@
 
 /* One ship */
 .ship-result__line { margin: 0; font-size: var(--text-lg); }
+.ship-result__arrow { display: inline-flex; align-items: center; vertical-align: middle; }
 .ship-result__line strong { font-family: var(--font-display); font-weight: 400; font-size: var(--text-xl); }
 .ship-result--rejected { box-shadow: 0 0 0 3px var(--color-danger), var(--shadow-sm); }
 .ship-dl { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0; }

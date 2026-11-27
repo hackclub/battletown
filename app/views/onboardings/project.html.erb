@@ -11,7 +11,7 @@
         <% offered_project_kinds.each do |kind, info| %>
           <label class="toggle">
             <%= radio_button_tag "user[project_kind]", kind, subject.project_kind == kind, id: "user_project_kind_#{kind}", class: "toggle__input", data: { required_choice_target: "input" } %>
-            <span class="toggle__label"><span aria-hidden="true"><%= info[:emoji] %></span> <%= info[:name] %></span>
+            <span class="toggle__label" data-icon-box data-icon-axis="y"><%= icon(:check, class: "toggle__check") %><span aria-hidden="true"><%= info[:emoji] %></span> <%= info[:name] %></span>
           </label>
         <% end %>
       </div>

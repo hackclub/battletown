@@ -7,6 +7,12 @@ module OrderStatusHelper
   ORDER_STATUS_BADGES = { "requested" => "badge--warning", "on_hold" => "badge--warning", "shipped" => "badge--info", "fulfilled" => "badge--success",
                           "cancelled" => "badge--muted", "refunded" => "badge--muted" }.freeze
 
+  # The mark in front of the status word (an icon from IconHelper, centered against the badge's text line).
+  ORDER_STATUS_ICONS = { "requested" => :ellipsis, "on_hold" => :pause, "shipped" => :arrow_right, "fulfilled" => :check,
+                         "cancelled" => :close, "refunded" => :undo, "overdue" => :exclaim }.freeze
+
+  def order_status_icon(status) = icon(ORDER_STATUS_ICONS.fetch(status.to_s))
+
   # What each status means to the buyer. Placeholder copy: the project owner will edit this.
   BUYER_EXPLANATIONS = {
     "requested" => "The team has your order and will get to it soon.",
@@ -23,6 +29,12 @@ module OrderStatusHelper
 
   # The CSS modifier for the mark in front of the word (never reveals a hold either).
   def order_status_class(order) = "shop-status--#{order.buyer_status}"
+
+  # The whole status badge: icon, then the word. The badge is the icon's box (vertical axis only: the mark sits beside the word).
+  def order_status_badge_tag(order)
+    tag.span(safe_join([ order_status_icon(order.buyer_status), order_status_text(order) ]),
+             class: class_names("badge shop-status", order_status_class(order), order_status_badge(order)), data: { icon_box: true, icon_axis: "y" })
+  end
 
   def staff_order_status_text(order) = STAFF_STATUS_TEXT.fetch(order.status)
 

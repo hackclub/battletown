@@ -7,13 +7,17 @@
   <ol class="merch-days" aria-label="Goal days this week">
     <% progress.days.each do |day| %>
       <li class="merch-day merch-day--<%= day.state %><%= ' is-today' if day.today %>">
-        <span class="merch-day__dot" aria-hidden="true"><%= merch_day_mark(day) %></span>
+        <span class="merch-day__dot" data-icon-box aria-hidden="true"><%= merch_day_mark(day) %></span>
         <span class="merch-day__name" aria-hidden="true"><%= day.date.strftime("%a") %></span>
         <span class="visually-hidden"><%= merch_day_text(day) %></span>
       </li>
     <% end %>
   </ol>
-  <p class="merch-legend" aria-hidden="true">✓ goal met &middot; … still counting &middot; – no goal that day</p>
+  <p class="merch-legend" aria-hidden="true">
+    <span class="merch-legend__item" data-icon-box data-icon-axis="y"><%= icon(:check) %>goal met</span> &middot;
+    <span class="merch-legend__item" data-icon-box data-icon-axis="y"><%= icon(:ellipsis) %>still counting</span> &middot;
+    <span class="merch-legend__item" data-icon-box data-icon-axis="y"><%= icon(:minus) %>no goal that day</span>
+  </p>
 
   <p class="merch-count"><strong><%= status.count_text %></strong> <span class="merch-count__rule"><%= status.goal_rule_text %></span></p>
 

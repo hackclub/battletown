@@ -22,7 +22,7 @@
         <div class="field multi" data-controller="multi-select">
           <span class="multi__label" id="hackatime-projects-label">Hackatime projects</span>
           <details class="multi__box" data-multi-select-target="box">
-            <summary class="input multi__summary" aria-labelledby="hackatime-projects-label" data-multi-select-target="summary">Choose projects</summary>
+            <summary class="input multi__summary" aria-labelledby="hackatime-projects-label" data-icon-box data-icon-axis="y" data-multi-select-target="summary"><span data-multi-select-target="summaryText">Choose projects</span><%= icon(:chevron_down, class: "multi__chevron") %></summary>
             <div class="multi__panel">
               <input type="search" class="input multi__filter" id="hackatime-filter" placeholder="Search your Hackatime projects" autocomplete="off" hidden
                      aria-label="Search your Hackatime projects" aria-controls="hackatime-options" data-multi-select-target="filter" data-action="input->multi-select#filter keydown.enter->multi-select#ignoreEnter">

@@ -349,8 +349,9 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   font: 400 clamp(1.125rem, 1.6vw, 1.3125rem)/1.15 var(--display); letter-spacing: -0.03em;
 }
 .landing .faq summary::-webkit-details-marker { display: none; }
-.landing .faq summary::after { content: "+"; flex: none; font-size: 1.1em; line-height: 0.8; }
-.landing .faq details[open] summary::after { content: "\2212"; }
+.landing .faq summary .icon { width: 1.1em; height: 1.1em; }
+.landing .faq summary .icon--minus, .landing .faq details[open] summary .icon--plus { display: none; }
+.landing .faq details[open] summary .icon--minus { display: block; }
 .landing .faq summary { color: var(--cream); } /* cream on this magenta is 3.1:1 (the same cream as the button) */
 .landing .faq summary:focus-visible { outline: 3px solid var(--cream); outline-offset: 4px; border-radius: 0.4rem; }
 .landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: var(--cream); font-size: 1rem; font-weight: 700; } /* heavier, because cream on this magenta is only 3.1:1 */

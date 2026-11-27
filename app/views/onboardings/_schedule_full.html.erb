@@ -7,7 +7,7 @@
         <% User::DAYS.each do |day| %>
           <label class="day toggle">
             <%= check_box_tag "user[coding_day_names][]", day, subject.coding_day_names.include?(day), id: "user_day_#{day}", class: "day__input toggle__input", data: { onboarding_days_target: "day", onboarding_times_target: "day", required_choice_target: "input" } %>
-            <span class="day__label toggle__label"><span aria-hidden="true"><%= day_label(day).first(3) %></span><span class="visually-hidden"><%= day_label(day) %></span></span>
+            <span class="day__label toggle__label" data-icon-box data-icon-axis="y"><%= icon(:check, class: "toggle__check") %><span aria-hidden="true"><%= day_label(day).first(3) %></span><span class="visually-hidden"><%= day_label(day) %></span></span>
           </label>
         <% end %>
         <%# Revealed by onboarding-days; without JS the pills above work on their own. %>

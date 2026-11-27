@@ -73,7 +73,7 @@
                 </td>
                 <td>
                   <%= order_age_text(order) %>
-                  <% if order.overdue? %><br><span class="badge badge--danger shop-status shop-status--overdue" title="Waiting <%= config.overdue_days %> days or more">Overdue</span><% end %>
+                  <% if order.overdue? %><br><span class="badge badge--danger shop-status shop-status--overdue" data-icon-box data-icon-axis="y" title="Waiting <%= config.overdue_days %> days or more"><%= icon(:exclaim) %>Overdue</span><% end %>
                 </td>
                 <td><%= order.created_at.utc.strftime("%-d %b %Y %H:%M") %></td>
                 <td><%= link_to "Open", admin_order_path(order), class: "btn btn--sm", "aria-label": "Open order #{order.id}: #{order.display_name} for #{person}" %></td>

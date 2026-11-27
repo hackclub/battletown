@@ -194,15 +194,8 @@
   .site-menu { position: relative; }
   .site-menu summary { cursor: pointer; list-style: none; }
   .site-menu summary::-webkit-details-marker { display: none; }
-  .site-menu summary::after {
-    content: "";
-    display: inline-block;
-    margin-inline-start: var(--space-2);
-    border: 0.3em solid transparent;
-    border-top-color: currentcolor;
-    vertical-align: -0.1em;
-  }
-  .site-menu[open] summary::after { border-top-color: transparent; border-bottom-color: currentcolor; vertical-align: 0.1em; }
+  .site-menu__caret { width: 0.7em; height: 0.7em; margin-inline-start: var(--space-2); }
+  .site-menu[open] .site-menu__caret { rotate: 180deg; }
   .site-menu__panel {
     position: absolute;
     z-index: 10;

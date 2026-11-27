@@ -4,7 +4,7 @@
     <p class="eyebrow">Battletown shop</p>
     <h1><%= @order.display_name %></h1>
     <p class="lead shop-lead">
-      <span class="badge shop-status <%= order_status_class(@order) %> <%= order_status_badge(@order) %>"><%= order_status_text(@order) %></span>
+      <%= order_status_badge_tag(@order) %>
       <%= order_status_explanation(@order) %>
     </p>
     <p><%= link_to "Back to your orders", orders_path, class: "btn btn--ghost" %></p>

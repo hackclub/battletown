@@ -22,7 +22,7 @@
           <% (0..10).each do |value| %>
             <label class="toggle">
               <%= radio_button_tag "nps[score]", value, @score == value.to_s, id: "nps_score_#{value}", class: "toggle__input", required: true %>
-              <span class="toggle__label"><%= value %><% if value.zero? %><span class="visually-hidden"> (not likely)</span><% elsif value == 10 %><span class="visually-hidden"> (very likely)</span><% end %></span>
+              <span class="toggle__label" data-icon-box data-icon-axis="y"><%= icon(:check, class: "toggle__check") %><%= value %><% if value.zero? %><span class="visually-hidden"> (not likely)</span><% elsif value == 10 %><span class="visually-hidden"> (very likely)</span><% end %></span>
             </label>
           <% end %>
         </div>

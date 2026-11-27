@@ -22,7 +22,9 @@ module AdminHelper
 
   # Staff see the real status, a hold included (the buyer's page and list never do).
   def admin_order_badge(order, _text = nil)
-    tag.span(staff_order_status_text(order), class: class_names("badge shop-status", "shop-status--#{order.status}", OrderStatusHelper::ORDER_STATUS_BADGES.fetch(order.status)))
+    tag.span(safe_join([ order_status_icon(order.status), staff_order_status_text(order) ]),
+             class: class_names("badge shop-status", "shop-status--#{order.status}", OrderStatusHelper::ORDER_STATUS_BADGES.fetch(order.status)),
+             data: { icon_box: true, icon_axis: "y" })
   end
 
   REVIEW_BADGES = { "unreviewed" => [ "Unreviewed", "badge--muted" ], "ok" => [ "Reviewed OK", "badge--success" ],
