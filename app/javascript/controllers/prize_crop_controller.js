@@ -13,6 +13,7 @@ export default class extends Controller {
   // The picture stays invisible until it is measured (or has failed to load), so it never shows whole and then jumps to its crop after the step is on screen.
   connect() {
     const img = this.imageTarget
+    if (this.element.classList.contains("choice__crop--measured")) return // a cached copy (Back) already carries its crop
     this.element.classList.add("choice__crop--pending")
     const ready = () => this.element.classList.remove("choice__crop--pending")
     if (img.complete && img.naturalWidth) { this.measure(); ready() }
