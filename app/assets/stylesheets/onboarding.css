@@ -7,21 +7,6 @@
 .onboarding { width: 100%; max-width: 48rem; margin-inline: auto; }
 
 /* Age gate: two big cards, like a quiz question */
-.age-choices { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 40rem) { .age-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.age-choice {
-  min-height: 4.5rem;
-  padding: 0 var(--space-6);
-  border: 0;
-  border-radius: var(--radius-md);
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  font: inherit;
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  cursor: pointer;
-}
-.age-choice:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 
 /* Transition screens: the welcome splash and "others like you" after the prize and project steps. A full-screen moment over
    the step that fades itself out (nobody clicks anything), then the step rises into place. Click or a key skips it. All
@@ -191,7 +176,6 @@
   background: var(--color-card-blue);
   color: var(--color-bg);
 }
-}
 /* Picked = the card fills yellow (see onboarding_world.css) and shows the tick; there is no ring around it. */
 .choice__input:focus-visible + .choice__body { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .choice__art {
@@ -201,7 +185,6 @@
   border-radius: var(--radius-md);
   background: var(--color-card-blue-light);
 }
-.choice__emoji { font-size: var(--text-3xl); line-height: 1.2; }
 .choice__image { display: block; width: 100%; height: auto; max-height: 7rem; object-fit: contain; }
 .choice__name { color: var(--color-card-title); font-family: var(--font-display); font-size: var(--text-lg); line-height: var(--leading-tight); }
 .choice__meta {
@@ -219,7 +202,6 @@
   .choice-grid { grid-template-columns: 1fr; }
   .choice__body { display: grid; grid-template-columns: 5rem 1fr; column-gap: var(--space-4); row-gap: var(--space-1); align-items: start; padding-right: var(--space-12); }
   .choice__art { grid-row: 1 / span 3; align-self: stretch; min-height: 5rem; }
-  .choice__emoji { font-size: var(--text-2xl); }
 }
 
 /* Project kinds are the shared pill toggles; a touch roomier here */

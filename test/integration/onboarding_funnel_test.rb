@@ -73,7 +73,7 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
     assert_equal shown, (Date.new(presenter.today_date.year, date.month, date.day) - presenter.today_date).to_i
   end
 
-  test "the last step shows the pledge again, signed with the first name, then one line and the way in" do
+  test "the last step has no pledge, only the way in" do
     visitor_to_reveal
     sign_in_as User.new(hca_uid: "ident!arrive1")
     user = User.find_by!(hca_uid: "ident!arrive1")
@@ -83,9 +83,7 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
     follow_redirect!
     get onboarding_step_path("celebrate")
     assert_response :success
-    assert_select ".pledge__text", /\AI'll code 1 hour a day/
-    assert_select ".pledge__signature .pledge__name", "Ada"
-    assert_select ".pledge__day", "Day 1 starts now."
+    assert_select ".pledge__text", 0
     assert_select "button", "Enter Battletown"
     assert_select ".arrival, .reveal__boss, .celebration__summary", 0
     save_shot("arrival")

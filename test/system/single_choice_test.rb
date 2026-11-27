@@ -38,4 +38,27 @@ class SingleChoiceSystemTest < ApplicationSystemTestCase
     assert_rows_even
     assert_equal heights.first, page.evaluate_script(ROWS).first["h"].round, "rows differ in height between steps"
   end
+
+  test "prize pictures are the subject: each is at least 130px wide on a phone and 180px on a desktop, with no container behind it" do
+    visit "/onboarding/age"
+    find(".transition--welcome").click
+    find("label.choice", match: :first).click
+    assert_current_path "/onboarding/prize"
+    { [ 390, 844 ] => 130, [ 1781, 1150 ] => 180 }.each do |(w, h), least|
+      page.driver.browser.manage.window.resize_to(w, h)
+      widths = page.evaluate_script('[...document.querySelectorAll(".choice-grid--cards > .choice .choice__image")].map((i) => i.getBoundingClientRect().width)')
+      assert_equal 6, widths.size
+      assert widths.all? { |v| v >= least }, "prize pictures narrower than #{least}px at #{w}: #{widths.inspect}"
+      boxes = page.evaluate_script(<<~JS)
+        [...document.querySelectorAll(".choice__image")].filter((i) => i.offsetParent).map((i) => {
+          for (let e = i.parentElement; e && !e.classList.contains("choice__body"); e = e.parentElement) {
+            const c = getComputedStyle(e)
+            if (c.backgroundColor !== "rgba(0, 0, 0, 0)" || parseFloat(c.borderTopWidth) > 0 || parseFloat(c.borderTopLeftRadius) > 0) return e.className
+          }
+          return null
+        }).filter(Boolean)
+      JS
+      assert_empty boxes, "a prize picture sits in a container: #{boxes.inspect}"
+    end
+  end
 end

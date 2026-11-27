@@ -6,9 +6,18 @@
       <legend class="visually-hidden">Prize</legend>
       <%= onboarding_field_error(:prize_key, id: "prize") %>
       <% selected = onboarding_prize_selection %>
-      <%= render "onboardings/choice_group", layout: :cards, name: "user[prize_key]", options: Prize.paid.map { |prize|
-            { value: prize.key, label: prize.name, id: "user_prize_key_#{prize.key}", checked: prize.key == selected, image: prize.image,
-              meta: onboarding_hours_text(prize), desc: prize.description } } %>
+      <% options = ->(list) { list.map { |prize|
+            { value: prize.key, label: prize.name, id: "user_prize_key_#{prize.key}", checked: prize.key == selected, image: prize.image, crop: onboarding_prize_crop(prize),
+              meta: onboarding_hours_text(prize) } } } %>
+      <% featured = onboarding_featured_prizes %>
+      <% rest = Prize.paid - featured %>
+      <%= render "onboardings/choice_group", layout: :cards, name: "user[prize_key]", options: options.call(featured), submit: rest.empty? %>
+      <% if rest.any? %>
+        <details class="prize-more"<%= " open" if rest.any? { |prize| prize.key == selected } %>>
+          <summary class="prize-more__toggle">See all prizes</summary>
+          <%= render "onboardings/choice_group", layout: :cards, name: "user[prize_key]", options: options.call(rest) %>
+        </details>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

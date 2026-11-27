@@ -1,0 +1,8 @@
+<%# The first screen after coming back from Hack Club sign-in: the pledge, signed with the first name, before the tracker setup. %>
+<%= render layout: "onboardings/frame", locals: { step: "account", title: "Pledge signed" } do %>
+  <div class="pledge">
+    <%= render "onboardings/pledge", subject: subject, name: current_user.display_name.to_s.split.first %>
+    <p class="pledge__day">Day 1 starts now.</p>
+    <%= link_to "Set up Hackatime", onboarding_step_path("account"), class: "btn btn--primary btn--lg" %>
+  </div>
+<% end %>

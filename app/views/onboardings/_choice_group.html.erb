@@ -1,4 +1,4 @@
-<%# locals: (name:, options:, layout: :rows, auto: true, input_data: {}) -%>
+<%# locals: (name:, options:, layout: :rows, auto: true, input_data: {}, submit: true) -%>
 <%# THE single-choice question of the onboarding: every step that asks "pick one" (age, prize, project kind, pace, editor) renders through here and
     through one stylesheet block (onboarding_world.css, "Single choice"). Native radios in one group (the browser keeps one pick, restores it on Back and
     moves with the arrow keys); a pick shows only through :checked; with `auto` a pick holds for a beat and sends the form, so there is never a Continue.
@@ -11,7 +11,7 @@
             data: input_data.merge(auto ? { action: "change->onboarding-step#choose" } : {}) %>
       <% if layout == :cards %>
         <span class="choice__body">
-          <span class="choice__art"><% if option[:image].present? %><%= image_tag option[:image], alt: "", class: "choice__image" %><% end %></span>
+          <span class="choice__art"><% if option[:image].present? %><% crop = option[:crop] %><% if crop %><span class="choice__crop choice__crop--<%= crop %>"><%= image_tag option[:image], alt: "", class: "choice__image" %></span><% else %><%= image_tag option[:image], alt: "", class: "choice__image" %><% end %><% end %></span>
           <span class="choice__plate">
             <span class="choice__name"><%= option[:label] %></span>
             <span class="choice__meta"><%= option[:meta] %></span>
@@ -27,4 +27,4 @@
     </label>
   <% end %>
 </div>
-<% if auto %><noscript><div class="onboarding__actions"><input type="submit" class="btn btn--primary btn--lg" value="Continue"></div></noscript><% end %>
+<% if auto && submit %><noscript><div class="onboarding__actions"><input type="submit" class="btn btn--primary btn--lg" value="Continue"></div></noscript><% end %>

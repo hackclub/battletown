@@ -69,7 +69,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     step("prize", prize_key: "tshirt")
     assert_redirected_to onboarding_step_path("project")
     follow_redirect!
-    assert_select ".transition--proof .transition__title", /8BitDo Pro 2/ # the "others like you" moment plays over the next step
+    assert_select ".transition--proof", 0 # no others-like-you splash
     assert_select "#onboarding-prize-dock", (Prize.find("tshirt").image.present? ? 1 : 0) # the docked picture, only for a prize that has one
 
     step("project", project_kind: "game", project_idea: "A farming game")
@@ -443,17 +443,30 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "[role=note]", 0
   end
 
-  test "the last step is the signed pledge and keeps the controls" do
+  test "the last step keeps the controls and no longer holds the pledge" do
     user = users(:new_user)
     user.update!(onboarding_step: 6, prize_key: "tshirt", project_kind: "game", coding_days: 127, coding_time: "18:30", time_zone: "UTC")
     sign_in_as user
     get onboarding_step_path("celebrate")
 
-    assert_select ".pledge__text", /8BitDo Pro 2/
-    assert_select ".pledge__day", "Day 1 starts now."
+    assert_select ".pledge__text", 0
     assert_select "#onboarding-prize-dock", 0
     assert_select "button.celebration__sound[aria-pressed=true]", /Sound\s+on/
     assert_select "form[action='#{onboarding_step_path("celebrate")}'] button", "Enter Battletown"
+  end
+
+  test "the first screen after sign-in is the signed pledge, once, before the tracker setup" do
+    user = users(:new_user)
+    user.update!(onboarding_step: 4, prize_key: "tshirt", project_kind: "game", coding_days: 127, coding_time: "18:30", pace_minutes: 120, time_zone: "UTC")
+    sign_in_as user
+    get onboarding_path
+    follow_redirect!
+    assert_select ".pledge__text", /8BitDo Pro 2/
+    assert_select ".pledge__signature .pledge__name"
+    assert_select ".pledge__day", "Day 1 starts now."
+    assert_select "a", "Set up Hackatime"
+    get onboarding_step_path("account") # it shows once
+    assert_select ".pledge__text", 0
   end
 
   # -- before sign-in: age gate, session draft, sign-up, social proof ------------------------------------
@@ -679,49 +692,20 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "after the prize and project steps an others-like-you transition plays over the next step, without a screen of its own" do
+  test "the prize and project steps lead straight to the next step with no others-like-you splash" do
     anonymous_through("age")
     step("prize", prize_key: "tshirt")
-    assert_redirected_to onboarding_step_path("project") # straight to the next step: no page to click through
+    assert_redirected_to onboarding_step_path("project")
     follow_redirect!
     assert_response :success
-    assert_select ".transition--proof[data-turbo-temporary][aria-hidden=true] .transition__title", /Hardly anyone has chosen the 8BitDo Pro 2 yet/ # a handful of people is never quoted as a number
-    assert_select ".transition__badge img[alt='']", (Prize.find("tshirt").image.present? ? 1 : 0)
-    assert_select "p.onboarding-note", /Hardly anyone has chosen the 8BitDo Pro 2 yet/ # the same words for screen readers and reduced motion
-    assert_select ".transition-enter .onboarding-top" # the step waits underneath, then rises in
+    assert_select ".transition--proof", 0
     assert_select "progress.onboarding-top__bar[value='3']"
     assert_select "h1", "What are you making?"
-
-    get onboarding_step_path("project") # it plays once: reloading or going back never replays it
-    assert_select ".transition", 0
-    assert_select "p.onboarding-note", 0
-
     step("project", project_kind: "app")
-    assert_redirected_to onboarding_step_path("schedule")
     follow_redirect!
-    assert_select ".transition--proof .transition__title", /one of the first to build an app here/
-    assert_select ".transition__badge", /📱/
+    assert_select ".transition--proof", 0
   end
 
-  test "once enough others picked the same thing the transitions quote the number, without counting you" do
-    User.update_all(prize_key: nil, project_kind: nil) # the fixtures' own picks would add to the count
-    OnboardingProof::MIN_OTHERS.times { |i| User.create!(hca_uid: "ident!peer#{i}", prize_key: "tshirt", project_kind: "game") }
-    anonymous_through("age")
-    step("prize", prize_key: "tshirt")
-    follow_redirect!
-    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the 8BitDo Pro 2 too!"
-    step("project", project_kind: "game")
-    follow_redirect!
-    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other teens are building a game too!"
-
-    # A signed-in user is in the count already, so they are not their own "other".
-    user = User.create!(hca_uid: "ident!me", onboarding_step: 1)
-    reset!
-    sign_in_as user
-    step("prize", prize_key: "tshirt")
-    follow_redirect!
-    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the 8BitDo Pro 2 too!"
-  end
 
   test "the transition is only for someone still onboarding, never for editing a finished profile, and does not leak to other steps" do
     sign_in_as users(:onboarded)
@@ -781,12 +765,6 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select ".onboarding-page__content.transition-enter"
   end
 
-  test "the not-sure-yet transition reads well at a small count" do
-    anonymous_through("prize")
-    step("project", project_kind: "undecided")
-    follow_redirect!
-    assert_select ".transition__title", "Not sure yet? That's a fine way to start."
-  end
 
   test "hardware is no longer offered, and a new pick of it is refused" do
     anonymous_through("prize")

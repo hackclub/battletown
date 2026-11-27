@@ -1,12 +1,6 @@
 <%= render layout: "onboardings/frame", locals: { step: "celebrate" } do %>
   <div data-controller="onboarding-celebration" data-action="turbo:before-cache@document->onboarding-celebration#clearConfetti" class="celebration">
     <div class="confetti" aria-hidden="true" data-onboarding-celebration-target="confetti"></div>
-    <%# The pledge again, now signed: the first name goes onto the signature line once, then one line and the way in. %>
-    <div class="pledge">
-      <%= render "onboardings/pledge", subject: subject, name: current_user.display_name.to_s.split.first %>
-      <p class="pledge__day">Day 1 starts now.</p>
-    </div>
-
     <%= form_with url: onboarding_step_path("celebrate"), method: :patch do |f| %>
       <div class="onboarding__actions">
         <%= f.button onboarding_label("Enter Battletown"), class: "btn btn--primary btn--lg" %>

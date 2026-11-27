@@ -192,6 +192,29 @@ module OnboardingsHelper
   # The saved prize, so a rejected form submission can't change what the header shows.
   def onboarding_saved_prize = Prize.find(subject.prize_key_in_database)
 
+  # The six prizes the pick step shows first: config/game.yml `onboarding.featured_prizes` (shop item keys, in order). When the list is
+  # missing, short, or names a prize that is gone or archived, six are spread across the hours range instead (cheapest, dearest, four between).
+  FEATURED_PRIZE_COUNT = 6
+
+  def onboarding_featured_prizes
+    paid = Prize.paid
+    keys = Array(Rails.application.config_for(:game).dig(:onboarding, :featured_prizes)).map(&:to_s)
+    listed = keys.filter_map { |key| paid.find { |prize| prize.key == key } }.uniq
+    return listed.first(FEATURED_PRIZE_COUNT) if listed.size >= FEATURED_PRIZE_COUNT && listed.size == keys.size
+
+    sorted = paid.sort_by { |prize| [ prize.coins, prize.position ] }
+    return sorted if sorted.size <= FEATURED_PRIZE_COUNT
+
+    Array.new(FEATURED_PRIZE_COUNT) { |i| sorted[(i * (sorted.size - 1) / (FEATURED_PRIZE_COUNT - 1.0)).round] }.uniq
+  end
+
+  # The placeholder pictures of these shop items have wide transparent margins, so the pick step crops them to their content (the boxes are
+  # in onboarding_world.css, `.choice__crop--<key>`) and every product reads equally large. Delete the keys with the placeholder art: real art
+  # on the same key would be cropped to the wrong box. Any other picture is shown whole.
+  PRIZE_CROPPED = %w[headphones sticker_pack poster].freeze
+
+  def onboarding_prize_crop(prize) = (prize.key if PRIZE_CROPPED.include?(prize.key))
+
   def onboarding_prize_selection
     picked = subject.prize_key || session[:prize_key]
     picked if Prize.paid.any? { |prize| prize.key == picked } # an archived item can't be re-picked
