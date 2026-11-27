@@ -279,7 +279,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 }
 /* ---- Prizes: each one stands on a pebble cut from the painted floor, with its name and hours as plain white text on the floor below it. ---- */
 .landing .prizes { --bg: var(--royal); --next: var(--edge-c); }
-.landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) + 1rem); } /* the sand follows the last row sooner */
+.landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55); } /* the sand follows the last row sooner */
 .landing .prizes h2 { color: var(--yellow); }
 /* The stones are real cells of his pebble layer (script/export_prize_stones.py), each used once, shrunk uniformly and sized in world units like
    the other props: --w x --h wu is the whole picture, --t the height of its top face (the rest is the side). They lie loosely, so each
@@ -287,12 +287,12 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .shelf { --u: var(--wu); display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: calc(var(--u) * 26) calc(var(--u) * 20); margin-top: clamp(2.5rem, 5vw, 3.5rem); padding-inline: var(--side); }
 .landing .prize {
   position: relative; isolation: isolate; flex: none; display: flex; flex-direction: column; align-items: center; text-align: center;
-  width: max(calc(var(--u) * var(--w)), var(--lw, 10.5rem)); margin-top: calc(var(--u) * var(--dy));
-  --stone-text: #fff; --aw: calc(var(--u) * var(--w) * 0.64);
+  width: max(calc(var(--u) * var(--w)), var(--lw, 12.25rem)); margin-top: calc(var(--u) * var(--dy));
+  --stone-text: #fff; --aw: calc(var(--u) * var(--w) * 0.54);
 }
 /* The stone: his cell's own outline, a lit lavender top and the same shape lower in the mid violet as its side (two flat tones, all in the picture). The
    prize stands on the middle of the top face, its foot a little below the middle. */
-.landing .prize::before { content: ""; order: 2; width: calc(var(--u) * var(--w)); height: calc(var(--u) * var(--h)); margin-top: calc(var(--u) * var(--t) * -0.56); background: var(--stone) center / 100% 100% no-repeat; }
+.landing .prize::before { content: ""; order: 2; width: calc(var(--u) * var(--w)); height: calc(var(--u) * var(--h)); margin-top: calc(var(--u) * var(--t) * -0.6); background: var(--stone) center / 100% 100% no-repeat; }
 .landing .prize img, .landing .prize__emoji { order: 1; position: relative; z-index: 1; }
 .landing .prize img { display: block; width: var(--aw); aspect-ratio: 5 / 4; object-fit: contain; object-position: center bottom; }
 /* The keyboard photo carries a loose switch above its top-left corner and a row of spare keys below: show the keyboard alone, in the same box as the other art. */
@@ -301,20 +301,20 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .prize__label { order: 3; margin-top: 0.6rem; padding-inline: 0.25rem; }
 .landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
 .landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.875rem; line-height: 1.2; overflow-wrap: anywhere; }
-@media (max-width: 39.99rem) { .landing .shelf { --u: calc(var(--wu) * 1.3); --lw: 8.75rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
+@media (max-width: 39.99rem) { .landing .shelf { --u: calc(var(--wu) * 1.3); --lw: 10rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
 @media (min-width: 40rem) {
   .landing .prize h3 { font-size: 1.375rem; }
   .landing .prize__hours { font-size: 0.9375rem; }
 }
-.landing .prize:nth-child(1) { --w: 138.7; --h: 160; --t: 147; --dy: 0; --stone: image-set(url("landing/world/stones/stone-1@a.webp") 1x, url("landing/world/stones/stone-1@b.webp") 1.3x, url("landing/world/stones/stone-1@c.webp") 2x); }
-.landing .prize:nth-child(2) { --w: 161.8; --h: 126.8; --t: 113.8; --dy: 20; --stone: image-set(url("landing/world/stones/stone-2@a.webp") 1x, url("landing/world/stones/stone-2@b.webp") 1.3x, url("landing/world/stones/stone-2@c.webp") 2x); }
-.landing .prize:nth-child(3) { --w: 178.2; --h: 129.2; --t: 116.2; --dy: 6; --stone: image-set(url("landing/world/stones/stone-3@a.webp") 1x, url("landing/world/stones/stone-3@b.webp") 1.3x, url("landing/world/stones/stone-3@c.webp") 2x); }
-.landing .prize:nth-child(4) { --w: 157.8; --h: 120.3; --t: 107.3; --dy: 26; --stone: image-set(url("landing/world/stones/stone-4@a.webp") 1x, url("landing/world/stones/stone-4@b.webp") 1.3x, url("landing/world/stones/stone-4@c.webp") 2x); }
-.landing .prize:nth-child(5) { --w: 160.5; --h: 148.7; --t: 135.7; --dy: 10; --stone: image-set(url("landing/world/stones/stone-5@a.webp") 1x, url("landing/world/stones/stone-5@b.webp") 1.3x, url("landing/world/stones/stone-5@c.webp") 2x); }
-.landing .prize:nth-child(6) { --w: 201.3; --h: 161.9; --t: 148.9; --dy: 24; --stone: image-set(url("landing/world/stones/stone-6@a.webp") 1x, url("landing/world/stones/stone-6@b.webp") 1.3x, url("landing/world/stones/stone-6@c.webp") 2x); }
-.landing .prize:nth-child(7) { --w: 167.3; --h: 113.8; --t: 100.8; --dy: 2; --stone: image-set(url("landing/world/stones/stone-7@a.webp") 1x, url("landing/world/stones/stone-7@b.webp") 1.3x, url("landing/world/stones/stone-7@c.webp") 2x); }
-.landing .prize:nth-child(8) { --w: 140.1; --h: 141.6; --t: 128.6; --dy: 18; --stone: image-set(url("landing/world/stones/stone-8@a.webp") 1x, url("landing/world/stones/stone-8@b.webp") 1.3x, url("landing/world/stones/stone-8@c.webp") 2x); }
-.landing .prize:nth-child(9) { --w: 141.4; --h: 169.5; --t: 156.5; --dy: 8; --stone: image-set(url("landing/world/stones/stone-9@a.webp") 1x, url("landing/world/stones/stone-9@b.webp") 1.3x, url("landing/world/stones/stone-9@c.webp") 2x); }
+.landing .prize:nth-child(1) { --w: 153.7; --h: 139.1; --t: 107.4; --dy: 0; --stone: image-set(url("landing/world/stones/stone-1@a.webp") 1x, url("landing/world/stones/stone-1@b.webp") 1.3x, url("landing/world/stones/stone-1@c.webp") 2x); }
+.landing .prize:nth-child(2) { --w: 173.8; --h: 151.9; --t: 118.5; --dy: 20; --stone: image-set(url("landing/world/stones/stone-2@a.webp") 1x, url("landing/world/stones/stone-2@b.webp") 1.3x, url("landing/world/stones/stone-2@c.webp") 2x); }
+.landing .prize:nth-child(3) { --w: 173.9; --h: 134.8; --t: 103.4; --dy: 6; --stone: image-set(url("landing/world/stones/stone-3@a.webp") 1x, url("landing/world/stones/stone-3@b.webp") 1.3x, url("landing/world/stones/stone-3@c.webp") 2x); }
+.landing .prize:nth-child(4) { --w: 151.9; --h: 136.3; --t: 104.5; --dy: 26; --stone: image-set(url("landing/world/stones/stone-4@a.webp") 1x, url("landing/world/stones/stone-4@b.webp") 1.3x, url("landing/world/stones/stone-4@c.webp") 2x); }
+.landing .prize:nth-child(5) { --w: 167.8; --h: 169.5; --t: 131.5; --dy: 10; --stone: image-set(url("landing/world/stones/stone-5@a.webp") 1x, url("landing/world/stones/stone-5@b.webp") 1.3x, url("landing/world/stones/stone-5@c.webp") 2x); }
+.landing .prize:nth-child(6) { --w: 197.5; --h: 170.9; --t: 131.9; --dy: 24; --stone: image-set(url("landing/world/stones/stone-6@a.webp") 1x, url("landing/world/stones/stone-6@b.webp") 1.3x, url("landing/world/stones/stone-6@c.webp") 2x); }
+.landing .prize:nth-child(7) { --w: 179.8; --h: 136; --t: 104.5; --dy: 2; --stone: image-set(url("landing/world/stones/stone-7@a.webp") 1x, url("landing/world/stones/stone-7@b.webp") 1.3x, url("landing/world/stones/stone-7@c.webp") 2x); }
+.landing .prize:nth-child(8) { --w: 157.8; --h: 160.6; --t: 123.9; --dy: 18; --stone: image-set(url("landing/world/stones/stone-8@a.webp") 1x, url("landing/world/stones/stone-8@b.webp") 1.3x, url("landing/world/stones/stone-8@c.webp") 2x); }
+.landing .prize:nth-child(9) { --w: 152; --h: 151; --t: 116.2; --dy: 8; --stone: image-set(url("landing/world/stones/stone-9@a.webp") 1x, url("landing/world/stones/stone-9@b.webp") 1.3x, url("landing/world/stones/stone-9@c.webp") 2x); }
 /* ---- FAQ: the river. The questions are stepping stones across it, and the path picks up again on the far bank. ---- */
 .landing .faq { --bg: var(--navy); --next: var(--edge-d); --stone: var(--pink); --stone-shade: var(--color-sign-pink-edge); --ripple: transparent; } /* the question stones are the site's magenta (the button and the third signpost board), edge in the board's deeper pink; no halo, so no outline look */
 .landing .bank__face { fill: var(--royal-shade); }
