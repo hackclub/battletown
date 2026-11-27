@@ -658,6 +658,11 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   color: var(--color-ink-blue); font-family: var(--font-body); font-weight: 800; font-size: var(--text-sm); text-decoration: underline; text-underline-offset: 0.2em;
 }
 .prize-more__toggle::-webkit-details-marker { display: none; }
+/* Once the full list is open the link has done its job: it goes, and the rest of the prizes continue the grid. */
+.prize-more[open] > .prize-more__toggle { display: none; }
+.prize-more[open] { margin-top: var(--space-3); }
+.prize-more[open] > .basecoat { margin-top: 0; }
+@media (max-width: 39.99rem) { .prize-more[open] { margin-top: var(--space-2); } }
 .prize-more__toggle:focus-visible { outline: 3px solid var(--color-focus-on-light); outline-offset: 2px; border-radius: var(--radius-sm); }
 
 /* ---- The quiz's generic screens: the info screens ---- */
