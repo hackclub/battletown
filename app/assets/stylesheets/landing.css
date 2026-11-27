@@ -350,6 +350,9 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .faq summary:focus-visible { outline: 3px solid var(--cream); outline-offset: 4px; border-radius: 0.4rem; }
 .landing .faq details p { max-width: 34rem; margin-top: -0.25rem; padding-bottom: 1rem; color: var(--cream); font-size: 1rem; font-weight: 700; } /* heavier, because cream on this magenta is only 3.1:1 */
 .landing .faq .faq__rules { display: grid; gap: 0.5rem; max-width: 34rem; margin-top: -0.25rem; padding: 0 0 1rem 1.25rem; list-style: disc; color: var(--cream); font-size: 1rem; font-weight: 700; } /* one rule per line; the markers keep it a list in every browser */
+.landing .faq details a { color: inherit; text-decoration: underline; text-underline-offset: 0.2em; } /* links in an answer take the answer's cream, underlined */
+.landing .faq details a:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; border-radius: 0.2rem; }
+.landing .faq details .faq__more { margin-top: 0; }
 @media (min-width: 64rem) {
   /* The stones step in from the right, where the path comes down beside the prizes, and out again toward Orpheus. */
   .landing .hop--1 { --hx: calc(100% - 7.5rem); }

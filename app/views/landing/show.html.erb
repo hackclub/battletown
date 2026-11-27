@@ -161,7 +161,7 @@
           <span class="hop hop--1" aria-hidden="true"></span><span class="hop hop--2" aria-hidden="true"></span><span class="hop hop--3" aria-hidden="true"></span><span class="hop hop--4" aria-hidden="true"></span><span class="hop hop--5" aria-hidden="true"></span>
           <details name="landing-faq" open>
             <summary>Who can join?</summary>
-            <p>Any teen aged 13 to 18. You sign in with your Hack Club account.</p>
+            <p>Any teen aged 13 to 18. You sign in with your Hack Club account. <%= link_to "More in the docs", docs_path(anchor: "eligibility") %></p>
           </details>
           <details name="landing-faq">
             <summary>What counts as coding time?</summary>
@@ -169,23 +169,20 @@
               <li>Hackatime is a free tool that tracks the time you spend coding.</li>
               <li>Only time tracked with Hackatime while you build your project counts.</li>
               <li>Log only time you really spent. Never add extra hours.</li>
-              <li>Reading docs or watching videos counts only once you build something with what you learned.</li>
-              <li>Time spent on art usually counts only up to about a third of your project time.</li>
-              <li>Time can only count toward one You Ship We Ship program.</li>
-              <li>Time you logged before the program started does not count.</li>
             </ul>
+            <p class="faq__more"><%= link_to "See every rule in the docs", docs_path(anchor: "coding-time") %></p>
           </details>
           <details name="landing-faq">
             <summary>How do I earn prizes?</summary>
-            <p>Your hours go toward the prize you picked. When you ship a project, those hours also hit the weekly boss. Keeping a daily streak earns you bonuses.</p>
+            <p>Your hours go toward the prize you picked. When you ship a project, those hours also hit the weekly boss. Keeping a daily streak earns you bonuses. <%= link_to "How coins and the shop work", docs_path(anchor: "coins") %></p>
           </details>
           <details name="landing-faq">
             <summary>Is it free?</summary>
-            <p>Yes. Battletown is free for teens, run by Hack Club.</p>
+            <p>Yes. Battletown is free for teens, run by Hack Club. <%= link_to "More in the docs", docs_path(anchor: "eligibility") %></p>
           </details>
           <details name="landing-faq">
             <summary>How long does it run?</summary>
-            <p>It runs for at least a month. We may extend it if it goes well.</p>
+            <p>It runs for at least a month. We may extend it if it goes well. <%= link_to "More in the docs", docs_path(anchor: "eligibility") %></p>
           </details>
         </div>
       </div>

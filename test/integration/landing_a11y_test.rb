@@ -17,26 +17,22 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
     details
   end
 
-  test "coding time FAQ is a list of one-rule sentences of 20 words or fewer" do
+  test "coding time FAQ is a short list of one-rule sentences of 20 words or fewer, with a link to the full rules" do
     answer = faq_answer("What counts as coding time?")
     items = answer.css("ul.faq__rules > li").map { |li| li.text.squish }
-    assert_equal 7, items.size
-    assert_empty answer.css("p"), "the rules are a list, not a paragraph"
+    assert_equal 3, items.size
     items.each do |text|
       sentences = text.split(/(?<=[.!?])\s+/)
       sentences.each { |sentence| assert_operator sentence.split.size, :<=, 20, sentence }
     end
+    assert_select answer, "a[href='/docs#coding-time']"
   end
 
-  test "coding time FAQ keeps every rule and defines Hackatime once, in plain words" do
+  test "coding time FAQ summary defines Hackatime once, in plain words" do
     text = faq_answer("What counts as coding time?").css("li").map { |li| li.text.squish }.join(" ")
     assert_equal 1, text.scan("Hackatime is a free tool that tracks the time you spend coding.").size
     assert_match(/Only time tracked with Hackatime while you build your project counts/, text)
     assert_match(/Never add extra hours/, text)
-    assert_match(/Reading docs or watching videos counts only once you build something with what you learned/, text)
-    assert_match(/art usually counts only up to about a third of your project time/, text)
-    assert_match(/only count toward one You Ship We Ship program/, text)
-    assert_match(/before the program started does not count/, text)
     assert_no_match(/inflate|capped|—/, text)
   end
 
@@ -50,7 +46,7 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
 
   test "the footer and the sign-in link are on the page the stylesheet rules target" do
     get "/"
-    assert_select "footer.site-footer nav[aria-label='Legal'] a", 4
+    assert_select "footer.site-footer nav[aria-label='Legal'] a", 5
     {
       "Hack Club" => "https://hackclub.com",
       "Terms & Privacy" => "https://hackclub.com/privacy-and-terms",
@@ -59,6 +55,7 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
     }.each do |label, href|
       assert_select "footer.site-footer nav[aria-label='Legal'] a[href='#{href}'][rel='noopener noreferrer']", text: label
     end
+    assert_select "footer.site-footer nav[aria-label='Legal'] a[href='/docs']", text: "Docs"
     assert_select "footer.site-footer .site-footer__credit", text: "made with <3 by @amber and @armand"
     assert_select "footer.site-footer .site-footer__credit a[href='https://hackclub.enterprise.slack.com/team/U07ABEP916X'][target='_blank'][rel='noopener']", text: "@armand"
     assert_select "footer.site-footer .site-footer__credit a[href='https://hackclub.enterprise.slack.com/team/U054VC2KM9P'][target='_blank'][rel='noopener']", text: "@amber"
