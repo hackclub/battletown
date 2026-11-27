@@ -1,0 +1,39 @@
+<h2 id="shop">The shop</h2>
+<p>Trade the coins you earn for real gear. Everyone pays the same price. The shop lists what is on offer and what each item costs in coins.</p>
+<ul>
+  <li>Your coins unlock when you verify your identity with Hack Club. You keep earning them in the meantime, and coding is never blocked.</li>
+  <li>You can claim a free sticker. It costs no coins, and you do not have to be verified yet. It is one per person.</li>
+  <li>Placing an order is a request. You can cancel it from your orders page until the team sends it, and your coins come straight back.</li>
+  <li>You can have up to <%= Orders::Config.current.max_open_requested %> orders waiting at once.</li>
+</ul>
+
+<h2 id="fulfillment">Fulfillment</h2>
+<p>Prizes and stickers are sent by the Battletown team.</p>
+
+<h3 id="ordering">Ordering and addresses</h3>
+<ul>
+  <li>For an item that is posted, you choose a delivery address when you order. Battletown does not keep your address on your account. We ask Hack Club Auth for the addresses you saved there, once, and keep only the one you choose for this order.</li>
+  <li>An address needs a name, a street, a city and a country. To add or fix one, use Hack Club Auth, then load your addresses again.</li>
+  <li><%= Orders::Config.current.address_notice_text %></li>
+  <li>For an item that is not posted, the team will message you on Slack to arrange delivery.</li>
+</ul>
+
+<h3 id="order-status">Order status</h3>
+<p>Your orders page shows each order and what happened to it. An order is in one of these states:</p>
+<ul>
+  <li><strong>Requested.</strong> The team has your order and will get to it soon.</li>
+  <li><strong>Shipped.</strong> Your order is on its way. When a tracking number is added, you see it on the order page.</li>
+  <li><strong>Fulfilled.</strong> Your order was handed over.</li>
+  <li><strong>Cancelled</strong> or <strong>refunded.</strong> Your coins are back.</li>
+</ul>
+
+<h3 id="duties">Import duties and customs</h3>
+<div class="alert alert--warning" role="note"><p>Hack Club does not and cannot pay import duties or customs fees.</p></div>
+
+<h2 id="legal">Terms, privacy and security</h2>
+<p>These pages are run by Hack Club:</p>
+<ul>
+  <li><%= link_to "Terms & Privacy", "https://hackclub.com/privacy-and-terms", rel: "noopener noreferrer" %></li>
+  <li><%= link_to "Fulfillment", "https://forms.hackclub.com/bounty", rel: "noopener noreferrer" %></li>
+  <li><%= link_to "Security", "https://security.hackclub.com", rel: "noopener noreferrer" %></li>
+</ul>

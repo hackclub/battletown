@@ -1,0 +1,33 @@
+<% ships = docs_ship_config %>
+<p>A ship is your request to turn the time you coded on one project into approved hours and coins.</p>
+
+<h2 id="ships">How a ship works</h2>
+<ol class="docs__steps">
+  <li>Open the project and choose to ship it. A ship covers the time Hackatime logged on the projects linked to it since your last ship.</li>
+  <li>Write what you built, add a public GitHub link and send it in. You can save a draft first.</li>
+  <li>A staff member reviews it and approves up to the hours you coded. Staff can lower the approved hours in steps of <%= docs_hours(ships.step_seconds) %>. They never raise them.</li>
+  <li>If it needs one more touch, you get a reason. Fix it up and ship again. A rejected ship gives its hours back, so they are still yours to ship.</li>
+</ol>
+<ul>
+  <li>You can withdraw a draft or a ship that is still waiting for review. The time you coded is free for your next one.</li>
+  <li>Time you log after you submit goes into your next ship. Whole days count together, so submit when you are done coding for the day.</li>
+  <li>We nudge you on Slack once a project has <%= docs_hours(ships.reminder_seconds.first) %> coded since its last ship, and again at <%= docs_hours(ships.reminder_seconds.last) %>.</li>
+</ul>
+
+<h2 id="valid-ship">What a valid ship is</h2>
+<ul class="docs__checks">
+  <li>A Hackatime project is linked to the project you are shipping.</li>
+  <li>You coded at least <%= docs_hours(ships.min_seconds) %> since your last ship.</li>
+  <li>You wrote a few words on what you built (up to <%= Ship::DESCRIPTION_MAX %> characters).</li>
+  <li>You added a public GitHub link, so the reviewer can open your code. It looks like https://github.com/your-name/your-repo.</li>
+  <li>A demo link is optional. If you add one, it must be a full link starting with https://.</li>
+  <li>A project can have one open ship at a time.</li>
+</ul>
+
+<h2 id="review">When a ship is sent back</h2>
+<p>A reviewer can send a ship back. These are the reasons they can pick from, and they can add their own words:</p>
+<ul>
+  <% ships.rejection_reasons.each do |reason| %>
+    <li><%= reason %>.</li>
+  <% end %>
+</ul>

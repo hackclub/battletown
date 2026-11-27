@@ -1,0 +1,16 @@
+<% game = docs_game %>
+<h2 id="coins">Earning coins</h2>
+<ul>
+  <li>Coins come from approved hours only. Each approved hour is worth <%= game.coins_per_hour %> coins.</li>
+  <li>Hours past <%= game.deflation_after_seconds / 3600 %> in one ship earn <%= number_with_precision(docs_deflated_rate, precision: 1, strip_insignificant_zeros: true) %> coins an hour instead of <%= game.coins_per_hour %>, so shipping a bit more often pays better. This affects coins only, never boss damage.</li>
+  <li>Hours are a guide for the prize you picked. Daily streaks can get you there faster.</li>
+</ul>
+
+<h2 id="streaks">Streaks and the freeze</h2>
+<ul>
+  <li>A day counts for your streak when you code at least <%= game.quick_seconds / 60 %> minutes on it.</li>
+  <li>Keeping a daily streak earns you a bonus on that day&rsquo;s coins, from <%= docs_percent(game.ramp_bps.first) %> on day 1 up to <%= docs_percent(game.ramp_bps.last) %> from day <%= game.ramp_bps.size %>.</li>
+  <li>A missed day resets your streak.</li>
+  <li>You start with one freeze that protects your streak from your first missed day. After you use it, you earn it back by coding on <%= game.freeze_regen_days %> days in a row.</li>
+  <li>A day settles <%= game.grace_seconds / 3600 %> hours after local midnight, so a late Hackatime sync can still land on it.</li>
+</ul>

@@ -25,7 +25,7 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
       sentences = text.split(/(?<=[.!?])\s+/)
       sentences.each { |sentence| assert_operator sentence.split.size, :<=, 20, sentence }
     end
-    assert_select answer, "a[href='/docs#coding-time']"
+    assert_select answer, "a[href='/docs/hours#coding-time']"
   end
 
   test "coding time FAQ summary defines Hackatime once, in plain words" do

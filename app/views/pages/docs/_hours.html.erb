@@ -1,0 +1,42 @@
+<% ships = docs_ship_config %>
+<h2 id="hackatime">Hackatime</h2>
+<p>Hackatime is a free tool that tracks the time you spend coding. It is how your hours count.</p>
+<ul>
+  <li>You connect it once, from onboarding or from Settings. You go to Hackatime, say yes and come straight back.</li>
+  <li>Battletown can only read from Hackatime, never change anything.</li>
+  <li>We use how long you code each day and the names of your Hackatime projects.</li>
+  <li>If Hackatime stops accepting the connection, your time stops syncing until you connect again.</li>
+</ul>
+
+<h2 id="projects">Projects</h2>
+<p>A project is something you are building. You can have up to 10 projects. One of them is your active project at a time.</p>
+<ul>
+  <li>Each project is linked to one or more of your Hackatime projects. That link tells Battletown which of your coding time belongs to it.</li>
+  <li>You can change your project any time. You can archive a project to tuck it away.</li>
+</ul>
+
+<h2 id="coding-time">What counts as coding time</h2>
+<ul>
+  <li>Hackatime is a free tool that tracks the time you spend coding.</li>
+  <li>Only time tracked with Hackatime while you build your project counts.</li>
+  <li>Log only time you really spent. Never add extra hours.</li>
+  <li>Reading docs or watching videos counts only once you build something with what you learned.</li>
+  <li>Time spent on art usually counts only up to about a third of your project time.</li>
+  <li>Time can only count toward one You Ship We Ship program.</li>
+  <li>Time you logged before the program started does not count.</li>
+</ul>
+<p>The site also applies these limits:</p>
+<ul>
+  <li>At most <%= docs_hours(Hours::Config.current.daily_cap_seconds) %> of coding time is credited for one day.</li>
+  <li>Time from before the day you signed up does not count.</li>
+  <% if ships.project_time_from %>
+    <li>Time on a project before <%= docs_date(ships.project_time_from) %> does not count toward a ship.</li>
+  <% end %>
+</ul>
+
+<h2 id="honesty">Honesty</h2>
+<div class="alert" role="note"><p>Log only time you really spent. Never add extra hours.</p></div>
+<ul>
+  <li>A staff member reviews every ship. They can lower the approved hours, and they can send a ship back with a reason.</li>
+  <li>Your GitHub link must be public, so the reviewer can check your work.</li>
+</ul>

@@ -1,12 +1,60 @@
-/* The public docs page (app/views/pages/docs.html.erb). It is the same panel and prose as the legal pages; this file only adds the
-   table of contents and the spacing of headings that anchor links jump to. Tokens only. */
+/* The public docs (app/views/pages/docs.html.erb and pages/docs/*). The article is the same panel and prose as the legal pages. The
+   navigation lists the pages and, under the open page, its sections: a folded box above the article on phones, and a sticky left
+   column from 62rem up (the docs-nav controller folds and opens it and marks the section being read). Tokens only. */
+.docs-layout { display: grid; gap: var(--space-4); max-width: 46rem; }
 .docs .lead { max-width: 42rem; }
-.docs__toc { margin-bottom: var(--space-8); padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); background: var(--color-bg); }
-.docs__toc-title { margin: 0 0 var(--space-2); font-size: var(--text-lg); }
-.docs__toc :is(ol, ul) { margin: 0; padding-inline-start: var(--space-6); }
-.docs__toc ul { margin-block: var(--space-1); }
-.docs__toc li { margin: 0; }
-.docs__toc a { display: inline-block; padding-block: var(--space-1); }
 .docs .prose :is(h2, h3) { scroll-margin-top: var(--space-6); }
 .docs .prose h3 { margin: var(--space-6) 0 var(--space-2); font-size: var(--text-lg); }
-.docs .prose h2:first-child { margin-top: 0; }
+.docs .prose > :first-child { margin-top: 0; }
+
+/* Navigation */
+.docs__toc-box { padding: var(--space-3) var(--space-6); border-radius: var(--radius-md); background: var(--color-bg); }
+.docs__toc-title { cursor: pointer; font-size: var(--text-lg); font-weight: 700; min-height: 2rem; display: flex; align-items: center; }
+.docs__toc-box[open] > .docs__toc-title { margin-bottom: var(--space-2); }
+.docs__toc ul { margin: 0; padding: 0; list-style: none; }
+.docs__toc li { margin: 0; }
+.docs__toc a { display: flex; align-items: center; min-height: 1.75rem; padding-block: var(--space-1); }
+.docs__page-link { font-weight: 700; }
+.docs__page-link[aria-current] { color: var(--color-text); text-decoration-thickness: 0.2em; }
+.docs__sections { margin: var(--space-1) 0 var(--space-2) var(--space-3) !important; padding-inline-start: var(--space-3) !important; }
+.docs__sections ul { padding-inline-start: var(--space-4) !important; }
+.docs__sections a { font-size: var(--text-sm); }
+.docs__sections a[aria-current] { font-weight: 800; color: var(--color-text); text-decoration-thickness: 0.2em; }
+
+@media (max-width: 61.99rem) {
+  .docs__toc-title::after { content: "+"; margin-inline-start: auto; font-size: 1.1em; }
+  .docs__toc-box[open] > .docs__toc-title::after { content: "\2212"; }
+}
+
+/* Steps and checklists */
+.docs__steps { list-style: none; padding-inline-start: 0 !important; counter-reset: docs-step; }
+.docs__steps > li { counter-increment: docs-step; position: relative; padding-inline-start: var(--space-12); min-height: var(--space-8); }
+.docs__steps > li::before {
+  content: counter(docs-step);
+  position: absolute; inset-inline-start: 0; top: 0;
+  display: grid; place-items: center; width: var(--space-8); height: var(--space-8); border-radius: 50%;
+  background: var(--color-pink); color: var(--color-primary-contrast); font-family: var(--font-display);
+}
+.docs__checks { list-style: none; padding-inline-start: 0 !important; }
+.docs__checks > li { position: relative; padding-inline-start: var(--space-8); }
+.docs__checks > li::before { content: "\2713"; position: absolute; inset-inline-start: var(--space-1); top: 0; color: var(--color-success); font-weight: 800; }
+
+/* Previous and next */
+.docs__pager { display: grid; gap: var(--space-3); margin-top: var(--space-12); }
+.docs__pager-link {
+  display: grid; gap: var(--space-1); padding: var(--space-4) var(--space-6); border-radius: var(--radius-md);
+  border-bottom: 0.25rem solid var(--color-cta-edge); background: var(--color-bg); color: var(--color-text); text-decoration: none;
+}
+.docs__pager-link:hover .docs__pager-title { color: var(--color-link-hover); text-decoration: underline; }
+.docs__pager-link--next { text-align: end; grid-column: -2 / -1; }
+.docs__pager-label { font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); }
+.docs__pager-title { font-family: var(--font-display); font-size: var(--text-lg); }
+@media (min-width: 36rem) { .docs__pager { grid-template-columns: 1fr 1fr; } }
+
+@media (min-width: 62rem) {
+  .docs-layout { grid-template-columns: 17rem minmax(0, 42rem); justify-content: center; align-items: start; gap: var(--space-8); max-width: var(--container-width); }
+  .docs__toc { position: sticky; top: var(--space-4); max-height: calc(100vh - 2 * var(--space-4)); overflow-y: auto; }
+  .docs__toc-box { padding: var(--space-2); background: none; }
+  .docs__toc-title { cursor: default; pointer-events: none; list-style: none; }
+  .docs__toc-title::marker, .docs__toc-title::-webkit-details-marker { display: none; }
+}
