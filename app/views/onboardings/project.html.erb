@@ -7,19 +7,23 @@
     <%= tag.fieldset class: "field onboarding__fieldset", aria: onboarding_aria(:project_kind, id: "kind").slice(:describedby) do %>
       <legend class="onboarding__legend">What kind of project?</legend>
       <%= onboarding_field_error(:project_kind, id: "kind") %>
-      <div class="toggle-group toggle-group--kinds">
+      <div class="choice-grid choice-grid--kinds">
         <% offered_project_kinds.each do |kind, info| %>
-          <label class="toggle">
-            <%= radio_button_tag "user[project_kind]", kind, subject.project_kind == kind, id: "user_project_kind_#{kind}", class: "toggle__input", data: { required_choice_target: "input" } %>
-            <span class="toggle__label"><span aria-hidden="true"><%= info[:emoji] %></span> <%= info[:name] %></span>
+          <label class="choice">
+            <%= radio_button_tag "user[project_kind]", kind, subject.project_kind == kind, id: "user_project_kind_#{kind}", class: "choice__input", data: { required_choice_target: "input" } %>
+            <span class="choice__body">
+              <span class="choice__name"><%= info[:name] %></span>
+            </span>
           </label>
         <% end %>
       </div>
     <% end %>
 
     <%# The idea box comes with its starters right above it: tap one and it fills the box below, or joins what is already there. %>
+    <details class="idea-more" <%= "open" if idea_length.positive? || onboarding_errors(:project_idea).any? %>>
+    <summary class="idea-more__summary">Got an idea? (optional)</summary>
     <div class="field onboarding__field <%= "field--invalid" if onboarding_errors(:project_idea).any? %>">
-      <%= f.label :project_idea, "Got an idea? (optional)" %>
+      <%= f.label :project_idea, "Got an idea? (optional)", class: "visually-hidden" %>
       <details class="sparks">
         <summary class="sparks__summary" id="idea-presets-label">Need a spark? Tap one to start from it, or write your own.</summary>
         <ul class="chips" aria-labelledby="idea-presets-label">
@@ -35,11 +39,8 @@
             data: { onboarding_idea_target: "field", action: "input->onboarding-idea#count" } %>
       <%= onboarding_field_error(:project_idea, id: "user_project_idea") %>
       <p class="field__hint onboarding__counter <%= "onboarding__counter--over" if idea_length > max %>" id="project-idea-count" data-onboarding-idea-target="counter"><span data-onboarding-idea-target="count"><%= idea_length %></span> of <%= max %> characters<span data-onboarding-idea-target="excess"><%= ", too long by #{idea_length - max}" if idea_length > max %></span></p>
-      <p class="field__hint">
-        <span class="badge badge--muted placeholder-link">Guides (coming soon)</span>
-        <span class="badge badge--muted placeholder-link">Jumpstart playground (coming soon)</span>
-      </p>
     </div>
+    </details>
     <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg", data: { required_choice_target: "submit" }, aria: { describedby: "onboarding-lead" } %></div>
   <% end %>
 <% end %>

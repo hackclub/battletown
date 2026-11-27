@@ -177,7 +177,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     get "/"
     assert_select ".prize", Prize.paid.size
     assert_select ".prize__hours", text: "2 hours"
-    assert_select ".prize h3", text: "Battletown T-shirt"
+    assert_select ".prize h3", text: "8BitDo Pro 2"
     assert_select ".prize h3", text: Prize.free_signup.name, count: 0
     Prize.paid.each { |prize| assert_select ".prize .prize__hours", text: prize.hours_text, minimum: 1 }
     assert_select ".prize img[src*='keychron-k2']", 1 # the one photo that matches a catalogue prize (the keyboard)

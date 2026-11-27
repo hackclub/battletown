@@ -6,44 +6,27 @@
 .onboarding-page { padding-block: var(--space-8); }
 .onboarding { width: 100%; max-width: 48rem; margin-inline: auto; }
 
-/* Top bar: a round back button and the shared .progress--goal bar (label above it), across the width of the page */
-.onboarding-top { display: flex; align-items: flex-end; gap: var(--space-4); width: 100%; max-width: 72rem; margin-inline: auto; }
-.onboarding-top__back {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: var(--tap-size);
-  height: var(--tap-size);
-  border: 3px solid var(--color-ink-brown);
-  border-radius: var(--radius-full);
-  background: var(--color-bg);
-  color: var(--color-ink-brown);
-  font-size: var(--text-xl);
-  line-height: 1;
-  text-decoration: none;
-}
-.onboarding-top__back:hover { background: var(--color-surface-raised); }
-.onboarding-top__back--none { visibility: hidden; }
-.onboarding-top__progress { flex: 1; }
-.onboarding-top__progress .progress__label { font-size: var(--text-sm); }
-
 /* Age gate: two big cards, like a quiz question */
 .age-choices { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 40rem) { .age-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .age-choice {
-  min-height: 10rem;
-  padding: var(--space-6);
+  --press: 0px; /* the slab: see tokens.css; the bottom of the edge stays put */
+  --age-edge: 0.4rem; --age-edge-color: var(--color-cream-edge); --age-min-h: 10rem; --age-pad: var(--space-6);
+  min-height: calc(var(--age-min-h) + var(--press));
+  margin-bottom: calc(-1 * var(--press));
+  padding: var(--age-pad) var(--age-pad) calc(var(--age-pad) + var(--press));
+  translate: 0 calc(-1 * var(--press));
   border: 0;
   border-radius: var(--radius-md);
   background: var(--color-surface-raised);
-  box-shadow: inset 0 -0.4rem 0 var(--color-cream-edge); /* no outline: the raised edge is the face's own darker shade */
+  box-shadow: inset 0 calc(-1 * (var(--age-edge) + var(--press))) 0 var(--age-edge-color); /* no outline: the raised edge is the face's own darker shade */
   color: var(--color-text);
   font: inherit;
   font-family: var(--font-display);
   font-size: var(--text-xl);
   cursor: pointer;
 }
-.age-choice:hover { background: var(--color-yellow); box-shadow: inset 0 -0.4rem 0 var(--color-yellow-edge); }
+.age-choice:hover { --age-edge-color: var(--color-yellow-edge); background: var(--color-yellow); }
 .age-choice:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 
 /* Transition screens: the welcome splash and "others like you" after the prize and project steps. A full-screen moment over
@@ -213,13 +196,16 @@
   padding: var(--space-4);
   border-radius: var(--radius-lg);
   background: var(--color-card-blue);
-  box-shadow: 0 0.4rem 0 var(--color-card-blue-edge);
+  --press: 0px; /* the slab: see tokens.css. The face moves, the edge under it grows or shrinks, the bottom of the edge stays put */
+  translate: 0 calc(-1 * var(--press));
+  box-shadow: 0 calc(0.4rem + var(--press)) 0 var(--color-card-blue-edge);
   color: var(--color-bg);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .choice__body { transition: transform 120ms ease, box-shadow 120ms ease; }
+  .choice__body { transition: translate 120ms ease, box-shadow 120ms ease; }
+  .choice:hover .choice__body { --press: round(nearest, var(--press-rise), 1px); }
+  .choice:active .choice__body { --press: round(nearest, calc(var(--press-sink) - 0.4rem), 1px); }
 }
-.choice:hover .choice__body { transform: translateY(-2px); }
 /* Picked = the card fills yellow (see onboarding_world.css) and shows the tick; there is no ring around it. */
 .choice__input:checked + .choice__body::after {
   content: "\2713" / "";
@@ -271,12 +257,15 @@
 .chips li { min-width: 0; max-width: 100%; }
 .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .chip {
-  min-height: var(--tap-size);
-  padding: var(--space-2) var(--space-4);
+  --press: 0px; --chip-edge-color: var(--color-cream-edge); /* the slab: see tokens.css */
+  min-height: calc(var(--tap-size) + var(--press));
+  margin-bottom: calc(-1 * var(--press));
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + var(--press));
+  translate: 0 calc(-1 * var(--press));
   border: 2px solid var(--color-surface);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  box-shadow: inset 0 -0.2em 0 var(--color-cream-edge);
+  box-shadow: inset 0 calc(-1 * (0.2em + var(--press))) 0 var(--chip-edge-color);
   color: var(--color-ink-blue);
   font: inherit;
   font-size: var(--text-sm);
@@ -284,10 +273,14 @@
   text-align: left;
   cursor: pointer;
 }
-.chip:hover { border-color: var(--color-yellow); background: var(--color-yellow); box-shadow: inset 0 -0.2em 0 var(--color-yellow-edge); }
+.chip:hover { --chip-edge-color: var(--color-yellow-edge); border-color: var(--color-yellow); background: var(--color-yellow); }
 .chip:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .placeholder-link { max-width: 100%; white-space: normal; }
-.chip:active { transform: translateY(1px); }
+@media (prefers-reduced-motion: no-preference) {
+  .chip { transition: translate 120ms ease, margin-bottom 120ms ease, min-height 120ms ease, padding-bottom 120ms ease, box-shadow 120ms ease; }
+  .chip:is(:hover, :focus-visible) { --press: round(nearest, var(--press-rise), 1px); }
+  .chip:active { --press: round(nearest, calc(var(--press-sink) - 0.2em), 1px); }
+}
 
 /* Days: the shared .toggle pills, plus the "Every day" toggle, which looks like one with a dashed edge */
 .day-all {

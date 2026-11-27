@@ -1,6 +1,6 @@
 <%= render layout: "onboardings/frame", locals: { step: "prize" } do %>
   <%= form_with model: subject, scope: :user, url: onboarding_step_path("prize"), method: :patch,
-        data: { controller: "required-choice", action: "change->required-choice#sync submit->required-choice#guard" } do |f| %>
+        data: { controller: "required-choice prize-flight", action: "change->required-choice#sync submit->required-choice#guard submit->prize-flight#record" } do |f| %>
     <%= render "onboardings/errors" %>
     <%= tag.fieldset class: "onboarding__fieldset", aria: onboarding_aria(:prize_key, id: "prize").slice(:describedby) do %>
       <legend class="visually-hidden">Prize</legend>
@@ -15,8 +15,6 @@
               <span class="choice__art">
                 <% if prize.image.present? %>
                   <%= image_tag prize.image, alt: "", class: "choice__image" %>
-                <% else %>
-                  <span class="choice__emoji" aria-hidden="true"><%= prize.emoji %></span>
                 <% end %>
               </span>
               <span class="choice__plate">

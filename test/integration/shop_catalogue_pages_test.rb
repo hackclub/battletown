@@ -43,12 +43,12 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     verified!(@user)
     sign_in_as @user
     get shop_path
-    assert_select ".shop-item h3", text: "Keychain"
+    assert_select ".shop-item h3", text: "8BitDo Ultimate 2C"
 
     archive("keychain")
     get shop_path
     assert_response :success
-    assert_select ".shop-item h3", text: "Keychain", count: 0
+    assert_select ".shop-item h3", text: "8BitDo Ultimate 2C", count: 0
     assert_select ".shop-item", Prize.paid.size
 
     get shop_item_path("keychain")
@@ -68,11 +68,11 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
 
   test "an archived item is gone from the landing page for signed-out visitors" do
     get "/"
-    assert_select ".prize h3", text: "Poster"
+    assert_select ".prize h3", text: "Logitech G203"
     archive("poster")
     get "/"
     assert_response :success
-    assert_select ".prize h3", text: "Poster", count: 0
+    assert_select ".prize h3", text: "Logitech G203", count: 0
     assert_select ".prize", Prize.paid.size
   end
 
@@ -97,7 +97,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     @user.update_columns(prize_key: "keychain")
     archive("keychain")
     assert_predicate @user.reload, :valid?
-    assert_equal "Keychain", @user.prize.name
+    assert_equal "8BitDo Ultimate 2C", @user.prize.name
     assert_not_predicate @user.prize, :active?
     sign_in_as @user
     get dashboard_path
@@ -109,7 +109,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     archive("poster")
     ShopItem.find_by!(key: "poster").update!(active: true)
     get "/"
-    assert_select ".prize h3", text: "Poster"
+    assert_select ".prize h3", text: "Logitech G203"
   end
 
   # --- orders keep working ---
@@ -145,7 +145,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     assert_equal 170, Coins::Balance.total(@user)
     Shop::Fulfill.call(order: second, by: admin)
     assert_equal "fulfilled", second.reload.status
-    assert_equal "Keychain", second.display_name
+    assert_equal "8BitDo Ultimate 2C", second.display_name
     assert_equal "keychain", second.prize.key
     assert_predicate second, :valid?
   ensure
@@ -160,7 +160,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     get orders_path
     assert_response :success
-    assert_select ".shop-order", /Keychain/
+    assert_select ".shop-order", /8BitDo Ultimate 2C/
   end
 
   test "a price change leaves past orders alone" do
@@ -169,9 +169,9 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     order = buy(@user, "keychain")
     ShopItem.find_by!(key: "keychain").update!(coins: 99, name: "Fancy keychain")
     order.reload
-    assert_equal [ 30, "Keychain" ], [ order.coins, order.prize_name ]
+    assert_equal [ 30, "8BitDo Ultimate 2C" ], [ order.coins, order.prize_name ]
     assert_equal "Fancy keychain", order.prize.name
-    assert_equal "Keychain", order.display_name
+    assert_equal "8BitDo Ultimate 2C", order.display_name
     Shop::Cancel.call(order: order, by: @user)
     assert_equal 200, Coins::Balance.total(@user)
   end
@@ -279,10 +279,10 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
 
   test "a catalogue change shows on the very next request" do
     get "/"
-    assert_select ".prize h3", text: "Poster"
+    assert_select ".prize h3", text: "Logitech G203"
     ShopItem.find_by!(key: "poster").update!(name: "Big poster")
     get "/"
     assert_select ".prize h3", text: "Big poster"
-    assert_select ".prize h3", text: "Poster", count: 0
+    assert_select ".prize h3", text: "Logitech G203", count: 0
   end
 end

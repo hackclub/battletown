@@ -40,7 +40,6 @@ body:has(.landing) .site-header { border-bottom: 0; background: var(--sky); }
 body:has(.landing) .site-header__brand { display: none; } /* the logo in the hero is the brand */
 body:has(.landing) .site-header__inner { justify-content: flex-end; }
 body:has(.landing) .site-header .btn {
-  min-height: 2.75rem;
   border-color: var(--color-surface-raised);
   border-bottom-width: var(--border-chunky);
   background: var(--color-bg);
@@ -100,19 +99,23 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing h2 { font: 400 clamp(2.25rem, 4.6vw, 3.75rem)/0.95 var(--display); letter-spacing: -0.04em; }
 /* ---- Button: pink face, edge in a darker pink, no outline ---- */
 .landing .cta {
-  display: inline-flex; max-width: 100%; padding: 0; border: 0; appearance: none; background: none;
+  --cta-edge: 0.1667em;
+  display: inline-flex; max-width: 100%; padding: 0 0 var(--cta-edge); border: 0; appearance: none; background: var(--pink-shade); /* the base: this link never moves or repaints, only the face on it does */
   border-radius: 0.58em;
   color: var(--cream); /* all text on this pink is cream (Armand, 2026-11-26: prettier than navy): the button, the FAQ rows and the third signpost board. 3.1:1, so it stays large or bold */
   font: 400 clamp(1.5rem, 5.4vw, 1.625rem)/1 var(--display);
   letter-spacing: -0.05em;
   text-decoration: none; cursor: pointer;
 }
+/* The link is the base (its darker pink, static: no transition touches it, so the click area is steady and the stickers stay behind
+   it) and the face is the only thing that moves: on hover and focus the face rises, so the base shows more; pressed, the face drops
+   and only a sliver of base is left. One animated length, --press (tokens.css), drives the face. */
 .landing .cta__face {
   display: inline-flex; align-items: center; gap: 0.36em;
-  padding: 0.5em 0.75em 0.56em;
+  padding: 0.5em 0.75em calc(0.56em - var(--cta-edge));
+  translate: 0 calc(-1 * round(nearest, var(--press), 1px));
   border-radius: 0.58em;
   background: var(--pink);
-  box-shadow: inset 0 -0.1667em 0 var(--pink-shade);
 }
 .landing .cta__label { text-wrap: balance; } /* a long label ("Join 1,234 other fighters") wraps inside the button at large text sizes instead of running out of it */
 .landing .cta:has(.cta__count) { font-size: clamp(1.25rem, 6.2vw, 1.625rem); } /* a longer label: smaller on phones so it stays on one line */
@@ -122,11 +125,11 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
   box-shadow: inset 0 0.07em 0 rgb(255 255 255 / 0.3); font-variant-numeric: tabular-nums;
 }
 .landing .cta svg { width: 0.87em; height: 0.875em; overflow: visible; flex: none; }
-.landing .cta:focus-visible { outline: 3px solid var(--navy); outline-offset: 4px; }
+.landing .cta:focus-visible { outline: 3px solid var(--navy); outline-offset: calc(4px + var(--press-rise)); } /* clear of the face when it rises */
 @media (prefers-reduced-motion: no-preference) {
-  .landing .cta { transition: translate 120ms ease; }
-  .landing .cta:hover { translate: 0 -0.05em; }
-  .landing .cta:active { translate: 0 0.04em; }
+  .landing .cta__face { transition: --press 120ms ease; }
+  .landing .cta:is(:hover, :focus-visible) .cta__face { --press: round(nearest, var(--press-rise), 1px); }
+  .landing .cta:active .cta__face { --press: round(nearest, calc(var(--press-sink) - var(--cta-edge)), 1px); }
 }
 /* ---- Hero: same as the build ---- */
 .landing .hero { position: relative; }
@@ -294,7 +297,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
 .landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: 0.875rem; line-height: 1.2; overflow-wrap: anywhere; }
 @media (max-width: 39.99rem) { .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55 + 2.5rem); } .landing .shelf { --u: calc(var(--wu) * 1.15); --lw: 10rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
-@media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(1rem, calc((100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
+@media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(1rem, calc(100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
 @media (min-width: 40rem) {
   .landing .prize h3 { font-size: 1.375rem; }
   .landing .prize__hours { font-size: 0.9375rem; }

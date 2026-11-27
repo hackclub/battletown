@@ -69,8 +69,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     step("prize", prize_key: "tshirt")
     assert_redirected_to onboarding_step_path("project")
     follow_redirect!
-    assert_select ".transition--proof .transition__title", /Battletown T-shirt/ # the "others like you" moment plays over the next step
-    assert_select ".onboarding-prize", /Battletown T-shirt/
+    assert_select ".transition--proof .transition__title", /8BitDo Pro 2/ # the "others like you" moment plays over the next step
+    assert_select "#onboarding-prize-dock", (Prize.find("tshirt").image.present? ? 1 : 0) # the docked picture, only for a prize that has one
 
     step("project", project_kind: "game", project_idea: "A farming game")
     assert_redirected_to onboarding_step_path("schedule")
@@ -350,13 +350,12 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "label[for=user_project_idea]", /Got an idea/
     assert_select "textarea#user_project_idea[aria-describedby=project-idea-count]"
     assert_select "#project-idea-count", /0 of 500 characters/
-    assert_select ".toggle input.toggle__input[type=radio][name='user[project_kind]']", User::OFFERED_PROJECT_KINDS.size
+    assert_select ".choice-grid--kinds .choice input.choice__input[type=radio][name='user[project_kind]']", User::OFFERED_PROJECT_KINDS.size
+    assert_select ".placeholder-link", 0 # no "coming soon" badges
 
     get onboarding_step_path("schedule")
-    assert_select "legend", "Which days do you want to code?"
-    assert_select "label[for=user_coding_time]", "What time works best?"
-    assert_select ".days .toggle input[type=checkbox][name='user[coding_day_names][]']", 7
-    assert_select ".days button.day-all", "Every day"
+    assert_select "legend", "Daily pace"
+    assert_select ".pace-choices button[name='user[pace_minutes]']", 4
 
     get onboarding_step_path("account")
     assert_select "label[for=user_referral_source]", /How did you hear about us/
@@ -376,8 +375,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "#user_time_zone-error.field__error", /Choose your time zone from the list/
 
     step("schedule", coding_time: "18:00", time_zone: "UTC")
-    assert_select ".onboarding__errors a[href='#user_day_monday']", "Pick at least one day"
-    assert_select "fieldset[aria-describedby=days-error] #days-error"
+    assert_select ".onboarding__errors", /Pick at least one day/ # the first-run form always sends days; the server still refuses none
   end
 
   test "steps with a required choice wire Continue to it, described by the step's own sentence, and the server still validates" do
@@ -398,8 +396,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     finish_through(user, "project")
     get onboarding_step_path("schedule")
-    assert_select "form[data-controller~=required-choice] input.day__input[data-required-choice-target=input]", 7
-    assert_select "button[data-required-choice-target=submit][aria-describedby=onboarding-lead]"
+    assert_select "form .pace-choices button[type=submit][name='user[pace_minutes]']", 4 # a tap on a choice is the answer: no Continue to wire
   end
 
   test "a missing prize or project type is reported against the first option" do
@@ -449,18 +446,15 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "[role=note]", 0
   end
 
-  test "the celebration summarises the plan, says Every day for all seven and keeps the controls" do
+  test "the arrival shows the prize and the first thing to do, and keeps the controls" do
     user = users(:new_user)
     user.update!(onboarding_step: 6, prize_key: "tshirt", project_kind: "game", coding_days: 127, coding_time: "18:30", time_zone: "UTC")
     sign_in_as user
     get onboarding_step_path("celebrate")
 
-    assert_select "dl.celebration__summary" do
-      assert_select "dd", /Battletown T-shirt/
-      assert_select "dd", "Game"
-      assert_select "dd", /Every day at 6:30 pm, UTC/
-    end
-    assert_select ".onboarding-prize", 0
+    assert_select ".arrival__prize", /8BitDo Pro 2/
+    assert_select ".arrival__first"
+    assert_select "#onboarding-prize-dock", 0
     assert_select "button.celebration__sound[aria-pressed=true]", /Sound\s+on/
     assert_select "form[action='#{onboarding_step_path("celebrate")}'] button", "Enter Battletown"
   end
@@ -487,20 +481,24 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "button[name='user[age_group]'][value=adult]", /not 13–18/
   end
 
-  test "onboarding has no header, no Sign in or Dev login buttons and no footer for visitors: the progress strip is the top" do
+  test "onboarding has no site header, no Dev login button and no footer: the strip is the top, with a plain Sign in for visitors" do
     get onboarding_step_path("age")
     assert_select ".site-header", 0
-    assert_select "form[action='/auth/hack_club']", 0
     assert_select "form[action='/dev_login']", 0
     assert_select ".site-footer", 0
-    assert_select ".onboarding-page .onboarding-top"
+    assert_select ".onboarding-page .onboarding-top" do
+      assert_select "a.onboarding-top__logo[href='#{root_path}'] img[src*='logo']"
+      assert_select ".onboarding-top__side form[action='/auth/hack_club'] button.onboarding-top__signin", "Sign in"
+    end
   end
 
-  test "a signed-in person still onboarding keeps a header with Sign out, but no footer" do
+  test "a signed-in person in the flow sees the strip with no Sign in and no site header" do
     sign_in_as users(:new_user)
     get onboarding_step_path("prize")
-    assert_select ".site-header form[action='/logout']"
+    assert_select ".site-header", 0
     assert_select ".site-footer", 0
+    assert_select ".onboarding-top a.onboarding-top__logo"
+    assert_select ".onboarding-top form[action='/auth/hack_club']", 0
   end
 
   test "the sign-up step links once to Hack Club's global terms and privacy policy, since there is no footer to do it" do
@@ -513,15 +511,17 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select ".onboarding__hint", text: "By signing up you agree to Hack Club's terms and privacy policy."
   end
 
-  test "the progress bar and back button sit at the top" do
+  test "the progress bar sits at the top, its numbers are for screen readers only, and there is no back button" do
     get onboarding_step_path("age")
     assert_select ".onboarding-top progress.onboarding-top__bar[max='7'][value='1']"
-    assert_select ".onboarding-top a.onboarding-top__back[href='#{root_path}']"
+    assert_select ".onboarding-top .visually-hidden #onboarding-progress-step", "Step 1 of 7"
+    assert_select ".onboarding-top__back", 0
+    assert_select ".onboarding-top__head", 0
 
     anonymous_through("age")
     get onboarding_step_path("prize")
     assert_select "progress.onboarding-top__bar[value='2']"
-    assert_select "a.onboarding-top__back[href='#{onboarding_step_path("age")}']"
+    assert_select ".onboarding-top__back", 0
   end
 
   test "the welcome splash plays once per visit and is left out when signed in" do
@@ -612,7 +612,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     end
     get onboarding_step_path("signup")
     assert_response :success
-    assert_select ".celebration__summary", /Battletown T-shirt/
+    assert_select ".celebration__summary", /8BitDo Pro 2/
     assert_select ".celebration__summary", /Game/
     assert_select ".celebration__summary", /Monday and Friday at 6:30 pm, UTC/
     assert_select "form[action='/auth/hack_club'][method=post][data-turbo=false] button", "Sign up with Hack Club"
@@ -683,7 +683,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     get onboarding_step_path("signup")
     assert_redirected_to onboarding_step_path("account")
     get onboarding_step_path("account")
-    assert_select "a.onboarding-top__back[href='#{onboarding_step_path("schedule")}']"
+    assert_response :success
   end
 
   test "after the prize and project steps an others-like-you transition plays over the next step, without a screen of its own" do
@@ -692,9 +692,9 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("project") # straight to the next step: no page to click through
     follow_redirect!
     assert_response :success
-    assert_select ".transition--proof[data-turbo-temporary][aria-hidden=true] .transition__title", /Hardly anyone has chosen the Battletown T-shirt yet/ # a handful of people is never quoted as a number
-    assert_select ".transition__badge", /🏷️|Battletown T-shirt|👕/
-    assert_select "p.onboarding-note", /Hardly anyone has chosen the Battletown T-shirt yet/ # the same words for screen readers and reduced motion
+    assert_select ".transition--proof[data-turbo-temporary][aria-hidden=true] .transition__title", /Hardly anyone has chosen the 8BitDo Pro 2 yet/ # a handful of people is never quoted as a number
+    assert_select ".transition__badge img[alt='']", (Prize.find("tshirt").image.present? ? 1 : 0)
+    assert_select "p.onboarding-note", /Hardly anyone has chosen the 8BitDo Pro 2 yet/ # the same words for screen readers and reduced motion
     assert_select ".transition-enter .onboarding-top" # the step waits underneath, then rises in
     assert_select "progress.onboarding-top__bar[value='3']"
     assert_select "h1", "What are you making?"
@@ -716,7 +716,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     anonymous_through("age")
     step("prize", prize_key: "tshirt")
     follow_redirect!
-    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the Battletown T-shirt too!"
+    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the 8BitDo Pro 2 too!"
     step("project", project_kind: "game")
     follow_redirect!
     assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other teens are building a game too!"
@@ -727,7 +727,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     sign_in_as user
     step("prize", prize_key: "tshirt")
     follow_redirect!
-    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the Battletown T-shirt too!"
+    assert_select ".transition__title", "#{OnboardingProof::MIN_OTHERS} other fighters are working toward the 8BitDo Pro 2 too!"
   end
 
   test "the transition is only for someone still onboarding, never for editing a finished profile, and does not leak to other steps" do
@@ -857,7 +857,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     sign_in_as users(:onboarded)
     get onboarding_step_path("schedule")
     assert_select "#onboarding-progress-label", "editing your plan"
-    assert_select "a.onboarding-top__back[href='#{dashboard_path}']"
+    assert_select ".onboarding-top__back", 0
 
     get settings_path
     assert_select "a[href='#{onboarding_step_path("schedule")}']", "your schedule"

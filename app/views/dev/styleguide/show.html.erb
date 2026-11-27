@@ -105,7 +105,7 @@
   <%# ------------------------------------------------------------ Buttons %>
   <section class="sg-section" id="buttons" aria-labelledby="h-buttons">
     <h2 id="h-buttons">Buttons</h2>
-    <p class="sg-note">Hover, press (click and hold) and keyboard focus (Tab) are live on every button. All are at least 44px tall. Every pink button uses the one pink with a cream label (3.14:1, the owner's choice) and the pink's own darker edge.</p>
+    <p class="sg-note">Hover, press (click and hold) and keyboard focus (Tab) are live on every button. All are at least 44px tall. Every pink button uses the one pink with a cream label (3.14:1, the owner's choice). Buttons are flat by default: solid fill, hover one step darker, press one more, no movement.</p>
     <h3>Variants</h3>
     <div class="sg-demo">
       <div class="sg-row">
@@ -133,6 +133,13 @@
       <button type="button" class="btn btn--primary btn--block">Block button (full width)</button>
       <p class="sg-note">The landing's wrapped cream CTA (Figma 138:172) is the <code>.cta</code> markup in <code>landing.css</code>:</p>
       <div class="sg-row"><button type="button" class="cta"><span class="cta__face"><span class="cta__label">Join 150 other fighters</span><svg class="cta__arrow" viewBox="0 0 42 42" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21h34M21 4l17 17-17 17"/></svg></span></button></div>
+    </div>
+    <h3>Raised (use sparingly)</h3>
+    <div class="sg-demo">
+      <p class="sg-note">The animated 3D slab is opt-in with <code>btn--raised</code> and is only for the landing sign-up buttons (the hero and the final one, which use <code>.cta</code>) and the onboarding "Sign in with Hack Club". On hover the face rises and on press it sinks over a base that never moves. Do not use it for ordinary buttons.</p>
+      <div class="sg-row">
+        <button type="button" class="btn btn--primary btn--lg btn--raised">Raised primary <%= arrow %></button>
+      </div>
     </div>
     <h3>On a map band (focus ring flips to cream)</h3>
     <div class="band band--map sg-demo">

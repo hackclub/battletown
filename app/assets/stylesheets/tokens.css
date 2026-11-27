@@ -20,6 +20,11 @@
   --color-royal: #0e3f91; /* deep blue: shop cards, prize ground; cream on it 9.7:1 */
   --color-yellow: #ffd000; /* the one yellow: highlight, sign, callout; navy text on it 9.7:1 */
   --color-yellow-edge: #dc9700; /* the yellow's darker shade */
+  /* The onboarding's cool palette, sampled from the logo asset (design/logo.svg): its outline is pure #fff, its letters run from #197adf at the top to #03bdfc at the bottom, its star is #ffd000. #197adf takes white at only 4.29:1, so fills that carry text use --color-blue (#1472d5, 4.78:1) and its edge. */
+  --color-cool-ground: #d4e6fc; /* derived: a pale tint of the logo blue, dark enough that the logo outline white still reads on it; the flat ground of every onboarding step */
+  --color-cool-tint: #ffffff; /* the card face on the cool ground (white is 1.27:1 against it, the edge below 1.52:1) */
+  --color-cool-tint-edge: #9dbde6; /* the tint's darker shade: the raised edge of its cards and the progress track */
+  --color-logo-sky: #03bdfc; /* sampled: the light blue at the bottom of the logo letters; navy on it 6.6:1 */
   --color-cream-edge: #ecd5b8; /* the cream's darker shade: bottom edge of cream buttons and pills, so they read on white and cream cards */
 
   /* Surfaces. The page behind everything is sky; content lives on cream (--color-bg) or white (--color-surface). */
@@ -67,6 +72,10 @@
   --color-sign-blue-edge: var(--color-blue-edge);
   --color-sign-pink: var(--color-pink);
   --color-sign-pink-edge: var(--color-pink-edge);
+  --color-sign-green: #00704a; /* a roadside sign: the board that carries the "Fight together" text. White text on it 6.1:1 */
+  --color-sign-green-edge: #004d33; /* the green's darker shade: bottom edge of the board; white on it 10:1 */
+  --color-sign-post: #ddd0cc; /* the signpost pole's face (signpost.svg) */
+  --color-sign-post-edge: #b9aba7; /* the pole's shaded side */
 
   /* Boss health bar (152:545, 156:667) and goal progress */
   --color-hp-fill: var(--color-pink); /* Figma: pink = health remaining (INFERRED, the designer has not confirmed) */
@@ -159,4 +168,20 @@
   --container-width: 72rem;
   --container-wide: 90rem; /* landing sections: full-bleed bands with content centred in ~1440px */
   --tap-size: 2.75rem; /* minimum height and width of anything you tap (44px) */
+
+  /* Raised buttons are a slab: a face on a darker base. The BASE never moves and nothing about it animates. Only --press does
+     (registered below, so the browser interpolates ONE value per frame and everything that reads it changes in the same frame):
+     the face translates up by --press and the edge shadow under it is drawn --press lower, so the two cancel exactly and the
+     bottom of the edge stays put. Rest 0, hover +--press-rise (taller), pressed (--press-sink minus the edge) so a sliver is left.
+     Never transition margin, padding, height or box-shadow on a button: only --press. Each use rounds it to whole pixels
+     (round(nearest, var(--press), 1px)), so the face and the edge land on whole device pixels at scale 1 and 2. */
+  --press-rise: 0.15em;
+  --press-sink: 0.06em;
+}
+
+/* The one animated length of every raised button (tokens.css, "Raised buttons are a slab"). */
+@property --press {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
 }

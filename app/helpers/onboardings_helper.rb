@@ -18,6 +18,30 @@ module OnboardingsHelper
     "undecided" => { name: "Not sure yet", emoji: "🤔" }
   }.freeze
 
+  HACKATIME_SETUP_URL = "https://hackatime.hackclub.com/setup".freeze
+  HACKATIME_EDITOR_GUIDES_URL = "https://hackatime.hackclub.com/docs#editor-guides".freeze
+  # The editors Hackatime's own docs give steps for (https://hackatime.hackclub.com/docs/editors/<slug>, read 2026-11-27). Every one
+  # starts with the setup page; `steps` are what the docs say to do in the editor after it, `code` is text to copy exactly as the
+  # docs print it. Anything else gets the "other" path: the docs' list of every editor guide.
+  HACKATIME_EDITORS = [
+    { key: "vscode", name: "VS Code", url: "https://hackatime.hackclub.com/docs/editors/vs-code",
+      steps: [ "Open Extensions, search for Hackatime Time Tracker and install it. Do not install the extension called only Hackatime: it is unofficial.", "Restart VS Code and start coding." ] },
+    { key: "cursor", name: "Cursor", url: "https://hackatime.hackclub.com/docs/editors/cursor",
+      steps: [ "Open Extensions, search for WakaTime and install it.", "Reload Cursor if it asks." ] },
+    { key: "jetbrains", name: "JetBrains IDEs", url: "https://hackatime.hackclub.com/docs/editors/intellij-idea",
+      steps: [ "Open Settings, then Plugins, then Marketplace. Search for WakaTime and install it.", "Accept the third-party notice, then restart the IDE." ] },
+    { key: "neovim", name: "Neovim", url: "https://hackatime.hackclub.com/docs/editors/neovim",
+      steps: [ "With lazy.nvim, add this plugin line (keep lazy = false):", "Restart Neovim. To check, run :WakaTimeToday." ], code: '{ "wakatime/vim-wakatime", lazy = false },' },
+    { key: "vim", name: "Vim", url: "https://hackatime.hackclub.com/docs/editors/vim",
+      steps: [ "Add this line to your .vimrc:", "Restart Vim, then run :PlugInstall." ], code: "Plug 'wakatime/vim-wakatime'" },
+    { key: "sublime", name: "Sublime Text", url: "https://hackatime.hackclub.com/docs/editors/sublime-text",
+      steps: [ "Install Package Control if you do not have it (command palette, then Install Package Control).", "In the command palette choose Package Control: Install Package, then pick wakatime." ] },
+    { key: "zed", name: "Zed", url: "https://hackatime.hackclub.com/docs/editors/zed",
+      steps: [ "Open Extensions, search for hackatime and install it.", "If Zed asks, choose Trust and Continue for your project." ] },
+    { key: "xcode", name: "Xcode", url: "https://hackatime.hackclub.com/docs/editors/xcode",
+      steps: [ "Run this in a terminal:", "Open System Settings, then Privacy and Security, then Accessibility, and turn on xcode-hackatime." ], code: "curl -fsSL https://raw.githubusercontent.com/hackclub/xcode-hackatime/main/install.sh | bash" }
+  ].freeze
+
   IDEA_PRESETS = [
     "A small platformer with one great mechanic",
     "A Slack bot that makes my friends' lives easier",
@@ -53,18 +77,6 @@ module OnboardingsHelper
 
   def onboarding_copy(step) = STEP_COPY.fetch(step)
 
-  # Where the round back button goes: the previous step, skipping the ones a signed-in user never sees; the first
-  # step goes back to the landing page and the last has no way back.
-  def onboarding_back_path(step)
-    steps = OnboardingsController::STEPS
-    index = steps.index(step)
-    return if step == steps.last
-    return root_path if index.zero?
-
-    previous = steps[0...index].reverse.find { |slug| !(signed_in? && OnboardingsController::SKIPPED_WHEN_SIGNED_IN.include?(slug)) }
-    previous ? onboarding_step_path(previous) : root_path
-  end
-
   PROJECT_PHRASES = {
     "game" => "a game", "website" => "a website", "app" => "an app", "tool" => "a tool or bot",
     "undecided" => "something, and aren't sure what yet"
@@ -72,6 +84,19 @@ module OnboardingsHelper
 
   # The project kinds a person can pick now.
   def offered_project_kinds = PROJECT_KINDS.select { |kind, _| User::OFFERED_PROJECT_KINDS.include?(kind) }
+
+  # This week's boss for someone who may not have an account yet, as the same presenter the dashboard uses, built from the
+  # community totals only (no user is read). Nil-safe: with no boss standing it has state :none.
+  def onboarding_boss
+    @onboarding_boss ||= begin
+      today = Hours::Days.today("UTC")
+      boss = Boss.without_art_content.covering(today).first
+      boss ||= Boss.without_art_content.where(ends_on: (today - Bosses::Config.current.afterglow_days)...today).order(ends_on: :desc).first
+      facts = Bosses::Presenter::Facts.new(today: today, boss: boss, damage: (boss ? Bosses::Damage.for(boss) : 0), user_seconds: 0, active_today: 0,
+                                           upcoming_on: (boss ? nil : Boss.where(starts_on: (today + 1)..).minimum(:starts_on)), previous_escaped_name: nil)
+      Bosses::Presenter.new(facts: facts)
+    end
+  end
 
   # The "N others picked this too" transition after the prize and project steps: { headline:, body:, prize:, emoji: }. Only totals
   # are shown (OnboardingProof); a small number is never quoted, it becomes "be one of the first" instead.
@@ -181,6 +206,27 @@ module OnboardingsHelper
   end
 
   def day_label(day) = day.capitalize
+
+  # The pace question's choices, in minutes a coding day (all are in User::PACES).
+  ONBOARDING_PACES = [ 30, 60, 120, 180 ].freeze
+  # What the days and time are before the person has chosen any: every day at 6 pm. The pace step does not ask for them
+  # but the schedule still needs them (see OnboardingsController REQUIRED), so they are sent with the answer.
+  DEFAULT_CODING_TIME = "18:00".freeze
+
+  # Whole coding days the prize takes at `minutes` a day, from the shop price and the base coins-per-hour rate (no bonus).
+  # The same sum the dashboard's pace line makes for a new person on a seven-day plan (Dashboard::PrizePace).
+  def onboarding_days_to_prize(prize, minutes)
+    return unless prize && prize.coins.to_i.positive?
+
+    seconds = Rational(prize.coins * 3600, Game::Config.current.coins_per_hour)
+    [ (seconds / (minutes * 60)).ceil, 1 ].max
+  end
+
+  # "About 14 days of coding" for a prize at a pace; nil when there is no paid prize to count toward.
+  def onboarding_days_text(prize, minutes)
+    days = onboarding_days_to_prize(prize, minutes)
+    "About #{pluralize(days, 'day')} of coding" if days
+  end
 
   # "1 hour 30 minutes" for a daily pace given in minutes (the select's option text).
   def pace_text(minutes)

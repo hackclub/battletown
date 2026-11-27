@@ -43,8 +43,8 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
 
   def draft_times = OnboardingDraft.new(session).coding_times
 
-  test "the step has an optional time row for every day, labelled, in a closed details" do
-    visitor_through_project
+  test "someone editing their plan has an optional time row for every day, labelled, in a closed details" do
+    sign_in_as users(:onboarded)
     get onboarding_step_path("schedule")
     assert_select "details.day-times:not([open]) summary", /Different time on some days\?/
     assert_select "details.day-times input[type=time]", 7
@@ -52,15 +52,30 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
       assert_select "input#user_coding_times_#{day}[name='user[coding_times][#{day}]'][type=time]:not([value])"
       assert_select "label[for=user_coding_times_#{day}]", /#{day.capitalize}\s+\(optional\)/
     end
-    assert_select "input[name='user[coding_time]'][value='18:00']" # the usual time stays as it was
+    assert_select "input[name='user[coding_time]']" # the usual time stays as it was
     assert_select "form[data-controller~='onboarding-times'][data-action~='change->onboarding-times#sync']"
     assert_select "input.day__input[data-onboarding-times-target=day]", 7
   end
 
   def draft_pace = OnboardingDraft.new(session).pace_minutes
 
-  test "the step asks for a daily pace, with the default selected and a plain hint" do
+  test "the first run asks one question, the pace, as big buttons that carry the days and time" do
     visitor_through_project
+    get onboarding_step_path("schedule")
+    assert_select "h1", /How long is a coding day\?/
+    assert_select ".pace-choices button[type=submit][name='user[pace_minutes]']", 4
+    assert_select "button[name='user[pace_minutes]'][value='60']", /1 hour/
+    assert_select "button[name='user[pace_minutes]'][value='60'] .pace-choice__days", /About \d+ days? of coding/
+    assert_select "input[type=hidden][name='user[coding_day_names][]']", 7
+    assert_select "input[type=hidden][name='user[coding_time]'][value='18:00']"
+    assert_select "select#user_time_zone[name='user[time_zone]']"
+    assert_select "#pace-hint", "This is the pace your prize check on the dashboard uses. You can change it any time."
+    assert_select "select, input[type=time], .day-times", 1 # only the time zone select: no dropdown for pace, no time pickers
+    assert_select "button[aria-pressed=true]", 0
+  end
+
+  test "someone editing their plan still gets the daily pace as a select with the saved one chosen" do
+    sign_in_as users(:onboarded)
     get onboarding_step_path("schedule")
     assert_select "label[for=user_pace_minutes]", "How long will you code on those days?"
     assert_select "select#user_pace_minutes[name='user[pace_minutes]'][aria-describedby='pace-hint']" do
@@ -74,19 +89,30 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     assert_select "#pace-hint", "This is the pace your prize check on the dashboard uses. You can change it any time."
   end
 
+  test "the pace buttons' days of coding match the plan line the dashboard gives a new person" do
+    user = users(:new_user)
+    user.update!(prize_key: "tshirt", pace_minutes: 60, coding_days: 127, coding_time: "18:00", time_zone: "UTC", onboarding_step: 3)
+    sign_in_as user
+    get onboarding_step_path("schedule")
+    shown = css_select("button[name='user[pace_minutes]'][value='60'] .pace-choice__days").first.text[/\d+/].to_i
+    plan = Dashboard::Presenter.new(user: user).prize_pace.plan
+    date = Date.strptime(plan[/around (\d+ \w+)/, 1], "%d %b")
+    today = Dashboard::Presenter.new(user: user).today_date
+    assert_equal shown, (Date.new(today.year, date.month, date.day) - today).to_i
+  end
+
   test "a visitor's pace is kept on the draft, shown again, and copied to the account at sign-up" do
     visitor_through_project
-    schedule_with_pace("90")
+    schedule_with_pace("120")
     assert_redirected_to onboarding_step_path("signup")
-    assert_equal 90, draft_pace
+    assert_equal 120, draft_pace
 
     get onboarding_step_path("schedule")
-    assert_select "select#user_pace_minutes option[selected][value='90']", "1 hour 30 minutes"
-    get onboarding_step_path("signup")
-    assert_select ".celebration__summary", /90 minutes a day/
+    assert_select "button[name='user[pace_minutes]'][value='120'][aria-pressed=true]", /2 hours/
+    assert_select "button[aria-pressed=true]", 1
 
     sign_in_as User.new(hca_uid: "ident!pace1")
-    assert_equal 90, User.find_by!(hca_uid: "ident!pace1").pace_minutes
+    assert_equal 120, User.find_by!(hca_uid: "ident!pace1").pace_minutes
   end
 
   test "a blank pace leaves it unset, and the default is assumed" do
@@ -107,8 +133,8 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_content, odd
       assert_select ".onboarding__errors", /Pick a pace from the list/, odd
       assert_select ".onboarding__errors a[href='#user_pace_minutes']"
-      assert_select "select#user_pace_minutes[aria-invalid=true][aria-describedby~='user_pace_minutes-error']"
-      assert_select "#user_pace_minutes-error", /Pick a pace from the list/
+      assert_select "#user_pace_minutes" # the link lands on the first pace button
+      assert_select "fieldset[aria-describedby=pace-error] #pace-error", /Pick a pace from the list/
       assert_nil draft_pace, odd
     end
     get onboarding_step_path("signup")
@@ -150,13 +176,10 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("signup")
     assert_equal MIXED, draft_times, "a day that is not selected and an unknown day are dropped"
 
-    get onboarding_step_path("schedule")
-    assert_select "details.day-times[open]"
-    assert_select "input#user_coding_times_monday[value='17:00']"
-    assert_select "input#user_coding_times_wednesday:not([value])"
-
-    get onboarding_step_path("signup")
-    assert_select ".celebration__summary", /Mon at 5:00 pm, Tue and Thu at 6:30 pm, Sun at 6:00 pm, UTC/
+    get onboarding_step_path("schedule") # the pace question does not touch them
+    assert_response :success
+    schedule_with_pace("60")
+    assert_equal MIXED, draft_times, "a pace answer that sends no times leaves the saved ones alone"
   end
 
   test "the times come with the visitor onto the account at sign-up" do
@@ -171,7 +194,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
 
     step("account")
     get onboarding_step_path("celebrate")
-    assert_select ".celebration__summary", /Mon at 5:00 pm, Tue and Thu at 6:30 pm, Sun at 6:00 pm/
+    assert_response :success
   end
 
   test "without different times the plan reads as before" do
@@ -188,13 +211,20 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
   end
 
   test "a time that is not HH:MM is an error that points at the field, and nothing is saved" do
-    visitor_through_project
+    sign_in_as users(:onboarded)
     schedule(days: %w[monday friday], times: { "monday" => "25:99" })
     assert_response :unprocessable_content
     assert_select ".onboarding__errors", /Check Monday's time: use something like 5:30 pm/
     assert_select ".onboarding__errors a[href='#day-times-hint']"
     assert_select "details.day-times[open] .field__error"
     assert_select "input#user_coding_times_monday[aria-invalid=true]"
+  end
+
+  test "a bad time sent to a visitor is refused and the draft keeps nothing" do
+    visitor_through_project
+    schedule(days: %w[monday friday], times: { "monday" => "25:99" })
+    assert_response :unprocessable_content
+    assert_select ".onboarding__errors", /Check Monday's time/
     assert_equal({}, draft_times)
     get onboarding_step_path("signup")
     assert_redirected_to onboarding_step_path("schedule")

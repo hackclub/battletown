@@ -24,12 +24,32 @@
    with its lower curve reaching 115 wu left of the middle. Desktop: the heading sits left of that curve on the darker teal,
    about 217 wu down, as in the painting. */
 @media (min-width: 64rem) {
-  /* The text may start left of the content column when the column's left edge leaves too little room left of the path's curve (windows
-     wider than the painting): it keeps a 27rem measure and a 1.5rem gap from the path's lower curve (115 wu left of the middle). At
-     1576 and below the column edge is the left edge, as in the painting. */
-  .landing .fight__text { --ft-left: max(var(--gutter), min(var(--side), calc(50vw - var(--wu) * 115 - 1.5rem - 27rem))); padding-left: var(--ft-left); width: auto; }
-  .landing .fight .in { padding-top: calc(var(--wu) * 217); }
-  .landing .fight__text p { max-width: min(27rem, calc(50vw - var(--wu) * 115 - var(--ft-left) - 1.5rem)); text-wrap: pretty; }
+  .landing .fight .in { padding-top: calc(var(--wu) * 175); }
+}
+
+/* The text is a roadside sign: a green board on two posts, standing on the teal left of the path. It is sized in world units, so it grows
+   with the painting and never shrinks to a note on a wide window. Its right edge keeps 145 wu from the middle (the path's lower curve is
+   115 wu left of it, plus a gap), its width is 430 wu at most, and the type is sized from the board's own width, so the words always fit.
+   The posts are the signpost's pole (face and shaded side, tokens), inset 14% from each end, on a flat soft patch of shade as the pole has. */
+.landing .fight__post {
+  position: absolute; top: 100%; width: var(--pw); height: calc(var(--W) * 0.09);
+}
+/* The shade is painted first and the post over it, so the post stands ON its shade (the shade never lies across the post). */
+.landing .fight__post::after { content: ""; position: absolute; inset: 0; background: var(--color-sign-post); box-shadow: inset calc(var(--pw) * -0.23) 0 0 var(--color-sign-post-edge); }
+.landing .fight__post--l { left: 14%; }
+.landing .fight__post--r { right: 14%; }
+.landing .fight__post::before { content: ""; position: absolute; left: 50%; bottom: calc(var(--pw) * -0.3); width: calc(var(--pw) * 3.2); height: calc(var(--pw) * 0.62); translate: -50% 0; border-radius: 50%; background: rgb(6 20 60 / 0.2); }
+@media (min-width: 48rem) {
+  .landing .fight .fight__text {
+    --r: calc(50vw - var(--wu) * 145);
+    --W: min(calc(var(--wu) * 430), calc(var(--r) - var(--gutter)));
+    --pw: calc(var(--W) * 0.075);
+    position: relative; box-sizing: border-box; width: var(--W); margin-left: max(var(--gutter), calc(var(--r) - var(--W)));
+    padding: calc(var(--W) * 0.05) calc(var(--W) * 0.06) calc(var(--W) * 0.068);
+    border-radius: calc(var(--W) * 0.035); background: var(--color-sign-green); box-shadow: inset 0 calc(var(--W) * -0.016) 0 var(--color-sign-green-edge);
+  }
+  .landing .fight .fight__text h2 { position: static; width: auto; max-width: none; margin: 0; font-size: max(1.5rem, calc(var(--W) * 0.135)); }
+  .landing .fight .fight__text p { max-width: none; margin: calc(var(--W) * 0.02) 0 0; font-size: max(0.875rem, calc(var(--W) * 0.043)); font-weight: 700; line-height: 1.32; text-wrap: pretty; }
 }
 
 /* Phones and tablets (below 64rem): the path must end AT the cave rim, with the heading and paragraph beside it on the teal.
@@ -43,17 +63,22 @@
   .landing .fight, .landing .fight .in { min-height: var(--fight-h); }
   .landing .fight .in { padding-top: calc(var(--wu) * 82); padding-bottom: 0; }
 }
-/* Tablets: the text sits LEFT of the path, as on desktop (the boss and his health bar are right of it and reach up over the teal), with a
-   24 px gap from the path's lower curve (115 wu left of the middle). */
-@media (min-width: 48rem) and (max-width: 63.99rem) {
-  .landing .fight__text { padding-inline: var(--side) 0; }
-  .landing .fight__text :is(h2, p) { max-width: calc(50vw - var(--wu) * 115 - 24px - var(--side)); }
-  .landing .fight__text p { margin-top: 0.75rem; text-wrap: pretty; }
-}
-/* Phones: not enough room left of the path for text, and the boss's bar and head reach up over the right column, so the heading goes left of
-   the path (two lines) and the paragraph starts at the cliff and runs down the right column, 13 px clear of the path. */
+/* Phones: not enough room left of the path for the sign, and the boss's bar and head reach up over the right column, so the sign stands in
+   the right column, 13 px clear of the path, from the cliff's foot down to just above the bar. Its type is fixed small to fit that height. */
 @media (max-width: 47.99rem) {
-  .landing .fight__text { padding-left: calc(50% - var(--wu) * 50 + 0.45rem); padding-right: 0.75rem; }
-  .landing .fight h2 { position: absolute; left: var(--side); top: 0; width: calc(50% - var(--wu) * 110 - var(--side) - 0.6rem); font-size: 1.5rem; }
-  .landing .fight__text p { max-width: none; margin-top: 0; font-size: 0.875rem; line-height: 1.27; text-wrap: pretty; }
+  .landing .fight .fight__text {
+    --ml: calc(50vw - var(--wu) * 50 + 0.7rem);
+    --W: calc(100vw - var(--ml) - 0.75rem);
+    --pw: calc(var(--W) * 0.075);
+    position: relative; top: calc(var(--wu) * -42); box-sizing: border-box; width: var(--W); margin-left: var(--ml);
+    padding: 0.5rem 0.6rem 0.7rem; border-radius: 0.5rem; background: var(--color-sign-green); box-shadow: inset 0 -0.25rem 0 var(--color-sign-green-edge);
+  }
+  .landing .fight .fight__text h2 { position: static; width: auto; max-width: none; margin: 0; font-size: 1.375rem; }
+  .landing .fight .fight__text p { max-width: none; margin: 0.15rem 0 0; font-size: 0.75rem; font-weight: 700; line-height: 1.25; text-wrap: pretty; }
+  .landing .fight__post { top: 100%; height: calc(var(--W) * 0.04); }
+}
+@media (max-width: 24rem) {
+  .landing .fight .fight__text { --ml: calc(50vw - var(--wu) * 50 + 1.2rem); top: calc(var(--wu) * -62); padding-bottom: 0.6rem; }
+  .landing .fight .fight__text h2 { font-size: 1.25rem; }
+  .landing .fight .fight__text p { font-size: 0.6875rem; line-height: 1.22; }
 }

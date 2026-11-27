@@ -12,7 +12,7 @@ class PrizeCatalogueTest < ActiveSupport::TestCase
     %i[all paid free_signup keys find active reload!].each { |name| assert_respond_to Prize, name }
     assert_equal %i[key name description coins emoji image tier free_signup active position requires_shipping], Prize.members
     prize = Prize.find("tshirt")
-    assert_equal [ "Battletown T-shirt", 50, "shop", false, true ], [ prize.name, prize.coins, prize.tier, prize.free_signup?, prize.active? ]
+    assert_equal [ "8BitDo Pro 2", 50, "shop", false, true ], [ prize.name, prize.coins, prize.tier, prize.free_signup?, prize.active? ]
     assert_equal 5, prize.hours
     assert_equal "5 hours", prize.hours_text
     assert_nil prize.image
@@ -65,7 +65,7 @@ class PrizeCatalogueTest < ActiveSupport::TestCase
     user.display_name = "Someone else"
     assert_predicate user, :valid?, "other edits do not trip over the archived pick"
 
-    assert_predicate Order.new(user: user, prize_key: "keychain", prize_name: "Keychain", coins: 30, kind: "purchase", idempotency_key: "k"), :valid?
+    assert_predicate Order.new(user: user, prize_key: "keychain", prize_name: "8BitDo Ultimate 2C", coins: 30, kind: "purchase", idempotency_key: "k"), :valid?
     assert_not_predicate Order.new(user: user, prize_key: "nope", prize_name: "Nope", coins: 30, kind: "purchase", idempotency_key: "k"), :valid?
   end
 

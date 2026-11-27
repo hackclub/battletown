@@ -1,3 +1,11 @@
+# PLACEHOLDER PRIZES, REPLACE BEFORE LAUNCH. The nine paid prizes below (names, descriptions and the pictures under
+# app/assets/images/prizes/placeholder/) are borrowed from the Savepoint program's lineup (hackclub/savepoint: Prize::PRICED and
+# app/assets/images/save_point/prizes/). Name and picture are paired as Savepoint pairs them; the description is Savepoint's
+# own "kind" line. The coins are still Battletown's own, one slot each. They are NOT Battletown's real prizes: swap in the real
+# names, descriptions, pictures and prices before launch, and delete the placeholder/ folder. The live catalogue is the
+# shop_items table (staff edit it at /admin/shop), so the same swap is needed there: the placeholder pictures only reach the
+# running site once they are uploaded on those rows, because `image:` below is not read by the seed.
+#
 # THE DEFAULT SEED OF THE SHOP CATALOGUE, not the live catalogue. The live items are rows of the `shop_items` table, edited by
 # staff at /admin/shop (names, descriptions, coins, pictures, order, archiving) with no deploy. This file is read only:
 #   - by ShopItems::Seed (the migration that creates the table, `db:seed`, `bin/rails shop_items:import`), which ADDS items
@@ -15,67 +23,67 @@
 default: &default
   prizes:
     - key: sticker_pack
-      name: Sticker pack
-      description: A pack of Hack Club stickers.
+      name: Redragon K617
+      description: 60% keyboard
       coins: 20
       emoji: "🏷️"
-      image: null
+      image: prizes/placeholder/redragon-k617.webp
       tier: shop
     - key: custom_sticker
-      name: Custom Battletown sticker
-      description: Limited-run sticker, designed for this program.
+      name: 8BitDo Micro
+      description: Pocket controller
       coins: 10
       emoji: "✨"
-      image: null
+      image: prizes/placeholder/8bitdo-micro.webp
       tier: shop
     - key: tshirt
-      name: Battletown T-shirt
-      description: Printed T-shirt.
+      name: 8BitDo Pro 2
+      description: Hall effect controller
       coins: 50
       emoji: "👕"
-      image: null
+      image: prizes/placeholder/8bitdo-pro-2.webp
       tier: shop
     - key: enamel_pin
-      name: Enamel pin
-      description: Hard enamel pin.
+      name: Attack Shark X3
+      description: Wireless mouse
       coins: 40
       emoji: "📍"
-      image: null
+      image: prizes/placeholder/attack-shark-x3.webp
       tier: shop
     - key: keychain
-      name: Keychain
-      description: Acrylic keychain.
+      name: 8BitDo Ultimate 2C
+      description: Hall effect controller
       coins: 30
       emoji: "🔑"
-      image: null
+      image: prizes/placeholder/8bitdo-ultimate-2c.webp
       tier: shop
     - key: poster
-      name: Poster
-      description: Boss art poster.
+      name: Logitech G203
+      description: Gaming mouse
       coins: 40
       emoji: "🖼️"
-      image: null
+      image: prizes/placeholder/logitech-g203.webp
       tier: shop
     - key: orpheus_plushie
-      name: Orpheus plushie
-      description: Reserved for high-quality projects.
+      name: 8BitDo Ultimate 2
+      description: Wireless controller
       coins: 60
       emoji: "🦖"
-      image: null
+      image: prizes/placeholder/8bitdo-ultimate-2.webp
       tier: shop
     - key: mechanical_keyboard
-      name: Mechanical keyboard
-      description: Placeholder big prize.
+      name: Keychron K2
+      description: Wireless mechanical keyboard
       coins: 300
       emoji: "⌨️"
-      image: null
+      image: prizes/placeholder/keychron-k2.webp
       tier: shop
     - key: headphones
-      name: Headphones
-      description: Placeholder big prize.
+      name: Aula F75
+      description: Gasket-mount keyboard
       coins: 500
       emoji: "🎧"
-      image: null
+      image: prizes/placeholder/aula-f75.webp
       tier: shop
     - key: signup_sticker
       name: Free Battletown sticker

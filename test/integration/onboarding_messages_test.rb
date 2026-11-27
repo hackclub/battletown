@@ -112,10 +112,7 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     step("schedule", coding_time: "", time_zone: "")
     assert_response :unprocessable_content
     assert_equal [ "Choose a time to code", "Choose your time zone", "Pick at least one day" ].sort, errors_text.sort
-    assert_select ".onboarding__errors a[href='#user_day_monday']", "Pick at least one day"
-    assert_select "#days-error", "Pick at least one day"
-    assert_select "#user_coding_time-error", "Choose a time to code"
-    assert_select "#user_time_zone-error", "Choose your time zone"
+    assert_select "#user_time_zone-error", "Choose your time zone" # the first-run form has no day or time fields to point at
     refute_old_wording
   end
 
@@ -135,8 +132,6 @@ class OnboardingMessagesTest < ActionDispatch::IntegrationTest
     anonymous_through("schedule")
     step("schedule", coding_day_names: %w[monday friday], coding_time: "18:00", time_zone: "UTC", coding_times: { "monday" => "25:99", "friday" => "09:00" })
     assert_equal [ "Check Monday's time: use something like 5:30 pm" ], errors_text
-    assert_select "#day-times-error", "Check Monday's time: use something like 5:30 pm"
-    assert_select "input#user_coding_times_monday[aria-invalid=true][aria-describedby~=day-times-error]"
     refute_old_wording
   end
 
