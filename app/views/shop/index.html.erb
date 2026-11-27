@@ -49,11 +49,7 @@
       <% @prizes.each do |prize| %>
         <li class="card card--chunky shop-item">
           <div class="shop-item__art">
-            <% if prize.image.present? %>
-              <%= image_tag prize.image, alt: "", class: "shop-item__image" %>
-            <% else %>
-              <span class="shop-item__emoji" aria-hidden="true"><%= prize.emoji %></span>
-            <% end %>
+            <%= render "shared/prize_art", image: prize.image, emoji: prize.emoji, image_class: "shop-item__image", emoji_class: "shop-item__emoji" %>
           </div>
           <h3 class="card__title shop-item__name"><%= prize.name %></h3>
           <p class="shop-item__description"><%= prize.description %></p>

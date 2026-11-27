@@ -8,11 +8,7 @@
 
   <div class="card card--chunky shop-confirm">
     <div class="shop-item__art shop-confirm__art">
-      <% if @sticker.image.present? %>
-        <%= image_tag @sticker.image, alt: "", class: "shop-item__image" %>
-      <% else %>
-        <span class="shop-item__emoji" aria-hidden="true"><%= @sticker.emoji %></span>
-      <% end %>
+      <%= render "shared/prize_art", image: @sticker.image, emoji: @sticker.emoji, image_class: "shop-item__image", emoji_class: "shop-item__emoji" %>
     </div>
     <h2 class="card__title"><%= @sticker.name %></h2>
     <p class="shop-confirm__description"><%= @sticker.description %></p>

@@ -136,11 +136,7 @@
         <% @prizes.each do |prize| %>
           <% art = prize_art(prize) %>
           <li class="prize">
-            <% if art %>
-              <%= image_tag art, alt: "", loading: "lazy", decoding: "async" %>
-            <% else %>
-              <span class="prize__emoji" aria-hidden="true"><%= prize.emoji %></span>
-            <% end %>
+            <%= render "shared/prize_art", image: art, emoji: prize.emoji, image_class: nil, emoji_class: "prize__emoji", image_options: { loading: "lazy", decoding: "async" } %>
             <div class="prize__label"><h3><%= prize.name %></h3><span class="prize__hours"><%= prize.hours_text %></span></div>
           </li>
         <% end %>
