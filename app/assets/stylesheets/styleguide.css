@@ -16,7 +16,8 @@
 .sg-demo { display: grid; gap: var(--space-4); padding: var(--space-4); border: 2px dashed var(--color-ink-blue); border-radius: var(--radius-md); }
 .sg-demo--tight { gap: var(--space-2); }
 .sg-demo > * { min-width: 0; max-width: 100%; }
-.sg-demo .cta { --cta-size: clamp(1.5rem, 8vw, 3rem); }
+.sg-slab { font: 400 1.625rem/1 var(--font-display); letter-spacing: -0.05em; }
+.sg-slab--blue { --slab-face: var(--color-blue); --slab-base: var(--color-blue-edge); }
 .sg-demo .site-header { border-radius: var(--radius-md); overflow: visible; }
 
 /* Colour swatches */
