@@ -353,10 +353,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select ".toggle input.toggle__input[type=radio][name='user[project_kind]']", User::OFFERED_PROJECT_KINDS.size
 
     get onboarding_step_path("schedule")
-    assert_select "legend", "Which days do you want to code?"
-    assert_select "label[for=user_coding_time]", "What time works best?"
-    assert_select ".days .toggle input[type=checkbox][name='user[coding_day_names][]']", 7
-    assert_select ".days button.day-all", "Every day"
+    assert_select "legend", "Daily pace"
+    assert_select ".pace-choices button[name='user[pace_minutes]']", 4
 
     get onboarding_step_path("account")
     assert_select "label[for=user_referral_source]", /How did you hear about us/
@@ -376,8 +374,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "#user_time_zone-error.field__error", /Choose your time zone from the list/
 
     step("schedule", coding_time: "18:00", time_zone: "UTC")
-    assert_select ".onboarding__errors a[href='#user_day_monday']", "Pick at least one day"
-    assert_select "fieldset[aria-describedby=days-error] #days-error"
+    assert_select ".onboarding__errors", /Pick at least one day/ # the first-run form always sends days; the server still refuses none
   end
 
   test "steps with a required choice wire Continue to it, described by the step's own sentence, and the server still validates" do
@@ -398,8 +395,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
 
     finish_through(user, "project")
     get onboarding_step_path("schedule")
-    assert_select "form[data-controller~=required-choice] input.day__input[data-required-choice-target=input]", 7
-    assert_select "button[data-required-choice-target=submit][aria-describedby=onboarding-lead]"
+    assert_select "form .pace-choices button[type=submit][name='user[pace_minutes]']", 4 # a tap on a choice is the answer: no Continue to wire
   end
 
   test "a missing prize or project type is reported against the first option" do

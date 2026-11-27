@@ -182,6 +182,27 @@ module OnboardingsHelper
 
   def day_label(day) = day.capitalize
 
+  # The pace question's choices, in minutes a coding day (all are in User::PACES).
+  ONBOARDING_PACES = [ 30, 60, 120, 180 ].freeze
+  # What the days and time are before the person has chosen any: every day at 6 pm. The pace step does not ask for them
+  # but the schedule still needs them (see OnboardingsController REQUIRED), so they are sent with the answer.
+  DEFAULT_CODING_TIME = "18:00".freeze
+
+  # Whole coding days the prize takes at `minutes` a day, from the shop price and the base coins-per-hour rate (no bonus).
+  # The same sum the dashboard's pace line makes for a new person on a seven-day plan (Dashboard::PrizePace).
+  def onboarding_days_to_prize(prize, minutes)
+    return unless prize && prize.coins.to_i.positive?
+
+    seconds = Rational(prize.coins * 3600, Game::Config.current.coins_per_hour)
+    [ (seconds / (minutes * 60)).ceil, 1 ].max
+  end
+
+  # "About 14 days of coding" for a prize at a pace; nil when there is no paid prize to count toward.
+  def onboarding_days_text(prize, minutes)
+    days = onboarding_days_to_prize(prize, minutes)
+    "About #{pluralize(days, 'day')} of coding" if days
+  end
+
   # "1 hour 30 minutes" for a daily pace given in minutes (the select's option text).
   def pace_text(minutes)
     hours, rest = minutes.divmod(60)

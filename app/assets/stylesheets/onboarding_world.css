@@ -399,3 +399,12 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .onboarding-page a:not(.btn, .onboarding-top__back) { color: var(--color-link); text-decoration: underline; text-underline-offset: 0.15em; }
 .onboarding-page a:not(.btn, .onboarding-top__back):hover { color: var(--color-link-hover); }
 .onboarding-page .check .field > label { font-weight: 700; }
+
+/* ---- Pace: a few big choices, each a submit button in the age question's card style, with what it means for the prize ---- */
+.pace-choices { display: grid; gap: var(--ob-gap); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 40rem) { .pace-choices { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.pace-choice { --age-min-h: clamp(5.5rem, 16vh, 8rem); display: grid; align-content: center; justify-items: center; gap: var(--space-1); text-align: center; font-size: clamp(1.125rem, 2.8vh, 1.5rem); }
+.pace-choice__time { line-height: 1.1; }
+.pace-choice__days { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; color: var(--color-ink-blue); line-height: 1.2; }
+.pace-choice[aria-pressed="true"] { --age-edge-color: var(--color-yellow-edge); background: var(--color-yellow); }
+.onboarding__panel > form:has(.pace-choices) { flex: none; }
