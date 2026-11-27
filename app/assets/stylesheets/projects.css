@@ -1,6 +1,5 @@
 /* Projects: list, new/edit form, Hackatime links and the "is this yours?" callout. Only what differs from the shared
    components (components.css); tokens only. Ships reuse the header, actions and list classes. */
-.projects--narrow { max-width: 48rem; }
 .projects > * { min-width: 0; }
 
 .projects-header {

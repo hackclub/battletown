@@ -20,7 +20,7 @@
     <div class="admin-grid grid grid--2">
       <section class="card admin-panel" aria-labelledby="project-about">
         <h2 id="project-about" class="card__title">About the project</h2>
-        <dl class="admin-dl">
+        <dl class="dl">
           <dt>Owner</dt><dd><%= admin_owner_name(project.user) %></dd>
           <dt>Type</dt><dd><%= project_kind_info(project.kind)[:name] %></dd>
           <dt>Status</dt><dd><%= project.status.humanize %></dd>

@@ -2,7 +2,6 @@
    (.card, .badge, .btn, .page-header); this file only holds what those classes cannot do: the seven day dots and the
    week rows. Every state is also said in words (a visually hidden sentence per dot, the count, the message); the glyph
    shapes differ per state so the dots do not rely on colour alone. Tokens only. */
-.merch { max-width: 48rem; }
 .merch-note { margin: 0 0 var(--space-3); color: var(--color-text-muted); }
 
 /* The dashboard card sits across the whole row when there is room. */

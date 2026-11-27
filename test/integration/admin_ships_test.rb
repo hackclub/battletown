@@ -146,14 +146,14 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
     travel_to(NOW) { get "/admin/ships/#{@ship.id}" }
     assert_response :success
     assert_select ".admin-only h1", "Review: Cow Game"
-    assert_select ".admin-dl", text: /Casey Teen/
-    assert_select ".admin-dl", text: /Needs submission/
-    assert_select ".admin-dl", text: /coins stay locked until verified/
-    assert_select ".admin-dl a[href=?]", REPO
-    assert_select ".admin-dl a[href=?]", "https://play.example.com/cows"
-    assert_select ".admin-dl", text: /space-farm/
-    assert_select ".admin-dl", text: /3 hours/
-    assert_select ".admin-dl", text: /Nov 7 to Nov 9/
+    assert_select ".dl", text: /Casey Teen/
+    assert_select ".dl", text: /Needs submission/
+    assert_select ".dl", text: /coins stay locked until verified/
+    assert_select ".dl a[href=?]", REPO
+    assert_select ".dl a[href=?]", "https://play.example.com/cows"
+    assert_select ".dl", text: /space-farm/
+    assert_select ".dl", text: /3 hours/
+    assert_select ".dl", text: /Nov 7 to Nov 9/
     assert_select ".admin-panel", text: /8-day streak, 15% bonus, freeze available/
     assert_select "caption", text: "This teen's other ships"
     assert_select "a[href=?]", "/admin/ships/#{old.id}"
@@ -188,7 +188,7 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
     assert_equal @admin, @ship.reviewer
     assert_equal({ base: 30, bonus: 2, total: 32 }, @ship.coin_breakdown)
     assert_equal 32, Coins::Balance.total(@teen)
-    assert_select ".admin-dl", text: /30 base \+ 2 streak bonus = 32 coins/
+    assert_select ".dl", text: /30 base \+ 2 streak bonus = 32 coins/
     assert_select "form[action$='/approve']", 0
   end
 
@@ -232,7 +232,7 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
     assert_equal "approved", @ship.status
     assert_match(/2026-11-09/, @ship.payout_note)
     assert_equal 30, @ship.coin_breakdown[:base]
-    assert_select ".admin-dl", text: /Payout note/
+    assert_select ".dl", text: /Payout note/
   end
 
   test "an unverified teen's coins are credited by approval" do
@@ -312,7 +312,7 @@ class AdminShipsTest < ActionDispatch::IntegrationTest
     make_admin(@teen) # any admin can read it
     sign_in_as @teen
     get "/admin/ships/#{@ship.id}"
-    assert_select ".admin-dl", text: /a former reviewer/
+    assert_select ".dl", text: /a former reviewer/
   end
 
   test "decisions do not write names, emails or ship text to the request log" do

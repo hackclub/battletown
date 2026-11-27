@@ -23,7 +23,7 @@
 
     <section class="card admin-panel admin-form-card" aria-labelledby="hours-summary">
       <h2 id="hours-summary" class="card__title">Summary</h2>
-      <dl class="admin-dl">
+      <dl class="dl">
         <dt>Person</dt><dd><%= admin_person_name(@user.display_name, @user.id) %></dd>
         <dt>Date</dt><dd><%= adjustment.local_date.strftime("%A %-d %B %Y") %></dd>
         <dt>Change</dt><dd><strong><%= adjustment.add? ? "Add" : "Take off" %> <%= admin_duration(adjustment.seconds.abs) %></strong></dd>
