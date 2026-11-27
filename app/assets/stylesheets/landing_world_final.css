@@ -22,72 +22,28 @@
   --o: 0;
   position: absolute; left: 0; right: 0; top: calc(var(--wu) * -80); bottom: 0;
   clip-path: polygon(
-    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * (180.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -788) calc(var(--wu) * (180.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -740.5) calc(var(--wu) * (170.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -696.5) calc(var(--wu) * (165.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -694.5) calc(var(--wu) * (163.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -692) calc(var(--wu) * (163.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -653.5) calc(var(--wu) * (157.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -347.5) calc(var(--wu) * (120.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -293) calc(var(--wu) * (112.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -239) calc(var(--wu) * (101.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -231.5) calc(var(--wu) * (102.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -222.5) calc(var(--wu) * (109.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -212) calc(var(--wu) * (114.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -200) calc(var(--wu) * (117.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -177.5) calc(var(--wu) * (121.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -154) calc(var(--wu) * (123.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -124.5) calc(var(--wu) * (124.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -87.5) calc(var(--wu) * (120.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -84) calc(var(--wu) * (138.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -73) calc(var(--wu) * (139.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -49.5) calc(var(--wu) * (137.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -46) calc(var(--wu) * (138.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -43.5) calc(var(--wu) * (137.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -43.5) calc(var(--wu) * (131.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -42) calc(var(--wu) * (129.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -36) calc(var(--wu) * (127.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -35.5) calc(var(--wu) * (124.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -27.5) calc(var(--wu) * (113.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -16) calc(var(--wu) * (88.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -8) calc(var(--wu) * (72.50 + var(--o, 0))),
-    calc(50% + var(--wu) * -6) calc(var(--wu) * (71.00 + var(--o, 0))),
-    calc(50% + var(--wu) * -5) calc(var(--wu) * (66.00 + var(--o, 0))),
-    calc(50% + var(--wu) * 29) calc(var(--wu) * (74.00 + var(--o, 0))),
-    calc(50% + var(--wu) * 86) calc(var(--wu) * (85.00 + var(--o, 0))),
-    calc(50% + var(--wu) * 139.5) calc(var(--wu) * (91.50 + var(--o, 0))),
-    calc(50% + var(--wu) * 144) calc(var(--wu) * (90.50 + var(--o, 0))),
-    calc(50% + var(--wu) * 146) calc(var(--wu) * (91.50 + var(--o, 0))),
-    calc(50% + var(--wu) * 155.5) calc(var(--wu) * (91.00 + var(--o, 0))),
-    calc(50% + var(--wu) * 158.5) calc(var(--wu) * (92.50 + var(--o, 0))),
-    calc(50% + var(--wu) * 165.5) calc(var(--wu) * (89.00 + var(--o, 0))),
-    calc(50% + var(--wu) * 290) calc(var(--wu) * (88.50 + var(--o, 0))),
-    calc(50% + var(--wu) * 377.5) calc(var(--wu) * (91.00 + var(--o, 0))),
-    calc(50% + var(--wu) * 457.5) calc(var(--wu) * (95.00 + var(--o, 0))),
-    calc(50% + var(--wu) * 510.5) calc(var(--wu) * (96.00 + var(--o, 0))),
-    calc(50% + var(--wu) * 515.5) calc(var(--wu) * (98.50 + var(--o, 0))),
-    calc(50% + var(--wu) * 519.5) calc(var(--wu) * (96.50 + var(--o, 0))),
-    calc(50% + var(--wu) * 787.5) calc(var(--wu) * (98.50 + var(--o, 0))),
-    max(100%, calc(50% + var(--wu) * 1288)) calc(var(--wu) * (98.50 + var(--o, 0))),
+    min(0px, calc(50% + var(--wu) * -1288)) calc(var(--wu) * (79 + var(--o, 0))),
+    calc(50% + var(--wu) * -788) calc(var(--wu) * (64.5 + var(--o, 0))),
+    calc(50% + var(--wu) * -638) calc(var(--wu) * (55 + var(--o, 0))),
+    calc(50% + var(--wu) * -488) calc(var(--wu) * (48 + var(--o, 0))),
+    calc(50% + var(--wu) * -338) calc(var(--wu) * (42 + var(--o, 0))),
+    calc(50% + var(--wu) * -188) calc(var(--wu) * (37 + var(--o, 0))),
+    calc(50% + var(--wu) * 0) calc(var(--wu) * (31.5 + var(--o, 0))),
+    calc(50% + var(--wu) * 162) calc(var(--wu) * (27.5 + var(--o, 0))),
+    calc(50% + var(--wu) * 312) calc(var(--wu) * (25 + var(--o, 0))),
+    calc(50% + var(--wu) * 512) calc(var(--wu) * (22.5 + var(--o, 0))),
+    calc(50% + var(--wu) * 712) calc(var(--wu) * (20.5 + var(--o, 0))),
+    calc(50% + var(--wu) * 787.5) calc(var(--wu) * (19 + var(--o, 0))),
+    max(100%, calc(50% + var(--wu) * 1288)) calc(var(--wu) * (16 + var(--o, 0))),
     max(100%, calc(50% + var(--wu) * 1288)) 100%,
     min(0px, calc(50% + var(--wu) * -1288)) 100%);
 }
-.landing .world--final .world__shore.shore--sand { clip-path: none; background: rgb(235 213 131); bottom: auto; height: calc(var(--wu) * 400); } /* the painting's flat sand (235,213,131) under the edge, from the box top down past its lowest point: the wall's silhouette dips below the section top */
 .landing .world--final .shore--air { background: #d0e5ee; overflow: hidden; }
-/*
- * THE WALL ENDING. The sky starts at the bottom edge of one run of the plateau's own wall (script/export_landing_world.py,
- * "6b"): the whole painting width, at the painting's scale (3152 canvas px = 1576 wu, never enlarged, mirrored, repeated or stretched),
- * recolored into the sand family. The sand is a flat fill that runs down behind the wall, and the clip polygon below (the wall's own painted bottom edge, 1.5 wu inside it)
- * starts the sky, so no sky can show between sand and wall. The piece's top sits 2 wu below the box top. No cast shadow: nothing is under it but sky.
- */
-.landing .world--final .final__wall {
-  position: absolute; left: 50%; top: calc(var(--wu) * 2); width: calc(var(--wu) * 1576); height: auto; max-width: none; translate: -50% 0; pointer-events: none;
-}
-.landing .world--final .final__wall { top: calc(var(--wu) * -78); }
-/* (The three faint darker-sand strips inside the lip are gone: the real wall ending gives the edge its depth.) */
-/* The wall's left diagonal drops the edge about 50 wu lower than the old tilt did, so the heading starts 30 wu lower to stay clear of it. */
-.landing .final .slab > .in { padding-top: calc(clamp(2.5rem, 5vw, 4.5rem) + var(--wu) * 30); }
+/* Darker sand just inside the lip: three strips, each its own edge lifted 10, 6 and 3 design px, drawn under the sky so only the strip above the edge shows. */
+.landing .world--final .shore--shade { background: rgba(150, 105, 20, 0.07); }
+.landing .world--final .shore--shade1 { --o: -10; }
+.landing .world--final .shore--shade2 { --o: -6; }
+.landing .world--final .shore--shade3 { --o: -3; }
 
 /* The sky piece, 1576 wu wide and 601 tall; its flat top 80 wu start above the edge's highest point (box y 19), so the brushwork starts at the edge. */
 .landing .world--final .island__skybox { position: absolute; left: 50%; top: calc(var(--wu) * -66); width: calc(var(--wu) * 1576); height: calc(var(--wu) * 601); translate: -50% 0; }
