@@ -2,7 +2,7 @@
    bar beside it (aria-hidden: the number is the real value). Tokens only. */
 .admin-metrics__section { display: grid; gap: var(--space-3); }
 .admin-metrics__section > * { margin: 0; }
-.admin-metrics__definition { max-width: 48rem; font-size: var(--text-sm); }
+.admin-metrics__definition { max-width: 70ch; font-size: var(--text-sm); }
 .admin-metrics__table tbody th { white-space: nowrap; }
 .admin-metrics__bar-cell { width: 30%; }
 .admin-metrics__bar {

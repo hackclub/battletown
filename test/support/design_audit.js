@@ -155,7 +155,8 @@
           const bw = [px(cs.borderTopWidth), px(cs.borderRightWidth), px(cs.borderBottomWidth), px(cs.borderLeftWidth)];
           const L = kr.left - r.left - bw[3], T = kr.top - r.top - bw[0], B = r.bottom - kr.bottom - bw[2];
           const near = [["left", L], ["top", T], ["bottom", B]].filter(([, v]) => v >= 0 && v < 64);
-          if (near.length >= 3 || (near.length === 2 && kr.height >= (r.height - bw[0] - bw[2]) * 0.6)) {
+          // only a child that spans most of the card's height (a picture tile beside text), not one with a caption under it
+          if (kr.height >= (r.height - bw[0] - bw[2]) * 0.6 && near.length >= 2) {
             const vals = near.map(([, v]) => v);
             if (Math.max(...vals) - Math.min(...vals) > 2) {
               add("even-inset", k, near.map(([n, v]) => `${n} ${fmt(v)}px`).join(", "), "equal gaps on the sides it sits near", `child of ${shortSel(el)}`);

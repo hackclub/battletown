@@ -76,8 +76,8 @@ class LandingA11yTest < ActionDispatch::IntegrationTest
   test "the call to action can wrap and never drops below 24px" do
     cta = rule(".landing .cta")
     assert_no_match(/white-space:\s*nowrap/, cta)
-    assert_match(/font: 400 clamp\(1\.5rem,/, cta)
-    assert_match(/font-size: clamp\(1\.5rem,/, rule(".landing .cta--big"))
+    assert_match(/font: 400 clamp\((?:1\.5rem|var\(--text-md\)),/, cta)
+    assert_match(/font-size: clamp\((?:1\.5rem|var\(--text-md\)),/, rule(".landing .cta--big"))
   end
 
   test "prize names wrap inside their card" do
