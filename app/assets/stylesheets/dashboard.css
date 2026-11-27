@@ -98,7 +98,7 @@
 }
 
 .stage__prize-area { display: grid; gap: var(--space-3); align-content: start; justify-items: start; justify-self: start; align-self: start; max-width: 15rem; }
-.stage__prize { display: grid; justify-items: center; gap: var(--space-1); justify-self: start; color: var(--color-bg); text-decoration: none; }
+.stage__prize { display: grid; justify-items: start; gap: var(--space-1); justify-self: start; color: var(--color-bg); text-decoration: none; }
 .stage__prize-label { font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); line-height: 1; }
 .stage__prize-box {
   display: grid;

@@ -123,7 +123,7 @@
 .admin-boss-notice { margin: 0; }
 
 /* Tap targets (rule 23): a link that stands on its own line in staff pages is at least --tap-size tall, so it is easy to hit. */
-.admin-only .card__title a, .admin-only .table th a, .admin-only--unlabelled > a, .alert > a {
+.admin-only .card__title a, .admin-only th a, .admin-only--unlabelled > a, .alert > a {
   display: inline-flex;
   align-items: center;
   min-block-size: var(--tap-size);

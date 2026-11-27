@@ -9,6 +9,8 @@
 
 /* Balance banner: the map-blue band with the spendable coins big. Locked is written out and dashed, never colour alone. */
 .shop-balance {
+  --radius: var(--radius-xl);
+  --pad: var(--space-6);
   position: relative;
   display: grid;
   gap: var(--space-3);
@@ -19,6 +21,7 @@
 }
 .shop-balance--locked { border: 3px solid transparent; border-bottom: var(--border-chunky) solid var(--color-card-blue); }
 .shop-balance > * { position: relative; margin: 0; }
+.shop-balance .shop-lock { border-radius: max(var(--radius-inner-min), calc(var(--radius) - var(--pad))); } /* the note card is concentric with the banner around it */
 .shop-balance__art { display: none; position: absolute; right: var(--space-8); bottom: var(--space-4); width: 9rem; height: auto; }
 .shop-balance__title { font-size: var(--text-lg); }
 .shop-balance__figures { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-8); margin: 0; }

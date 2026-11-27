@@ -42,6 +42,8 @@
 
 /* Poetsen One only ships a regular weight; stop browsers faking a bold for headings and the brand link. */
 h1, h2, h3, h4, .site-header__brand {
-  font-weight: 400;
   font-synthesis-weight: none;
 }
+.site-header__brand { font-weight: 400; }
+/* The 400 weight for h1-h4 lives in application.css, inside the base layer, so a heading that uses the body font (a card title)
+   can set its own weight: an unlayered rule here would beat every layered one. */
