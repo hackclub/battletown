@@ -4,41 +4,39 @@
  * Everything is in cascade layers (see the top of application.css): page stylesheets and staff.css are not layered and
  * always win, so a page only writes what differs from these defaults.
  * Class reference with usage snippets: projects/battletown/specs/contract.md ("Design system"). Live preview: /dev/styleguide (development).
- * Interactive states: hover = slight brightness lift and the slab grows taller (base fixed), press = the face drops and the chunky edge shrinks to a sliver, focus-visible
+ * Interactive states: flat by default (hover one step darker, press one more); the sparing .btn--raised variant lifts its face over a fixed base. focus-visible
  * = the 3px --color-focus ring, disabled = 55% opacity. Motion only under prefers-reduced-motion: no-preference.
  */
 @layer reset, base, layout, components, utilities;
 
 /* ------------------------------------------------------------------ Buttons */
 @layer components {
+  /* FLAT by default (Armand, 2026-11-27: the animated 3D button is for sparing use): a solid fill in the button's own color, no edge, no
+     shadow, no movement. Hover is one step darker, pressed one more, through an inset fill (hard, zero blur) so the box never changes.
+     The raised slab is the opt-in .btn--raised below (and the landing .cta). */
   .btn {
     --btn-bg: var(--color-bg);
     --btn-fg: var(--color-ink-blue);
-    --btn-border: var(--btn-bg); /* no outline: the border is the face's own color, so the edge below is the only rim */
-    --btn-edge: var(--color-cream-edge);
+    --btn-border: var(--btn-bg); /* no outline: the border is the fill's own color */
+    --btn-edge: var(--color-cream-edge); /* used only by .btn--raised */
     --btn-edge-size: 0.2em;
-    --btn-rim: 2px; /* the face-colored line under the edge (the border's own color), 0 where there is no border */
+    --btn-rim: 2px;
     --btn-min-h: var(--tap-size);
-    --btn-pt: 0.4em;
+    --btn-pt: 0.45em;
     --btn-px: 1.25em;
-    --btn-pb: 0.5em;
-    --btn-push: round(nearest, var(--press), 1px); /* --press in whole pixels: face up, edge down by the same amount */
-    position: relative;
+    --btn-pb: 0.45em;
+    --btn-step: 0 0 0 999px rgb(0 0 0 / 0);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5em;
     min-width: var(--tap-size);
-    /* The box is the FACE: the edge and the rim hang below it as a shadow (margin keeps the outer size the same as ever), the whole
-       slab is the old height. Nothing here changes on hover or press. */
-    min-height: calc(var(--btn-min-h) - var(--btn-edge-size) - var(--btn-rim));
-    margin-bottom: calc(var(--btn-edge-size) + var(--btn-rim));
-    padding: var(--btn-pt) var(--btn-px) max(0px, calc(var(--btn-pb) - var(--btn-edge-size) - var(--btn-rim)));
+    min-height: var(--btn-min-h);
+    padding: var(--btn-pt) var(--btn-px) var(--btn-pb);
     border: 2px solid var(--btn-border);
     border-radius: var(--radius-md);
     background: var(--btn-bg);
-    translate: 0 calc(-1 * var(--btn-push));
-    box-shadow: 0 calc(var(--btn-edge-size) + var(--btn-push)) 0 var(--btn-edge), 0 calc(var(--btn-edge-size) + var(--btn-rim) + var(--btn-push)) 0 var(--btn-border);
+    box-shadow: inset var(--btn-step);
     color: var(--btn-fg);
     font: inherit;
     font-family: var(--font-display);
@@ -50,18 +48,10 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  /* The click area stays where the button rests: an invisible box over the whole slab, moved back by the same amount the face moved,
-     so the pointer resting on the exposed edge never loses hover. (An input cannot have one, so an input.btn does not move.) */
-  .btn::before {
-    content: "";
-    position: absolute;
-    inset: -2px -2px calc(-1 * (var(--btn-edge-size) + var(--btn-rim) + 2px));
-    translate: 0 var(--btn-push);
-  }
-  input.btn { --press-rise: 0px; --press-sink: 0px; }
-  .btn:hover { color: var(--btn-fg); background-image: linear-gradient(rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.07)); } /* a lighter face (the base keeps its color) */
+  .btn:hover:not(:disabled, [aria-disabled="true"]) { color: var(--btn-fg); --btn-step: 0 0 0 999px rgb(0 0 0 / 0.08); }
+  .btn:active:not(:disabled, [aria-disabled="true"]) { --btn-step: 0 0 0 999px rgb(0 0 0 / 0.16); }
 
-  /* Primary: the pink face, cream label, the pink's own darker edge. Use for the one main action of a form or card. */
+  /* Primary: the pink fill, cream label. Use for the one main action of a form or card. */
   .btn--primary {
     --btn-bg: var(--color-primary);
     --btn-fg: var(--color-primary-contrast);
@@ -73,9 +63,9 @@
   .btn--lg, .btn--cta {
     --btn-edge-size: 0.1667em;
     --btn-min-h: 3.5rem;
-    --btn-pt: 0.3em;
+    --btn-pt: 0.35em;
     --btn-px: 1.1em;
-    --btn-pb: 0.4em;
+    --btn-pb: 0.35em;
     border-radius: var(--radius-lg);
     font-size: var(--text-md);
     letter-spacing: var(--tracking-display);
@@ -87,7 +77,7 @@
     --btn-edge: var(--color-pink-edge);
   }
 
-  .btn--sm { --btn-pt: 0.25em; --btn-px: 1em; --btn-pb: 0.35em; font-size: var(--text-sm); }
+  .btn--sm { --btn-pt: 0.3em; --btn-px: 1em; --btn-pb: 0.3em; font-size: var(--text-sm); }
   .btn--block { display: flex; width: 100%; }
 
   .btn--danger {
@@ -103,23 +93,45 @@
     --btn-border: transparent;
     --btn-edge: transparent;
     --btn-fg: var(--color-ink-blue);
-    --btn-edge-size: 0px; /* no edge, so nothing rises or sinks */
-    --btn-rim: 0px;
-    --press-rise: 0px;
-    --press-sink: 0px;
   }
-  .btn--ghost:hover { --btn-bg: var(--color-bg); background-image: none; text-decoration: underline; text-underline-offset: 0.2em; }
+  .btn--ghost:hover:not(:disabled, [aria-disabled="true"]) { --btn-bg: var(--color-bg); --btn-step: 0 0 0 999px rgb(0 0 0 / 0); text-decoration: underline; text-underline-offset: 0.2em; }
+  .btn--ghost:active:not(:disabled, [aria-disabled="true"]) { --btn-step: 0 0 0 999px rgb(0 0 0 / 0.06); }
 
-  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; background-image: none; }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
 
   .btn__arrow, .btn .icon { flex: none; width: 1em; height: 1em; }
 
-  /* Motion only for people who allow it. The slab grows on hover and focus and squashes when pressed; --press feeds the
-     translate, the edge shadow and the click area in .btn above, so the bottom edge never moves. */
+  /* RAISED (opt-in, used sparingly: the landing sign-up buttons and the onboarding "Sign in with Hack Club"; the landing .cta is the same
+     idea in landing.css). A slab: a face on a darker base. The BASE never moves and nothing about it animates: the face translates up
+     on hover (the base shows more) and down when pressed (a sliver is left), and the edge shadow (hard, zero blur) is drawn the same
+     amount lower, both from the one registered length --press (tokens.css), so they change in the same frame and cancel exactly. */
+  .btn--raised {
+    --btn-push: round(nearest, var(--press), 1px);
+    position: relative;
+    min-height: calc(var(--btn-min-h) - var(--btn-edge-size) - var(--btn-rim));
+    margin-bottom: calc(var(--btn-edge-size) + var(--btn-rim)); /* the edge hangs below the box: the outer size is the slab's */
+    padding-bottom: max(0px, calc(var(--btn-pb) + 0.05em - var(--btn-edge-size) - var(--btn-rim)));
+    translate: 0 calc(-1 * var(--btn-push));
+    box-shadow: 0 calc(var(--btn-edge-size) + var(--btn-push)) 0 var(--btn-edge), 0 calc(var(--btn-edge-size) + var(--btn-rim) + var(--btn-push)) 0 var(--btn-border);
+  }
+  /* The click area stays where the slab rests: an invisible box over the whole slab, moved back by the amount the face moved, so a
+     pointer resting on the exposed edge never loses hover. */
+  .btn--raised::before {
+    content: "";
+    position: absolute;
+    inset: -2px -2px calc(-1 * (var(--btn-edge-size) + var(--btn-rim) + 2px));
+    translate: 0 var(--btn-push);
+  }
+  .btn--raised, .btn--raised:hover:not(:disabled, [aria-disabled="true"]), .btn--raised:active:not(:disabled, [aria-disabled="true"]) { --btn-step: 0 0 0 0 transparent; }
+  .btn--raised:hover:not(:disabled, [aria-disabled="true"]) { background-image: linear-gradient(rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.07)); }
+  .btn--raised:disabled, .btn--raised[aria-disabled="true"] { background-image: none; }
+
+  /* Motion only for people who allow it. */
   @media (prefers-reduced-motion: no-preference) {
-    .btn { transition: --press 120ms ease; } /* only --press moves; the face, the edge and the click area all read it */
-    .btn:is(:hover, :focus-visible):not(:disabled, [aria-disabled="true"]) { --press: round(nearest, var(--press-rise), 1px); }
-    .btn:active:not(:disabled, [aria-disabled="true"]) { --press: round(nearest, calc(var(--press-sink) - var(--btn-edge-size)), 1px); }
+    .btn { transition: box-shadow 120ms ease, background-color 120ms ease; }
+    .btn--raised { transition: --press 120ms ease; } /* only --press moves; the face, the edge and the click area all read it */
+    .btn--raised:is(:hover, :focus-visible):not(:disabled, [aria-disabled="true"]) { --press: round(nearest, var(--press-rise), 1px); }
+    .btn--raised:active:not(:disabled, [aria-disabled="true"]) { --press: round(nearest, calc(var(--press-sink) - var(--btn-edge-size)), 1px); }
   }
 }
 

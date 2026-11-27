@@ -35,7 +35,7 @@ class StyleguideTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Battletown style guide"
     assert_select ".dev-only", minimum: 1
-    %w[.btn--primary .btn--cta .btn--danger .btn--ghost .field__error .toggle__input .card--chunky .panel .band--map .badge--success
+    %w[.btn--primary .btn--raised .btn--cta .btn--danger .btn--ghost .field__error .toggle__input .card--chunky .panel .band--map .badge--success
        .progress--boss .progress--goal .progress--prize progress.progress__bar .table .alert--danger .flash--notice .empty
        .site-menu .list].each do |selector|
       assert_select selector, minimum: 1, message: "missing #{selector}"
