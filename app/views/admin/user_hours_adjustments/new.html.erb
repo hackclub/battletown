@@ -10,7 +10,7 @@
     </header>
 
     <% if adjustment.errors.any? %>
-      <%= render "shared/error_summary", title: "Nothing was changed.", id: "adjustment-errors", items: adjustment.errors.full_messages.map { |message| [ message, nil ] } %>
+      <%= render "shared/error_summary", title: "Nothing was changed.", id: "adjustment-errors", css: "admin-form__errors", items: adjustment.errors.full_messages.map { |message| [ message, nil ] } %>
     <% end %>
     <% if @user.id == current_user.id %>
       <div class="alert alert--warning admin-warning" role="note">

@@ -1,7 +1,7 @@
 <%# locals: (quest:, url:, method:, weeks: nil) -%>
 <% config = Quests::Config.current %>
 <% if quest.errors.any? %>
-  <%= render "shared/error_summary", title: "That was not saved", items: quest.errors.full_messages.map { |message| [ message, nil ] } %>
+  <%= render "shared/error_summary", title: "That was not saved", css: "admin-form__errors", items: quest.errors.full_messages.map { |message| [ message, nil ] } %>
 <% end %>
 
 <div class="card admin-form-card">

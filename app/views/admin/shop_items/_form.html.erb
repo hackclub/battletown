@@ -2,7 +2,7 @@
 <% picture = ShopItems::Config.current %>
 <% free = item.free_signup? %>
 <% if item.errors.any? %>
-  <%= render "shared/error_summary", title: "That was not saved", items: item.errors.full_messages.map { |message| [ message, nil ] } %>
+  <%= render "shared/error_summary", title: "That was not saved", css: "admin-form__errors", items: item.errors.full_messages.map { |message| [ message, nil ] } %>
 <% end %>
 
 <div class="admin-shop-edit" data-controller="shop-item-preview" data-shop-item-preview-coins-per-hour-value="<%= Game::Config.current.coins_per_hour %>">

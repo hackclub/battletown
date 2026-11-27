@@ -7,7 +7,7 @@
 <% saved_path = saved_sha ? boss_art_path(boss.id, v: saved_sha.first(12)) : "bosses/#{boss.art_key}.webp" %>
 <% saved_alt = (boss.art_alt_in_database if saved_sha) || Boss::ARTS[boss.art_key] || "The boss, #{boss.name_in_database}" %>
 <% if boss.errors.any? %>
-  <%= render "shared/error_summary", title: "That was not saved",
+  <%= render "shared/error_summary", title: "That was not saved", css: "admin-form__errors",
         items: boss.errors.map { |error| [ error.full_message, (error.options[:target] || targets.fetch(error.attribute, (error.message.include?('overlap') ? 'boss_starts_on' : 'boss_name'))) ] } %>
 <% end %>
 

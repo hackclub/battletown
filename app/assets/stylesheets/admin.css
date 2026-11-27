@@ -80,7 +80,7 @@
 /* Forms: boss edit, approve, reject, order filter, dev hours. */
 .admin-form-card, .dev-form { max-width: 32rem; }
 .admin-form__hint { display: block; }
-.admin-form__errors { margin: 0; max-width: 32rem; } /* the warning note above the shop item form */
+.admin-form__errors { margin: 0; max-width: 32rem; } /* the width of the form card: the error box above it and the warning note above the shop item form */
 .admin-form--inline { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-3) var(--space-4); max-width: none; }
 .admin-form--inline .field { flex: 1 1 12rem; }
 .admin-form--inline .btn { flex: none; }
