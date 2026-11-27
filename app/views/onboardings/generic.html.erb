@@ -6,7 +6,7 @@
   <%= render layout: "onboardings/frame", locals: { step: @step, title: title, encouragement: "", show_prize: !Onboarding::Flow::PRIZE_PICTURE_STEPS.include?(@step) } do %>
     <%= form_with url: onboarding_step_path(@step), method: :patch, scope: :answer, class: "info info--#{@step.dasherize}" do %>
       <%= render "onboardings/info/#{@step}" %>
-      <div class="onboarding__actions"><%= button_tag onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div>
+      <div class="onboarding__actions onboarding__actions--center"><%= button_tag onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div>
     <% end %>
   <% end %>
 <% else %>
@@ -21,7 +21,7 @@
         <%= render "onboardings/choice_group", name: (multi ? "answer[values][]" : "answer[value]"), layout: question.layout, multi: multi, auto: !multi,
               options: question.options.map { |option| option.merge(id: "answer_#{@step}_#{option[:value]}", checked: picked.include?(option[:value])) } %>
       <% end %>
-      <% if multi %><div class="onboarding__actions"><%= button_tag onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div><% end %>
+      <% if multi %><div class="onboarding__actions onboarding__actions--center"><%= button_tag onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div><% end %>
     <% end %>
   <% end %>
 <% end %>

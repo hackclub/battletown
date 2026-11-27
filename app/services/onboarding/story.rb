@@ -106,7 +106,7 @@ module Onboarding
       first, second = cfg.reminder_seconds.map { |seconds| (seconds / 3600.0).then { |h| h == h.to_i ? h.to_i : h } }
       lines = {
         "time" => [ "Short on time?", "A project can ship after just #{hours_phrase(min)} of coding." ],
-        "lost" => [ "Losing interest?", "Each boss week runs Friday to Thursday, and Slack reminds you to ship at #{first} and #{second} hours." ]
+        "lost" => [ "Losing motivation?", "Each boss week runs Friday to Thursday, and Slack reminds you to ship at #{first} and #{second} hours." ]
       }
       lines["stuck"] = [ "Getting stuck?", "Code on the same days as your crew and you earn a bonus." ] if team
       picked.filter_map { |value| lines[value] }

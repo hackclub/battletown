@@ -109,8 +109,8 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
     walk_quiz_to("when")
     get onboarding_step_path("when")
     assert_select "h1", "When do you want it?"
-    assert_select ".option-cards--icons input[type=radio]", 3
-    assert_select ".option-card__note", /about \d+ minutes a day/
+    assert_select ".choice-grid--rows input[type=radio]", 3
+    assert_select ".option-row__note", /about \d+ minutes a day/
     answer("when", "two_weeks")
     reach_quiz_step("schedule")
     get onboarding_step_path("schedule")
