@@ -163,4 +163,11 @@
   --container-width: 72rem;
   --container-wide: 90rem; /* landing sections: full-bleed bands with content centred in ~1440px */
   --tap-size: 2.75rem; /* minimum height and width of anything you tap (44px) */
+
+  /* Raised buttons are a slab: a face on a darker edge. The base never moves. On hover the slab gets taller (the face rises by
+     --press-rise, the edge grows by the same amount); pressed, it squashes (the face drops until only --press-sink of edge is left).
+     Each pressable keeps one length, --press (0 at rest), and folds it into its bottom padding, minimum height, bottom margin,
+     translate and edge size, so the bottom of the edge stays on the same line and nothing around it moves. In em: it scales with the label. */
+  --press-rise: 0.15em;
+  --press-sink: 0.06em;
 }
