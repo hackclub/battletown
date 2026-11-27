@@ -6,13 +6,20 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["image"]
 
-  connect() { this.flyIfRecorded() }
+  // Turbo moves this element to the new step on every visit, and a move runs connect again: only its first appearance counts.
+  connect() {
+    const first = !this.element.dataset.shown
+    this.element.dataset.shown = "true"
+    const flies = this.flyIfRecorded()
+    if (first && !flies && !matchMedia("(prefers-reduced-motion: reduce)").matches) this.element.animate([ { opacity: 0 }, { opacity: 1 } ], { duration: 200, easing: "ease" })
+  }
 
   prepare(event) { this.next = event.detail.newBody.querySelector("#onboarding-prize-dock")?.cloneNode(true) }
 
   update() {
     const next = this.next
     this.next = null
+    if (next) this.element.classList.toggle("onboarding-dock--away", next.classList.contains("onboarding-dock--away"))
     if (!next || next.dataset.prizeKey === this.element.dataset.prizeKey) return
     this.element.dataset.prizeKey = next.dataset.prizeKey
     this.element.title = next.title
@@ -24,11 +31,11 @@ export default class extends Controller {
 
   flyIfRecorded() {
     const raw = sessionStorage.getItem("battletown-prize-flight")
-    if (!raw) return
+    if (!raw) return false
     sessionStorage.removeItem("battletown-prize-flight")
     const from = JSON.parse(raw)
-    if (from.key !== this.element.dataset.prizeKey) return
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !this.element.animate) return
+    if (from.key !== this.element.dataset.prizeKey) return false
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !this.element.animate) return false
 
     const to = this.element.getBoundingClientRect()
     const p0 = { x: from.x + from.w / 2 - to.x - to.width / 2, y: from.y + from.h / 2 - to.y - to.height / 2 }
@@ -44,5 +51,6 @@ export default class extends Controller {
       frames.push({ transform: `translate(${x}px, ${y}px) scale(${s0 + (1 - s0) * t})` })
     }
     this.element.animate(frames, { duration: 650, easing: "linear" })
+    return true
   }
 }

@@ -1,0 +1,30 @@
+<%# locals: (prize:, paces:, current:) -%>
+<%# The pace as a flat slider with one stop for each real choice (Onboarding::DailyTime::PACES that finish in time), nothing in between. A native range
+    moves by stop; pace-slider keeps the hidden field `user[pace_minutes]` (the same param the rows posted) in step and shows the finish date for the stop.
+    Without JavaScript the slider stays hidden and the hidden field's default is what Continue sends; the noscript rows let them pick. %>
+<% index = [ paces.index(current).to_i, 0 ].max %>
+<div class="slider" data-controller="pace-slider">
+  <%= hidden_field_tag "user[pace_minutes]", paces[index], id: nil, data: { pace_slider_target: "field" } %>
+  <div class="slider__body" hidden data-pace-slider-target="body">
+    <p class="slider__readout" aria-live="polite" data-pace-slider-target="readout">
+      <strong class="slider__pace" data-pace-slider-target="pace"><%= pace_text(paces[index]) %> a day</strong>
+      <span class="slider__finish" data-pace-slider-target="finish"><%= onboarding_days_text(prize, paces[index]) %></span>
+    </p>
+    <div class="slider__track" data-pace-slider-target="track">
+      <span class="slider__fill" aria-hidden="true"></span>
+      <input type="range" class="slider__input" id="user_pace_minutes" min="0" max="<%= paces.size - 1 %>" step="1" value="<%= index %>"
+             aria-label="Minutes you code on a coding day" data-pace-slider-target="input" data-action="input->pace-slider#change">
+    </div>
+    <ol class="slider__stops" aria-hidden="true">
+      <% paces.each do |minutes| %>
+        <li class="slider__stop" data-pace-slider-target="stop" data-minutes="<%= minutes %>" data-pace="<%= pace_text(minutes) %> a day" data-finish="<%= onboarding_days_text(prize, minutes) %>">
+          <span class="slider__mark"></span><span class="slider__label"><%= pace_text(minutes) %></span>
+        </li>
+      <% end %>
+    </ol>
+  </div>
+  <noscript>
+    <%= render "onboardings/choice_group", name: "user[pace_minutes]", auto: false, options: paces.map { |minutes|
+          { value: minutes, label: pace_text(minutes), detail: onboarding_days_text(prize, minutes), checked: minutes == paces[index], id: "user_pace_minutes_#{minutes}" } } %>
+  </noscript>
+</div>

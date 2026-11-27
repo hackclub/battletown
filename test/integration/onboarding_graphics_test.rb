@@ -71,17 +71,46 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("schedule")
   end
 
-  test "the halfway screen shows a badge and the prize with its hours, and its place is the middle of the progress bar" do
-    begin_quiz(prize: "tshirt")
-    reach_quiz_step("halfway")
-    get onboarding_step_path("halfway")
-    assert_response :success
-    assert_select "h1", "Halfway there"
-    assert_select "svg.medal"
-    assert_select ".medal__line", "8BitDo Pro 2, about 5 hours of coding."
-    assert_select "img.info__prize", 0 # the docked prize is the one picture on the screen
-    position, total = css_select("#onboarding-progress-step").first.text.scan(/\d+/).map(&:to_i)
-    assert_equal (total / 2.0).round, position
+  test "the pace step is a four-stop slider with the stop that meets the wish preselected, and its Continue posts the same param" do
+    begin_quiz(prize: "mechanical_keyboard")
+    reach_quiz_step("when")
+    patch onboarding_step_path("when"), params: { answer: { value: "month" } }
+    reach_quiz_step("schedule")
+    get onboarding_step_path("schedule")
+    assert_select "input[type=range][min='0'][max='2'][step='1'][value='0']", 1 # 30 hours: 1, 2 and 3 hours a day finish in time; a month needs 1 hour
+    assert_select ".slider__stop", 3
+    assert_select ".slider__stop[data-minutes='60'][data-finish^='About 30 days']"
+    assert_select "input[type=hidden][name='user[pace_minutes]'][value='60']", 1
+    assert_select ".onboarding__actions .btn", /Continue/
+    assert_select ".onboarding__encouragement", "You wanted it in a month."
+    assert_no_inline_style
+    patch onboarding_step_path("schedule"), params: { user: { pace_minutes: 120, coding_day_names: %w[monday], coding_time: "18:00", time_zone: "UTC" } }
+    assert_redirected_to onboarding_step_path("pace_date")
+    get onboarding_step_path("schedule")
+    assert_select "input[type=range][value='1']", 1 # going back restores the stop
+  end
+
+  test "the summary shows the next seven days, a bar on each coding day, today marked" do
+    open_step("summary")
+    assert_select ".week .week__day", 7
+    assert_select ".week__day--today", 1
+    assert_select ".week__bar", minimum: 1 # one per saved coding day
+    assert_select ".week__day--boss", 0 # no boss covers today
+    assert_no_inline_style
+  end
+
+  test "the summary strip marks only the saved coding days and flags the day this week's boss ends" do
+    today = Date.current
+    friday = today - ((today.wday - 5) % 7)
+    Boss.create!(name: "Strip Boss", art_key: "placeholder", hp_seconds: 100 * 3600, starts_on: friday, ends_on: friday + 6)
+    begin_quiz
+    reach_quiz_step("schedule", project_kind: "game")
+    patch onboarding_step_path("schedule"), params: { user: { pace_minutes: 60, coding_day_names: %w[monday wednesday], coding_time: "18:00", time_zone: "UTC" } }
+    reach_quiz_step("summary", project_kind: "game")
+    get onboarding_step_path("summary")
+    assert_select ".week__bar", 2
+    assert_select ".week__day--boss", 1
+    assert_select ".week__flag svg", 1
     assert_no_inline_style
   end
 end

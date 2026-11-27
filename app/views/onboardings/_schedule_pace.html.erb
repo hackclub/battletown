@@ -1,6 +1,6 @@
 <%# The first-run schedule step: one question, how long a coding day is. Days and time are not asked: they are sent with
     the answer (the days the person already has, else every day; the time they have, else 6 pm) so the same back end
-    accepts them. The pace is the shared single-choice question: a pick answers and moves on. The time zone is the browser's own, sent in a hidden field. %>
+    accepts them. The pace is a slider with a Continue button (the shared single-choice rows when only one pace is left). The time zone is the browser's own, sent in a hidden field. %>
 <% prize = onboarding_saved_prize if subject.prize_key_in_database.present? %>
 <% paces = onboarding_offered_paces(prize) %>
 <% preselect = (Onboarding::Story.pace_for(onboarding_wish, prize.hours, paces) if prize && onboarding_wish) %>
@@ -12,9 +12,15 @@
   <%= tag.fieldset class: "onboarding__fieldset", aria: onboarding_aria(:pace_minutes, id: "pace").slice(:describedby) do %>
     <legend class="visually-hidden">Daily pace</legend>
     <%= onboarding_field_error(:pace_minutes, id: "pace") %>
-    <%= render "onboardings/choice_group", name: "user[pace_minutes]", options: paces.each_with_index.map { |minutes, index|
-          { value: minutes, label: pace_text(minutes), detail: onboarding_days_text(prize, minutes), checked: (subject.pace_minutes || preselect) == minutes,
-            id: (index.zero? ? "user_pace_minutes" : "user_pace_minutes_#{minutes}") } } %>
+    <% if paces.size > 1 %>
+      <%# The pace as a slider: the saved pace, else the stop that meets their wish, else the smallest. A Continue button sends it. %>
+      <%= render "onboardings/pace_slider", prize: prize, paces: paces, current: (paces.include?(subject.pace_minutes) ? subject.pace_minutes : (preselect || paces.first)) %>
+    <% else %>
+      <%# One pace is all that is left (none finishes in time): nothing to slide, so the one row, as before. %>
+      <%= render "onboardings/choice_group", name: "user[pace_minutes]", options: paces.each_with_index.map { |minutes, index|
+            { value: minutes, label: pace_text(minutes), detail: onboarding_days_text(prize, minutes), checked: (subject.pace_minutes || preselect) == minutes,
+              id: (index.zero? ? "user_pace_minutes" : "user_pace_minutes_#{minutes}") } } %>
+    <% end %>
   <% end %>
 
   <%# No time zone is asked: the browser reports its own, and the server maps and checks it. %>
@@ -22,4 +28,5 @@
   <% if signed_in? && current_user.slack_id.blank? %>
     <p class="alert alert--warning onboarding__note" role="note">Your Hack Club account isn't linked to a Slack account yet, so we can't DM you. Your plan is saved for when it is.</p>
   <% end %>
+  <% if paces.size > 1 %><div class="onboarding__actions onboarding__actions--center"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div><% end %>
 <% end %>

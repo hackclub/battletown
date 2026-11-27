@@ -396,8 +396,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     finish_through(user, "project")
     walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
-    assert_select "form .choice-grid--rows input[type=radio][name='user[pace_minutes]']", 4
-    assert_select "form button.btn", 0
+    assert_select "form input[type=range]", 1 # the pace is the one accepted exception: a four-stop slider with its own Continue
+    assert_select "form .slider__stop", 4
   end
 
   test "a missing prize or project type is reported against the first option" do

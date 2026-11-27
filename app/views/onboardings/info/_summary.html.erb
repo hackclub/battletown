@@ -39,5 +39,20 @@
       </div>
     <% end %>
   </div>
+  <%# The next seven days: the pace each coding day, today marked, and the day this week's boss ends when it falls inside them. %>
+  <% minutes = onboarding_pace_minutes %>
+  <% usual = OnboardingStoryHelper::COMING_WHEN[answers["coding_when"]] %>
+  <ol class="week week--<%= onboarding_bar_step(minutes) %>" aria-label="<%= [ usual, "#{pace_text(minutes)} a day" ].compact.join(", ") %>">
+    <% onboarding_week.each do |day| %>
+      <li class="week__day<%= " week__day--today" if day[:today] %><%= " week__day--boss" if day[:boss_end] %>">
+        <span class="week__flag" aria-hidden="true"><% if day[:boss_end] %><svg viewBox="0 0 16 20" focusable="false"><path class="week__pole" d="M3 2v17"/><path class="week__cloth" d="M3 3h11l-3 4 3 4H3z"/></svg><% end %></span>
+        <span class="week__well" aria-hidden="true"><% if day[:coding] %><span class="week__bar week__bar--<%= onboarding_bar_step(minutes) %>"></span><% end %></span>
+        <span class="week__mins" aria-hidden="true"><%= day[:coding] ? minutes : "" %></span>
+        <span class="week__name"><%= day[:short] %></span>
+        <span class="visually-hidden"><%= day[:long] %><%= ", today" if day[:today] %>: <%= day[:coding] ? "#{pace_text(minutes)}" : "rest" %><%= ", this week's boss ends" if day[:boss_end] %></span>
+      </li>
+    <% end %>
+  </ol>
+  <p class="week__caption"><%= [ usual, "#{pace_text(minutes)} a day" ].compact.join(", ") %></p>
   <p class="info__line"><%= phrase %>, shipped. <%= prize&.hours_text %> coded.</p>
 </div>

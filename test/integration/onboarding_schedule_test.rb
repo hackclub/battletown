@@ -74,8 +74,11 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     assert_select "input[type=hidden][name='user[time_zone]']"
     assert_select "#pace-hint", 0
     assert_select "select, input[type=time], .day-times", 0 # no dropdown, no time pickers, no time zone select
-    # this 5-hour prize skips the time frame question (every frame ends at 30 minutes), so no wish exists and no pace is pre-ticked
-    assert_select ".choice-grid--rows input[checked]", 0
+    # this 5-hour prize skips the time frame question (every frame ends at 30 minutes), so no wish exists: the slider starts on the smallest stop
+    assert_select "input[type=range][value='0']", 1
+    assert_select "input[type=hidden][name='user[pace_minutes]'][value='30']", 1
+    assert_select ".slider__stop", 4
+    assert_select ".onboarding__actions .btn", /Continue/
   end
 
   test "someone editing their plan still gets the daily pace as a select with the saved one chosen" do
