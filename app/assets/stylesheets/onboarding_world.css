@@ -756,3 +756,32 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .onboarding__header h1, .transition__title, .pledge__heading { text-wrap: balance; }
 .onboarding__encouragement, .onboarding__hint, .onboarding__panel p { text-wrap: pretty; }
 .nowrap { white-space: nowrap; }
+
+/* ======================================================================================================================================
+   The pledge (sign-up step, and again signed on the last step): one centered column, one axis. The sentence is built from the person's
+   answers, the filled-in parts are blue text with no boxes; the signature line keeps its room so nothing shifts when a name goes on.
+   ====================================================================================================================================== */
+.pledge { display: grid; justify-items: center; gap: 2rem; text-align: center; width: 100%; max-width: 32rem; margin-inline: auto; }
+.pledge__body { display: grid; justify-items: center; gap: var(--space-3); width: 100%; }
+.pledge__text, .pledge__rules, .pledge__day, .pledge__hint, .pledge__fine { margin: 0; }
+.pledge__text { font-family: var(--font-body); font-weight: 800; font-size: clamp(1.375rem, 3.4vh, 2rem); line-height: 1.3; color: var(--color-ink-blue); text-wrap: balance; }
+.pledge__mark { color: var(--color-blue-edge); }
+.pledge__rules { font-size: var(--text-lg); color: var(--color-ink-blue); }
+.pledge__rules a { color: var(--color-blue-edge); }
+.pledge__signature { width: 80%; min-height: 3.5rem; display: flex; align-items: flex-end; justify-content: center; border-bottom: 2px solid var(--color-cool-tint-edge); }
+.pledge__name { font-family: var(--font-display); font-size: 2rem; line-height: 1.2; color: var(--color-ink-blue); }
+@media (prefers-reduced-motion: no-preference) {
+  .pledge__name { display: inline-block; overflow: hidden; white-space: nowrap; animation: pledge-sign 900ms steps(var(--chars, 8), end) 250ms both; }
+  @keyframes pledge-sign { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+}
+.pledge__day { font-size: var(--text-lg); font-weight: 700; color: var(--color-ink-blue); }
+.pledge__sign { display: grid; justify-items: center; gap: var(--space-2); width: 100%; }
+.pledge__hold { position: relative; width: 100%; max-width: 24rem; justify-content: center; overflow: visible; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+.pledge__clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.pledge__fill { position: absolute; inset: 0; transform-origin: left center; transform: scaleX(var(--hold, 0)); background: color-mix(in srgb, var(--btn-bg) 70%, var(--color-ink-blue)); }
+.pledge__label { position: relative; }
+.pledge__hint { font-size: var(--text-sm); color: var(--color-ink-blue); min-height: 1.25em; }
+.pledge__fine { font-size: var(--text-sm); color: var(--color-text-muted); }
+.pledge__fine a { color: var(--color-blue-edge); }
+.onboarding__panel:has(.pledge) .onboarding__header { text-align: center; margin-bottom: 1.5rem; }
+.celebration .pledge { margin-block: auto; }

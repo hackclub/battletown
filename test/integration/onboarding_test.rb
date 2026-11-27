@@ -443,14 +443,14 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "[role=note]", 0
   end
 
-  test "the arrival shows the prize and the first thing to do, and keeps the controls" do
+  test "the last step is the signed pledge and keeps the controls" do
     user = users(:new_user)
     user.update!(onboarding_step: 6, prize_key: "tshirt", project_kind: "game", coding_days: 127, coding_time: "18:30", time_zone: "UTC")
     sign_in_as user
     get onboarding_step_path("celebrate")
 
-    assert_select ".arrival__prize", /8BitDo Pro 2/
-    assert_select ".arrival__first"
+    assert_select ".pledge__text", /8BitDo Pro 2/
+    assert_select ".pledge__day", "Day 1 starts now."
     assert_select "#onboarding-prize-dock", 0
     assert_select "button.celebration__sound[aria-pressed=true]", /Sound\s+on/
     assert_select "form[action='#{onboarding_step_path("celebrate")}'] button", "Enter Battletown"
@@ -607,10 +607,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     end
     get onboarding_step_path("signup")
     assert_response :success
-    assert_select ".celebration__summary", /8BitDo Pro 2/
-    assert_select ".celebration__summary", /Game/
-    assert_select ".celebration__summary", /Monday and Friday at 6:30 pm, UTC/
-    assert_select "form[action='/auth/hack_club'][method=post][data-turbo=false] button", "Sign up with Hack Club"
+    assert_select ".pledge__text", /8BitDo Pro 2/
+    assert_select "form[action='/auth/hack_club'][method=post][data-turbo=false] button", /Hold to sign with Hack Club/
   end
 
   test "signing in at the end carries the answers onto the new account, creates the first project and goes to the account step" do

@@ -54,7 +54,8 @@ class LandingSystemTest < ApplicationSystemTestCase
     find("label.choice", text: "1 hour").click
 
     assert_current_path "/onboarding/signup"
-    click_button "Sign up with Hack Club"
+    button = find(".pledge__hold")
+    page.driver.browser.action.click_and_hold(button.native).pause(duration: 1.6).release.perform # holding signs
     assert_current_path "/onboarding/account"
     assert_equal 1, User.where(hca_uid: "ident!system-test").count
     assert_equal "game", User.find_by!(hca_uid: "ident!system-test").project_kind

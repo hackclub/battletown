@@ -4,7 +4,7 @@ module OnboardingsHelper
     "prize" => { label: "Prize", title: "Pick your prize", encouragement: "Every hour you code gets you closer. Choose what you're working toward.", progress: "onboarding progress (the fun part: picking a prize)" },
     "project" => { label: "Project", title: "What are you making?", encouragement: "Nothing here is binding. You can change your mind later.", progress: "onboarding progress (nearly halfway there)" },
     "schedule" => { label: "Schedule", title: "When do you want to code?", encouragement: "Small, regular sessions beat big, rare ones. We'll nudge you on Slack.", progress: "onboarding progress (past halfway now)" },
-    "signup" => { label: "Sign up", title: "Lock in your plan", encouragement: "One quick sign-in with Hack Club and you're on the board. Your picks come with you.", progress: "onboarding progress (one quick sign in to go)" },
+    "signup" => { label: "Sign up", title: "Sign your pledge", encouragement: nil, progress: "onboarding progress (one quick sign in to go)" },
     "account" => { label: "Account", title: "Connect Hackatime", encouragement: "One last thing: Hackatime counts your coding time, so your hours show up on their own.", progress: "onboarding progress (almost done)" },
     "celebrate" => { label: "Go!", title: "You're in!", encouragement: "The town is better with you in it.", progress: "onboarding progress (done, you made it!)" }
   }.freeze
@@ -233,6 +233,25 @@ module OnboardingsHelper
 
     seconds = Rational(prize.coins * 3600, Game::Config.current.coins_per_hour)
     [ (seconds / (minutes * 60)).ceil, 1 ].max
+  end
+
+  # The pledge sentence, built only from what the person answered: the pace in human units, the prize by name, and the days the same arithmetic as the
+  # pace step gives. Parts nobody answered are left out (no invented pace, no invented prize).
+  def onboarding_pledge_sentence(subject)
+    prize = subject.prize
+    minutes = subject.pace.to_i
+    pace = "#{pace_text(minutes)} a day" if minutes.positive?
+    days = onboarding_days_to_prize(prize, minutes) if minutes.positive?
+    mark = ->(text) { tag.span(text, class: "pledge__mark") }
+    parts = [ "I'll code " ]
+    return "I'll show up and code." unless pace
+
+    parts << mark.(pace)
+    if prize
+      parts += [ " and earn my ", tag.span(prize.name, class: "pledge__mark nowrap") ]
+      parts += [ " in about ", mark.(pluralize(days, "day")) ] if days
+    end
+    safe_join(parts << ".")
   end
 
   # "About 14 days to your 8BitDo Pro 2" for a prize at a pace; nil when there is no paid prize to count toward.

@@ -1,13 +1,21 @@
-<%= render layout: "onboardings/frame", locals: { step: "signup", show_prize: false } do %>
-  <div class="reveal">
-    <%= render "onboardings/summary", subject: subject %>
-    <%= render "onboardings/boss", boss: onboarding_boss %>
+<%= render layout: "onboardings/frame", locals: { step: "signup" } do %>
+  <div class="pledge">
+    <%= render "onboardings/pledge", subject: subject %>
+
+    <%# Holding the button signs the pledge, and signing the pledge is signing in with Hack Club: the hold sends the same sign-up request the plain
+        button did. A plain press works without JavaScript and with reduced motion. %>
+    <div class="pledge__sign" data-controller="pledge-hold">
+      <%= button_to "/auth/hack_club", method: :post, class: "btn btn--primary btn--lg btn--raised pledge__hold",
+            form: { data: { turbo: false, pledge_hold_target: "form" } },
+            data: { pledge_hold_target: "button",
+                    action: "pointerdown->pledge-hold#start pointerup->pledge-hold#end pointercancel->pledge-hold#end pointerleave->pledge-hold#end keydown->pledge-hold#key keyup->pledge-hold#keyEnd click->pledge-hold#click contextmenu->pledge-hold#click" } do %>
+        <span class="pledge__clip" aria-hidden="true"><span class="pledge__fill"></span></span>
+        <span class="pledge__label">Hold to sign with Hack Club</span>
+      <% end %>
+      <p class="pledge__hint" aria-live="polite" data-pledge-hold-target="hint">Press and hold to sign.</p>
+    </div>
+
+    <p class="pledge__fine">Free sticker when you sign up.</p>
+    <p class="pledge__fine">By signing up you agree to the <%= link_to "Terms", terms_path %> and the <%= link_to "Privacy Policy", privacy_path %>.</p>
   </div>
-  <ul class="checks">
-    <li class="check"><p>Signing in with Hack Club takes a few seconds and gets you a free sticker.</p></li>
-  </ul>
-  <div class="onboarding__actions">
-    <%= render "shared/signup_button", label: "Sign up with Hack Club", css: "btn btn--primary btn--lg btn--raised" %>
-  </div>
-  <p class="onboarding__hint">By signing up you agree to the <%= link_to "Terms", terms_path %> and the <%= link_to "Privacy Policy", privacy_path %>.</p>
 <% end %>

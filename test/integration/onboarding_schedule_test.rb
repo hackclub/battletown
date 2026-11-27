@@ -203,13 +203,13 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     visitor_through_project
     schedule
     get onboarding_step_path("signup")
-    assert_select ".celebration__summary", /Every day at 6:30 pm, UTC/
+    assert_select ".pledge__text"
     assert_equal({}, draft_times)
 
     schedule(days: %w[monday friday], times: { "monday" => "", "friday" => " " })
     assert_equal({}, draft_times, "blank means the usual time")
     get onboarding_step_path("signup")
-    assert_select ".celebration__summary", /Monday and Friday at 6:30 pm, UTC/
+    assert_select ".pledge__text"
   end
 
   test "a time that is not HH:MM is an error that points at the field, and nothing is saved" do
