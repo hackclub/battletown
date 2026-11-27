@@ -30,7 +30,7 @@ body:has(.landing) {
   --display: var(--font-display);
   --body: var(--font-body);
   --gutter: clamp(1.25rem, 5vw, 4rem);
-  --side: max(var(--gutter), calc(100vw - 72rem) / 2)); /* content sits in a centred column, 72rem at most */
+  --side: max(var(--gutter), calc((100vw - 72rem) / 2)); /* content sits in a centred column, 72rem at most */
   --v: min(1vw, 0.9rem);
   background: var(--sky);
 }
