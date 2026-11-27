@@ -1,7 +1,0 @@
-<%# locals: (return_to: request.path) -%>
-<%# For someone who is signed in but not verified yet. Verification is only read when they sign in, so after verifying with
-    Hack Club this runs the normal sign-in again and comes back to this page. -%>
-<div class="verify-refresh">
-  <p class="verify-refresh__text">Finished verifying with Hack Club? Sign in again to update.</p>
-  <%= render "shared/signup_button", label: "I've verified, refresh", css: "btn btn--sm", return_to: return_to %>
-</div>

@@ -53,7 +53,7 @@ class LogPrivacyTest < ActionDispatch::IntegrationTest
     assert_includes log, 'Started GET "/email/unsubscribe/[FILTERED]"'
     assert_not_includes log, secret
 
-    get "/onboarding/age?x=1"
-    assert_equal "/onboarding/age?x=1", request.filtered_path, "other paths are untouched"
+    get "/privacy?x=1"
+    assert_equal "/privacy?x=1", request.filtered_path, "other paths are untouched"
   end
 end

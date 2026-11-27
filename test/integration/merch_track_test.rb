@@ -163,15 +163,7 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
         assert_select "#merch-week-1 .merch-count strong", "5 of 5 days"
         assert_select "#merch-week-1 #merch-verify-note", /Rewards unlock when you verify your identity with Hack Club/
         assert_select "#merch-week-1 #merch-verify-note a[href='https://auth.hackclub.com']", 1
-        assert_select "#merch-week-1 .merch-status form", 1
-        assert_select "#merch-week-1 #merch-verify-note .verify-refresh", text: /Finished verifying with Hack Club\? Sign in again to update\./
-        assert_select "#merch-week-1 #merch-verify-note form[action='/auth/hack_club'][method=post] input[name=return_to][value='/merch']", 1
-        assert_select "#merch-week-1 #merch-verify-note form[action='/auth/hack_club'] button", text: "I've verified, refresh"
-        assert_select "#merch-week-1 form[action='/merch/weeks/1/claim']", 0
-        @user.update_columns(verification_status: "pending")
-        get merch_path
-        assert_select "#merch-week-1 #merch-verify-note", /being reviewed/
-        assert_select "#merch-week-1 #merch-verify-note form[action='/auth/hack_club'] input[name=return_to][value='/merch']", 1
+        assert_select "#merch-week-1 form", 0
       end
     end
   end
@@ -291,7 +283,7 @@ class MerchTrackTest < ActionDispatch::IntegrationTest
         assert_select "#merch-week-3 .badge", "Coming up"
         assert_select "#merch-week-4 .badge", "Coming up"
         assert_select "#merch-week-3 .merch-message", /starts when the next boss arrives/
-        assert_select "title", "Reward track - Battletown"
+        assert_select "title", "Reward track - BattleTown"
 
         post merch_claim_path(boss_id: @boss.id)
         assert_redirected_to merch_path

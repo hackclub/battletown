@@ -2,8 +2,7 @@ module Eligibility
   # Tunables from config/game.yml under `eligibility:` (only read while the `eligibility_gate` flag is on). Read through
   # `Eligibility::Config.current`.
   #   verification_max_age_days: how long a sign-in's copy of the Hack Club Auth verification counts as fresh.
-  #   help_line: the neutral "who to ask" sentence shown next to the not-eligible note. `{support}` becomes Support.where_to_ask
-  #   (the configured Slack channel and email, or the plain fallback wording).
+  #   help_line: the neutral "who to ask" sentence shown next to the not-eligible note. A placeholder the owner edits.
   Config = Data.define(:verification_max_age_days, :help_line) do
     def self.current
       @current ||= from_hash(Rails.application.config_for(:game).fetch(:eligibility))
@@ -17,13 +16,8 @@ module Eligibility
       days = Integer(raw.fetch(:verification_max_age_days))
       raise ArgumentError, "game.yml: eligibility.verification_max_age_days must be a positive whole number" unless days.positive?
 
-      template = raw.fetch(:help_line).to_s.squish
-      raise ArgumentError, "game.yml: eligibility.help_line must be one short sentence (at most 200 characters)" if template.empty? || template.length > 200
-
-      line = template.gsub("{support}") { Support.where_to_ask }
-      # A very long configured address must not break boot or the note: fall back to the channel alone, then the plain wording.
-      line = template.gsub("{support}") { Support.channel_text } if line.length > 200
-      line = template.gsub("{support}") { Support::FALLBACK_CHANNEL } if line.length > 200
+      line = raw.fetch(:help_line).to_s.squish
+      raise ArgumentError, "game.yml: eligibility.help_line must be one short sentence (at most 200 characters)" if line.empty? || line.length > 200
 
       new(verification_max_age_days: days, help_line: line)
     end

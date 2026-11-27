@@ -38,7 +38,6 @@ module Game
         seconds = source.seconds_by_date(user, first..target)
         returning = ReturningBoost::Tracker.new(user, before: first) if Features.enabled?(:returning)
         (first..target).each do |date|
-          previous = state
           result = StreakCalculator.step(state, seconds.fetch(date, 0), config: config)
           state = result.state
           bonus_bps = returning ? returning.bonus_for(date, result) : result.bonus_bps
@@ -48,7 +47,6 @@ module Game
             streak_15: state.streak_15, goal_streak: state.goal_streak, freeze_available: state.freeze_available,
             days_since_freeze: state.days_since_freeze, bonus_bps: bonus_bps
           )
-          Analytics::Product.day_settled(user, date, previous, result)
         end
       end
       written

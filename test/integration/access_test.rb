@@ -35,31 +35,6 @@ class AccessTest < ActionDispatch::IntegrationTest
     assert_redirected_to dashboard_path
   end
 
-  test "the four header pages and their old addresses need a signed-in, onboarded person" do
-    pages = [ profile_path, settings_path, shop_path, dashboard_path, hackatime_path, settings_notifications_path ]
-    pages.each do |path|
-      get path
-      assert_redirected_to root_path, "signed out: #{path}"
-    end
-    sign_in_as users(:new_user)
-    pages.each do |path|
-      get path
-      assert_redirected_to onboarding_path, "not onboarded: #{path}"
-    end
-    delete logout_path
-    sign_in_as users(:onboarded)
-    [ player_path(users(:onboarded).public_slug), settings_path, shop_path, dashboard_path ].each do |path|
-      get path
-      assert_response :success, path
-    end
-    get profile_path
-    assert_redirected_to player_path(users(:onboarded).public_slug)
-    get hackatime_path
-    assert_redirected_to settings_path(anchor: "hackatime")
-    get settings_notifications_path
-    assert_redirected_to settings_path(anchor: "notifications")
-  end
-
   test "a session pointing at a deleted user is cleared" do
     sign_in_as users(:onboarded)
     users(:onboarded).destroy

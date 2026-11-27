@@ -1,4 +1,4 @@
-/* Notification settings (the Notifications section of /settings). Each choice is one tappable row: the whole row toggles its checkbox
+/* Notification settings (/settings/notifications). Each choice is one tappable row: the whole row toggles its checkbox
    (the label's ::after covers the row), and a ticked row is also tinted. Tokens only. */
 .notification-settings { max-width: 48rem; }
 .notification-settings__form { display: grid; gap: var(--space-6); }
@@ -23,14 +23,6 @@
 .notification-settings__label { display: grid; gap: var(--space-1); flex: 1; min-width: 0; font-weight: 500; cursor: pointer; }
 .notification-settings__label::after { content: ""; position: absolute; inset: 0; }
 .notification-settings__title { font-weight: 700; overflow-wrap: anywhere; }
-/* A switch whose hint holds paragraphs and a list: the label is just the title (stretched over the row so the whole row taps), the hint sits
-   beside it and is read once, as the description. */
-.notification-settings__text { display: grid; gap: var(--space-1); flex: 1; min-width: 0; font-weight: 500; }
-.notification-settings__tap { cursor: pointer; }
-.notification-settings__tap::after { content: ""; position: absolute; inset: 0; }
-.notification-settings__hint p, .notification-settings__hint ul { margin: 0; }
-.notification-settings__hint p + p, .notification-settings__hint ul + p, .notification-settings__hint p + ul { margin-top: var(--space-2); }
-.notification-settings__hint ul { padding-left: var(--space-5, 1.25rem); }
 .notification-settings__hint { color: var(--color-text-muted); font-size: var(--text-sm); overflow-wrap: anywhere; }
 .notification-settings__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 

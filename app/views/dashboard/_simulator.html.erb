@@ -17,7 +17,7 @@
     <div class="event-simulator__live">
       <p class="event-simulator__status" role="status" aria-live="polite" data-event-simulator-target="message">live values</p>
       <dl class="event-simulator__numbers">
-        <% { "boss" => "boss", "damage" => "damage dealt", "health" => "boss health", "togo" => "to go", "players" => "simulated players", "coded" => "coded, last 24 h", "shipped" => "shipped, last 24 h" }.each do |key, label| %>
+        <% { "boss" => "boss", "damage" => "damage dealt", "health" => "boss health", "togo" => "to go", "players" => "simulated players", "coded" => "coded today" }.each do |key, label| %>
           <div><dt><%= label %></dt><dd data-event-simulator-target="stat" data-stat="<%= key %>">-</dd></div>
         <% end %>
       </dl>

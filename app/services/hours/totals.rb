@@ -22,9 +22,7 @@ module Hours
     # the per-user Ruby one.
     def seconds_in_range(range) = [ counted.where(local_date: range).sum(:seconds), 0 ].max
 
-    # How many users have at least `active_seconds` (default 15 minutes, config/game.yml) on that local date. No production code calls
-    # this any more (the boss stage counts a rolling last 24 hours, Bosses::Fighters); the tests keep it to check the all-users SQL
-    # cutoff (`counted`) against the per-user Ruby one, like seconds_in_range.
+    # How many users have at least `active_seconds` (default 15 minutes, config/game.yml) on that local date.
     def active_user_count(date, minimum: Config.current.active_seconds)
       per_user = counted.where(local_date: date).group("hour_entries.user_id")
                         .having("SUM(hour_entries.seconds) >= ?", minimum).select("hour_entries.user_id")

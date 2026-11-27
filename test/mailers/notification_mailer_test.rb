@@ -45,7 +45,7 @@ class NotificationMailerTest < ActionMailer::TestCase
       [ text, html ].each do |body|
         assert_includes body, "You get this because you have a Battletown account", kind
         assert_includes body, "Hack Club program", kind
-        assert_includes body, "#{APP}/settings#notifications", kind
+        assert_includes body, "#{APP}/settings/notifications", kind
         assert_no_match(/hackclub|HackClub|hack club/, body, kind)
       end
     end

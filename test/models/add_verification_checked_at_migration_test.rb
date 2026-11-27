@@ -6,17 +6,13 @@ require Rails.root.join("db/migrate/20261113090001_add_verification_checked_at_t
 class AddVerificationCheckedAtMigrationTest < ActiveSupport::TestCase
   setup { @migration = AddVerificationCheckedAtToUsers.new }
 
-  # The test transaction puts the table back, but a statement prepared against the changed table stays in the connection and fails the next
-  # test on this worker with "cached plan must not change result type": drop them all.
-  teardown { ActiveRecord::Base.connection_pool.connections.each(&:clear_cache!) }
-
   def migrate(direction) = ActiveRecord::Migration.suppress_messages { @migration.public_send(direction) }
 
   def insert_user(uid, created_at:, updated_at:)
     connection = ActiveRecord::Base.connection
     connection.execute(<<~SQL.squish)
-      INSERT INTO users (hca_uid, public_slug, created_at, updated_at, signed_up_on)
-      VALUES (#{connection.quote(uid)}, #{connection.quote(SecureRandom.alphanumeric(11).downcase)}, #{connection.quote(created_at)}, #{connection.quote(updated_at)}, '2026-01-01')
+      INSERT INTO users (hca_uid, created_at, updated_at, signed_up_on)
+      VALUES (#{connection.quote(uid)}, #{connection.quote(created_at)}, #{connection.quote(updated_at)}, '2026-01-01')
     SQL
   end
 

@@ -54,18 +54,20 @@ class RestyleStructureTest < ActionDispatch::IntegrationTest
     assert_select ".ship-checklist li", 4
     assert_select "progress.progress__bar[max][value]", 1
     ship = submit_ship(@project)
-    get projects_path
+    get ships_path
     assert_page_structure
-    assert_select ".project__ships .badge", text: "Waiting for review"
+    assert_select ".ship .badge", text: "Waiting for review"
     get ship_path(ship)
     assert_page_structure
   end
 
-  test "the settings page: notifications, Hackatime and profile" do
-    get settings_path
+  test "hackatime and notification settings" do
+    get hackatime_path
     assert_page_structure
     assert_select ".hackatime__status.badge", text: "Not connected"
     assert_select ".hackatime__share li", minimum: 4
+    get settings_notifications_path
+    assert_page_structure
     assert_select "fieldset legend", 1
     assert_select ".notification-settings__item label[for]", minimum: 1
   end

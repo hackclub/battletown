@@ -20,18 +20,4 @@ module ProjectsHelper
       label.empty? ? error.message : "#{label} #{error.message}"
     end
   end
-
-  # How many ships a project card lists (the newest ones); the count above the list is always all of them.
-  SHIP_HISTORY_LIMIT = 5
-
-  # The local date a ship counts from (submitted, or created for a draft) in the signed-in person's own time zone, "Nov 11" or
-  # "Nov 11, 2025" when it is not this year. Uses the current user, so a card never loads each ship's owner.
-  def project_ship_date(ship)
-    stamp = ship.submitted_at || ship.created_at
-    date = Game::Days.local_date(stamp, current_user.time_zone)
-    date.strftime(date.year == Game::Days.local_date(Time.current, current_user.time_zone).year ? "%b %-d" : "%b %-d, %Y")
-  end
-
-  # The hours a ship is about: what staff approved once it is approved, otherwise what was coded.
-  def project_ship_hours(ship) = ship_hours(ship.status_approved? ? ship.approved_seconds : ship.coded_seconds)
 end

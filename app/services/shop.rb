@@ -25,16 +25,16 @@ module Shop
   end
 
   class UnknownPrize < Error
-    def initialize(msg = "That item isn't in the armoury.") = super
+    def initialize(msg = "That item isn't in the shop.") = super
   end
 
   # The item exists but staff have archived it: it can no longer be bought (people who already ordered it keep their order).
   class ItemUnavailable < Error
-    def initialize(msg = "That item isn't in the armoury any more.") = super
+    def initialize(msg = "That item isn't in the shop any more.") = super
   end
 
   class FreeItem < Error
-    def initialize(msg = "That one is free: claim it from the armoury instead of buying it.") = super
+    def initialize(msg = "That one is free: claim it from the shop page instead of buying it.") = super
   end
 
   class AlreadyClaimed < Error

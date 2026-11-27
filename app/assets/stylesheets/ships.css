@@ -1,4 +1,4 @@
-/* Ships: the form (hours window, checklist) and one ship. Reuses the projects classes (projects.css) and the
+/* Ships: the form (hours window, checklist), the list and one ship. Reuses the projects classes (projects.css) and the
    shared components (components.css). Staff review pieces live in admin.css. Tokens only. */
 .ship-window .progress { margin-block: var(--space-1); }
 .ship-checklist { display: grid; gap: var(--space-2); }
@@ -15,10 +15,19 @@
 .ship-note p + p { margin-top: var(--space-1); font-weight: 500; }
 .ship-note__title { font-weight: 400; }
 
-/* The title row of a ship's page */
+/* List and cards */
+.ship { min-width: 0; }
+.ship > * { margin-block: 0; }
+.ship > * + * { margin-top: var(--space-3); }
 .ship__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
 .ship__head--page { margin-bottom: 0; }
 .ship__head--page h1 { margin: 0; }
+.ship__name { margin: 0; font-size: var(--text-lg); letter-spacing: var(--tracking-heading); overflow-wrap: anywhere; }
+.ship__name a { color: var(--color-text); text-decoration-color: var(--color-link); }
+.ship__meta { color: var(--color-text-muted); font-size: var(--text-sm); }
+.ship__result { font-weight: 700; overflow-wrap: anywhere; }
+.ship__actions { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); }
+.ship__actions .btn { flex: none; }
 
 /* One ship */
 .ship-result__line { margin: 0; font-size: var(--text-lg); }
@@ -34,6 +43,8 @@
   .ship-dl { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .ship-dl dd { margin-bottom: var(--space-3); }
 }
+
+.ship__name a { display: inline-flex; align-items: center; min-height: var(--tap-size); }
 
 /* Screenshots (flag ship_screenshots): the form slots and the thumbnails on a ship. Thumbnails are the owner's own and staff-only
    pictures served by the app itself (same origin); they are cropped to a fixed shape here, the link opens the whole picture. */

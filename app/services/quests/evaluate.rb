@@ -53,7 +53,6 @@ module Quests
 
       # A savepoint, so losing a race on the unique index (user, quest) cannot poison an enclosing transaction.
       QuestCompletion.transaction(requires_new: true) { completion.save!(validate: false) }
-      Analytics::Product.quest_completed(completion)
       completion
     rescue ActiveRecord::RecordNotUnique
       nil

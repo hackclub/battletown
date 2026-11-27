@@ -4,8 +4,7 @@ shared:
   # The hours ledger (app/services/hours/**).
   hours:
     # Where Hours::Sync gets Hackatime time when no source is named: null (nothing) or http (live Hackatime, for
-    # users who linked their account at /hackatime). The HOURS_SOURCE environment variable overrides it. Null here, so
-    # development and test never call Hackatime; the production section below sets http.
+    # users who linked their account at /hackatime). The HOURS_SOURCE environment variable overrides it.
     hours_source: null
     # The most coded time one user can have credited for one local date (anti-abuse). Positive credits are clamped to it.
     daily_cap_seconds: 43200
@@ -161,9 +160,8 @@ shared:
     # may be before spending asks the person to sign in again. Hack Club Auth is never called in between: a real
     # periodic refresh needs an API call that is not built (see projects/battletown/specs/contract.md, "Eligibility gate").
     verification_max_age_days: 30
-    # The neutral help sentence shown with the not-eligible note. {support} becomes where to ask (the Slack channel and the
-    # email address, from SUPPORT_SLACK_CHANNEL and SUPPORT_EMAIL; see app/services/support.rb).
-    help_line: "Questions? Ask in {support}."
+    # The neutral help sentence shown with the not-eligible note. A placeholder: set it to the real place to ask.
+    help_line: Questions? Ask in Slack.
 
   # The NPS survey ("how likely are you to recommend Battletown?"), behind the Flipper flag `nps`
   # (app/services/nps/**, Notifications::NpsPrompts). Read through Nps::Config.
@@ -293,12 +291,6 @@ shared:
     max_edge_px: 1600
     # WebP quality of the stored copy (1 to 100).
     webp_quality: 85
-
-# Production credits live Hackatime time by default (so a missing HOURS_SOURCE variable cannot leave everyone with no hours).
-# Only this key is overridden: config_for(:game) deep-merges this section over `shared`. HOURS_SOURCE=null still switches it off.
-production:
-  hours:
-    hours_source: http
 
 # Tests use dates all over November 2026, so the project time cutoff is off there.
 test:

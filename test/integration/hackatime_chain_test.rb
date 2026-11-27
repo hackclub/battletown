@@ -158,6 +158,6 @@ class HackatimeChainTest < ActionDispatch::IntegrationTest
     delete hackatime_path
     mock_hackatime(uid: "7004")
     get "/auth/hackatime/callback"
-    assert_redirected_to settings_path(anchor: "hackatime") # no chain this time: someone on the Hackatime page connecting again
+    assert_redirected_to hackatime_path # no chain this time: someone on the Hackatime page connecting again
   end
 end

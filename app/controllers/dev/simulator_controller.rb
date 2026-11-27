@@ -54,7 +54,6 @@ module Dev
 
     # One answer for every action: a sentence for the panel, the counts of what just ran and the numbers to redraw the page with.
     def respond_with_status(message, result, **extra)
-      Bosses::Fighters.forget # the stage's fighters are cached for 20 seconds; the panel (and the page, on boss:refresh) must see this action
       render json: { message: message, status: DevSimulator::Status.call(user: current_user, today: today, last: result.to_h.merge(extra)) }
     end
 

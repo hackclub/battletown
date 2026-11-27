@@ -3,7 +3,7 @@ module Notifications
     # Aggregates for /admin/email: how many email rows were created per week, by status. Counts only (never an address,
     # a name or an id). Weeks run Friday to Thursday like the weekly boss, in UTC, newest first; one grouped query.
     # Finished rows are pruned after `retention_days` (config/notifications.yml), so older weeks fill in only as far as
-    # that. Rows for staff, simulated players and listed testers (User.analytics_included) are not counted.
+    # that.
     module Stats
       WEEKS = 8
       WEEK_START_WDAY = 5
@@ -19,7 +19,7 @@ module Notifications
       def weekly(today: Time.current.utc.to_date, weeks: WEEKS)
         last_start = today - ((today.wday - WEEK_START_WDAY) % 7)
         first_start = last_start - 7 * (weeks - 1)
-        grouped = Notification.where(user_id: User.analytics_included.select(:id)).where(channel: Email::CHANNEL, created_at: first_start.beginning_of_day..).group(Arel.sql(WEEK_START_SQL), :status).count
+        grouped = Notification.where(channel: Email::CHANNEL, created_at: first_start.beginning_of_day..).group(Arel.sql(WEEK_START_SQL), :status).count
         by_week = grouped.each_with_object(Hash.new { |hash, key| hash[key] = {} }) do |((start, status), count), memo|
           memo[start.to_date][status] = count
         end

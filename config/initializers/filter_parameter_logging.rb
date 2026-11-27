@@ -4,8 +4,6 @@ Rails.application.config.filter_parameters += [
   :code, :state, :id_token, :access_token, :client_secret, :phone, :birthdate, :address,
   :street, :locality, :region, :postal, :zip,
   :project_idea, :idea, :repo_url, :demo_url, :hackatime_project, "project.name", :display_name, :slack_id, :time_zone, :coding_time, :coding_day_names, :prize_key, :referral_source,
-  # The public profile name (a chosen name) and the profile's opaque address segment.
-  :profile_name, :slug,
   # Exactly `name`: project names are free text, and this also hides the database logger's bind values at debug level.
   /\Aname\z/,
   # The staff search boxes (users: a display name, Slack id, Hack Club Auth id or email; projects: a name or repo fragment) go in

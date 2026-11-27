@@ -12,15 +12,13 @@ class AdminAuditCoverageTest < ActionDispatch::IntegrationTest
   include AdminSignIn
   include ShipsTestSupport
   include ShopTestHelper
-  include BossesHelper
 
   WRITE_VERBS = %w[POST PATCH PUT DELETE].freeze
 
   # Staff writes that change nothing, so there is nothing to audit.
   NOT_AUDITED = {
     "POST /admin/users/:user_id/hours/confirm" => "the confirm step of an hours adjustment: it only shows the summary; the write is POST .../hours",
-    "POST /admin/users/:user_id/coins/confirm" => "the confirm step of a coin adjustment: it only shows the summary; the write is POST .../coins",
-    "POST /admin/analytics/refresh" => "only drops the cached analytics numbers (a new cache version); nothing about anyone changes"
+    "POST /admin/users/:user_id/coins/confirm" => "the confirm step of a coin adjustment: it only shows the summary; the write is POST .../coins"
   }.freeze
 
   setup do
@@ -35,8 +33,6 @@ class AdminAuditCoverageTest < ActionDispatch::IntegrationTest
     verified!(@teen)
     give_coins(@teen, 500)
     @boss = Bosses::Seed.call && Boss.chronological.last
-    # The seeded weeks run out as the calendar moves on, and the quest rows need two future boss weeks: add them after the last one.
-    2.times { make_boss(starts_on: [ Boss.chronological.last.ends_on + 1, friday_on_or_before(Date.current) + 7 ].max) if Boss.where(starts_on: Date.current.next_day..).count < 2 }
     as_admin(@admin)
   end
 

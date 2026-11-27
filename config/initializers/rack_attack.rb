@@ -19,9 +19,7 @@ class Rack::Attack
   # A file upload form: Rack parses multipart/mixed and multipart/related bodies into params just like multipart/form-data.
   def self.multipart?(req) = req.media_type.to_s.start_with?("multipart/")
 
-  # Sign-in starts are a person pressing a button, but a classroom or a club shares one address (and one NAT) and a whole
-  # room signs in within the same minute, so the limit is per-room sized, not per-person sized.
-  throttle("auth/ip", limit: 60, period: 1.minute) do |req|
+  throttle("auth/ip", limit: 10, period: 1.minute) do |req|
     path = path_of(req)
     req.ip if req.post? && ((path.start_with?("/auth/") && !path.match?(%r{\A/auth/hack_club_address(?:\.\w+)?/?\z})) || path == "/dev_login")
   end
@@ -32,24 +30,9 @@ class Rack::Attack
     req.ip if req.path == "/auth/hackatime/callback" || (req.path == "/hackatime" && !req.get?)
   end
 
-  # Notification preferences and the profile display name: saving is a human-sized action, so a small limit per address.
+  # Notification preferences: saving is a human-sized action, so a small limit per address.
   throttle("settings/ip", limit: 20, period: 1.minute) do |req|
-    req.ip if %w[/settings/notifications /settings/profile].include?(req.path) && !req.get?
-  end
-
-  # The live boss stage polls GET /boss/fighters every 30 seconds per open tab (boss_fighters_controller.js, which also never asks more
-  # than once in 5 seconds). Per signed-in person, not per address, so a classroom behind one address does not share the allowance;
-  # a person with no session is not counted here (the controller sends them away).
-  throttle("boss-fighters/user", limit: 12, period: 1.minute) do |req|
-    req.session["user_id"].to_s.presence if req.get? && path_of(req) == "/boss/fighters"
-  end
-
-  # Player profile pages and their pictures (/players/<slug>, /players/<slug>/avatar). The picture route reads a database row on every
-  # first load and revalidation, and a stage of circles asks for one per circle, so the limit is generous. Per signed-in person, not
-  # per address, so a classroom behind one address does not share it (and a person with no session is not counted: the controller
-  # sends them away before it looks the slug up).
-  throttle("players/user", limit: 240, period: 1.minute) do |req|
-    req.session["user_id"].to_s.presence if req.get? && path_of(req).match?(%r{\A/players/[^/]+(?:/avatar)?/?\z})
+    req.ip if req.path == "/settings/notifications" && !req.get?
   end
 
   # The public NPS survey link: opening it or answering is a human-sized action.
@@ -211,64 +194,7 @@ class Rack::Attack
     req.session["user_id"].to_s.presence if req.post? && req.path.match?(%r{\A/{1,3}admin/orders/\d+/address/reveal(?:\.\w+)?/?\z})
   end
 
-  # Static files and pictures. The content-hashed /assets, a boss's picture (/bosses/:id/art) and a shop item's picture
-  # (/shop/items/:key/image) are fetched by every page, so they must not use up the per-address allowance of the pages
-  # themselves (a classroom behind one address would lock itself out just by loading the shop). They are read-only, so only
-  # GET and HEAD qualify, matched on the path as the router reads it.
-  MEDIA_PATH = %r{\A/(?:assets/|bosses/\d+/art\z|shop/items/[a-z0-9_]{1,60}/image\z)}
-
-  def self.media?(req) = (req.get? || req.head?) && path_of(req).match?(MEDIA_PATH)
-
-  # The two pictures come out of the database, so they keep a limit of their own: far above any real use (a page of 30 shop
-  # pictures for a whole classroom, revalidated by ETag) but not unlimited. /assets are plain files and have none.
-  throttle("media/ip", limit: 6000, period: 5.minutes) do |req|
-    req.ip if media?(req) && !path_of(req).start_with?("/assets/")
+  throttle("req/ip", limit: 300, period: 5.minutes) do |req|
+    req.ip unless req.path.start_with?("/assets/", "/up", "/api/privacy/")
   end
-
-  # Everything else, per address. Sized for a classroom or a club sharing one address (30 people on a few pages each in five
-  # minutes), well above one person and well below a flood.
-  throttle("req/ip", limit: 1500, period: 5.minutes) do |req|
-    req.ip unless media?(req) || req.path.start_with?("/assets/", "/up", "/api/privacy/")
-  end
-
-  # What a throttled visitor sees: a plain page in the app's look (public/429.html, the same static page style as the other
-  # error pages) and, for a script or a fetch that asked for JSON, a small JSON body. Both carry Retry-After, the number of
-  # seconds until the counting window ends, which is the honest wait.
-  module ThrottledResponse
-    HEADERS = { "cache-control" => "no-store" }.freeze
-
-    def self.call(request)
-      wait = retry_after(request)
-      if json?(request)
-        body = { error: "rate_limited", message: "Too many requests. Please wait #{wait_words(wait)} and try again.", retry_after: wait }.to_json
-        [ 429, HEADERS.merge("content-type" => "application/json; charset=utf-8", "retry-after" => wait.to_s), [ body ] ]
-      else
-        [ 429, HEADERS.merge("content-type" => "text/html; charset=utf-8", "retry-after" => wait.to_s), [ page ] ]
-      end
-    end
-
-    def self.retry_after(request)
-      data = request.env["rack.attack.match_data"] || {}
-      period = data[:period].to_i
-      return 60 unless period.positive?
-
-      [ period - (data[:epoch_time].to_i % period), 1 ].max
-    end
-
-    def self.wait_words(seconds) = seconds <= 90 ? "a minute" : "#{(seconds / 60.0).ceil} minutes"
-
-    def self.json?(request)
-      path = request.path.to_s
-      path.start_with?("/api/") || path.end_with?(".json") || request.media_type.to_s.include?("json") ||
-        request.get_header("HTTP_ACCEPT").to_s.include?("json")
-    end
-
-    def self.page
-      @page ||= Rails.public_path.join("429.html").read
-    rescue SystemCallError
-      "Too many requests. Please wait a minute and try again.\n"
-    end
-  end
-
-  self.throttled_responder = ThrottledResponse.method(:call)
 end

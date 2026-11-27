@@ -167,7 +167,6 @@ module Notifications
         @reschedule << user if daily?(row)
       elsif result.ok?
         row.update!(status: "sent", sent_at: @now, last_error_code: nil)
-        Analytics::Product.notification_sent(row)
         @summary.sent += 1
         @reschedule << user if daily?(row)
       elsif result.systemic
@@ -181,7 +180,6 @@ module Notifications
         @summary.retried += 1
       else
         row.update!(status: "failed", last_error_code: safe_code(result.error_code))
-        Analytics::Product.notification_failed(row, safe_code(result.error_code))
         @summary.failed += 1
         @reschedule << user if result.retryable && daily?(row)
         Rails.logger.info("notifications.dispatch failed notification_id=#{row.id} code=#{safe_code(result.error_code)}")

@@ -19,36 +19,6 @@ class HcaLoginTest < ActionDispatch::IntegrationTest
     assert_nil flash[:notice]
   end
 
-  test "a stale sign-in link says it expired, not that sign-in failed" do
-    %w[authenticity_error csrf_detected].each do |message|
-      get "/auth/failure", params: { message: message, strategy: "hack_club" }
-      assert_redirected_to root_path
-      assert_equal "That sign-in link expired. Please try again.", flash[:alert], message
-      assert_nil session[:user_id]
-    end
-    follow_redirect!
-    assert_select ".flash", text: /That sign-in link expired/
-  end
-
-  test "a sign-in form posted with a stale CSRF token lands on the expired message, not the bare 422 page" do
-    with_forgery_protection do
-      post "/auth/hack_club", params: { authenticity_token: "stale" }
-      assert_redirected_to "/auth/failure?message=authenticity_error&strategy=hack_club"
-      follow_redirect!
-      assert_redirected_to root_path
-      assert_equal "That sign-in link expired. Please try again.", flash[:alert]
-    end
-  end
-
-  test "the CSRF check is translated for OmniAuth and a good token still passes" do
-    stale = FriendlyCsrfVerifier.new(->(_env) { raise ActionController::InvalidAuthenticityToken })
-    assert_raises(OmniAuth::AuthenticityError) { stale.call({}) }
-    fine = FriendlyCsrfVerifier.new(->(_env) { :ok })
-    assert_equal :ok, fine.call({})
-    assert_instance_of FriendlyCsrfVerifier, OmniAuth.config.request_validation_phase
-    assert_instance_of OmniAuth::RailsCsrfProtection::TokenVerifier, OmniAuth.config.request_validation_phase.instance_variable_get(:@inner)
-  end
-
   test "denied consent is rendered on the landing page without a stack trace" do
     get "/auth/failure", params: { message: "access_denied", strategy: "hack_club" }
     follow_redirect!
@@ -86,19 +56,5 @@ class HcaLoginTest < ActionDispatch::IntegrationTest
     cache = HcaDiscoveryCache.new
     assert_raises(RuntimeError) { cache.fetch("k") { raise "slow your roll!" } }
     assert_equal "ok", cache.fetch("k") { "ok" }
-  end
-
-  private
-
-  # Test mode skips OmniAuth's request phase (and its CSRF check) and forgery protection is off in the test environment.
-  def with_forgery_protection
-    mode = OmniAuth.config.test_mode
-    protection = ActionController::Base.allow_forgery_protection
-    OmniAuth.config.test_mode = false
-    ActionController::Base.allow_forgery_protection = true
-    yield
-  ensure
-    OmniAuth.config.test_mode = mode
-    ActionController::Base.allow_forgery_protection = protection
   end
 end

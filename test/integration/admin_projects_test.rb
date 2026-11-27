@@ -633,7 +633,7 @@ class AdminProjectsTest < ActionDispatch::IntegrationTest
     delete logout_path
     sign_in_as @teen
     code(@teen, D[9], HOUR)
-    [ "/projects", "/projects/#{@project.id}/edit", "/dashboard" ].each do |path|
+    [ "/projects", "/projects/#{@project.id}/edit", "/dashboard", "/ships" ].each do |path|
       get path
       assert_response :success, path
       %w[SECRETREASON Flagged flagged Inappropriate].each { |word| assert_not_includes response.body, word, "#{path} shows #{word}" }
@@ -720,9 +720,6 @@ class AdminProjectsTest < ActionDispatch::IntegrationTest
   # --- rate limit ---
 
   test "review writes are throttled per address" do
-    # The limit counts per calendar minute (the key is the epoch second divided by 60), so 31 requests that happen to straddle
-    # a minute boundary were each counted in a different window and the 31st was let through. Freeze the clock on a boundary.
-    travel_to Time.utc(2026, 11, 26, 12, 0, 0)
     Rack::Attack.enabled = true
     Rack::Attack.cache.store.clear
     sign_in_admin
@@ -735,7 +732,6 @@ class AdminProjectsTest < ActionDispatch::IntegrationTest
   ensure
     Rack::Attack.enabled = false
     Rack::Attack.cache.store.clear
-    travel_back
   end
 
   test "search terms and flag details are not written to the request log" do

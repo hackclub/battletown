@@ -35,9 +35,6 @@
           <dt>Can spend coins</dt><dd><%= profile.spend_state.to_s.tr("_", " ").capitalize %></dd>
           <dt>Time zone</dt><dd><%= user.time_zone.presence || "Not set (UTC)" %></dd>
           <dt>How they heard</dt><dd><%= user.referral_source.presence || "No source" %></dd>
-          <dt>Profile address</dt><dd><code><%= player_path(user.public_slug) %></code> <small>always visible to signed-in players, shown as <%= user.public_name %></small></dd>
-          <% slack_profile = SlackProfile.for(user) %>
-          <dt>Slack profile</dt><dd><%= slack_profile ? "#{slack_profile.status.tr('_', ' ').capitalize}#{', picture kept' if slack_profile.picture?}#{" (last fetched #{admin_utc(slack_profile.fetched_at, '%-d %b %Y %H:%M')})" if slack_profile.fetched_at}" : "Not fetched" %> <small>name and picture copied from Slack for players who use them (missing scope: reinstall the Slack app with users:read)</small></dd>
           <dt>Onboarding</dt><dd><%= user.onboarded? ? "Finished #{admin_utc(user.onboarded_at, '%-d %b %Y')}" : "Not finished (step #{user.onboarding_step} of #{User::ONBOARDING_STEPS})" %></dd>
           <dt>Signed up</dt><dd><%= admin_utc(user.created_at, "%-d %b %Y") %> (their date: <%= user.signed_up_on.iso8601 %>)</dd>
           <dt>Hackatime</dt>

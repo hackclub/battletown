@@ -4,7 +4,7 @@ class DesignSystemTokensTest < ActiveSupport::TestCase
   test "reads the tokens from tokens.css and follows var() references" do
     assert_equal "#b1dcfe", DesignSystem::Tokens.resolve("--color-page")
     assert_equal "#a60040", DesignSystem::Tokens.resolve("--color-link")
-    assert_equal "#34476b", DesignSystem::Tokens.resolve("--color-text-muted")
+    assert_equal "#4a4234", DesignSystem::Tokens.resolve("--color-text-muted")
     assert_raises(ArgumentError) { DesignSystem::Tokens.resolve("--color-nope") }
   end
 

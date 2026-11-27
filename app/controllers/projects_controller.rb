@@ -7,8 +7,6 @@ class ProjectsController < ApplicationController
     @live = current_user.projects.live.oldest_first.includes(:hackatime_links)
     @archived = current_user.projects.archived.oldest_first.includes(:hackatime_links)
     @suggestions = current_user.link_suggestions.pending.includes(:project).order(:id)
-    @ships_by_project = ship_history(@live + @archived)
-    @any_approved_ship = @ships_by_project.values.flatten.any?(&:status_approved?)
   end
 
   def new
@@ -20,7 +18,6 @@ class ProjectsController < ApplicationController
     # The lock keeps two quick submits from slipping past the project limit.
     saved = current_user.with_lock { @project.save }
     if saved
-      track_event(:project_created, source: "projects_page", project_kind: @project.kind, nth: Analytics::Buckets.nth(current_user.projects.count))
       redirect_to projects_path, notice: "#{@project.name} added.#{' It is your active project.' if @project.active?}"
     else
       render :new, status: :unprocessable_content
@@ -90,15 +87,6 @@ class ProjectsController < ApplicationController
   end
 
   private
-
-  # Each project's ships, newest first, for the "Ships" part of its card: { project_id => [ship, ...] }. One query for all the
-  # cards, and only the columns the card shows (so the description, the daily snapshot and the screenshots are not read).
-  # The user is the current user's, so the card never reads `ship.user`.
-  def ship_history(projects)
-    ships = current_user.ships.where(project_id: projects.map(&:id)).newest_first
-                        .select(:id, :project_id, :status, :coded_seconds, :approved_seconds, :rejection_reason, :submitted_at, :created_at)
-    ships.group_by(&:project_id)
-  end
 
   # The list the link page offers: ok false means Hackatime could not be asked (the page then shows a typed field).
   def load_hackatime_options

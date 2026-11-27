@@ -75,8 +75,8 @@ class FullFlowLogPrivacyTest < ActionDispatch::IntegrationTest
       post project_ships_path(project), params: { ship: { description: DESCRIPTION, repo_url: REPO }, ship_action: "submit" }
       ship = teen.ships.last
       patch settings_notifications_path, params: { preferences: { ship_mvp: "0" } }
-      get settings_path
-      get projects_path
+      get settings_notifications_path
+      get ships_path
       get shop_path
 
       delete logout_path
@@ -95,7 +95,7 @@ class FullFlowLogPrivacyTest < ActionDispatch::IntegrationTest
       sign_in_with(teen, claims)
       post_order_as teen, prize_key: "custom_sticker"
       get orders_path
-      get settings_path # connected earlier, as the account step requires
+      get hackatime_path # connected earlier, as the account step requires
       Notifications::Dispatcher.run
     end
 

@@ -3,7 +3,7 @@ require "test_helper"
 # The static error pages are served as-is (outside the app's CSP middleware), so they must not
 # need inline scripts or styles; all styling comes from the same-origin /error.css.
 class ErrorPagesTest < ActiveSupport::TestCase
-  PAGES = %w[400 404 406-unsupported-browser 422 429 500].freeze
+  PAGES = %w[400 404 406-unsupported-browser 422 500].freeze
 
   def page_html(name) = Rails.public_path.join("#{name}.html").read
 
@@ -24,7 +24,7 @@ class ErrorPagesTest < ActiveSupport::TestCase
     PAGES.each do |code|
       html = page_html(code)
       assert_includes html, "<title>", "#{code}.html needs a title"
-      assert_includes html, "Battletown</title>", "#{code}.html title ends with the brand"
+      assert_includes html, "BattleTown</title>", "#{code}.html title ends with the brand"
       assert_includes html, "Battletown", "#{code}.html should be branded"
       assert_includes html, %(href="/error.css?v=#{error_css_version}"), "#{code}.html should link /error.css?v=#{error_css_version} (see the versioned stylesheet test)"
       assert_includes html, 'href="/"', "#{code}.html should link home"

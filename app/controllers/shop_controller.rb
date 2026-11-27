@@ -11,7 +11,6 @@ class ShopController < ApplicationController
     @locked = @spend_state != :ready
     @sticker = Prize.free_signup
     @sticker_order = current_user.orders.find_by(kind: "signup_sticker")
-    track_event(:shop_viewed)
   end
 
   # "Get this": shows the price and the balance afterwards. The idempotency key is made here, once per page view, and
@@ -26,7 +25,6 @@ class ShopController < ApplicationController
     return redirect_to(shop_path, alert: Shop::ItemUnavailable.new.message) unless prize.active?
 
     @prize = prize
-    track_event(:shop_item_viewed, item_key: prize.key)
     @spendable = Shop::Spendable.balance(current_user)
     Shop::Spendable.check!(current_user)
     return redirect_to(shop_path, alert: Shop::InsufficientCoins.new.message) if @spendable < @prize.coins

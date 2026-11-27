@@ -52,7 +52,7 @@ module LandingHelper
     boss = Boss.without_art_content.covering(today).first
     if boss
       facts = Bosses::Presenter::Facts.new(today: today, boss: boss, damage: Bosses::Damage.for(boss), user_seconds: 0,
-                                           fighters: Bosses::Fighters::NOBODY, upcoming_on: nil, previous_escaped_name: nil)
+                                           active_today: 0, upcoming_on: nil, previous_escaped_name: nil)
       presenter = Bosses::Presenter.new(facts: facts)
       case presenter.state
       when :in_progress

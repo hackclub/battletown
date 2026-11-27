@@ -6,7 +6,7 @@
 # the only thing that marks them, and every service here only ever reads or deletes users that carry it. Nothing here
 # holds personal data: no email, no Slack id, names like "Sim Otter 12".
 #
-#   DevSimulator::Players.call(count: 20, today: date)      # make sure players 1..20 exist, with public profiles, and have coded today
+#   DevSimulator::Players.call(count: 20, today: date)      # make sure players 1..20 exist and have coded today
 #   DevSimulator::Ship.call(mode: "percent", percent: 30, today: date)
 #   DevSimulator::Status.call(user: current_user)           # aggregates for the panel
 #   DevSimulator::Reset.call                                # delete the simulated players and everything about them
@@ -60,7 +60,6 @@ module DevSimulator
   end
 
   def check_local_database!
-    raise Refused, "The event simulator never runs in production." if Rails.env.production?
     return if local_database?
 
     raise Refused, "The event simulator only writes to a database on this machine, and this one is not (host #{effective_host.to_s.first(60)})."

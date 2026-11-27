@@ -7,8 +7,7 @@
 # dates on `hour_entries`; "today" is the UTC date (like AdminStats), so the newest day is still filling in. Each
 # breakdown is one grouped query (GROUP BY / COUNT DISTINCT / generate_series), so the query count never grows with the
 # number of users. The time series are bounded by their date range; the funnel and the dropout view are all-time by
-# definition. Staff, simulated players and the testers in ANALYTICS_EXCLUDE_HCA_UIDS are left out of every number
-# (Analytics::Exclusion.included_sql), so these figures are the program's real participants.
+# definition.
 class AdminMetrics
   DAYS = 28
   WEEKS = 8
@@ -32,15 +31,12 @@ class AdminMetrics
     purchased: "First purchase"
   }.freeze
 
-  # Where Analytics::Exclusion.included_sql goes in a query (put in after the binds, so a uid is never read as a bind name).
-  MEASURED = "/*measured*/".freeze
-
-  # Every measured user's ledger rows on counted dates (the same rule as Hours::Totals.counted), read in place of hour_entries.
+  # Every user's ledger rows on counted dates (the same rule as Hours::Totals.counted), read in place of hour_entries.
   COUNTED_ENTRIES = <<~SQL.squish.freeze
     (SELECT hour_entries.user_id, hour_entries.local_date, hour_entries.seconds
      FROM hour_entries
      JOIN users ON users.id = hour_entries.user_id
-     WHERE hour_entries.local_date >= users.signed_up_on - CAST(:days_before AS integer) AND #{MEASURED}) AS counted_entries
+     WHERE hour_entries.local_date >= users.signed_up_on - CAST(:days_before AS integer)) AS counted_entries
   SQL
 
   def self.call(today: Time.current.utc.to_date, minimum_seconds: Game::Config.current.quick_seconds)
@@ -122,7 +118,6 @@ class AdminMetrics
                SELECT 1 FROM orders WHERE orders.user_id = users.id AND orders.kind = 'purchase' AND orders.status <> 'cancelled'
              )) AS purchased
       FROM users
-      WHERE #{MEASURED}
     SQL
     total = row["signed_up"].to_i
     FUNNEL_STEPS.map do |key, label|
@@ -166,7 +161,6 @@ class AdminMetrics
 
   def select(sql, **binds)
     sql = ActiveRecord::Base.sanitize_sql_array([ sql, binds.merge(days_before: @days_before) ])
-    sql = sql.gsub(MEASURED, Analytics::Exclusion.included_sql)
     ActiveRecord::Base.connection.select_all(sql, "AdminMetrics").to_a
   end
 end

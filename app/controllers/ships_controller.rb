@@ -1,4 +1,4 @@
-# A teen's own ships: the form (per project), one ship, withdraw. There is no list: the projects page shows each project's history. Signed in and onboarded only; every ship
+# A teen's own ships: the form (per project), the list, one ship, withdraw. Signed in and onboarded only; every ship
 # and project lookup goes through current_user, so someone else's id is a plain 404. Coding is never blocked here:
 # when a project cannot be shipped yet the page says why and what to do next.
 class ShipsController < ApplicationController
@@ -7,9 +7,8 @@ class ShipsController < ApplicationController
   before_action :set_ship, only: %i[show edit update withdraw]
   before_action :require_draft, only: %i[edit update]
 
-  # The old ships list. Its address now leads to the projects page, where each project shows its own ships.
-  def moved
-    redirect_to projects_path
+  def index
+    @ships = current_user.ships.includes(:project, :coin_transactions).newest_first
   end
 
   def show
@@ -24,7 +23,6 @@ class ShipsController < ApplicationController
     @ship = @project.ships.build(user: current_user, repo_url: @project.repo_url, demo_url: @project.demo_url)
     prefill_from_rejected
     load_window
-    track_event(:ship_form_viewed)
   end
 
   def create
@@ -43,7 +41,7 @@ class ShipsController < ApplicationController
 
   def withdraw
     if Ships::Withdraw.call(ship: @ship)
-      redirect_to projects_path, notice: "Ship withdrawn. The hours you coded are free for your next ship.", status: :see_other
+      redirect_to ships_path, notice: "Ship withdrawn. The hours you coded are free for your next ship.", status: :see_other
     else
       redirect_to ship_path(@ship), alert: "This ship has already been decided, so it can't be withdrawn.", status: :see_other
     end

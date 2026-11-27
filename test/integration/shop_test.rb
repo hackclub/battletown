@@ -81,52 +81,10 @@ class ShopTest < ActionDispatch::IntegrationTest
     assert_equal({ controller: "orders", action: "index" }, Rails.application.routes.recognize_path("/shop/orders"))
   end
 
-  test "the header has an Armoury link for onboarded users only" do
+  test "the header has a Shop link for onboarded users only" do
     sign_in_as @user
     get dashboard_path
-    assert_select "nav[aria-label=Main] a[href='/shop']", text: "Armoury"
-  end
-
-  test "the page is called the Armoury in the tab title and the heading, while the URL stays /shop" do
-    sign_in_as @user
-    get "/shop"
-    assert_response :success
-    assert_select "title", text: "Armoury - Battletown", count: 1
-    assert_select "h1", text: "Armoury", count: 1
-    assert_select ".page-header .eyebrow", text: "Spend your coins"
-  end
-
-  test "the armoury wording shows up on the pages around it" do
-    sign_in_as @user
-    get orders_path
-    assert_select ".page-header .eyebrow", text: "Battletown armoury"
-    assert_select ".page-header a[href='#{shop_path}']", text: "Back to the armoury"
-    get new_shop_sticker_path
-    assert_select ".shop-back a[href='#{shop_path}']", text: "Back to the armoury"
-
-    verified!(@user)
-    give_coins(@user, 500)
-    get shop_item_path("tshirt")
-    assert_select ".shop-back a[href='#{shop_path}']", text: "Back to the armoury"
-    order = buy(@user, "keychain", address: true)
-    get order_path(order)
-    assert_select ".page-header .eyebrow", text: "Battletown armoury"
-  end
-
-  test "the dashboard prize box points at the armoury, for a paid prize and for a free one" do
-    @user.update_columns(prize_key: "tshirt")
-    sign_in_as @user
-    get dashboard_path
-    assert_select ".stage__prize .visually-hidden", text: /Open the armoury\./
-    @user.update_columns(prize_key: "signup_sticker")
-    get dashboard_path
-    assert_select ".stage__prize .visually-hidden", text: /free\. Open the armoury\./
-  end
-
-  test "signing in is asked for in armoury words when an address lookup fails with nobody signed in" do
-    get "/auth/failure", params: { strategy: "hack_club_address", message: "not_signed_in" }
-    assert_redirected_to root_path
-    assert_equal "Sign in to order from the armoury.", flash[:alert]
+    assert_select "nav[aria-label=Main] a[href='/shop']", text: "Shop"
   end
 
   # --- the locked state ---
@@ -311,7 +269,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     place_order(prize_key: "signup_sticker")
     assert_redirected_to shop_path
-    assert_match(/claim it from the armoury/, flash[:alert])
+    assert_match(/free/, flash[:alert])
     place_order(prize_key: "nope")
     assert_redirected_to shop_path
     post orders_path, params: { prize_key: [ "tshirt" ], idempotency_key: { a: 1 } }
@@ -407,7 +365,7 @@ class ShopTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     get orders_path
     assert_select ".empty h2", text: "No orders yet"
-    assert_select ".empty a[href='#{shop_path}']", text: "Browse the armoury"
+    assert_select ".empty a[href='#{shop_path}']", text: "Browse the shop"
   end
 
   test "every status is a word in a badge, not a colour alone" do

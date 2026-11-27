@@ -54,7 +54,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     get shop_item_path("keychain")
     assert_redirected_to shop_path
     follow_redirect!
-    assert_select ".flash, .alert", /That item isn't in the armoury any more/
+    assert_select ".flash, .alert", /That item isn't in the shop any more/
   end
 
   test "an item that never existed, and the free sticker, are still a plain 404 on the confirmation page" do
@@ -119,7 +119,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     verified!(@user)
     archive("keychain")
     error = assert_raises(Shop::ItemUnavailable) { buy(@user, "keychain") }
-    assert_match(/isn't in the armoury any more/, error.message)
+    assert_match(/isn't in the shop any more/, error.message)
     assert_equal 0, Order.count
     assert_equal 200, Coins::Balance.total(@user)
 
@@ -127,7 +127,7 @@ class ShopCataloguePagesTest < ActionDispatch::IntegrationTest
     post orders_path, params: { prize_key: "keychain", idempotency_key: "abc123" }
     assert_redirected_to shop_path
     follow_redirect!
-    assert_select ".flash, .alert", /isn't in the armoury any more/
+    assert_select ".flash, .alert", /isn't in the shop any more/
     assert_equal 0, Order.count
   end
 

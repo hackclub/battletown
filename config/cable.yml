@@ -1,23 +1,11 @@
-# Action Cable carries one thing: the live boss stage (app/channels/boss_stage_channel.rb, Bosses::Live).
-#
-# Production uses Solid Cable, a database-backed adapter: messages are rows in `solid_cable_messages` and every process polls for new ones, so
-# it works across replicas and for the one-off task processes that broadcast (the hourly Hackatime sync), with no new service. It was chosen over the
-# PostgreSQL LISTEN/NOTIFY adapter because the database is reached through a PgBouncer in transaction mode (LISTEN does not survive it) and
-# NOTIFY payloads stop at 8000 bytes. The table comes from db/cable_migrate (db:prepare creates it, as for the cache table); the `cable`
-# entry in config/database.yml is its connection (the same database unless CABLE_DATABASE_URL is set).
-#
-# polling_interval: how often each web process asks for new messages. 0.5 s is cheap (an indexed read) and invisible to a person.
-# message_retention: messages are only for sockets that are open right now, so they are trimmed after ten minutes.
 development:
   adapter: async
 
 test:
   adapter: test
 
+# No channels or broadcasts exist, so production uses the in-process adapter. The redis gem is not
+# installed, so the previous redis adapter would have raised on the first /cable connection. Broadcasting
+# across several processes or containers would need solid_cable (a cable database) or Redis.
 production:
-  adapter: solid_cable
-  connects_to:
-    database:
-      writing: cable
-  polling_interval: 0.5.seconds
-  message_retention: 10.minutes
+  adapter: async

@@ -1,7 +1,7 @@
 <% content_for :title, "Order: #{@order.display_name}" %>
 <section class="container shop stack">
   <header class="page-header">
-    <p class="eyebrow">Battletown armoury</p>
+    <p class="eyebrow">Battletown shop</p>
     <h1><%= @order.display_name %></h1>
     <p class="lead shop-lead">
       <span class="badge shop-status <%= order_status_class(@order) %> <%= order_status_badge(@order) %>"><%= order_status_text(@order) %></span>
@@ -38,7 +38,7 @@
   <% if @order.buyer_status == "requested" %>
     <p class="shop-note"><%= @order.address ? "The team will post it to the address you chose." : "The team will message you on Slack to arrange delivery." %></p>
   <% end %>
-  <p class="shop-note">Questions about this order? Ask in <%= Support.where_to_ask %>.</p>
+  <p class="shop-note">Questions about this order? Message the team on Slack.</p>
 
   <% if @order.requested? && !@order.signup_sticker? %>
     <%= button_to "Cancel order", cancel_order_path(@order, from: "order"), method: :patch, class: "btn",

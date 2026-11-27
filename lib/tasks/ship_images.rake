@@ -2,15 +2,11 @@
 namespace :ship_images do
   desc "Delete screenshots of ships withdrawn more than ship_screenshots.withdrawn_retention_days ago, and any orphaned or mismatched rows (safe to repeat; a no-op while the flag is off)"
   task prune: :environment do
-    JobRun.record("ship_images:prune") do |run|
-      result = ShipImages::Prune.call
-      if result.skipped
-        run[:skipped] = 1
-        puts "ship_images:prune skipped: the ship_screenshots flag is off"
-      else
-        run.merge!(withdrawn: result.withdrawn, orphaned: result.orphaned, mismatched: result.mismatched)
-        puts "ship_images:prune withdrawn=#{result.withdrawn} orphaned=#{result.orphaned} mismatched=#{result.mismatched}"
-      end
+    result = ShipImages::Prune.call
+    if result.skipped
+      puts "ship_images:prune skipped: the ship_screenshots flag is off"
+    else
+      puts "ship_images:prune withdrawn=#{result.withdrawn} orphaned=#{result.orphaned} mismatched=#{result.mismatched}"
     end
   end
 

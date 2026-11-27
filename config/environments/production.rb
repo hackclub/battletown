@@ -88,8 +88,6 @@ Rails.application.configure do
   # Host header allowlist (DNS rebinding / host-header poisoning). Fails closed: without APP_HOST
   # (comma-separated hostnames) it falls back to the host of APP_URL instead of allowing any host.
   config.hosts = (ENV["APP_HOST"].presence || URI(ENV.fetch("APP_URL", "http://localhost:3000")).host.to_s).split(",").map(&:strip)
-  # The live boss stage's websocket (/cable, config/cable.yml) is only opened by pages of this app: the same hosts, over https.
-  config.action_cable.allowed_request_origins = config.hosts.map { |host| "https://#{host}" }
   # The load balancer probe on /up carries an arbitrary Host header, so it is exempt.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 

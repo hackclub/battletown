@@ -79,7 +79,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
       end
     end
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     assert_equal user.id, session[:user_id]
     connection = user.reload.hackatime_connection
     assert_equal "4242", connection.hackatime_uid
@@ -108,7 +108,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
       follow_redirect!
     end
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     assert_match(/couldn't connect to Hackatime/, flash[:alert])
     assert_empty @fake.requests_for("POST", "/oauth/token")
   end
@@ -122,7 +122,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
       follow_redirect!
     end
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     assert_match(/No problem/, flash[:notice])
     assert_nil flash[:alert]
   end
@@ -138,7 +138,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
       get "/auth/hackatime/callback", params: { code: "good-code", state: params["state"] }
     end
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     assert_match(/already connected to another Battletown account/, flash[:alert])
     assert_no_match(/#{other.display_name}|#{other.email}|#{other.hca_uid}/, flash[:alert])
     assert_nil user.reload.hackatime_connection
@@ -202,7 +202,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
     get "/auth/hackatime/callback"
     elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     assert_equal "99", user.reload.hackatime_connection.hackatime_uid
     assert_operator elapsed, :<, HackatimeConnectionsController::REVOKE_BUDGET + 0.5
   end
@@ -233,7 +233,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
 
     get "/auth/hackatime/callback"
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     assert_equal "99", user.reload.hackatime_connection.hackatime_uid
   end
 
@@ -255,7 +255,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
     get "/auth/hackatime/callback", params: { code: "bad-code", state: session["omniauth.state"] }
     follow_redirect!
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     assert_match(/couldn't connect to Hackatime/, flash[:alert])
     assert_equal 0, HackatimeConnection.count
   end
@@ -292,7 +292,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
 
   test "the connect page and disconnecting are still for people who are in: someone who has not finished is sent to onboarding" do
     sign_in_as users(:new_user)
-    get settings_path
+    get hackatime_path
     assert_redirected_to onboarding_path
     delete hackatime_path
     assert_redirected_to onboarding_path
@@ -305,7 +305,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
 
     get "/auth/hackatime/callback"
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     connection = user.reload.hackatime_connection
     assert_equal "99", connection.hackatime_uid
     assert_equal SECRET_REFRESH, connection.refresh_token
@@ -336,7 +336,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
       delete "/hackatime"
     end
 
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
     assert_response :see_other
     assert_nil user.reload.hackatime_connection
     revoked = @fake.requests_for("POST", "/oauth/revoke").map { |r| r.form["token"] }
@@ -352,7 +352,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
     assert_difference "HackatimeConnection.count", -1 do
       delete "/hackatime"
     end
-    assert_redirected_to settings_path(anchor: "hackatime")
+    assert_redirected_to hackatime_path
   end
 
   test "disconnecting only ever touches the signed-in user's own connection" do
@@ -366,52 +366,41 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
     assert_not_nil other.reload.hackatime_connection
   end
 
-  test "the Hackatime section needs sign-in and onboarding, and the old /hackatime page leads to it" do
-    get settings_path
-    assert_redirected_to root_path
+  test "the page requires sign-in and onboarding" do
     get "/hackatime"
     assert_redirected_to root_path
     sign_in_as users(:new_user)
-    get settings_path
-    assert_redirected_to onboarding_path
     get "/hackatime"
     assert_redirected_to onboarding_path
   end
 
-  test "the old /hackatime page redirects to the Hackatime section of Settings" do
-    sign_in_as users(:onboarded)
-    get "/hackatime"
-    assert_redirected_to settings_path(anchor: "hackatime")
-    assert_equal "/settings#hackatime", URI(response.location).then { |uri| [ uri.path, uri.fragment ].join("#") }
-  end
-
-  test "the Hackatime section shows connect, connected and reconnect states" do
+  test "the page shows connect, connected and reconnect states" do
     user = users(:onboarded)
     sign_in_as user
 
-    get settings_path
+    get "/hackatime"
     assert_response :success
     assert_select ".hackatime__status", text: "Not connected"
     assert_select "form[action='/auth/hackatime'][method=post][data-turbo=false] button", text: "Connect Hackatime"
-    assert_select "title", text: "Settings - Battletown"
-    assert_select "section#hackatime h2", text: "Hackatime"
+    assert_select "title", text: "Hackatime - BattleTown"
+    assert_select "a[href='/hackatime']", text: "Hackatime"
 
     connection = connect_hackatime(user, last_synced_at: 3.hours.ago)
-    get settings_path
+    get "/hackatime"
     assert_select ".hackatime__status", text: "Connected"
     assert_select ".hackatime__meta", text: /Last synced about 3 hours ago/
     assert_select "form[action='/hackatime'] button", text: "Disconnect"
     assert_no_match(/#{SECRET_TOKEN}/, response.body)
 
     connection.update!(needs_reconnect: true)
-    get settings_path
+    get "/hackatime"
     assert_select ".hackatime__status", text: "Needs reconnecting"
     assert_select "button", text: "Reconnect Hackatime"
   end
 
   test "the CSP lets the connect form's redirect reach Hackatime (Chrome checks form-action on redirects)" do
     sign_in_as users(:onboarded)
-    get settings_path
+    get "/hackatime"
     form_action = response.headers["Content-Security-Policy"].to_s[/form-action [^;]+/]
     assert_includes form_action, "'self'"
     assert_includes form_action, "https://hackatime.hackclub.com"
@@ -424,7 +413,7 @@ class HackatimeConnectionIntegrationTest < ActionDispatch::IntegrationTest
     logs = capture_logs do
       params = start_link
       get "/auth/hackatime/callback", params: { code: "good-code", state: params["state"] }
-      get settings_path
+      get "/hackatime"
       delete "/hackatime"
     end
     [ SECRET_TOKEN, "good-code" ].each { |secret| assert_not_includes logs, secret }

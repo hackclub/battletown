@@ -11,7 +11,7 @@ module Notifications
     class Check
       ENDPOINT = "https://slack.com/api/auth.test".freeze
       # Keep in step with oauth_config.scopes.bot in config/slack/manifest.yml (a test compares them).
-      EXPECTED_SCOPES = %w[chat:write users:read].freeze
+      EXPECTED_SCOPES = %w[chat:write].freeze
       CODE_FORMAT = /\A[a-z0-9_]{1,40}\z/
 
       Report = Struct.new(:ok, :team, :user, :scopes, :problems, keyword_init: true) do

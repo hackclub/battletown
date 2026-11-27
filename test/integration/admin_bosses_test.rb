@@ -74,7 +74,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "no-store", response.headers["Cache-Control"]
-    assert_select "title", text: "Admin bosses - Battletown"
+    assert_select "title", text: "Admin bosses - BattleTown"
     assert_select ".admin-only table.admin-table tbody tr", 2
     assert_select "tbody tr:first-child th", "Boss 0"
     damage = ActiveSupport::NumberHelper.number_to_rounded(Bosses::Damage.for(@boss) / 3600.0, precision: 1) # however damage is derived, the list shows the same number

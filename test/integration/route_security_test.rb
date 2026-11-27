@@ -59,24 +59,10 @@ class RouteSecurityTest < ActionDispatch::IntegrationTest
   # app_routes only lists controller routes; a mounted Rack app brings its own routes, so each must be listed here.
   test "every mounted Rack app is known, and the Flipper console sits behind the admin-only constraint" do
     mounted = Rails.application.routes.routes.reject { |route| route.defaults[:controller] }
-    assert_equal [ "/admin/flipper", "/cable", "/privacy", "/terms" ], mounted.map { |route| route.path.spec.to_s }.sort, "a new mounted app needs its own security test"
+    assert_equal [ "/admin/flipper", "/cable" ], mounted.map { |route| route.path.spec.to_s }.sort, "a new mounted app needs its own security test"
 
     flipper = mounted.find { |route| route.path.spec.to_s == "/admin/flipper" }
     assert_equal [ Features::AdminConstraint ], flipper.app.constraints.map(&:class)
-  end
-
-  # The two old addresses are redirect Rack apps with a fixed target: GET only, no session, parameter or header is read.
-  test "the /privacy and /terms redirects answer GET with a fixed permanent redirect and nothing else" do
-    mounted = Rails.application.routes.routes.reject { |route| route.defaults[:controller] }
-    %w[/privacy /terms].each do |path|
-      route = mounted.find { |candidate| candidate.path.spec.to_s == path }
-      assert_equal "GET", route.verb, path
-      get path, params: { next: "https://evil.example" }, headers: { "Host" => "attacker.example", "X-Forwarded-Host" => "attacker.example" }
-      assert_response :moved_permanently
-      assert_equal Legal::URL, response.location, path
-      post path
-      assert_response :not_found
-    end
   end
 
   # --- (b) every /admin route is a 404 for the signed-out and for non-admins ---

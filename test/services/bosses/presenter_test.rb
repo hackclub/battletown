@@ -1,12 +1,10 @@
 require "test_helper"
 require_relative "../../support/bosses_helper"
 require_relative "../../support/ship_images_helper"
-require_relative "../../support/fighters_helper"
 
 class Bosses::PresenterTest < ActiveSupport::TestCase
   include BossesHelper
   include ShipImagesHelper
-  include FightersHelper
 
   MONDAY = Date.new(2026, 11, 16)
 
@@ -16,8 +14,7 @@ class Bosses::PresenterTest < ActiveSupport::TestCase
     @boss = make_boss(name: "Boss 1")
   end
 
-  # The clock reads midday UTC on `today`, so the last 24 hours before it are what the fighters are counted over.
-  def present(today: MONDAY, user: @user, now: Time.utc(today.year, today.month, today.day, 12)) = Bosses::Presenter.new(user: user, today: today, now: now)
+  def present(today: MONDAY, user: @user) = Bosses::Presenter.new(user: user, today: today)
 
   test "no boss before the first one, with the arrival date" do
     presenter = present(today: FRIDAY - 2)
@@ -292,73 +289,26 @@ class Bosses::PresenterTest < ActiveSupport::TestCase
     assert_equal "You dealt 45 minutes of damage.", present(today: THURSDAY + 1).contributed_text
   end
 
-  test "the community counts people with 15 minutes in the last 24 hours (not the UTC date), and only counts" do
-    fighter("one", seconds: 900)
-    fighter("short", seconds: 899)
-    fighter("early", seconds: 3600, ago: 30.hours)
-    assert_equal 1, present(today: NOW.to_date, now: NOW).fighter_count
-    assert_equal "1 person coded in the last day.", present(today: NOW.to_date, now: NOW).community_text
+  test "community_active_today counts people at 15 minutes on the user's local today, and only counts" do
+    # Signing up stamps today's date, which decides which days count, so pin the clock to the Monday.
+    travel_to Time.utc(2026, 11, 16, 12) do
+      add_hours(@user, MONDAY, 900)
+      add_hours(@other, MONDAY, 899)
+      add_hours(@other, MONDAY - 1, 9_000)
+      third = User.create!(hca_uid: "ident!third", time_zone: "UTC")
+      add_hours(third, MONDAY, 3_600)
 
-    fighter("two", seconds: 3600)
-    presenter = present(today: NOW.to_date, now: NOW)
-    assert_equal 2, presenter.fighter_count
-    assert_equal "2 people coded in the last day.", presenter.community_text
-    assert_not presenter.quiet?
+      presenter = present
+      assert_equal 2, presenter.community_active_today
+      assert_equal "2 people coded today.", presenter.community_text
+      assert_equal "Be the first to code today.", present(today: MONDAY + 1).community_text
+    end
   end
 
-  test "the community text says how many of them shipped, and nothing about shipping when none did" do
-    shipper = fighter("shipper", seconds: 1800)
-    fighter("other", seconds: 1800)
-    assert_equal "2 people coded in the last day.", present(today: NOW.to_date, now: NOW).community_text
-
-    ship_damage(shipper, 3600, on: NOW - 2.hours)
-    presenter = present(today: NOW.to_date, now: NOW)
-    assert_equal 1, presenter.shipper_count
-    assert_equal "2 people coded in the last day. 1 of them shipped.", presenter.community_text
-    assert_equal "2 people coded in the last day. 1 of them shipped. Ship a project to land your first hit.", presenter.arena_text, "the viewer shipped nothing themselves"
-  end
-
-  test "nobody coded: a quiet line, and the arena sentence leaves the headcount to it" do
-    presenter = present(today: NOW.to_date, now: NOW)
-    assert_predicate presenter, :quiet?
-    assert_equal "Nobody has coded in the last day. Be the first to hit it.", presenter.community_text
-    assert_equal "Nobody has coded in the last day. Be the first to hit it. Ship a project to land your first hit.", presenter.arena_text, "the empty arena is said in words, never drawn"
-    assert_equal "Nobody has coded in the last day.", present(today: THURSDAY + 2).community_text, "no 'be the first to hit it' once the week is over"
-  end
-
-  test "the circles are the fighters, with the viewer's own marked" do
-    fighter("other", seconds: 1800, name: "Ada")
-    code_ago(@user, 3600)
-    presenter = present(today: NOW.to_date, now: NOW)
-
-    assert_equal 2, presenter.fighters.size
-    assert_equal [ true ], presenter.fighters.select(&:you).map(&:you)
-    assert_equal "Ada", presenter.fighters.find { |circle| !circle.you }.name
-    assert_equal Bosses::Fighters.key_for(@user.id, @boss), presenter.fighters.find(&:you).key
-  end
-
-  test "the live payload carries the public bits, the health and the sentences, and nothing that names anyone" do
-    ada = fighter("ada", seconds: 7200, name: "Ada")
-    ship_damage(ada, 3600, on: NOW - 2.hours)
-    closed = fighter("closed", seconds: 1800)
-    payload = present(today: NOW.to_date, now: NOW).live_payload
-
-    assert_equal %i[state boss_name health_percent health_text summary damage_text arena_text total shippers fighters].sort, payload.keys.sort
-    assert_equal [ :in_progress, "Boss 1", 100, 2, 1 ], [ payload[:state].to_sym, payload[:boss_name], payload[:health_percent], payload[:total], payload[:shippers] ]
-    assert_equal %i[key name title initial tone size tier path avatar_url you label detail status hint motion].sort, payload[:fighters].first.keys.sort
-    named, other = payload[:fighters]
-    assert_equal [ "Ada", "Ada", "A", "ship", "/players/#{ada.public_slug}", 4 ], named.values_at(:name, :title, :initial, :tier, :path, :size)
-    handle = PublicProfile.handle_for(closed.public_slug)
-    assert_equal [ handle, handle.first, "/players/#{closed.public_slug}" ], other.values_at(:name, :initial, :path), "everybody has a name and a link"
-    text = payload.to_json
-    [ "private.example.org", "Real Name", "ident!", "SLK", "\"#{ada.id}\"", ada.email, ada.slack_id, ada.hca_uid ].each { |secret| assert_not_includes text, secret }
-    assert_not_includes text, "\"#{ada.public_slug}\"", "the address is only inside the link, never a field of its own"
-  end
-
-  test "people who coded are counted, but coding does not hurt the boss" do
-    fighter("coder", seconds: 900)
-    presenter = present(today: NOW.to_date, now: NOW)
-    assert_equal 1, presenter.fighter_count
+  test "people who coded today are counted, but coding does not hurt the boss" do
+    add_hours(@user, MONDAY, 900)
+    presenter = present
+    assert_equal 1, presenter.community_active_today
     assert_equal "Full health", presenter.health_text
     assert_equal 0, presenter.damage_percent
   end
@@ -371,6 +321,11 @@ class Bosses::PresenterTest < ActiveSupport::TestCase
     assert_not_includes texts, "Zebulon"
     assert_not_includes texts, "40 hours", "another person's own total is never shown"
     assert_equal 0, presenter.contributed_seconds_this_week
+  end
+
+  test "community text for exactly one person" do
+    add_hours(@user, MONDAY, 900)
+    assert_equal "1 person coded today.", present.community_text
   end
 
   test "the default today is the UTC date, whatever the user's zone" do

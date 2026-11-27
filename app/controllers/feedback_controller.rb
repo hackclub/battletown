@@ -58,8 +58,7 @@ class FeedbackController < ApplicationController
   end
 
   def save_answer
-    saved = NpsResponse.create!(user: @user, score: @score.to_i, comment: @comment, answered_at: Time.current, prompt_window_date: @claims.window_date)
-    Analytics::Product.nps_answered(saved)
+    NpsResponse.create!(user: @user, score: @score.to_i, comment: @comment, answered_at: Time.current, prompt_window_date: @claims.window_date)
     render :thanks, locals: { again: false }
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
     # A second tab or a double click answered first: the first answer stands.

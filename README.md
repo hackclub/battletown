@@ -5,8 +5,6 @@ Project documentation (interface contract, deploy runbook, privacy API, plans, d
 Battletown is a Hack Club You Ship We Ship (YSWS) program, run by Amber and Armand (formerly called "Village"). Teens code, log time with Hackatime, and ship projects to chip away at a shared boss and earn prizes from a shop.
 This repo is the platform: landing page, sign-up, onboarding, dashboard, projects, a Hackatime hours ledger, streaks and coins, the weekly boss, ships with staff review, the shop and orders, Slack reminders, a small admin area and Hack Club's data-deletion API (Rails 8.1, PostgreSQL, importmap, plain CSS). What is built and what is still open: `projects/battletown/plans/platform-backlog.md` in the agent wiki.
 
-Naming: players see "Armoury" (the prize store), while the code, routes and URLs keep "shop" (`/shop`, `ShopController`, `shop_path`).
-
 ## Setup
 
 ``sh
@@ -53,11 +51,11 @@ See `.env.example`. Credentials can alternatively live in Rails credentials unde
 | `PRIVACY_AUDIENCE` | Audience a data-deletion token must carry (default `battletown`); the value to give Hack Club infrastructure, see `projects/battletown/specs/privacy-api.md` (agent wiki)` |
 | `PRIVACY_JWKS_URL` | Where the Hack Club data-deletion signing keys are fetched (default `https://yeet.hackclub.com/.well-known/jwks.json`); leave unset in production, `https` only |
 | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_DOMAIN`, `MAIL_FROM` | Email notifications (behind the Flipper flag `email`, default off; ship decisions and the welcome-back note, each with one-click unsubscribe). Real SMTP only when `SMTP_ADDRESS` and `MAIL_FROM` are set; otherwise nothing is sent. Names only here, values in the environment: see `projects/battletown/runbooks/deploy.md` in the agent wiki and the "Email notifications" section of `projects/battletown/specs/contract.md` in the agent wiki |
-| `SLACK_BOT_TOKEN` / `NOTIFICATIONS_ENABLED` | Slack DM reminders (`app/services/notifications`, tunables in `config/notifications.yml`). Needs a bot token with `chat:write` (and `users:read`, which also lets players' Slack name and picture show on their profile and the dashboard: `app/services/slack_profiles`, `bin/rails slack:refresh_profiles`); nothing is ever sent unless `NOTIFICATIONS_ENABLED` is exactly `true` (default off). Cron `bin/rails notifications:dispatch` every minute, or run `DispatchNotificationsJob`. Everything it can send (daily reminder, link question, ship reminders, ship decisions) and the `/settings/notifications` switches are described in `projects/battletown/specs/contract.md` in the agent wiki |
+| `SLACK_BOT_TOKEN` / `NOTIFICATIONS_ENABLED` | Slack DM reminders (`app/services/notifications`, tunables in `config/notifications.yml`). Needs a bot token with `chat:write`; nothing is ever sent unless `NOTIFICATIONS_ENABLED` is exactly `true` (default off). Cron `bin/rails notifications:dispatch` every minute, or run `DispatchNotificationsJob`. Everything it can send (daily reminder, link question, ship reminders, ship decisions) and the `/settings/notifications` switches are described in `projects/battletown/specs/contract.md` in the agent wiki |
 
 ### Slack app
 
-The Slack app that sends the reminder DMs is defined by `config/slack/manifest.yml` (bot scopes `chat:write` and `users:read` only; no events, commands or Socket Mode). To create it, use api.slack.com/apps, Create New App, From a manifest, pick the Hack Club workspace, paste the manifest, install it and put the Bot User OAuth Token in `SLACK_BOT_TOKEN` (environment only, never the repo). Then run `bin/rails slack:check` to verify the token and its scopes, and set `NOTIFICATIONS_ENABLED=true` only when ready. Details, ownership and admin-approval notes: `projects/battletown/runbooks/slack-app.md` in the agent wiki.
+The Slack app that sends the reminder DMs is defined by `config/slack/manifest.yml` (bot scope `chat:write` only; no events, commands or Socket Mode). To create it, use api.slack.com/apps, Create New App, From a manifest, pick the Hack Club workspace, paste the manifest, install it and put the Bot User OAuth Token in `SLACK_BOT_TOKEN` (environment only, never the repo). Then run `bin/rails slack:check` to verify the token and its scopes, and set `NOTIFICATIONS_ENABLED=true` only when ready. Details, ownership and admin-approval notes: `projects/battletown/runbooks/slack-app.md` in the agent wiki.
 
 ### Cron entries and feature flags
 
@@ -88,6 +86,6 @@ Enforced nonce-based CSP, Permissions-Policy, rack-attack throttles (shared Soli
 - Before launch: register with the Hack Club yeet deletion service, see `projects/battletown/runbooks/deploy.md` (agent wiki) ("Before launch (blocking)").
 - Real Hack Club Auth login: the redirect to auth.hackclub.com works with the registered app; the full round trip (login, consent, callback) still needs a manual run with a real account.
 - Final design tokens and copy (Figma style guide pending).
-- Battletown has no terms or privacy text of its own: the footer and the sign-up step link to Hack Club's global page (https://hackclub.com/privacy-and-terms/, `Legal::URL`), and `/privacy` and `/terms` redirect there. Email and Slack ID are stored unencrypted for now.
+- Privacy policy and terms are placeholders; a GDPR/data request is in progress. Email and Slack ID are stored unencrypted for now.
 - Final shop items and prices, Plinko and the shipping-address decision (orders are requests; the team arranges delivery on Slack) are open.
 - Production cache store: decided and built, but untested on a real deployment. Production uses Solid Cache in the app's PostgreSQL database for `Rails.cache` and the rack-attack counters (dev/test keep an in-process store); see `projects/battletown/runbooks/deploy.md` (agent wiki) for the single-database layout and the post-deploy store check. Still to confirm with the platform: which container port it routes to (80 by default) and whether a proxy with a public address needs listing in `TRUSTED_PROXIES`.

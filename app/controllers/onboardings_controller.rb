@@ -12,7 +12,7 @@ class OnboardingsController < ApplicationController
     "prize" => [ :prize_key ],
     "project" => %i[project_kind project_idea],
     "schedule" => [ :coding_time, :time_zone, :pace_minutes, { coding_day_names: [], coding_times: User::DAYS } ],
-    "account" => %i[referral_source]
+    "account" => [ :referral_source ]
   }.freeze
 
   REQUIRED = {
@@ -21,7 +21,7 @@ class OnboardingsController < ApplicationController
     "schedule" => %i[coding_time time_zone]
   }.freeze
 
-  helper_method :subject, :hackatime_required?
+  helper_method :subject
 
   before_action :set_step, only: %i[step update]
   before_action :enforce_progress, only: %i[step update]
@@ -33,7 +33,6 @@ class OnboardingsController < ApplicationController
 
   def step
     @transition = transition_for_step
-    track_event(:onboarding_step_viewed, step: @step) unless current_user&.onboarded?
     render @step
   end
 
@@ -44,7 +43,6 @@ class OnboardingsController < ApplicationController
     return hackatime_required if @step == "account" && !hackatime_ready?
 
     if save_step
-      track_step_saved
       Notifications::Scheduler.refresh(current_user) if @step == "schedule" && signed_in?
       redirect_to after_save_path, notice: (current_user&.onboarded? ? "Saved." : nil)
     else
@@ -55,17 +53,13 @@ class OnboardingsController < ApplicationController
   private
 
   # Hackatime is how coding time counts, so the account step is finished only with a working connection. Someone who is
-  # already in (editing their plan later) is not stopped by it. HACKATIME_REQUIRED=0 (config.x.hackatime.required) makes the
-  # step optional for everyone: the escape hatch if Hackatime or its OAuth app is down.
+  # already in (editing their plan later) is not stopped by it.
   def hackatime_ready?
-    return true unless hackatime_required?
     return true if current_user&.onboarded?
 
     connection = current_user&.hackatime_connection
     connection.present? && !connection.needs_reconnect?
   end
-
-  def hackatime_required? = Rails.configuration.x.hackatime.required
 
   def hackatime_required
     redirect_to onboarding_step_path("account"), alert: "Connect Hackatime first. It's how your coding time counts."
@@ -127,10 +121,8 @@ class OnboardingsController < ApplicationController
     if raw.is_a?(ActionController::Parameters) && raw[:age_group] == "teen" && subject.valid?
       subject.onboarding_step = [ subject.onboarding_step, next_index ].max
       subject.save
-      track_event(:onboarding_step_completed, step: "age")
       redirect_to onboarding_step_path(STEPS.fetch(next_index))
     else
-      track_event(:onboarding_ineligible)
       # Turbo only shows a form response that is a redirect or an error status, so this is a 422 like the other steps.
       render :ineligible, status: :unprocessable_content
     end
@@ -156,14 +148,6 @@ class OnboardingsController < ApplicationController
     end
     user.errors.add(:project_idea, :not_saved, message: "We couldn't save your project just now. Please try again.") if !saved && user.errors.empty?
     saved
-  end
-
-  # Analytics for a saved step: the first run through is onboarding events (the answers reduced to enums, never the idea or the times); a
-  # player who is already in and edits their plan records only the settings change.
-  def track_step_saved
-    editing = current_user&.onboarded?
-    track_event(:onboarding_step_completed, step: @step, **Analytics::Journey.onboarding_props(@step, subject)) unless editing
-    track_event(:settings_saved, section: "schedule") if editing && @step == "schedule"
   end
 
   # The schedule step sends the browser's own time zone (an IANA name such as America/New_York) and never asks. It is mapped to the zone
@@ -220,8 +204,7 @@ class OnboardingsController < ApplicationController
     return redirect_to onboarding_step_path(STEPS.fetch(unlocked_index)) unless signed_in?
     return hackatime_required unless hackatime_ready?
 
-    finished = current_user.with_lock { !current_user.onboarded? && current_user.update!(onboarded_at: Time.current) }
-    track_event(:onboarding_completed) if finished
+    current_user.with_lock { current_user.update!(onboarded_at: Time.current) unless current_user.onboarded? }
     Notifications::Scheduler.refresh(current_user)
     redirect_to dashboard_path
   end

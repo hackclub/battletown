@@ -37,7 +37,7 @@ class StyleguideTest < ActionDispatch::IntegrationTest
     assert_select ".dev-only", minimum: 1
     %w[.btn--primary .btn--raised .btn--cta .btn--danger .btn--ghost .field__error .toggle__input .card--chunky .panel .band--map .badge--success
        .progress--boss .progress--goal .progress--prize progress.progress__bar .table .alert--danger .flash--notice .empty
-       .site-header__nav .list].each do |selector|
+       .site-menu .list].each do |selector|
       assert_select selector, minimum: 1, message: "missing #{selector}"
     end
     assert_select "ul.sg-swatches li.sg-swatch", DesignSystem::Tokens.colors.size

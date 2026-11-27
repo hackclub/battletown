@@ -11,14 +11,8 @@ class User < ApplicationRecord
   PACES = [ 15, 30, 45, 60, 90, 120, 180, 240 ].freeze
   PACE_DEFAULT = 60
 
-  # Every player has a public profile: the opaque address and the name shown on it (see the concern).
-  include PublicProfile
-  # Staff, simulated and listed test players are never measured (analytics_excluded, refreshed on every save).
-  include AnalyticsExclusion
-
   # Deleted by the database (ON DELETE CASCADE), so the data-deletion API removes the Hackatime tokens too.
   has_one :hackatime_connection, dependent: nil
-  has_one :slack_profile, dependent: nil # the Slack name and picture a player lets other players see (SlackProfiles); the database cascades the delete
 
   enum :verification_status, {
     needs_submission: "needs_submission",
@@ -58,8 +52,6 @@ class User < ApplicationRecord
 
   before_validation :drop_unused_coding_times
   before_save :set_signed_up_on, if: :signed_up_on_open?
-  # A new daily pace is an analytics event (the onboarding choice, or a later change); it never fails the save.
-  after_save -> { Analytics::Product.pace_set(self) }, if: :saved_change_to_pace_minutes?
 
   # Admins are the Hack Club Auth ids in the ADMIN_HCA_UIDS env var (see AdminAllowlist). Checked server-side
   # against the stored hca_uid on every call; nothing client-supplied is trusted.
@@ -180,7 +172,7 @@ class User < ApplicationRecord
   def prize_still_offered
     return if prize_key.nil? || errors.include?(:prize_key)
 
-    errors.add(:prize_key, "is no longer in the armoury: pick another") unless Prize.find(prize_key)&.active?
+    errors.add(:prize_key, "is no longer in the shop: pick another") unless Prize.find(prize_key)&.active?
   end
 
   # `signed_up_on` is the local date the account was created on, in the user's zone: the game counts hours from it

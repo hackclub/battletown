@@ -15,14 +15,14 @@
         <h1>You're unsubscribed</h1>
       </header>
       <p>You won't get any more email from Battletown. Your coding, coins and ships are not affected.</p>
-      <p>Changed your mind? You can turn email back on in <%= link_to "your notification settings", settings_path(anchor: "notifications") %> (sign in first).</p>
+      <p>Changed your mind? You can turn email back on in <%= link_to "your notification settings", settings_notifications_path %> (sign in first).</p>
     <% else %>
       <header class="page-header">
         <p class="eyebrow">Email</p>
         <h1>This link doesn't work</h1>
       </header>
       <p>This link isn't valid any more. It may have been replaced by a newer email, or it may have been copied wrongly.</p>
-      <p>You can choose which emails you get in <%= link_to "your notification settings", settings_path(anchor: "notifications") %> (sign in first).</p>
+      <p>You can choose which emails you get in <%= link_to "your notification settings", settings_notifications_path %> (sign in first).</p>
     <% end %>
   </article>
 </div>

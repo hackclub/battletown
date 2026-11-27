@@ -5,7 +5,6 @@ class LandingController < ApplicationController
   def show
     return redirect_to dashboard_path if signed_in? && current_user.onboarded?
 
-    track_event(:landing_viewed)
     @referral = Referral.find(session[:referral_source])
     @prizes = Prize.paid
     onboarded = User.onboarded.count

@@ -46,12 +46,10 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_equal 1, users(:new_user).projects.count
   end
 
-  test "the header has no Projects link (the Profile page and the dashboard lead there) and signed-out visitors see none" do
+  test "the header links to Projects for onboarded users only" do
     sign_in_as @user
     get dashboard_path
-    assert_select "nav[aria-label=Main] a[href='#{projects_path}']", 0
-    get player_path(@user.public_slug)
-    assert_select "main a[href='#{projects_path}']", minimum: 1
+    assert_select "nav[aria-label=Main] a[href='#{projects_path}']", "Projects"
     delete logout_path
     get root_path
     assert_select "a[href='#{projects_path}']", 0

@@ -20,7 +20,6 @@ module Shop
         order = Order.create!(user: @user, prize_key: prize.key, prize_name: prize.name, coins: 0, kind: "signup_sticker",
                               idempotency_key: "signup_sticker")
         Orders::AttachAddress.for_new_order!(order: order, user: @user, draft_key: "sticker", address_id: @address_id) if @address_required
-        Analytics::Product.order_placed(order)
         order
       end
     rescue ActiveRecord::RecordNotUnique

@@ -5,7 +5,6 @@ class DashboardController < ApplicationController
 
   def show
     settle_finished_days
-    SlackProfiles.refresh_later(current_user) # their own Slack name and picture, in the background, at most daily
     @dashboard = Dashboard::Presenter.new(user: current_user)
   end
 

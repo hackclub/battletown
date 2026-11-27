@@ -53,9 +53,8 @@ module Teams
         cooldown!(user, now, config)
         raise Full, "This crew is full (#{config.max_size} people)." if team.memberships.count >= config.max_size
 
-        membership = TeamMembership.create!(team: team, user: user, joined_at: now)
+        TeamMembership.create!(team: team, user: user, joined_at: now)
         TeamCooldown.where(user_id: user.id).delete_all
-        Analytics::Product.team_joined(membership)
         team
       end
     end

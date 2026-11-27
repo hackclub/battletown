@@ -97,7 +97,6 @@ module Hours
         HourEntry.create!(user: @user, local_date: date, seconds: credited, source: @source, idempotency_key: @key,
                           hackatime_project: @project, note: @note, created_by: @created_by)
       end
-      Analytics::Product.hours_credited(@user, entry)
       Result.new(entry: entry, status: credited == @seconds ? :created : :clamped, requested_seconds: @seconds)
     rescue ActiveRecord::RecordNotUnique
       # Only reachable if something wrote this key without taking the user lock.

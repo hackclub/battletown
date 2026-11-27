@@ -12,8 +12,6 @@ class HackatimeLink < ApplicationRecord
   belongs_to :project
 
   before_validation { self.hackatime_project = hackatime_project.to_s.strip }
-  # One place for every way a link is made (typed, repo match, confirmed suggestion); the name of the Hackatime project is never an event property.
-  after_create { Analytics.track(:project_linked, user: user, method: link_method) }
 
   validates :hackatime_project, length: { in: 1..NAME_MAX }, format: { with: NAME_FORMAT, message: "can only use letters, numbers, spaces and . _ - / : + # @ ( ) ~ [ ]" }
   validates :hackatime_project, uniqueness: { scope: :user_id, message: "is already linked to one of your projects" }

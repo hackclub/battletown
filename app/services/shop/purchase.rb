@@ -41,7 +41,6 @@ module Shop
                               idempotency_key: @key)
         Coins::Ledger.debit(user: @user, amount: prize.coins, kind: "purchase", reference: order,
                             idempotency_key: "shop:purchase:#{@key}", created_by: "shop")
-        Analytics::Product.order_placed(order)
         order
       end
     end

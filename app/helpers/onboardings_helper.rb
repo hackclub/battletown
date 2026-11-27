@@ -65,7 +65,7 @@ module OnboardingsHelper
   # What to tell people for each kind of failure, as a short instruction (never "can't be blank"). Keyed by attribute and
   # error type; a model's own message is only the fallback. :custom is an error the model added as plain text.
   ERROR_MESSAGES = {
-    prize_key: { blank: "Pick a prize to continue", inclusion: "Pick a prize from the list", custom: "Pick another prize. That one isn't in the armoury any more." },
+    prize_key: { blank: "Pick a prize to continue", inclusion: "Pick a prize from the list", custom: "Pick another prize. That one isn't in the shop any more." },
     project_kind: { blank: "Pick a kind of project", inclusion: "Pick a kind of project from the list", custom: "Pick another kind of project. That one isn't offered any more." },
     project_idea: { too_long: "Shorten your idea to %{count} characters or fewer" },
     coding_days: { blank: "Pick at least one day" },

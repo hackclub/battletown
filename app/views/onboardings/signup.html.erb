@@ -9,5 +9,5 @@
   <div class="onboarding__actions">
     <%= render "shared/signup_button", label: "Sign up with Hack Club", css: "btn btn--primary btn--lg btn--raised" %>
   </div>
-  <p class="onboarding__hint">By signing up you agree to <%= legal_link %>.</p>
+  <p class="onboarding__hint">By signing up you agree to the <%= link_to "Terms", terms_path %> and the <%= link_to "Privacy Policy", privacy_path %>.</p>
 <% end %>

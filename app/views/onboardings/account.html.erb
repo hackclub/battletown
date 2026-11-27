@@ -1,10 +1,8 @@
 <%= render layout: "onboardings/frame", locals: { step: "account" } do %>
-  <%# Hackatime is required: it is how coding time counts (unless HACKATIME_REQUIRED=0, the launch-day escape hatch: then it is
-      recommended and the step can be skipped for now). It sits outside the form below because connecting is its own
+  <%# Hackatime is required: it is how coding time counts. It sits outside the form below because connecting is its own
       form (a POST to Hackatime); the form holds the rest of the step and the Continue button. %>
   <% connection = current_user.hackatime_connection %>
   <% state = connection.nil? ? :missing : (connection.needs_reconnect? ? :reconnect : :connected) %>
-  <% required = hackatime_required? %>
   <%= render "onboardings/editor_steps" %>
 
   <ul class="checks">
@@ -16,17 +14,13 @@
         <% when :reconnect %>
           <span class="badge badge--warning">Needs reconnecting</span>
         <% else %>
-          <span class="badge badge--warning"><%= required ? "Required" : "Recommended" %></span>
+          <span class="badge badge--warning">Required</span>
         <% end %>
       </div>
       <% if state == :connected %>
         <p>Hackatime is connected. Your coding time will count on its own.</p>
       <% else %>
-        <% if required %>
-          <p>Hackatime is the free tool that tracks the time you spend coding. It's how your hours count, so we need it before you start.</p>
-        <% else %>
-          <p>Hackatime is the free tool that tracks the time you spend coding. It's how your hours count, so we recommend connecting it. You can skip this for now and connect it later from your dashboard or Settings.</p>
-        <% end %>
+        <p>Hackatime is the free tool that tracks the time you spend coding. It's how your hours count, so we need it before you start.</p>
         <p class="muted small">You'll go to Hackatime, say yes, and come straight back here. We can only read, never change anything. We use how long you code each day, the names of your Hackatime projects and your Hackatime ID. We don't use or keep anything else, like your email.</p>
         <div class="check__action">
           <%= button_to (state == :reconnect ? "Reconnect Hackatime" : "Connect Hackatime"), "/auth/hackatime", method: :post, class: "btn btn--primary btn--lg", form: { data: { turbo: false } } %>
@@ -50,17 +44,10 @@
           </div>
         <% end %>
       </li>
-      <li class="check card card--cream card--flat" id="profile-check">
-        <h2 class="check__title">Your profile</h2>
-        <p class="muted small" id="profile-check-hint">Every player has a profile page. Other players can see your name, projects and boss damage. They see <strong><%= current_user.fallback_name %></strong> unless you pick a display name in Settings, and never your email or your real name.</p>
-      </li>
     </ul>
-    <%# Continue shows once Hackatime works (the server refuses without it too). Someone editing their plan later always has it.
-        While Hackatime is optional, anyone can carry on: "Skip for now" until it is connected. %>
+    <%# Continue shows once Hackatime works (the server refuses without it too). Someone editing their plan later always has it. %>
     <% if state == :connected || current_user.onboarded? %>
       <div class="onboarding__actions"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div>
-    <% elsif !required %>
-      <div class="onboarding__actions"><%= f.button onboarding_label("Skip for now"), class: "btn btn--lg" %></div>
     <% end %>
   <% end %>
 <% end %>

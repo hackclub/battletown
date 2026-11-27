@@ -1,9 +1,6 @@
 require "test_helper"
-require_relative "../support/profiles_helper"
 
 class RackAttackTest < ActionDispatch::IntegrationTest
-  include ProfilesHelper
-
   # Throttle keys are Time.now.to_i / period, so a test that sends limit + 1 requests can straddle a window
   # boundary (a slow first request is enough) and see the count reset. Freezing time at the very start of a
   # window keeps every request in the same one.
@@ -16,7 +13,6 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   end
 
   teardown do
-    reset_omniauth
     Rack::Attack.cache.store.clear
     Rack::Attack.enabled = false
     travel_back
@@ -26,32 +22,12 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_instance_of ActiveSupport::Cache::MemoryStore, Rack::Attack.cache.store.then { |store| store.respond_to?(:store) ? store.store : store }
   end
 
-  test "auth request phase is limited to 60 POSTs a minute per IP, enough for a classroom sharing one address" do
-    60.times { post "/auth/hack_club", headers: { "REMOTE_ADDR" => "203.0.113.7" } }
-    assert_not_equal 429, response.status
+  test "auth request phase is limited to 10 POSTs a minute per IP" do
+    10.times { post "/auth/hack_club", headers: { "REMOTE_ADDR" => "203.0.113.7" } }
     post "/auth/hack_club", headers: { "REMOTE_ADDR" => "203.0.113.7" }
     assert_response :too_many_requests
     post "/auth/hack_club", headers: { "REMOTE_ADDR" => "203.0.113.8" }
     assert_not_equal 429, response.status
-  end
-
-  test "profile pages and pictures are limited per signed-in person, not per address" do
-    viewer = users(:onboarded)
-    other = users(:new_user)
-    sign_in_as viewer
-    slug = other.public_slug
-    shared = { "REMOTE_ADDR" => "203.0.113.90" }
-    240.times { |i| get(i.even? ? player_path(slug) : player_avatar_path(slug), headers: shared) }
-    assert_not_equal 429, response.status
-    get player_avatar_path(slug), headers: shared
-    assert_response :too_many_requests
-    get "/players/#{slug}", headers: shared
-    assert_response :too_many_requests, "the page and the picture share one allowance"
-
-    reset!
-    sign_in_as other
-    get player_path(viewer.public_slug), headers: shared
-    assert_not_equal 429, response.status, "another person at the same address has their own allowance"
   end
 
   # Z2 review: Rails (and OmniAuth) answer to a format suffix, a repeated slash and, for OmniAuth, a different letter case, so a
@@ -106,14 +82,14 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   end
 
   test "a spoofed leading X-Forwarded-For entry does not reset the limit behind a proxy" do
-    61.times do |i|
+    11.times do |i|
       post "/auth/hack_club", headers: { "REMOTE_ADDR" => "10.0.0.2", "X-Forwarded-For" => "198.51.100.#{i}, 203.0.113.9" }
     end
     assert_response :too_many_requests
   end
 
   test "dev_login is throttled too" do
-    61.times { post "/dev_login", headers: { "REMOTE_ADDR" => "203.0.113.20" } }
+    11.times { post "/dev_login", headers: { "REMOTE_ADDR" => "203.0.113.20" } }
     assert_response :too_many_requests
   end
 end

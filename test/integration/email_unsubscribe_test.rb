@@ -61,14 +61,6 @@ class EmailUnsubscribeTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the pages point at the notification section of Settings, not at a page that no longer exists" do
-    with_feature(:email) do
-      post @path
-      assert_select "a[href='#{settings_path(anchor: "notifications")}']", text: "your notification settings"
-      assert_equal "#{Notifications::Links.base}/settings#notifications", Notifications::Links.settings
-    end
-  end
-
   test "the page shows no address and no name, is not cached, hides the token from referrers and from search engines" do
     with_feature(:email) do
       get @path
@@ -205,13 +197,13 @@ class EmailUnsubscribeTest < ActionDispatch::IntegrationTest
 
   test "settings show no email section and ignore email parameters while the flag is off" do
     sign_in_as @user
-    get settings_path
+    get settings_notifications_path
     assert_response :success
     assert_select "#email-settings", 0
     assert_no_match(/Email me|Send me email/, response.body)
 
     patch settings_notifications_path, params: { email_enabled: "0", email_preferences: { ship_approved: "0" } }
-    assert_redirected_to settings_path(anchor: "notifications")
+    assert_redirected_to settings_notifications_path
     assert_not @user.reload.email_opted_out?
     assert_equal 0, NotificationPreference.where(user_id: @user.id, channel: "email").count
   end
@@ -220,14 +212,14 @@ class EmailUnsubscribeTest < ActionDispatch::IntegrationTest
     with_feature(:returning) do
      with_feature(:email) do
       sign_in_as @user
-      get settings_path
+      get settings_notifications_path
       assert_select "#email-settings"
       assert_select "#email_enabled[checked]"
       Notifications::Email::KINDS.each { |kind| assert_select "#email_preferences_#{kind}[checked]" }
       assert_select "#email-settings", text: /Email me when a ship is approved/
 
       patch settings_notifications_path, params: { email_enabled: "1", email_preferences: { ship_approved: "0", ship_rejected: "1", daily_reminder: "0" } }
-      assert_redirected_to settings_path(anchor: "notifications")
+      assert_redirected_to settings_notifications_path
       assert_not Notifications::Preferences.enabled?(@user, "ship_approved", channel: "email")
       assert Notifications::Preferences.enabled?(@user, "ship_rejected", channel: "email")
       assert Notifications::Preferences.enabled?(@user, "ship_approved"), "the Slack switch is separate"
@@ -239,7 +231,7 @@ class EmailUnsubscribeTest < ActionDispatch::IntegrationTest
   test "the welcome-back email switch is hidden while the returning flag is off" do
     with_feature(:email) do
       sign_in_as @user
-      get settings_path
+      get settings_notifications_path
       assert_select "#email_preferences_ship_approved"
       assert_select "#email_preferences_returning_nudge", 0
     end
@@ -250,7 +242,7 @@ class EmailUnsubscribeTest < ActionDispatch::IntegrationTest
       sign_in_as @user
       patch settings_notifications_path, params: { email_enabled: "0" }
       assert @user.reload.email_opted_out?
-      get settings_path
+      get settings_notifications_path
       assert_select "#email_enabled:not([checked])"
 
       patch settings_notifications_path, params: { email_enabled: "1" }
@@ -274,7 +266,7 @@ class EmailUnsubscribeTest < ActionDispatch::IntegrationTest
     with_feature(:email) do
       @user.update_columns(email: nil)
       sign_in_as @user
-      get settings_path
+      get settings_notifications_path
       assert_select "#email-settings .alert", /no usable email address/
       patch settings_notifications_path, params: { email_preferences: { ship_rejected: "0" } }
       assert_not Notifications::Preferences.enabled?(@user, "ship_rejected", channel: "email")

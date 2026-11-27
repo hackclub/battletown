@@ -19,13 +19,7 @@ module Features
     merch_track: "Weekly merch track",
     email: "Email notifications",
     nps: "NPS survey",
-    eligibility_gate: "Eligibility gate",
-    # The analytics kill switch: ON means paused. It ships off, which is tracking running (config/analytics.yml); flip it at /admin/flipper
-    # if anything looks like a privacy problem, and collection stops within 30 seconds.
-    analytics_paused: "Analytics paused (kill switch)",
-    # The live-stage kill switch: ON means paused. It ships off, which is live updates running (Bosses::Live pushes the boss stage to every open
-    # dashboard); flip it at /admin/flipper and every dashboard goes back to asking every 30 seconds, within a few seconds.
-    live_updates_paused: "Live stage updates paused (kill switch)"
+    eligibility_gate: "Eligibility gate"
   }.freeze
   NAMES = KNOWN.keys.freeze
 

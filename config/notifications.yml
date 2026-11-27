@@ -68,7 +68,7 @@ shared:
     max_per_week: 2
     capped_kinds:
       - returning_nudge
-    # What each email switch is called in Settings (/settings#notifications) (plain words, the owner can edit these).
+    # What each email switch is called on /settings/notifications (plain words, the owner can edit these).
     preference_labels:
       ship_approved:
         title: "Email me when a ship is approved"
@@ -83,7 +83,7 @@ shared:
         title: "Email me when an order ships"
         hint: "A short note with a link to your order."
 
-  # What each switch is called in Settings (/settings#notifications) (plain words, the owner can edit these).
+  # What each switch is called on /settings/notifications (plain words, the owner can edit these).
   preference_labels:
     daily_reminder:
       title: "Daily coding reminder"

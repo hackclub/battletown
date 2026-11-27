@@ -131,17 +131,6 @@
 .sg-swatch[data-token="--color-success-ink"]{--sg:var(--color-success-ink)}
 .sg-swatch[data-token="--color-danger-bg"]{--sg:var(--color-danger-bg)}
 .sg-swatch[data-token="--color-danger-ink"]{--sg:var(--color-danger-ink)}
-.sg-swatch[data-token="--color-pink"]{--sg:var(--color-pink)}
-.sg-swatch[data-token="--color-pink-edge"]{--sg:var(--color-pink-edge)}
-.sg-swatch[data-token="--color-pink-deep"]{--sg:var(--color-pink-deep)}
-.sg-swatch[data-token="--color-navy"]{--sg:var(--color-navy)}
-.sg-swatch[data-token="--color-navy-edge"]{--sg:var(--color-navy-edge)}
-.sg-swatch[data-token="--color-blue"]{--sg:var(--color-blue)}
-.sg-swatch[data-token="--color-blue-edge"]{--sg:var(--color-blue-edge)}
-.sg-swatch[data-token="--color-royal"]{--sg:var(--color-royal)}
-.sg-swatch[data-token="--color-yellow"]{--sg:var(--color-yellow)}
-.sg-swatch[data-token="--color-yellow-edge"]{--sg:var(--color-yellow-edge)}
-.sg-swatch[data-token="--color-cream-edge"]{--sg:var(--color-cream-edge)}
 .sg-swatch[data-token="--color-warning-bg"]{--sg:var(--color-warning-bg)}
 .sg-swatch[data-token="--color-warning-ink"]{--sg:var(--color-warning-ink)}
 .sg-swatch[data-token="--color-info-bg"]{--sg:var(--color-info-bg)}

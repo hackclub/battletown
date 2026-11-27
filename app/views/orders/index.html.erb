@@ -1,18 +1,18 @@
 <% content_for :title, "Your orders" %>
 <section class="container shop stack">
   <header class="page-header">
-    <p class="eyebrow">Battletown armoury</p>
+    <p class="eyebrow">Battletown shop</p>
     <h1>Your orders</h1>
     <p class="lead shop-lead">You have <strong><%= coins_text(@total) %></strong>.</p>
-    <p><%= link_to "Back to the armoury", shop_path, class: "btn btn--ghost" %></p>
+    <p><%= link_to "Back to the shop", shop_path, class: "btn btn--ghost" %></p>
   </header>
 
   <% if @orders.empty? %>
     <div class="empty">
       <%= image_tag "design/map-tree.svg", alt: "", class: "empty__art", width: 73, height: 119 %>
       <h2 class="empty__title">No orders yet</h2>
-      <p class="empty__text">When you get something from the armoury, it shows up here.</p>
-      <div class="empty__actions"><%= link_to "Browse the armoury", shop_path, class: "btn btn--primary" %></div>
+      <p class="empty__text">When you get something from the shop, it shows up here.</p>
+      <div class="empty__actions"><%= link_to "Browse the shop", shop_path, class: "btn btn--primary" %></div>
     </div>
   <% else %>
     <ul class="shop-orders" role="list">

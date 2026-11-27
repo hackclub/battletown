@@ -13,14 +13,13 @@ module Bosses
   #   :none         before the first boss, between bosses, after the last
   #
   # Damage is what people SHIP: the coded hours on the ships submitted during the boss week (Bosses::Damage). Coding alone
-  # never hurts the boss. Only aggregates about the community are ever exposed (the damage total, how many people coded in the
-  # last 24 hours and how many of them shipped, see Bosses::Fighters), plus the CURRENT user's own shipped total.
+  # never hurts the boss. Only aggregates about the community are ever exposed (the damage total and how many people coded
+  # today, which is who is working, not who has hit), plus the CURRENT user's own shipped total.
   # Nobody else's name, avatar, id or damage is read, let alone shown.
   class Presenter
     # Facts the presenter works from. `boss` is nil for :none; `damage` is the community's ship damage in seconds,
-    # `user_seconds` the viewer's own ship seconds in the week and `fighters` the people who coded in the last 24 hours
-    # (a Bosses::Fighters::Snapshot).
-    Facts = Data.define(:today, :boss, :damage, :user_seconds, :fighters, :upcoming_on, :previous_escaped_name)
+    # `user_seconds` the viewer's own ship seconds in the week.
+    Facts = Data.define(:today, :boss, :damage, :user_seconds, :active_today, :upcoming_on, :previous_escaped_name)
 
     # How long after a boss starts a gentle "last week's boss got away" note is shown on the new boss's card.
     PREVIOUS_NOTE_DAYS = 3
@@ -43,7 +42,7 @@ module Bosses
         damage = 0
       end
       new(facts: Facts.new(today: today, boss: boss, damage: damage, user_seconds: (2 * 3600) + (35 * 60),
-                           fighters: Fighters::Snapshot.new(circles: [], total: 12, shippers: 4), upcoming_on: (today.next_occurring(:friday) if boss.nil?), previous_escaped_name: nil))
+                           active_today: 12, upcoming_on: (today.next_occurring(:friday) if boss.nil?), previous_escaped_name: nil))
     end
 
     def self.human_duration(seconds)
@@ -56,10 +55,8 @@ module Bosses
 
     def self.pluralize(count, word) = "#{count} #{word}#{'s' unless count == 1}"
 
-    # `now` is the instant the "last 24 hours" are counted back from (tests pass one).
-    def initialize(user: nil, today: nil, facts: nil, now: Time.current)
-      @user = user
-      @facts = facts || gather(user, today || Hours::Days.today("UTC", now: now), now)
+    def initialize(user: nil, today: nil, facts: nil)
+      @facts = facts || gather(user, today || Hours::Days.today("UTC"))
     end
 
     def state
@@ -73,10 +70,6 @@ module Bosses
     def boss? = !boss.nil?
 
     def boss_name = boss&.name
-
-    # The key of the viewer's own circle in this boss's week (a keyed hash, not an id; the page needs it to mark its own circle in a live
-    # push, which has nobody marked `you`). nil without a boss or a viewer.
-    def own_key = (viewer_key if boss)
 
     def art_path = boss&.art_path
 
@@ -177,54 +170,15 @@ module Bosses
     # The boss is down, the user has not earned the badge yet and the week is still on: they can still get it.
     def slayer_still_possible? = state == :defeated && !user_slayer? && in_week?
 
-    # The people drawn around the boss (Bosses::Fighters::Circle, at most Fighters::LIMIT): the ones who shipped first, then the
-    # ones who coded the most in the last 24 hours (a rolling day, so they do not all vanish at midnight UTC). The viewer's own
-    # circle, when it is among them, is marked `you`.
-    def fighters
-      @fighters ||= @facts.fighters.circles.map { |circle| circle.for_viewer(viewer_key) }
-    end
-
-    # How many people coded at least 15 minutes in the last 24 hours, and how many of them shipped a project into this boss's
-    # week in that time. Counts of everybody, not only of the circles drawn.
-    def fighter_count = @facts.fighters.total
-
-    def shipper_count = @facts.fighters.shippers
-
-    # Nobody coded in the last day: the stage has no circles (and no visible text; the arena sentence says so for screen readers).
-    def quiet? = fighter_count.zero?
+    # How many people coded at least 15 minutes on the user's local today (who is working, not who has shipped; it
+    # drives the fighter circles). A count, never a list.
+    def community_active_today = @facts.active_today
 
     def community_text
-      return (state == :in_progress ? "Nobody has coded in the last day. Be the first to hit it." : "Nobody has coded in the last day.") if quiet?
+      count = community_active_today
+      return "Be the first to code today." if count.zero?
 
-      coded = fighter_count == 1 ? "1 person coded in the last day." : "#{fighter_count} people coded in the last day."
-      shipper_count.positive? ? "#{coded} #{shipper_count} of them shipped." : coded
-    end
-
-    # The visually hidden sentence in the arena: everything the circles mean, in words, "Nobody has coded in the last day"
-    # included when the arena is empty (nothing about it is drawn on the stage).
-    def arena_text = [ community_text, contributed_text, outcome_text ].compact_blank.join(" ")
-
-    # The end of the arena sentence that is the same for everyone: how the boss's week went.
-    def outcome_text
-      [ ("Boss defeated." if state == :defeated), ("The boss got away this week." if state == :escaped) ].compact.join(" ").presence
-    end
-
-    # Everything the live stage redraws from (GET /boss/fighters, boss_fighters_controller.js), as plain values. Only the public
-    # bits of a circle: no id, no email, no real name, no exact minutes. `damage_text` is the viewer's own total.
-    def live_payload
-      { state: state, boss_name: boss_name, health_percent: health_percent, health_text: health_text, summary: summary, damage_text: contributed_text,
-        arena_text: arena_text, total: fighter_count, shippers: shipper_count,
-        fighters: fighters.map { |circle| circle_payload(circle) } }
-    end
-
-    # What is pushed to EVERY open dashboard (Bosses::Live, BossStageChannel): live_payload without anything about the viewer. Build it with
-    # `user: nil`, so no circle is marked `you` and nobody's own total is read. The viewer's own sentence (`damage_text`) is not in it; the page
-    # keeps its own and puts it back into the arena sentence from `community_text` and `outcome_text`, which are the parts that are the same for
-    # everyone. `boss_id` is the stream the message goes out on, `damage_percent` the part of the health dealt.
-    def public_payload
-      { state: state, boss_id: boss&.id, boss_name: boss_name, health_percent: health_percent, damage_percent: damage_percent, health_text: health_text,
-        summary: summary, community_text: community_text, outcome_text: outcome_text, total: fighter_count, shippers: shipper_count,
-        fighters: fighters.map { |circle| circle_payload(circle) } }
+      count == 1 ? "1 person coded today." : "#{count} people coded today."
     end
 
     # In :none, when the next boss arrives (a Date) if one is scheduled.
@@ -242,14 +196,6 @@ module Bosses
     def damage = @facts.damage
 
     def today = @facts.today
-
-    # The viewer's own circle key in this boss's week (nil without a viewer).
-    def viewer_key = (Fighters.key_for(@user.id, boss) if @user)
-
-    def circle_payload(circle)
-      { key: circle.key, name: circle.name, title: circle.title, initial: circle.initial, tone: circle.tone, size: circle.size, tier: circle.tier.to_s, path: circle.path, avatar_url: circle.avatar_url,
-        you: circle.you, label: circle.label, detail: circle.detail, status: circle.status, hint: circle.hint, motion: circle.motion }
-    end
 
     def defeated? = boss.present? && (boss.defeated_at.present? || BossMath.defeated?(damage, boss.hp_seconds))
 
@@ -271,19 +217,19 @@ module Bosses
       end
     end
 
-    def gather(user, today, now)
+    def gather(user, today)
       boss = Boss.without_art_content.covering(today).first
       boss ||= Boss.without_art_content.where(ends_on: (today - Config.current.afterglow_days)...today).order(ends_on: :desc).first
-      return empty_facts(today, now) unless boss
+      return empty_facts(today) unless boss
 
       Facts.new(today: today, boss: boss, damage: Damage.for(boss),
-                user_seconds: (user ? Damage.for_user(boss, user) : 0),
-                fighters: Fighters.call(boss, now: now), upcoming_on: nil,
+                user_seconds: Damage.for_user(boss, user),
+                active_today: Hours::Totals.active_user_count(today), upcoming_on: nil,
                 previous_escaped_name: previous_escaped_name_for(boss, today))
     end
 
-    def empty_facts(today, now)
-      Facts.new(today: today, boss: nil, damage: 0, user_seconds: 0, fighters: Fighters.call(nil, now: now),
+    def empty_facts(today)
+      Facts.new(today: today, boss: nil, damage: 0, user_seconds: 0, active_today: Hours::Totals.active_user_count(today),
                 upcoming_on: Boss.where(starts_on: (today + 1)..).minimum(:starts_on), previous_escaped_name: nil)
     end
 
