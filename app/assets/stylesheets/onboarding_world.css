@@ -18,7 +18,8 @@
 
 /* ---- The backdrop: the landing's painted hero behind every step, frosted so the panel and the strip stay the point ---- */
 body:has(.onboarding-page) { background: var(--color-sky); }
-body:has(.onboarding-page)::before {
+/* on <html>, which Turbo keeps between steps (it swaps only <body>), so the backdrop never redraws when you move on */
+html:has(.onboarding-page)::before {
   content: "";
   position: fixed;
   inset: -2rem; /* bigger than the screen, so the blur has no soft edge showing */
@@ -30,26 +31,24 @@ body:has(.onboarding-page)::before {
   filter: blur(5px) saturate(0.9);
 }
 
-/* ---- Top strip: the top of the page, as wide as the panel. A game-style HUD whose bar is the landing's boss health bar
-   (slanted, white outline), filling up in pink as you get through the steps ---- */
+/* ---- Top strip: the top of the page, no box around it. The slanted boss-health bar (white outline) fills up in pink as you
+   get through the steps; the back button sits at its left and the label and step count sit on the page just above the track,
+   in the navy ---- */
 .onboarding-page { padding-top: var(--space-4); }
 body:has(.onboarding-page) .page { padding-top: var(--space-2); }
 .onboarding-top {
-  align-items: center;
+  align-items: flex-end;
   max-width: 48rem;
-  padding: var(--space-3) var(--space-6) var(--space-3) var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--ob-navy);
-  box-shadow: 0 0.35rem 0 var(--ob-plate-edge);
-  color: var(--ob-cream);
+  gap: var(--space-3);
+  color: var(--color-navy);
 }
 .onboarding-top__back { border-color: var(--ob-cream); background: var(--ob-cream); color: var(--ob-navy); }
 .onboarding-top__back:hover { background: var(--ob-yellow); }
 .onboarding-top__back:focus-visible { outline-color: var(--ob-yellow); }
-.onboarding-top__progress { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: var(--space-2); }
+.onboarding-top__progress { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: var(--space-1); }
 .onboarding-top__head { display: flex; flex-wrap: nowrap; align-items: baseline; justify-content: space-between; gap: 0 var(--space-3); }
-.onboarding-top__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-sm); font-weight: 700; color: var(--ob-cream); }
-.onboarding-top__step { font-family: var(--font-display); font-size: var(--text-base); letter-spacing: -0.02em; color: var(--ob-yellow); white-space: nowrap; }
+.onboarding-top__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-sm); font-weight: 700; color: var(--color-navy); }
+.onboarding-top__step { font-family: var(--font-display); font-size: var(--text-base); letter-spacing: -0.02em; color: var(--color-navy); white-space: nowrap; }
 .onboarding-top__bar {
   -webkit-appearance: none;
   appearance: none;
@@ -92,12 +91,12 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
 
 /* ---- The chunky pink button, as on the landing page ---- */
 .onboarding-page .btn--primary.btn--lg {
+  --btn-pt: 0.5em; --btn-px: 0.9em; --btn-pb: 0.56em; /* the base .btn slab rules carry the hover rise and press, with the base fixed */
+  --btn-edge: var(--ob-pink-edge);
   gap: 0.36em;
-  padding: 0.5em 0.9em 0.56em;
   border: 0;
   border-radius: 0.58em;
   background: var(--ob-pink);
-  box-shadow: inset 0 -0.1667em 0 var(--ob-pink-edge);
   color: var(--ob-cream);
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -107,11 +106,6 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
 }
 .onboarding-page .btn--primary.btn--lg::after { content: "\2192" / ""; font-family: var(--font-body); font-weight: 700; }
 .onboarding-page .btn--primary.btn--lg:focus-visible { outline: 3px solid var(--ob-navy); outline-offset: 4px; }
-@media (prefers-reduced-motion: no-preference) {
-  .onboarding-page .btn--primary.btn--lg { transition: translate 120ms ease; }
-  .onboarding-page .btn--primary.btn--lg:hover { translate: 0 -0.06em; }
-  .onboarding-page .btn--primary.btn--lg:active { translate: 0 0.04em; }
-}
 
 /* Not ready yet (a choice is still to make): not pink, so no pink label has to pass as dimmed. The sky-soft face with the navy
    label is 8.3:1; no raised edge and no arrow, so it also reads as "not yet" without color. */
@@ -122,7 +116,6 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
   box-shadow: none;
   color: var(--color-navy);
   opacity: 1;
-  translate: none;
   cursor: not-allowed;
 }
 .onboarding-page .btn--primary.btn--lg[aria-disabled="true"]::after { content: none; }
@@ -130,9 +123,9 @@ body:has(.onboarding-page) .page { padding-top: var(--space-2); }
 /* ---- The age question: two chunky choices (look in onboarding.css: no outline, edge in the face's own darker shade) ---- */
 .age-choice { border-radius: 1.5rem; font-size: var(--text-xl); letter-spacing: -0.02em; }
 @media (prefers-reduced-motion: no-preference) {
-  .age-choice { transition: transform 120ms ease, background-color 120ms ease; }
-  .age-choice:hover { transform: translateY(-0.2rem); }
-  .age-choice:active { transform: translateY(0.2rem); }
+  .age-choice { transition: translate 120ms ease, margin-bottom 120ms ease, min-height 120ms ease, padding-bottom 120ms ease, box-shadow 120ms ease, background-color 120ms ease; }
+  .age-choice:is(:hover, :focus-visible) { --press: var(--press-rise); }
+  .age-choice:active { --press: calc(var(--press-sink) - var(--age-edge)); }
 }
 
 /* ---- Different times on some days: one compact row per day (the day on the left, a short time field on the right) ---- */
@@ -163,7 +156,7 @@ body:has(.onboarding-page) .site-header__logo { width: auto; height: clamp(1.75r
 body:has(.onboarding-page) .page { display: flex; flex-direction: column; padding-block: 0; }
 body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .onboarding-page__content { flex: 1; display: flex; flex-direction: column; gap: var(--ob-pad); min-height: 0; }
-.onboarding-top { flex: none; max-width: var(--ob-fit-width); padding-block: clamp(0.25rem, 1vh, 0.75rem); }
+.onboarding-top { flex: none; max-width: 48rem; } /* its own fixed width, so the bar is the same on every step whatever the card below is */
 .onboarding-top__label { font-size: var(--text-sm); }
 .onboarding-top__bar { height: clamp(1rem, 2.4vh, 1.375rem); }
 .onboarding { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; max-width: var(--ob-fit-width); } /* the panel hugs its content and sits in the middle of the room under the strip */
@@ -185,7 +178,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .onboarding__panel > form > *, .onboarding__panel > .checks, .onboarding__panel > .celebration > * { margin: 0; }
 .onboarding__fieldset, .onboarding__field, .timezone { margin: 0; }
 .onboarding__actions { margin-top: auto; padding-top: 0; flex: none; }
-.onboarding__actions > .btn--primary { min-height: clamp(2.75rem, 7vh, 3.5rem); }
+.onboarding__actions > .btn--primary { --btn-min-h: clamp(2.75rem, 7vh, 3.5rem); }
 .onboarding-page .btn--primary.btn--lg { font-size: clamp(1.125rem, 3.2vh, 1.5rem); }
 /* The phone layout used to pin the button to the bottom of a long page; the page no longer scrolls, so it just sits there. */
 @media (max-width: 40rem) {
@@ -198,7 +191,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 /* ---- Age: the two big choices share the room under the heading ---- */
 .onboarding__panel > form:has(.age-choices) { flex: none; }
 .age-choices { flex: none; grid-template-rows: auto; gap: var(--ob-gap); }
-.age-choice { min-height: clamp(5rem, 20vh, 10rem); padding: var(--space-3); width: 100%; font-size: clamp(1.25rem, 3.2vh, 1.75rem); }
+.age-choice { --age-min-h: clamp(5rem, 20vh, 10rem); --age-pad: var(--space-3); width: 100%; font-size: clamp(1.25rem, 3.2vh, 1.75rem); }
 
 /* ---- Prize: nine short cards (emoji on a block at the left, the words at the right) filling the room under the heading.
    3 x 3 on a wide window, 2 columns on a phone; the one-line descriptions only where there is room for them ---- */
@@ -266,7 +259,6 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   .choice-grid--prizes .choice__input:checked + .choice__body::after { top: 0.125rem; right: 0.125rem; width: 1.25rem; height: 1.25rem; font-size: 0.75rem; }
   .onboarding-page.container { padding-inline: 0.5rem; }
   .onboarding__panel { padding-inline: 0.75rem; }
-  .onboarding-top { padding-inline: 0.25rem 0.75rem; }
   .onboarding-top__head { flex-wrap: nowrap; align-items: flex-start; }
   .onboarding-top__label { font-size: var(--text-sm); line-height: 1.2; }
   .onboarding-prize { gap: 0 var(--space-2); line-height: 1.2; }
@@ -279,7 +271,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .choice-grid--prizes .choice__input:checked + .choice__body .choice__plate { background: none; }
 .choice-grid--prizes .choice__input:checked + .choice__body::after { top: 0.25rem; right: 0.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.875rem; }
 .choice-grid--prizes .choice:has(.choice__input:checked) { border-radius: clamp(0.875rem, 2.2vh, 1.4rem); }
-.choice-grid--prizes .choice:hover .choice__body { transform: none; }
+.choice-grid--prizes .choice:is(:hover, :active) .choice__body { --press: 0px; } /* the prize cards pick, they do not press: no motion */
 .onboarding__hint { flex: none; }
 
 /* "Working toward": a slim line; on a wide window it sits at the right of the heading row instead of taking a row of its own */
@@ -375,7 +367,6 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .onboarding .field > label, .onboarding .field__label { line-height: 1.3; }
 @media (max-width: 39.99rem) {
   .onboarding__panel { padding-inline: 0.625rem; padding-block: 0.625rem; }
-  .onboarding-top { padding-block: 0.125rem; }
   .onboarding-top__bar { height: 0.875rem; }
   .celebration__summary dd { font-size: 0.9375rem; line-height: 1.3; }
   .celebration__summary > div:nth-child(1), .celebration__summary > div:nth-child(3) { grid-column: 1 / -1; }
@@ -392,7 +383,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   .onboarding__field { gap: var(--space-1); }
 }
 @media (max-width: 39.99rem) { .toggle-group.days { gap: 2px; } }
-@media (max-width: 39.99rem) { .onboarding__actions > .btn--primary { min-height: 3rem; } }
+@media (max-width: 39.99rem) { .onboarding__actions > .btn--primary { --btn-min-h: 3rem; } }
 @media (max-width: 39.99rem) { .onboarding__panel { padding-block: 0.5rem; } }
 
 /* ==========================================================================================================
