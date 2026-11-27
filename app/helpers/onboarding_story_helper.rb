@@ -1,6 +1,14 @@
 # The words and numbers of the quiz's info screens, built from the person's answers (see Onboarding::Story for the arithmetic). Every string is
 # a plain stand-in for Armand to rewrite.
 module OnboardingStoryHelper
+  # The time frame the person wished for, only when the "When do you want it?" screen was shown for this prize and the pick is one of its dated rows.
+  def onboarding_wish
+    wish = answers["when"]
+    return unless wish && Onboarding::Flow.visible?(Onboarding::Flow.find("when"), answers)
+
+    wish if Onboarding::Story.dated_paces(answers.prize&.hours).any? { |value, _| value == wish }
+  end
+
   def onboarding_pace_minutes = answers.pace_minutes || User::PACE_DEFAULT
 
   def onboarding_reflection

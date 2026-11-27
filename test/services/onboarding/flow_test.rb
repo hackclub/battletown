@@ -3,9 +3,9 @@ require "test_helper"
 class Onboarding::FlowTest < ActiveSupport::TestCase
   Flow = Onboarding::Flow
 
-  def answers_for(kind:, stops: [], pace: nil)
+  def answers_for(kind:, stops: [], pace: nil, prize: "tshirt")
     session = { onb: { "stops" => stops } }
-    user = User.new(hca_uid: "flow", project_kind: kind, prize_key: "tshirt", pace_minutes: pace)
+    user = User.new(hca_uid: "flow", project_kind: kind, prize_key: prize, pace_minutes: pace)
     Onboarding::Answers.new(session, user)
   end
 
@@ -41,21 +41,31 @@ class Onboarding::FlowTest < ActiveSupport::TestCase
 
   test "question and info screens per branch, with the crew question off and on" do
     without_feature(:team) do
-      %w[game website app tool].each { |kind| assert_equal [ 14, 6 ], counts(kind), kind }
-      assert_equal [ 11, 4 ], counts("undecided", stops: %w[none]), "undecided with nothing stopping them: no obstacle answer screen"
-      assert_equal [ 11, 5 ], counts("undecided")
+      %w[game website app tool].each { |kind| assert_equal [ 13, 6 ], counts(kind), kind }
+      assert_equal [ 10, 4 ], counts("undecided", stops: %w[none]), "undecided with nothing stopping them: no obstacle answer screen"
+      assert_equal [ 10, 5 ], counts("undecided")
     end
     with_feature(:team) do
-      %w[game website app tool].each { |kind| assert_equal [ 15, 6 ], counts(kind), kind }
-      assert_equal [ 11, 5 ], counts("undecided")
+      %w[game website app tool].each { |kind| assert_equal [ 14, 6 ], counts(kind), kind }
+      assert_equal [ 10, 5 ], counts("undecided")
     end
   end
 
   test "the screens tell one story in this order, and the idea question is only for Not sure yet" do
-    decided = Flow.visible(answers_for(kind: "game", stops: %w[time])).map(&:key)
+    decided = Flow.visible(answers_for(kind: "game", stops: %w[time], prize: "mechanical_keyboard")).map(&:key)
     assert_equal %w[age prize use cost how when made project detail audience started size reflect editor coding_when schedule pace_date stops stops_answer summary signup account celebrate], decided
-    undecided = Flow.visible(answers_for(kind: "undecided", stops: %w[time])).map(&:key)
+    undecided = Flow.visible(answers_for(kind: "undecided", stops: %w[time], prize: "mechanical_keyboard")).map(&:key)
     assert_equal %w[age prize use cost how when made project idea editor coding_when schedule pace_date stops stops_answer summary signup account celebrate], undecided
+  end
+
+  test "When do you want it? is asked only when its dated frames lead to at least two different paces" do
+    shown = ->(prize) { Flow.visible(answers_for(kind: "game", prize: prize)).map(&:key).include?("when") }
+    %w[custom_sticker keychain tshirt orpheus_plushie].each { |prize| assert_not shown.(prize), "#{prize}: every frame ends at the smallest pace" }
+    assert shown.("mechanical_keyboard"), "30 hours: 3 hours a day in 2 weeks, 1 hour a day in a month"
+    assert_not shown.("headphones"), "50 hours: only one dated frame is reachable"
+    skipped = Flow.visible(answers_for(kind: "game")).map(&:key)
+    assert_equal "how", skipped[skipped.index("cost") + 1]
+    assert_equal "made", skipped[skipped.index("how") + 1]
   end
 
   test "next and previous skip hidden screens in both directions" do

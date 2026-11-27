@@ -23,7 +23,7 @@ module Onboarding
       step("use", :choice, 2, question: true),
       step("cost", :info, 2),
       step("how", :info, 2),
-      step("when", :choice, 2, question: true, show: ->(a) { Story.frame_options(a.prize&.hours).any? }),
+      step("when", :choice, 2, question: true, show: ->(a) { Story.when_worth_asking?(a.prize&.hours) }),
       step("made", :choice, 2, question: true),
       step("project", :choice, 2, question: true),
       step("detail", :choice, 2, question: true, show: specific),

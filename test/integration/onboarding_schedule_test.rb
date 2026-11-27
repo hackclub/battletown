@@ -74,9 +74,8 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     assert_select "input[type=hidden][name='user[time_zone]']"
     assert_select "#pace-hint", 0
     assert_select "select, input[type=time], .day-times", 0 # no dropdown, no time pickers, no time zone select
-    # only the pace that meets the time frame picked two screens before is ticked (the walk picked "in 2 weeks": 5 hours is about 22 minutes a day)
-    assert_select ".choice-grid--rows input[checked]", 1
-    assert_select ".choice-grid--rows input[checked][value='30']", 1
+    # this 5-hour prize skips the time frame question (every frame ends at 30 minutes), so no wish exists and no pace is pre-ticked
+    assert_select ".choice-grid--rows input[checked]", 0
   end
 
   test "someone editing their plan still gets the daily pace as a select with the saved one chosen" do
@@ -353,7 +352,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     walk_quiz_to("schedule")
     get onboarding_step_path("schedule")
     prize = Prize.find(OnboardingDraft.new(session).prize_key)
-    assert_select ".onboarding__encouragement", "You wanted it in 2 weeks." # the wish the walk picked, named on the pace step
+    assert_select ".onboarding__encouragement", /Pick the pace that gets you your #{Regexp.escape(prize.name)}/ # no time frame was asked for this small prize, so no wish line
     days = (Rational(prize.coins * 3600, Game::Config.current.coins_per_hour) / (60 * 60)).ceil
     assert_select "label:has(input[name='user[pace_minutes]'][value='60']) .choice__meta", "About #{days} #{"day".pluralize(days)}, by #{Onboarding::Story.date_text(Time.zone.today + days - 1)}"
   end

@@ -2,9 +2,9 @@ require "test_helper"
 
 # The quiz screens between the prize and the pledge (Onboarding::Flow): generic choice, multi and info pages, their answers kept in the session.
 class OnboardingQuizTest < ActionDispatch::IntegrationTest
-  def begin_quiz
+  def begin_quiz(prize: "tshirt")
     patch onboarding_step_path("age"), params: { user: { age_group: "teen" } }
-    patch onboarding_step_path("prize"), params: { user: { prize_key: "tshirt" } }
+    patch onboarding_step_path("prize"), params: { user: { prize_key: prize } }
   end
 
   def answer(step, value) = patch(onboarding_step_path(step), params: { answer: { value: value } })
@@ -103,27 +103,44 @@ class OnboardingQuizTest < ActionDispatch::IntegrationTest
     assert_redirected_to onboarding_step_path("use")
   end
 
-  test "the time frame question lists real hours a day for this prize and preselects the matching pace" do
+  test "a small prize skips the time frame question: every answer would end the same" do
     begin_quiz
+    answer("use", "friends")
+    assert_redirected_to onboarding_step_path("cost")
+    patch onboarding_step_path("cost")
+    assert_redirected_to onboarding_step_path("how")
+    patch onboarding_step_path("how")
+    assert_redirected_to onboarding_step_path("made")
+    reach_quiz_step("schedule")
+    get onboarding_step_path("schedule")
+    assert_select ".onboarding__encouragement", /Pick the pace that gets you your/
+    assert_select ".choice-grid--rows input[checked]", 0
+  end
+
+  test "the time frame question lists real hours a day for this prize and preselects the matching pace" do
+    begin_quiz(prize: "mechanical_keyboard")
     answer("use", "friends")
     walk_quiz_to("when")
     get onboarding_step_path("when")
     assert_select "h1", "When do you want it?"
     assert_select ".choice-grid--rows input[type=radio]", 3
-    assert_select ".option-row__note", /about \d+ minutes a day/
-    answer("when", "two_weeks")
+    assert_select "label:has(input[value=two_weeks]) .option-row__note", "about 3 hours a day"
+    assert_select "label:has(input[value=month]) .option-row__note", "about 1 hour a day"
+    answer("when", "month")
     reach_quiz_step("schedule")
     get onboarding_step_path("schedule")
-    assert_select "input[name='user[pace_minutes]'][value='30'][checked]", 1
+    assert_select ".onboarding__encouragement", "You wanted it in a month."
+    assert_select "input[name='user[pace_minutes]'][value='60'][checked]", 1
   end
 
   test "with an end date, the end of the program is a time frame and the pace row says when a pace is too slow" do
-    ENV["ONBOARDING_PROGRAM_ENDS_ON"] = (Time.zone.today + 9).iso8601 # ten days left, the prize is 5 hours: 30 minutes a day
-    begin_quiz
+    ENV["ONBOARDING_PROGRAM_ENDS_ON"] = (Time.zone.today + 19).iso8601 # twenty days left, the prize is 30 hours: 3 hours a day in 2 weeks, 90 minutes (2 hours) by the end
+    begin_quiz(prize: "mechanical_keyboard")
     walk_quiz_to("when")
     get onboarding_step_path("when")
     assert_select "input[value=program]", 1
     assert_select "input[value=month]", 0 # a month is past the end
+    answer("when", "program")
     ENV["ONBOARDING_PROGRAM_ENDS_ON"] = (Time.zone.today + 2).iso8601 # three days: 30 minutes a day is 1.5 hours, not enough
     reach_quiz_step("schedule")
     get onboarding_step_path("schedule")

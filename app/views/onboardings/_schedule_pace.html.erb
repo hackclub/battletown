@@ -2,7 +2,7 @@
     the answer (the days the person already has, else every day; the time they have, else 6 pm) so the same back end
     accepts them. The pace is the shared single-choice question: a pick answers and moves on. The time zone is the browser's own, sent in a hidden field. %>
 <% prize = onboarding_saved_prize if subject.prize_key_in_database.present? %>
-<% preselect = (Onboarding::Story.pace_for(answers["when"], prize.hours, OnboardingsHelper::ONBOARDING_PACES) if prize && answers["when"]) %>
+<% preselect = (Onboarding::Story.pace_for(onboarding_wish, prize.hours, OnboardingsHelper::ONBOARDING_PACES) if prize && onboarding_wish) %>
 <% days = subject.coding_day_names.presence || User::DAYS %>
 <%= form_with model: subject, scope: :user, url: onboarding_step_path("schedule"), method: :patch, data: { controller: "browser-time-zone" } do |f| %>
   <%= render "onboardings/errors" %>

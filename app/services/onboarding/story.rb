@@ -77,6 +77,17 @@ module Onboarding
       end
     end
 
+    # The minutes a day each dated frame needs for this prize (every offered frame but "No rush").
+    def dated_paces(hours, ends_on: DailyTime.ends_on, today: self.today)
+      frame_options(hours, ends_on: ends_on, today: today).filter_map { |value, _, detail| detail && [ value, detail ] }
+    end
+
+    # Is "When do you want it?" worth asking for this prize? Only when its dated frames lead to at least two different paces: a question whose
+    # answers all end the same way changes nothing, so it is dropped.
+    def when_worth_asking?(hours, ends_on: DailyTime.ends_on, today: self.today)
+      dated_paces(hours, ends_on: ends_on, today: today).map(&:last).uniq.size >= 2
+    end
+
     # "You wanted it in a month." for the pace step, from the time frame they picked; nil for "No rush" or nothing picked.
     def wish_line(frame)
       _, label, days = FRAMES.find { |value, _, _| value == frame }
