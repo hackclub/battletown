@@ -596,3 +596,9 @@
 /* The shared arrow (ApplicationHelper#arrow_icon), at the landing call to action's size relative to its text. Outside the layers and written
    .btn .btn__arrow so it holds over the plain .btn__arrow rule in onboarding_world.css. */
 .btn__arrow, .btn .btn__arrow { flex: none; display: block; width: 0.87em; height: 0.875em; overflow: visible; }
+
+/* The one disclosure row: the clickable line of a <details> (<summary class="disclosure__summary">). It holds what every such row shares: the
+   browser's own triangle off, a flex row at least a finger tall, a pointer. Each page adds its own look on top (colors, box, its own marker). Outside the
+   layers so it holds over layered rules such as .input. */
+.disclosure__summary { display: flex; align-items: center; min-height: var(--tap-size); cursor: pointer; list-style: none; }
+.disclosure__summary::-webkit-details-marker { display: none; }
