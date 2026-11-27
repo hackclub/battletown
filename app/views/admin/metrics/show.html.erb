@@ -37,9 +37,9 @@
           <tr>
             <th scope="row"><%= day_label.call(day.date) %></th>
             <td class="num admin-table__num"><%= number_with_delimiter(day.active_users) %></td>
-            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_active %>" value="<%= day.active_users %>" aria-hidden="true"></progress></td>
+            <td class="admin-metrics__bar-cell"><progress class="progress__bar progress__bar--admin" max="<%= top_active %>" value="<%= day.active_users %>" aria-hidden="true"></progress></td>
             <td class="num admin-table__num"><%= hours.call(day.seconds) %></td>
-            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_seconds %>" value="<%= day.seconds %>" aria-hidden="true"></progress></td>
+            <td class="admin-metrics__bar-cell"><progress class="progress__bar progress__bar--admin" max="<%= top_seconds %>" value="<%= day.seconds %>" aria-hidden="true"></progress></td>
           </tr>
         <% end %>
       </tbody>
@@ -66,7 +66,7 @@
           <tr>
             <th scope="row"><%= day_label.call(week.starts_on) %> to <%= day_label.call(week.ends_on) %><%= " (so far)" if week.partial %></th>
             <td class="num admin-table__num"><%= number_with_delimiter(week.active_users) %></td>
-            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_weekly %>" value="<%= week.active_users %>" aria-hidden="true"></progress></td>
+            <td class="admin-metrics__bar-cell"><progress class="progress__bar progress__bar--admin" max="<%= top_weekly %>" value="<%= week.active_users %>" aria-hidden="true"></progress></td>
           </tr>
         <% end %>
       </tbody>
@@ -99,7 +99,7 @@
             <th scope="row"><%= step.label %></th>
             <td class="num admin-table__num"><%= number_with_delimiter(step.count) %></td>
             <td class="num admin-table__num"><%= number_to_percentage(step.percent, precision: 1, strip_insignificant_zeros: true) %></td>
-            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="100" value="<%= step.percent %>" aria-hidden="true"></progress></td>
+            <td class="admin-metrics__bar-cell"><progress class="progress__bar progress__bar--admin" max="100" value="<%= step.percent %>" aria-hidden="true"></progress></td>
           </tr>
         <% end %>
       </tbody>
@@ -126,7 +126,7 @@
           <tr>
             <th scope="row"><%= bucket.label %></th>
             <td class="num admin-table__num"><%= number_with_delimiter(bucket.count) %></td>
-            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_bucket %>" value="<%= bucket.count %>" aria-hidden="true"></progress></td>
+            <td class="admin-metrics__bar-cell"><progress class="progress__bar progress__bar--admin" max="<%= top_bucket %>" value="<%= bucket.count %>" aria-hidden="true"></progress></td>
           </tr>
         <% end %>
       </tbody>
@@ -159,9 +159,9 @@
           <tr>
             <th scope="row"><%= day_label.call(week.starts_on) %> to <%= day_label.call(week.ends_on) %><%= " (so far)" if week.partial %></th>
             <td class="num admin-table__num"><%= number_with_delimiter(week.windows_started) %></td>
-            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_returning %>" value="<%= week.windows_started %>" aria-hidden="true"></progress></td>
+            <td class="admin-metrics__bar-cell"><progress class="progress__bar progress__bar--admin" max="<%= top_returning %>" value="<%= week.windows_started %>" aria-hidden="true"></progress></td>
             <td class="num admin-table__num"><%= number_with_delimiter(week.nudges_sent) %></td>
-            <td class="admin-metrics__bar-cell"><progress class="admin-metrics__bar" max="<%= top_returning %>" value="<%= week.nudges_sent %>" aria-hidden="true"></progress></td>
+            <td class="admin-metrics__bar-cell"><progress class="progress__bar progress__bar--admin" max="<%= top_returning %>" value="<%= week.nudges_sent %>" aria-hidden="true"></progress></td>
           </tr>
         <% end %>
       </tbody>

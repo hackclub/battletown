@@ -103,7 +103,7 @@
         <%# Armand's health bar, driven by the real boss through LandingHelper#landing_boss (aggregate only, cached for a
             minute). A native progress bar: no inline style is needed for the fill. -%>
         <div class="fight__health">
-          <progress class="fight__bar" max="100" value="<%= boss[:percent] %>" aria-labelledby="landing-boss-health" aria-describedby="landing-boss-label"><%= boss[:text] %></progress>
+          <progress class="progress__bar fight__bar" max="100" value="<%= boss[:percent] %>" aria-labelledby="landing-boss-health" aria-describedby="landing-boss-label"><%= boss[:text] %></progress>
           <span class="visually-hidden" id="landing-boss-health">Boss health</span>
           <p class="fight__label" id="landing-boss-label"><span><%= boss[:label] %></span></p>
         </div>
