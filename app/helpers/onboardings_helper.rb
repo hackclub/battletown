@@ -208,13 +208,6 @@ module OnboardingsHelper
     Array.new(FEATURED_PRIZE_COUNT) { |i| sorted[(i * (sorted.size - 1) / (FEATURED_PRIZE_COUNT - 1.0)).round] }.uniq
   end
 
-  # The placeholder pictures of these shop items have wide transparent margins, so the pick step crops them to their content (the boxes are
-  # in onboarding_world.css, `.choice__crop--<key>`) and every product reads equally large. Delete the keys with the placeholder art: real art
-  # on the same key would be cropped to the wrong box. Any other picture is shown whole.
-  PRIZE_CROPPED = %w[headphones sticker_pack poster].freeze
-
-  def onboarding_prize_crop(prize) = (prize.key if PRIZE_CROPPED.include?(prize.key))
-
   def onboarding_prize_selection
     picked = subject.prize_key || session[:prize_key]
     picked if Prize.paid.any? { |prize| prize.key == picked } # an archived item can't be re-picked

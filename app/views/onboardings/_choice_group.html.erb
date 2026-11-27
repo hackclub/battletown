@@ -1,30 +1,26 @@
 <%# locals: (name:, options:, layout: :rows, auto: true, input_data: {}, submit: true) -%>
-<%# THE single-choice question of the onboarding: every step that asks "pick one" (age, prize, project kind, pace, editor) renders through here and
-    through one stylesheet block (onboarding_world.css, "Single choice"). Native radios in one group (the browser keeps one pick, restores it on Back and
+<%# THE single-choice question of the onboarding: every step that asks "pick one" (age, prize, project kind, pace, editor) renders through here, on the
+    component library's option rows and picture cards (Basecoat, themed in app/assets/tailwind/battletown_theme.css; the `.basecoat` wrapper is in the
+    step frame). The `choice*` classes are hooks for scripts and tests only: no stylesheet targets them except the few onboarding additions. Native radios in one group (the browser keeps one pick, restores it on Back and
     moves with the arrow keys); a pick shows only through :checked; with `auto` a pick holds for a beat and sends the form, so there is never a Continue.
     options: [{ value:, label:, id:, checked:, detail: (second line), apart: (the opt-out row), image: (cards), meta:, desc: (cards) }]
     layout: :rows (text options) or :cards (the prize pictures). %>
-<div class="choice-grid choice-grid--<%= layout %>">
+<div class="basecoat choice-wrap">
+<div class="<%= layout == :cards ? "option-cards" : "option-list" %> choice-grid choice-grid--<%= layout %>">
   <% options.each do |option| %>
-    <label class="choice<%= " choice--apart" if option[:apart] %>">
+    <label class="<%= layout == :cards ? "option-card" : "option-row" %> choice<%= " choice--apart" if option[:apart] %>">
       <%= radio_button_tag name, option[:value], option[:checked], id: option[:id], class: "choice__input",
             data: input_data.merge(auto ? { action: "change->onboarding-step#choose" } : {}) %>
       <% if layout == :cards %>
-        <span class="choice__body">
-          <span class="choice__art"><% if option[:image].present? %><% crop = option[:crop] %><% if crop %><span class="choice__crop choice__crop--<%= crop %>"><%= image_tag option[:image], alt: "", class: "choice__image" %></span><% else %><%= image_tag option[:image], alt: "", class: "choice__image" %><% end %><% end %></span>
-          <span class="choice__plate">
-            <span class="choice__name"><%= option[:label] %></span>
-            <span class="choice__meta"><%= option[:meta] %></span>
-            <span class="choice__desc"><%= option[:desc] %></span>
-          </span>
-        </span>
+        <span class="option-card__art choice__art"><% if option[:image].present? %><span class="choice__crop" data-controller="prize-crop"><%= image_tag option[:image], alt: "", class: "choice__image", data: { prize_crop_target: "image" } %></span><% end %></span>
+        <span class="option-card__name choice__name"><%= option[:label] %></span>
+        <span class="option-card__note choice__meta"><%= option[:meta] %></span>
       <% else %>
-        <span class="choice__body">
-          <span class="choice__name"><%= option[:label] %></span>
-          <% if option[:detail].present? %><span class="choice__meta"><%= option[:detail] %></span><% end %>
-        </span>
+        <span class="choice__name"><%= option[:label] %></span>
+        <% if option[:detail].present? %><span class="option-row__note choice__meta"><%= option[:detail] %></span><% end %>
       <% end %>
     </label>
   <% end %>
+</div>
 </div>
 <% if auto && submit %><noscript><div class="onboarding__actions"><input type="submit" class="btn btn--primary btn--lg" value="Continue"></div></noscript><% end %>

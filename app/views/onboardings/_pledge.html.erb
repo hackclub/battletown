@@ -5,6 +5,6 @@
   <p class="pledge__text"><%= onboarding_pledge_sentence(subject) %></p>
   <p class="pledge__rules">I'll follow the <%= link_to "rules", terms_path %> and stick to it.</p>
   <div class="pledge__signature">
-    <% if name.present? %><span class="pledge__name" style="--chars: <%= name.length %>"><%= name %></span><% end %>
+    <% if name.present? %><span class="pledge__name" data-controller="pledge-name"><%= name %></span><% end %>
   </div>
 </div>

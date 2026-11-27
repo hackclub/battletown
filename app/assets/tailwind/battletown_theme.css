@@ -99,7 +99,7 @@
   --secondary-foreground: var(--color-surface);
   --muted: var(--color-cool-ground);
   --muted-foreground: var(--color-text-muted);
-  --accent: color-mix(in srgb, var(--color-blue) 10%, var(--color-surface)); /* the slight blue tint of a hover */
+  --accent: var(--color-cool-hover); /* the slight blue tint of a hover */
   --accent-foreground: var(--color-navy);
   --destructive: var(--color-danger);
   --border: var(--color-border);
@@ -171,7 +171,7 @@
   .basecoat .btn[data-variant="ghost"] { --btn-bg: transparent; --btn-fg: var(--color-ink-blue); }
   .basecoat .btn[data-variant="link"] { --btn-bg: transparent; --btn-fg: var(--color-link); }
   .basecoat .btn:hover:not(:disabled, [aria-disabled="true"]), .basecoat .btn[aria-expanded="true"] { background-color: var(--btn-bg); color: var(--btn-fg); --btn-step: 0 0 0 999px rgb(0 0 0 / 0.08); }
-  .basecoat .btn[data-variant="ghost"]:hover:not(:disabled), .basecoat .btn[data-variant="ghost"][aria-expanded="true"] { background-color: var(--color-accent); --btn-step: 0 0 0 999px rgb(0 0 0 / 0); }
+  .basecoat .btn[data-variant="ghost"]:hover:not(:disabled), .basecoat .btn[data-variant="ghost"][aria-expanded="true"] { background-color: var(--accent); --btn-step: 0 0 0 999px rgb(0 0 0 / 0); }
   .basecoat .btn[data-variant="link"]:hover:not(:disabled) { text-decoration: underline; --btn-step: 0 0 0 999px rgb(0 0 0 / 0); }
   .basecoat .btn:active:not(:disabled, [aria-disabled="true"]) { --btn-step: 0 0 0 999px rgb(0 0 0 / 0.16); }
   .basecoat .btn:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
@@ -212,7 +212,7 @@
   .basecoat .dialog::backdrop { background-color: color-mix(in srgb, var(--color-navy) 60%, transparent); backdrop-filter: none; }
 
   /* Menu items: the slight blue tint on hover and keyboard focus, navy text, no ring. */
-  .basecoat :is([role="menuitem"], [role="option"]):is(:hover, :focus-visible, [aria-selected="true"], [data-active="true"]) { background-color: var(--color-accent); color: var(--color-navy); outline: none; }
+  .basecoat :is([role="menuitem"], [role="option"]):is(:hover, :focus-visible, [aria-selected="true"], [data-active="true"]) { background-color: var(--accent); color: var(--color-navy); outline: none; }
 
   /* Tabs: a pale pill list; the active tab is a flat white pill. */
   .basecoat .tabs [role="tablist"]:not([data-variant="line"]) { background-color: var(--color-cool-ground); border-radius: var(--radius-lg); }
@@ -251,7 +251,7 @@
   .basecoat .option-row--check { justify-content: flex-start; }
   .basecoat .option-row--check .option-row__note { margin-inline-start: auto; }
   .basecoat .option-row > input, .basecoat .option-card > input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; appearance: none; }
-  .basecoat .option-row:hover, .basecoat .option-card:hover { background: var(--color-accent); }
+  .basecoat .option-row:hover, .basecoat .option-card:hover { background: var(--accent); }
   .basecoat .option-row:has(> input:checked), .basecoat .option-card:has(> input:checked) { background: var(--color-blue); color: var(--color-surface); }
   .basecoat .option-row:has(> input:checked) .option-row__note, .basecoat .option-card:has(> input:checked) :is(.option-card__name, .option-card__note) { color: var(--color-surface); }
   .basecoat .option-row--check:has(> input:checked) .option-row__mark { background: var(--color-surface) var(--bc-check-blue) center / 1rem no-repeat; border-color: var(--color-surface); }

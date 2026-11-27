@@ -12,6 +12,8 @@
 <% content_for :hide_site_header, true %>
 <% content_for :hide_footer, true %>
 <% content_for :flash_in_page, true %>
+<%# The component library (Basecoat, themed in app/assets/tailwind/battletown_theme.css) supplies the option rows and picture cards; it loads only here. %>
+<% content_for :head, stylesheet_link_tag("tailwind") %>
 
 <section class="container onboarding-page" data-controller="onboarding-step<%= " onboarding-transition" if @transition %>"
          <% if @transition %>data-action="keydown@window->onboarding-transition#skip turbo:before-cache@document->onboarding-transition#skip"<% end %>>

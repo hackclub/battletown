@@ -15,8 +15,8 @@ class OnboardingPrizeStepTest < ActionDispatch::IntegrationTest
       assert_select "summary", text: "See all prizes"
       assert_select ".choice", Prize.paid.size - 6
     end
-    assert_select "fieldset > .choice-grid--cards > .choice", 6
-    assert_equal FEATURED, css_select("fieldset > .choice-grid--cards > .choice input[type=radio]").map { |i| i["value"] }
+    assert_select "fieldset > .basecoat > .choice-grid--cards > .choice", 6
+    assert_equal FEATURED, css_select("fieldset > .basecoat > .choice-grid--cards > .choice input[type=radio]").map { |i| i["value"] }
   end
 
   test "a missing or outdated list falls back to six spread across the hours range" do

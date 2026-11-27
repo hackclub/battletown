@@ -336,7 +336,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "fieldset legend", "Prize"
     assert_select "label.choice", Prize.paid.size
     Prize.paid.each do |prize|
-      assert_select "input.choice__input[type=radio][name='user[prize_key]'][value='#{prize.key}'] + .choice__body", /#{Regexp.escape(prize.hours_text)}/
+      assert_select "label.choice:has(input.choice__input[type=radio][name='user[prize_key]'][value='#{prize.key}'])", /#{Regexp.escape(prize.hours_text)}/
     end
   end
 
@@ -413,7 +413,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     sign_in_as users(:new_user)
     step("prize")
     assert_select ".field_with_errors", 0
-    assert_select "input.choice__input + .choice__body", Prize.paid.size
+    assert_select "label.choice input.choice__input", Prize.paid.size
   end
 
   test "the account step asks for Hackatime, and once onboarded links to the Hackatime page" do
@@ -800,7 +800,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select ".onboarding__panel"
     assert_select ".onboarding__panel--blue", count: 0
     assert_select ".choice-grid--cards .choice", Prize.paid.size
-    assert_select ".choice-grid--cards .choice .choice__art + .choice__plate .choice__name", Prize.paid.size
+    assert_select ".choice-grid--cards .choice .choice__art ~ .choice__name", Prize.paid.size
     assert_select ".choice__meta", /\Aabout /, Prize.paid.size
     assert_select "p.onboarding__hint", 0 # the page keeps only its heading, one sub-line and the options
   end

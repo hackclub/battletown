@@ -12,6 +12,12 @@ class OnboardingSingleChoiceTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "no onboarding view or helper writes an inline style attribute (the CSP blocks it)" do
+    (VIEWS + [ Rails.root.join("app/helpers/onboardings_helper.rb").to_s ]).each do |file|
+      assert_no_match(/\bstyle\s*[=:]\s*["']|\bstyle:\s/, File.read(file), "#{File.basename(file)} has an inline style")
+    end
+  end
+
   test "the steps that ask a single-choice question render the shared partial" do
     %w[age prize project _schedule_pace _editor_steps].each do |name|
       file = Dir[Rails.root.join("app/views/onboardings/#{name}.html.erb")].first || Dir[Rails.root.join("app/views/onboardings/#{name}*.erb")].first
