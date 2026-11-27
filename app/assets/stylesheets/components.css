@@ -4,7 +4,7 @@
  * Everything is in cascade layers (see the top of application.css): page stylesheets and staff.css are not layered and
  * always win, so a page only writes what differs from these defaults.
  * Class reference with usage snippets: projects/battletown/specs/contract.md ("Design system"). Live preview: /dev/styleguide (development).
- * Interactive states: flat by default (hover one step darker, press one more); the sparing .btn--raised variant lifts its face over a fixed base. focus-visible
+ * Interactive states: flat by default (hover one step darker, press one more); the sparing .slab-btn lifts its face over a fixed base. focus-visible
  * = the 3px --color-focus ring, disabled = 55% opacity. Motion only under prefers-reduced-motion: no-preference.
  */
 @layer reset, base, layout, components, utilities;
@@ -13,14 +13,13 @@
 @layer components {
   /* FLAT by default (Armand, 2026-11-27: the animated 3D button is for sparing use): a solid fill in the button's own color, no edge, no
      shadow, no movement. Hover is one step darker, pressed one more, through an inset fill (hard, zero blur) so the box never changes.
-     The raised slab is the opt-in .btn--raised below (and the landing .cta). */
+     The raised slab is the opt-in .slab-btn below (the landing .cta and the onboarding hold-to-sign). */
   .btn {
     --btn-bg: var(--color-bg);
     --btn-fg: var(--color-ink-blue);
     --btn-border: var(--btn-bg); /* no outline: the border is the fill's own color */
     --btn-edge: color-mix(in oklab, var(--btn-bg) 87%, black); /* the raised edge is ALWAYS the button's own fill, darker: a page that changes --btn-bg (or --color-primary) changes the edge with it. Never set an edge color by hand (ghost: transparent) */
     --btn-edge-size: 0.2em;
-    --btn-rim: 2px;
     --btn-min-h: var(--tap-size);
     --btn-pt: 0.45em;
     --btn-px: 1.25em;
@@ -95,37 +94,49 @@
 
   .btn__arrow, .btn .icon { flex: none; width: 1em; height: 1em; }
 
-  /* RAISED (opt-in, used sparingly: the landing sign-up buttons and the onboarding "Sign in with Hack Club"; the landing .cta is the same
-     idea in landing.css). A slab: a face on a darker base. The BASE never moves and nothing about it animates: the face translates up
-     on hover (the base shows more) and down when pressed (a sliver is left), and the edge shadow (hard, zero blur) is drawn the same
-     amount lower, both from the one registered length --press (tokens.css), so they change in the same frame and cancel exactly. */
-  .btn--raised {
-    --btn-push: round(nearest, var(--press), 1px);
+  /* THE RAISED SLAB (opt-in, used sparingly: the landing sign-up buttons and the onboarding hold-to-sign; the one raised button on the
+     site). The element is the BASE: a static darker shade of the face's own color that never moves, repaints or transitions, so the click
+     area is steady. Inside it, .slab-btn__face is the only thing that moves: on hover and focus it rises (the base shows more), pressed it drops
+     and a sliver of base is left. One animated length, --press (tokens.css), drives the face; nothing else is ever transitioned.
+     Color it with variables only: --slab-face, --slab-base (default: the face, darker), --slab-fg, --slab-focus. Size it with the font size:
+     everything is in em. Markup: <a class="slab-btn"><span class="slab-btn__face">label</span></a>. */
+  .slab-btn {
+    --slab-edge: 0.1667em;
+    --slab-radius: 0.58em;
+    --slab-face: var(--color-primary);
+    --slab-base: color-mix(in oklab, var(--slab-face) 87%, black);
+    --slab-fg: var(--color-primary-contrast);
+    --slab-focus: var(--color-navy);
+    display: inline-flex;
+    max-width: 100%;
+    padding: 0 0 var(--slab-edge);
+    border: 0;
+    appearance: none;
+    background: var(--slab-base);
+    border-radius: var(--slab-radius);
+    color: var(--slab-fg);
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .slab-btn__face {
     position: relative;
-    min-height: calc(var(--btn-min-h) - var(--btn-edge-size) - var(--btn-rim));
-    margin-bottom: calc(var(--btn-edge-size) + var(--btn-rim)); /* the edge hangs below the box: the outer size is the slab's */
-    padding-bottom: max(0px, calc(var(--btn-pb) + 0.05em - var(--btn-edge-size) - var(--btn-rim)));
-    translate: 0 calc(-1 * var(--btn-push));
-    box-shadow: 0 calc(var(--btn-edge-size) + var(--btn-push)) 0 var(--btn-edge), 0 calc(var(--btn-edge-size) + var(--btn-rim) + var(--btn-push)) 0 var(--btn-border);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.36em;
+    padding: 0.5em 0.75em calc(0.56em - var(--slab-edge));
+    translate: 0 calc(-1 * round(nearest, var(--press), 1px));
+    border-radius: var(--slab-radius);
+    background: var(--slab-face);
   }
-  /* The click area stays where the slab rests: an invisible box over the whole slab, moved back by the amount the face moved, so a
-     pointer resting on the exposed edge never loses hover. */
-  .btn--raised::before {
-    content: "";
-    position: absolute;
-    inset: -2px -2px calc(-1 * (var(--btn-edge-size) + var(--btn-rim) + 2px));
-    translate: 0 var(--btn-push);
-  }
-  .btn--raised, .btn--raised:hover:not(:disabled, [aria-disabled="true"]), .btn--raised:active:not(:disabled, [aria-disabled="true"]) { --btn-step: 0 0 0 0 transparent; }
-  .btn--raised:hover:not(:disabled, [aria-disabled="true"]) { background-image: linear-gradient(rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.07)); }
-  .btn--raised:disabled, .btn--raised[aria-disabled="true"] { background-image: none; }
+  .slab-btn:focus-visible { outline: 3px solid var(--slab-focus); outline-offset: calc(4px + var(--press-rise)); } /* clear of the face when it rises */
 
   /* Motion only for people who allow it. */
   @media (prefers-reduced-motion: no-preference) {
     .btn { transition: box-shadow 120ms ease, background-color 120ms ease; }
-    .btn--raised { transition: --press 120ms ease; } /* only --press moves; the face, the edge and the click area all read it */
-    .btn--raised:is(:hover, :focus-visible):not(:disabled, [aria-disabled="true"]) { --press: round(nearest, var(--press-rise), 1px); }
-    .btn--raised:active:not(:disabled, [aria-disabled="true"]) { --press: round(nearest, calc(var(--press-sink) - var(--btn-edge-size)), 1px); }
+    .slab-btn__face { transition: --press 120ms ease; }
+    .slab-btn:is(:hover, :focus-visible) .slab-btn__face { --press: round(nearest, var(--press-rise), 1px); }
+    .slab-btn:active .slab-btn__face { --press: round(nearest, calc(var(--press-sink) - var(--slab-edge)), 1px); }
   }
 }
 

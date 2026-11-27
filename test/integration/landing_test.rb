@@ -185,8 +185,10 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "the stylesheet and controller carry the motion and focus rules" do
     css = Rails.root.join("app/assets/stylesheets/landing.css").read
-    assert_match(/prefers-reduced-motion: no-preference/, css)
     assert_match(/:focus-visible/, css)
+    components = Rails.root.join("app/assets/stylesheets/components.css").read # the button's motion and focus rules are the shared .slab-btn
+    assert_match(/prefers-reduced-motion: no-preference/, components)
+    assert_match(/\.slab-btn:focus-visible/, components)
     assert Rails.root.join("app/javascript/controllers/landing_map_controller.js").exist?
   end
 

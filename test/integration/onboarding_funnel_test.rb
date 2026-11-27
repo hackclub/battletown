@@ -52,8 +52,8 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
     assert_select ".pledge__text .pledge__mark", 3
     assert_select ".pledge__rules a[href='#{terms_path}']", "rules"
     assert_select ".pledge__signature .pledge__name", 0 # nobody has signed yet; the line keeps its room
-    assert_select "form[action='/auth/hack_club'][method=post][data-turbo=false] button.btn--raised", /Hold to sign with Hack Club/
-    assert_select "button.btn--raised", 1
+    assert_select "form[action='/auth/hack_club'][method=post][data-turbo=false] button.slab-btn", /Hold to sign with Hack Club/
+    assert_select "button.slab-btn", 1
     %w[reveal__plan reveal__boss celebration__summary checks].each { |gone| assert_select ".#{gone}", 0 }
     save_shot("pledge")
   end
