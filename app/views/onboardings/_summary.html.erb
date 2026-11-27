@@ -1,7 +1,7 @@
 <%# locals: (subject:) -%>
 <dl class="celebration__summary card card--cream card--flat">
   <% if (prize = subject.prize) %>
-    <div><dt class="eyebrow">Prize</dt><dd><span aria-hidden="true"><%= prize.emoji %></span> <%= prize.name %> (<%= onboarding_hours_text(prize) %>)</dd></div>
+    <div><dt class="eyebrow">Prize</dt><dd><%= prize.name %> (<%= onboarding_hours_text(prize) %>)</dd></div>
   <% end %>
   <div><dt class="eyebrow">Project</dt><dd><%= OnboardingsHelper::PROJECT_KINDS.dig(subject.project_kind, :name) %></dd></div>
   <div><dt class="eyebrow">When</dt><dd><%= coding_schedule_text(subject) %>, <%= subject.time_zone %></dd></div>

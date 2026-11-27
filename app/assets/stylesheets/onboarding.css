@@ -6,27 +6,6 @@
 .onboarding-page { padding-block: var(--space-8); }
 .onboarding { width: 100%; max-width: 48rem; margin-inline: auto; }
 
-/* Top bar: a round back button and the shared .progress--goal bar (label above it), across the width of the page */
-.onboarding-top { display: flex; align-items: flex-end; gap: var(--space-4); width: 100%; max-width: 72rem; margin-inline: auto; }
-.onboarding-top__back {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: var(--tap-size);
-  height: var(--tap-size);
-  border: 3px solid var(--color-ink-brown);
-  border-radius: var(--radius-full);
-  background: var(--color-bg);
-  color: var(--color-ink-brown);
-  font-size: var(--text-xl);
-  line-height: 1;
-  text-decoration: none;
-}
-.onboarding-top__back:hover { background: var(--color-surface-raised); }
-.onboarding-top__back--none { visibility: hidden; }
-.onboarding-top__progress { flex: 1; }
-.onboarding-top__progress .progress__label { font-size: var(--text-sm); }
-
 /* Age gate: two big cards, like a quiz question */
 .age-choices { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 40rem) { .age-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

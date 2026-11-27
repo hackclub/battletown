@@ -7,10 +7,9 @@
 <% index = OnboardingsController::STEPS.index(step) %>
 <% total = OnboardingsController::STEPS.size %>
 <% editing = current_user&.onboarded? %>
-<% back = editing ? dashboard_path : onboarding_back_path(step) %>
 <% content_for :title, title || copy[:title] %>
-<%# The progress strip is the top of the page: no header for visitors (they have nothing to do there) and no footer. %>
-<% content_for :hide_site_header, true unless signed_in? %>
+<%# The progress strip (bar, logo, sign in) is the top of the page: no site header and no footer. %>
+<% content_for :hide_site_header, true %>
 <% content_for :hide_footer, true %>
 <% content_for :flash_in_page, true %>
 
@@ -19,25 +18,28 @@
   <%= render "onboardings/transition", kind: @transition if @transition %>
 
   <div class="onboarding-page__content stack <%= "transition-enter" if @transition %>">
-    <%# Kept in place by Turbo between steps (data-turbo-permanent): the onboarding-top controller moves its bar to the new step's value, so the fill slides instead of being redrawn. %>
+    <%# Kept in place by Turbo between steps (data-turbo-permanent): the onboarding-top controller moves its bar to the new step's value, so the fill slides instead of being redrawn. The count and the step's name are for screen readers only. %>
     <div class="onboarding-top" id="onboarding-top" data-turbo-permanent data-controller="onboarding-top"
          data-action="turbo:before-render@document->onboarding-top#prepare turbo:render@document->onboarding-top#update">
-      <% if back %>
-        <%= link_to back, class: "onboarding-top__back", "aria-label": "Go back" do %><span aria-hidden="true">‹</span><% end %>
-      <% else %>
-        <span class="onboarding-top__back onboarding-top__back--none" aria-hidden="true"></span>
-      <% end %>
-      <div class="onboarding-top__progress">
-        <div class="onboarding-top__head">
-          <span class="onboarding-top__label" id="onboarding-progress-label"><%= editing ? "editing your plan" : copy[:progress] %></span>
-          <span class="onboarding-top__step" id="onboarding-progress-step">Step <%= index + 1 %> of <%= total %></span>
+      <progress class="onboarding-top__bar" max="<%= total %>" value="<%= index + 1 %>" aria-labelledby="onboarding-progress-label" aria-describedby="onboarding-progress-step">Step <%= index + 1 %> of <%= total %>: <%= copy[:label] %></progress>
+      <div class="visually-hidden">
+        <span class="onboarding-top__label" id="onboarding-progress-label"><%= editing ? "editing your plan" : copy[:progress] %></span>
+        <span class="onboarding-top__step" id="onboarding-progress-step">Step <%= index + 1 %> of <%= total %></span>
+      </div>
+      <div class="onboarding-top__row">
+        <span aria-hidden="true"></span>
+        <%= link_to root_path, class: "onboarding-top__logo" do %><%= image_tag "design/logo.svg", alt: "", width: 75, height: 44 %><span class="visually-hidden">Battletown</span><% end %>
+        <div class="onboarding-top__side">
+          <% unless signed_in? %>
+            <%# Turbo is off: the OmniAuth redirect goes cross-origin. %>
+            <%= button_to "Sign in", "/auth/hack_club", method: :post, class: "onboarding-top__signin", form: { class: "onboarding-top__signin-form", data: { turbo: false } } %>
+          <% end %>
         </div>
-        <progress class="onboarding-top__bar" max="<%= total %>" value="<%= index + 1 %>" aria-labelledby="onboarding-progress-label" aria-describedby="onboarding-progress-step">Step <%= index + 1 %> of <%= total %>: <%= copy[:label] %></progress>
       </div>
     </div>
 
     <div class="onboarding stack">
-      <div class="panel onboarding__panel">
+      <div class="onboarding__panel">
         <%# The transition's message, for screen readers and for people who have motion turned down (CSS shows it only then). %>
         <% if @transition == "welcome" %>
           <p class="onboarding-note">Welcome to Battletown. Make projects, take down the boss, get gear.</p>
@@ -49,7 +51,7 @@
         <% if index.positive? && index < total - 1 && (prize = onboarding_saved_prize) %>
           <p class="onboarding-prize">
             <span class="onboarding-prize__label">Working toward</span>
-            <strong><span aria-hidden="true"><%= prize.emoji %></span> <%= prize.name %></strong>
+            <strong><% if prize.image.present? %><%= image_tag prize.image, alt: "", class: "onboarding-prize__image" %><% end %><%= prize.name %></strong>
             <span class="onboarding-prize__hours"><%= onboarding_hours_text(prize) %></span>
           </p>
         <% end %>

@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-// The strip at the top of onboarding (back button, label, step count and the progress bar) is data-turbo-permanent, so
+// The strip at the top of onboarding (the progress bar, and the label and count that only screen readers get) is data-turbo-permanent, so
 // Turbo keeps this element across steps instead of redrawing it. Just before it swaps in the next step, copy what the
 // server rendered for that step into the kept strip: the bar's value changes in place (and slides), the rest is text.
 // The server stays the source of truth for the step and its numbers; nothing is worked out here.
@@ -17,19 +17,6 @@ export default class extends Controller {
     this.next = null
     if (!next) return
 
-    const back = this.element.querySelector(".onboarding-top__back")
-    const nextBack = next.querySelector(".onboarding-top__back")
-    if (back && nextBack) {
-      if (back.tagName === nextBack.tagName) {
-        // same kind of back button: update it in place, so it does not lose focus
-        for (const name of ["href", "class", "aria-label", "aria-hidden"]) {
-          nextBack.hasAttribute(name) ? back.setAttribute(name, nextBack.getAttribute(name)) : back.removeAttribute(name)
-        }
-      } else {
-        back.replaceWith(nextBack)
-      }
-    }
-
     for (const selector of [".onboarding-top__label", ".onboarding-top__step"]) {
       const here = this.element.querySelector(selector)
       const there = next.querySelector(selector)
@@ -44,7 +31,7 @@ export default class extends Controller {
       bar.textContent = nextBar.textContent
     }
 
-    // Turbo hands focus back to a kept element that had it (the back button you just pressed). The new step's own focus
+    // Turbo hands focus back to a kept element that had it (the logo link). The new step's own focus
     // rule (its heading, or its error summary) must win, as it does after a full page load.
     if (this.element.contains(document.activeElement)) {
       const target = document.querySelector("[data-onboarding-step-target='errors']") || document.querySelector("[data-onboarding-step-target='heading']")

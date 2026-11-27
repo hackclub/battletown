@@ -11,13 +11,15 @@
   <div class="transition__body">
     <% if proof %>
       <% prize = proof[:prize] %>
-      <div class="transition__badge">
-        <% if prize&.image.present? %>
-          <%= image_tag prize.image, alt: "", class: "transition__badge-image" %>
-        <% else %>
-          <span class="transition__badge-emoji"><%= prize ? prize.emoji : proof[:emoji] %></span>
-        <% end %>
-      </div>
+      <% if prize ? prize.image.present? : proof[:emoji] %>
+        <div class="transition__badge">
+          <% if prize %>
+            <%= image_tag prize.image, alt: "", class: "transition__badge-image" %>
+          <% else %>
+            <span class="transition__badge-emoji"><%= proof[:emoji] %></span>
+          <% end %>
+        </div>
+      <% end %>
       <p class="transition__title"><%= proof[:headline] %></p>
       <p class="transition__sub"><%= proof[:body] %></p>
     <% else %>

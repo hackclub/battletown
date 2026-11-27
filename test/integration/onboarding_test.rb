@@ -350,7 +350,8 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "label[for=user_project_idea]", /Got an idea/
     assert_select "textarea#user_project_idea[aria-describedby=project-idea-count]"
     assert_select "#project-idea-count", /0 of 500 characters/
-    assert_select ".toggle input.toggle__input[type=radio][name='user[project_kind]']", User::OFFERED_PROJECT_KINDS.size
+    assert_select ".choice-grid--kinds .choice input.choice__input[type=radio][name='user[project_kind]']", User::OFFERED_PROJECT_KINDS.size
+    assert_select ".placeholder-link", 0 # no "coming soon" badges
 
     get onboarding_step_path("schedule")
     assert_select "legend", "Daily pace"
@@ -483,20 +484,24 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select "button[name='user[age_group]'][value=adult]", /not 13–18/
   end
 
-  test "onboarding has no header, no Sign in or Dev login buttons and no footer for visitors: the progress strip is the top" do
+  test "onboarding has no site header, no Dev login button and no footer: the strip is the top, with a plain Sign in for visitors" do
     get onboarding_step_path("age")
     assert_select ".site-header", 0
-    assert_select "form[action='/auth/hack_club']", 0
     assert_select "form[action='/dev_login']", 0
     assert_select ".site-footer", 0
-    assert_select ".onboarding-page .onboarding-top"
+    assert_select ".onboarding-page .onboarding-top" do
+      assert_select "a.onboarding-top__logo[href='#{root_path}'] img[src*='logo']"
+      assert_select ".onboarding-top__side form[action='/auth/hack_club'] button.onboarding-top__signin", "Sign in"
+    end
   end
 
-  test "a signed-in person still onboarding keeps a header with Sign out, but no footer" do
+  test "a signed-in person in the flow sees the strip with no Sign in and no site header" do
     sign_in_as users(:new_user)
     get onboarding_step_path("prize")
-    assert_select ".site-header form[action='/logout']"
+    assert_select ".site-header", 0
     assert_select ".site-footer", 0
+    assert_select ".onboarding-top a.onboarding-top__logo"
+    assert_select ".onboarding-top form[action='/auth/hack_club']", 0
   end
 
   test "the sign-up step links to the terms and the privacy policy, since there is no footer to do it" do
@@ -506,15 +511,17 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     assert_select ".onboarding__panel a[href='#{privacy_path}']", "Privacy Policy"
   end
 
-  test "the progress bar and back button sit at the top" do
+  test "the progress bar sits at the top, its numbers are for screen readers only, and there is no back button" do
     get onboarding_step_path("age")
     assert_select ".onboarding-top progress.onboarding-top__bar[max='7'][value='1']"
-    assert_select ".onboarding-top a.onboarding-top__back[href='#{root_path}']"
+    assert_select ".onboarding-top .visually-hidden #onboarding-progress-step", "Step 1 of 7"
+    assert_select ".onboarding-top__back", 0
+    assert_select ".onboarding-top__head", 0
 
     anonymous_through("age")
     get onboarding_step_path("prize")
     assert_select "progress.onboarding-top__bar[value='2']"
-    assert_select "a.onboarding-top__back[href='#{onboarding_step_path("age")}']"
+    assert_select ".onboarding-top__back", 0
   end
 
   test "the welcome splash plays once per visit and is left out when signed in" do
@@ -676,7 +683,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     get onboarding_step_path("signup")
     assert_redirected_to onboarding_step_path("account")
     get onboarding_step_path("account")
-    assert_select "a.onboarding-top__back[href='#{onboarding_step_path("schedule")}']"
+    assert_response :success
   end
 
   test "after the prize and project steps an others-like-you transition plays over the next step, without a screen of its own" do
@@ -686,7 +693,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_response :success
     assert_select ".transition--proof[data-turbo-temporary][aria-hidden=true] .transition__title", /Hardly anyone has chosen the 8BitDo Pro 2 yet/ # a handful of people is never quoted as a number
-    assert_select ".transition__badge", /🏷️|8BitDo Pro 2|👕/
+    assert_select ".transition__badge img[alt='']", (Prize.find("tshirt").image.present? ? 1 : 0)
     assert_select "p.onboarding-note", /Hardly anyone has chosen the 8BitDo Pro 2 yet/ # the same words for screen readers and reduced motion
     assert_select ".transition-enter .onboarding-top" # the step waits underneath, then rises in
     assert_select "progress.onboarding-top__bar[value='3']"
@@ -850,7 +857,7 @@ class OnboardingTest < ActionDispatch::IntegrationTest
     sign_in_as users(:onboarded)
     get onboarding_step_path("schedule")
     assert_select "#onboarding-progress-label", "editing your plan"
-    assert_select "a.onboarding-top__back[href='#{dashboard_path}']"
+    assert_select ".onboarding-top__back", 0
 
     get settings_notifications_path
     assert_select "a[href='#{onboarding_step_path("schedule")}']", "your schedule"

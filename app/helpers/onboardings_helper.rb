@@ -53,18 +53,6 @@ module OnboardingsHelper
 
   def onboarding_copy(step) = STEP_COPY.fetch(step)
 
-  # Where the round back button goes: the previous step, skipping the ones a signed-in user never sees; the first
-  # step goes back to the landing page and the last has no way back.
-  def onboarding_back_path(step)
-    steps = OnboardingsController::STEPS
-    index = steps.index(step)
-    return if step == steps.last
-    return root_path if index.zero?
-
-    previous = steps[0...index].reverse.find { |slug| !(signed_in? && OnboardingsController::SKIPPED_WHEN_SIGNED_IN.include?(slug)) }
-    previous ? onboarding_step_path(previous) : root_path
-  end
-
   PROJECT_PHRASES = {
     "game" => "a game", "website" => "a website", "app" => "an app", "tool" => "a tool or bot",
     "undecided" => "something, and aren't sure what yet"
