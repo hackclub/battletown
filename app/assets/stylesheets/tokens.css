@@ -151,6 +151,12 @@
   --radius-xl: 3rem; /* Figma: outer cream button radius 48px (71:1000) */
   --radius-card: 3.125rem; /* Figma: 50px shop card (156:665); chunky shop cards only */
   --radius-full: 999px;
+  /* Concentric corners: a rounded box inside a rounded box has radius = outer radius - the gap between their edges.
+     The container sets --radius (its own radius) and --pad (the gap between its edge and the child); the child uses
+       border-radius: max(var(--radius-inner-min), calc(var(--radius) - var(--pad)));
+     --radius-inner-min is the floor, so a thin gap never produces a square corner. A child flush with the edge (gap 0)
+     takes --radius itself. Pills (--radius-full) are exempt. Rules: .claude/skills/verify/ui-brief.md "Design fundamentals". */
+  --radius-inner-min: 0.25rem;
   --shadow-sm: 0 1px 2px rgb(16 40 90 / 0.18); /* derived: navy-tinted soft shadow (was a warm brown) */
   --shadow-md: 0 8px 24px rgb(16 40 90 / 0.16); /* derived */
   --edge-shade: rgb(0 0 0 / 0.28); /* derived: the darker bottom edge under a filled button or pill (primary, danger, onboarding); not a colour token, it is a translucent shade */
