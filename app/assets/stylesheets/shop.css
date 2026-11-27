@@ -1,5 +1,7 @@
 /* Shop, confirmation and order history. Built from the shared design system (.page-header, .card--chunky, .badge,
    .alert, .empty, .btn); this file only holds what those classes cannot do. Tokens only. */
+.shop.container--narrow { --narrow-width: 40rem; } /* the shop's narrow pages stay 40rem; the others are 48rem (a width ruling is pending) */
+.shop-sticker { color: var(--color-ink-blue); } /* the sign's text keeps the ink blue it had; the callout default is the page text color (a color ruling is pending) */
 .shop-back { margin: 0; }
 /* A quiet button at the start of a line lines its label up with the text under it. */
 .shop-back .btn, .shop .page-header .btn--ghost { margin-inline-start: -1.25em; }

@@ -73,7 +73,7 @@
     padding-inline: var(--space-4);
   }
   .container--wide { max-width: var(--container-wide); }
-  .container--narrow { max-width: 48rem; } /* one narrow column for forms and single-card pages */
+  .container--narrow { max-width: var(--narrow-width, 48rem); } /* one narrow column for forms and single-card pages */
 
   .page { flex: 1; padding-block: var(--space-8); }
   @media (min-width: 48rem) { .page { padding-block: var(--space-12); } }

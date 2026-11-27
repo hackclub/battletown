@@ -10,7 +10,7 @@
 
     <section class="card admin-panel admin-form-card" aria-labelledby="coins-summary">
       <h2 id="coins-summary" class="card__title">Summary</h2>
-      <dl class="dl">
+      <dl class="dl dl--key-10">
         <dt>Person</dt><dd><%= admin_person_name(@user.display_name, @user.id) %></dd>
         <dt>Change</dt><dd><strong><%= adjustment.add? ? "Add" : "Take off" %> <%= coins_text(adjustment.whole_coins) %></strong></dd>
         <dt>Balance</dt><dd><%= number_with_delimiter(adjustment.balance_before) %> now, <strong><%= number_with_delimiter(adjustment.balance_after) %></strong> after</dd>

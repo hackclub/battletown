@@ -474,7 +474,8 @@
 
   /* Simple list: rows divided by a line, inside a .card or on its own. */
   /* Key-value rows: a term on the left, its value on the right; one column on a phone. */
-  .dl { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
+  .dl { display: grid; grid-template-columns: minmax(0, var(--dl-key, 9rem)) minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0 0 var(--space-4); }
+  .dl--key-10 { --dl-key: 10rem; } /* the admin pages' label column; the ship page keeps 9rem (a width ruling is pending) */
   .dl dt { font-weight: 700; }
   .dl dd { margin: 0; overflow-wrap: anywhere; }
   .dl a { display: inline-flex; align-items: center; min-height: var(--tap-size); }

@@ -13,7 +13,7 @@
       <% if revealed.phone_number.present? %>Phone <%= revealed.phone_number %><br><% end %>
     </address>
   <% elsif address %>
-    <dl class="dl">
+    <dl class="dl dl--key-10">
       <dt>Country</dt><dd><%= address.country %></dd>
       <dt>City</dt><dd><%= address.city %></dd>
       <% if address.purge_after %><dt>Deleted on</dt><dd><%= address.purge_after.utc.strftime("%-d %b %Y") %></dd><% end %>

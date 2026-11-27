@@ -18,7 +18,7 @@
     <div class="admin-grid grid grid--2">
       <section class="card admin-panel" aria-labelledby="order-facts">
         <h2 id="order-facts" class="card__title">Order and person</h2>
-        <dl class="dl">
+        <dl class="dl dl--key-10">
           <dt>Item</dt><dd><%= order.display_name %> (<%= order.kind.tr("_", " ") %>)</dd>
           <dt>Coins paid</dt><dd><%= order.coins %></dd>
           <dt>Person</dt><dd><%= order.user.display_name.presence || "No name" %></dd>
