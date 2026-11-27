@@ -48,7 +48,7 @@ class OnboardingFunnelTest < ActionDispatch::IntegrationTest
       assert_select "dd", /Battletown T-shirt|8BitDo Pro 2/
       assert_select "dd", /Game/
       assert_select "dd", /60 minutes a day/
-      assert_select ".reveal__estimate", /About \d+ days? of coding to your prize\. This is an estimate\./
+      assert_select ".reveal__estimate", /About \d+ days? to your .+\. This is an estimate\./
     end
     assert_select ".reveal__boss .reveal__boss-name", "Funnel Boss"
     assert_select ".reveal__boss", /100% left|Full health|health/i

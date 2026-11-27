@@ -22,7 +22,7 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 /* ---- Top strip: a hairline progress bar across the whole top of the window, then one row: back at the left, the logo in the
    middle, "Sign in" as plain text at the right (only for someone not signed in). No label, no count: the numbers are there for
    screen readers only. The strip is fixed and Turbo keeps it, so it never resizes between steps and the fill slides ---- */
-.onboarding-page { --ob-top: 6.75rem; --ob-bar-fill: var(--color-blue); --ob-bar-track: var(--color-cool-tint-edge); }
+.onboarding-page { --ob-top: 6.75rem; --ob-bar-fill: var(--color-blue); --ob-bar-track: var(--color-cool-tint); }
 .onboarding-top {
   position: fixed;
   inset: 0 0 auto 0;
@@ -90,9 +90,6 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 
 /* ---- The chunky pink button, as on the landing page ---- */
 .onboarding-page .btn--primary.btn--lg {
-  --btn-rim: 0px; /* no border here, so no rim line under the edge */
-  --btn-pt: 0.5em; --btn-px: 0.9em; --btn-pb: 0.56em; /* the base .btn slab rules carry the hover rise and press, with the base fixed */
-  --btn-edge: var(--ob-pink-edge);
   gap: 0.36em;
   border: 0;
   border-radius: 0.58em;
@@ -104,7 +101,6 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   letter-spacing: -0.04em;
   line-height: 1;
 }
-.onboarding-page .btn--primary.btn--lg::after { content: "\2192" / ""; font-family: var(--font-body); font-weight: 700; }
 .onboarding-page .btn--primary.btn--lg:focus-visible { outline: 3px solid var(--ob-navy); outline-offset: 4px; }
 
 /* Not ready yet (a choice is still to make): not pink, so no pink label has to pass as dimmed. The sky-soft face with the navy
@@ -122,11 +118,6 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 
 /* ---- The age question: two chunky choices (look in onboarding.css: no outline, edge in the face's own darker shade) ---- */
 .age-choice { border-radius: 1.5rem; font-size: var(--text-xl); letter-spacing: -0.02em; }
-@media (prefers-reduced-motion: no-preference) {
-  .age-choice { transition: --press 120ms ease; }
-  .age-choice:is(:hover, :focus-visible) { --press: round(nearest, var(--press-rise), 1px); }
-  .age-choice:active { --press: round(nearest, calc(var(--press-sink) - var(--age-edge)), 1px); }
-}
 
 /* ---- Different times on some days: one compact row per day (the day on the left, a short time field on the right) ---- */
 .day-times__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-1) var(--space-4); }
@@ -266,7 +257,6 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .choice-grid--prizes .choice__input:checked + .choice__body .choice__plate { background: none; }
 .choice-grid--prizes .choice__input:checked + .choice__body::after { top: 0.25rem; right: 0.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.875rem; }
 .choice-grid--prizes .choice:has(.choice__input:checked) { border-radius: clamp(0.875rem, 2.2vh, 1.4rem); }
-.choice-grid--prizes .choice:is(:hover, :active) .choice__body { --press: 0px; } /* the prize cards pick, they do not press: no motion */
 .onboarding__hint { flex: none; }
 
 /* "Working toward": a slim line; on a wide window it sits at the right of the heading row instead of taking a row of its own */
@@ -296,10 +286,10 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   padding: var(--space-3);
   border-radius: var(--radius-md);
   background: var(--color-bg);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 0 var(--color-cool-tint-edge);
 }
 .chips { gap: var(--space-1) var(--space-2); }
-.chip { --chip-min-h: 2.75rem; --chip-pt: var(--space-1); --chip-pb: var(--space-1); --chip-px: var(--space-3); line-height: 1.2; }
+.chip { line-height: 1.2; }
 @media (max-width: 39.99rem) {
   .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .chips li { display: flex; }
@@ -325,7 +315,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background: var(--color-bg);
-  box-shadow: var(--shadow-md), 0 0 0 2px var(--color-border);
+  box-shadow: 0 4px 0 var(--color-cool-tint-edge);
 }
 .day-times__body { display: grid; gap: var(--space-1); }
 .timezone__body { margin-top: var(--space-1); }
@@ -370,7 +360,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 }
 @media (max-width: 39.99rem) and (max-height: 56rem) {
   .onboarding-page { --ob-gap: 0.25rem; }
-  .chip { --chip-pt: 0px; --chip-pb: 0px; line-height: 1.15; }
+  .chip { line-height: 1.15; }
   .onboarding__field:has(.chips) textarea { min-height: 3rem; }
   .check { padding: 0.375rem var(--space-3); }
   .check__head { margin-bottom: 0; }
@@ -400,7 +390,6 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .pace-choice { --age-min-h: clamp(5.5rem, 16vh, 8rem); display: grid; align-content: center; justify-items: center; gap: var(--space-1); text-align: center; font-size: clamp(1.125rem, 2.8vh, 1.5rem); }
 .pace-choice__time { line-height: 1.1; }
 .pace-choice__days { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; color: var(--color-ink-blue); line-height: 1.2; }
-.pace-choice[aria-pressed="true"] { --age-edge-color: var(--color-yellow-edge); background: var(--color-yellow); }
 .onboarding__panel > form:has(.pace-choices) { flex: none; }
 
 /* ---- Project kind: big cards, one radio each, in the prize cards' cream with the yellow pick (no art exists for these yet) ---- */
@@ -428,7 +417,6 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
 .choice-grid--kinds .choice__name { color: var(--color-ink-blue); font-size: clamp(1rem, 2.4vh, 1.25rem); }
 .choice-grid--kinds .choice__input:checked + .choice__body { background: var(--color-yellow); box-shadow: inset 0 -0.3rem 0 var(--color-yellow-edge); }
 .choice-grid--kinds .choice__input:checked + .choice__body::after { top: 0.25rem; right: 0.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.875rem; }
-.choice-grid--kinds .choice:is(:hover, :active) .choice__body { --press: 0px; }
 .onboarding__panel > form > .onboarding__fieldset:has(.choice-grid--kinds) { flex: none; }
 
 /* The idea box: optional, folded away until asked for, so the question stays one question */
@@ -507,7 +495,7 @@ body:has(.onboarding-page) .onboarding-page { flex: 1; min-height: 0; }
   --card-badge: 1.5rem;
 }
 @media (min-width: 40rem) { .onboarding-page { --card-r: var(--radius-lg); --card-pad: var(--space-3); } }
-.age-choice, .pace-choice { --age-edge: var(--card-edge); --age-pad: var(--card-pad); border-radius: var(--card-r); }
+.age-choice, .pace-choice { border-radius: var(--card-r); }
 .choice-grid--prizes .choice__body,
 .choice-grid--kinds .choice__body {
   border-radius: var(--card-r);
@@ -592,22 +580,20 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   --sec-ring: var(--color-blue); /* hover and focus on a secondary card: the face stays white and gets a thin inner ring of the logo blue */
 }
 /* the age step: the expected answer is primary at rest, the other secondary */
-.age-choice { --age-edge-color: var(--sec-edge); background: var(--sec-face); color: var(--sec-ink); }
-.age-choice:is(:hover, :focus-visible) { --age-edge-color: var(--sec-edge); background: var(--sec-face); color: var(--sec-ink); }
-.age-choice--primary, .pace-choice[aria-pressed="true"] { --age-edge-color: var(--pri-edge); background: var(--pri-face); color: var(--pri-ink); }
-.age-choice--primary:is(:hover, :focus-visible), .pace-choice[aria-pressed="true"]:is(:hover, :focus-visible) { --age-edge-color: var(--pri-edge); background: var(--pri-face-step); color: var(--pri-ink); }
-.pace-choice[aria-pressed="true"] .pace-choice__days { color: var(--pri-ink); }
+.age-choice { background: var(--sec-face); color: var(--sec-ink); }
+.age-choice:is(:hover, :focus-visible) { background: var(--sec-face); color: var(--sec-ink); }
+.age-choice--primary { background: var(--pri-face); color: var(--pri-ink); }
+.age-choice--primary:is(:hover, :focus-visible) { background: var(--pri-face-step); color: var(--pri-ink); }
 /* the pickers: every card rests secondary, the picked one is primary */
 .choice-grid :is(.choice__body) { background: var(--sec-face); color: var(--sec-ink); }
 .choice-grid--prizes .choice__body, .choice-grid--kinds .choice__body { background: var(--sec-face); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--sec-edge); }
-.choice-grid .choice:hover .choice__input:not(:checked) + .choice__body, .choice-grid .choice__input:not(:checked):focus-visible + .choice__body { background: var(--sec-face); box-shadow: inset 0 0 0 2px var(--sec-ring), inset 0 calc(-1 * var(--card-edge)) 0 var(--sec-edge); }
+.choice-grid .choice:hover .choice__input:not(:checked) + .choice__body, .choice-grid .choice__input:not(:checked):focus-visible + .choice__body { background: var(--sec-face); box-shadow: none; }
 .choice-grid .choice__input:checked + .choice__body,
 .choice-grid--prizes .choice__input:checked + .choice__body,
 .choice-grid--kinds .choice__input:checked + .choice__body { background: var(--pri-face); box-shadow: inset 0 calc(-1 * var(--card-edge)) 0 var(--pri-edge); color: var(--pri-ink); }
 .choice-grid .choice:hover .choice__input:checked + .choice__body { background: var(--pri-face-step); }
 @media (prefers-reduced-motion: no-preference) {
-  .age-choice { transition: --press 120ms ease, background-color 150ms ease, color 150ms ease; } /* never box-shadow: it is the base of the slab and must not animate */
-  .choice__body { transition: --press 120ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease; }
+  .age-choice { transition: background-color 150ms ease, color 150ms ease; } /* never box-shadow: it is the base of the slab and must not animate */
 }
 /* Continue is primary; when a choice is still to make it is visibly off: a face barely off the ground, muted text, no edge, no arrow */
 .onboarding-page .btn--primary.btn--lg[aria-disabled="true"],
@@ -625,12 +611,11 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .transition__logo { filter: drop-shadow(0 4px 10px rgb(16 40 90 / 0.3)); }
 @media (max-width: 39.99rem) { .onboarding-top__logo img { filter: drop-shadow(0 1px 3px rgb(16 40 90 / 0.3)); } }
 
-/* ---- The docked prize: the picked prize's picture, top left, under the progress line, on every step after the pick. The even inset is
-   the Sign in inset on a wide window; on a phone it sits left of the logo. A tile in the secondary face, the product 80% inside it. ---- */
+/* ---- The docked prize: just the product picture, on the page ground (no tile, no edge, no shadow), top left, on every step after the pick.
+   Equal inset from the top and the left; on a phone it sits left of the logo. The picture keeps its own proportions. ---- */
 .onboarding-dock {
   position: fixed;
   z-index: 101; /* above the full-screen moment (100), so the flight is seen */
-  
   top: var(--space-6);
   left: var(--space-6);
   width: 9.5rem;
@@ -640,7 +625,6 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 }
 .onboarding-dock__image { display: block; width: 100%; height: 100%; object-fit: contain; }
 @media (max-width: 39.99rem) { .onboarding-dock { top: var(--space-2); left: var(--space-2); width: 5.75rem; height: 5.75rem; } }
-.age-choice:not(.age-choice--primary):not([aria-pressed="true"]):is(:hover, :focus-visible) { box-shadow: inset 0 0 0 2px var(--sec-ring), 0 calc(var(--age-edge) + var(--age-push)) 0 var(--age-edge-color); } /* the ring is on the face; the base is the same shadow as at rest */
 /* the picture tile is a step down from the white card, so it reads as a tile inside it (and white product shots do not vanish) */
 .choice-grid--prizes .choice__art { background: color-mix(in srgb, var(--color-cool-ground) 45%, var(--color-cool-tint)); }
 @media (max-width: 39.99rem) { .choice-grid--prizes .choice__art { background: none; } }
@@ -650,8 +634,94 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
    from off to on over 150ms; messages that appear fade in. Only opacity and translate move; all of it is off under reduced motion. ---- */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes ob-enter { from { opacity: 0; translate: 0 8px; } }
-  .onboarding__panel { animation: ob-enter 220ms ease-out both; }
-  .onboarding__panel .alert, .onboarding__panel .field__error, .reveal { animation: ob-enter 200ms ease-out both; }
-  .onboarding-page .btn--primary.btn--lg { transition: --press 120ms ease, background-color 150ms ease, color 150ms ease; }
+  @keyframes ob-enter-back { from { opacity: 0; translate: 0 -8px; } }
+  .onboarding__panel { animation: ob-enter 220ms ease-out; }
+  [data-ob-dir="back"] .onboarding__panel { animation-name: ob-enter-back; }
+  .onboarding__panel .alert, .onboarding__panel .field__error, .reveal { animation: ob-enter 200ms ease-out; }
+  .onboarding-page .btn--primary.btn--lg { transition: background-color 150ms ease, color 150ms ease; }
 }
-.age-choice.is-picked { --age-edge-color: var(--pri-edge); background: var(--pri-face); color: var(--pri-ink); }
+
+/* ======================================================================================================================================
+   Flat by default, vertical rows for text options, the body font on everything but headings and buttons, hard shadows only.
+   One raised slab is allowed in the onboarding: the reveal's "Sign up with Hack Club" (.btn--raised). Everything else is a flat fill:
+   no darker bottom edge, no rise, no sink. Hover is a one-step fill change plus a thick inner ring, with no transition at all.
+   ====================================================================================================================================== */
+.onboarding-page { --card-edge: 0px; }
+
+/* -- icons: every inline SVG has a size and its fill rules here, in the stylesheet this page loads -- */
+.choice__check { display: none; position: absolute; inset-block: 0; right: var(--card-pad); margin-block: auto; width: var(--card-badge); height: var(--card-badge); }
+.choice__check circle { fill: var(--color-yellow); }
+.choice__check path { fill: none; stroke: var(--color-ink-blue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.choice__input:checked + .choice__body .choice__check { display: block; }
+.onboarding-page .choice-grid .choice__input:checked + .choice__body::after { content: none; display: none; }
+.btn__arrow { flex: none; display: block; width: 1.1em; height: 1.1em; }
+
+/* -- flat buttons (the slab one is exempt) -- */
+.onboarding-page .btn--primary.btn--lg { font-size: 1.25rem; letter-spacing: -0.02em; border-radius: var(--radius-md); }
+.onboarding-page .btn--primary:not([aria-disabled="true"]):hover { background: var(--pri-face-step); }
+.onboarding-page .btn--primary:not([aria-disabled="true"]):active { background: color-mix(in srgb, var(--color-blue) 78%, var(--color-ink-blue)); }
+.onboarding-page .btn--primary.btn--lg[aria-disabled="true"] { background: color-mix(in srgb, var(--color-cool-ground) 50%, var(--color-cool-tint-edge)); box-shadow: none; }
+
+/* -- flat choice cards and buttons: age, pace, prize, kind, editor -- */
+.onboarding-page .onboarding__panel .age-choice,
+.onboarding-page .onboarding__panel .age-choice:is(:hover, :focus-visible, :active) {
+  margin: 0; box-shadow: none;
+  min-height: 4.5rem; padding: 0 var(--space-6);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-lg);
+}
+.onboarding-page .onboarding__panel .age-choice:not(.age-choice--primary):hover { background: var(--color-cool-hover); }
+.age-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: var(--space-3); }
+@media (max-width: 39.99rem) { .age-choices { grid-template-columns: minmax(0, 1fr); } }
+
+.onboarding-page .choice__body,
+.onboarding-page .choice:is(:hover, :active) .choice__body { margin: 0; box-shadow: none; transition: none; }
+.onboarding-page .choice-grid--prizes .choice__body, .onboarding-page .choice-grid--kinds .choice__body { padding: var(--card-pad); }
+.onboarding-page .choice-grid .choice:hover .choice__input:not(:checked) + .choice__body { background: var(--color-cool-hover); } /* hover: a slight blue tint, instantly; no ring, no outline */
+.onboarding-page .choice-grid .choice__input:checked + .choice__body { box-shadow: none; }
+.onboarding-page .choice__input:focus-visible + .choice__body { outline: 3px solid var(--color-focus-on-light); outline-offset: 2px; } /* the keyboard ring, never on mouse hover */
+/* only a pick animates (the fill and the text color over 150ms); a hover never does */
+@media (prefers-reduced-motion: no-preference) {
+  .onboarding-page .choice-grid .choice__input:checked + .choice__body { transition: background-color 150ms ease, color 150ms ease; }
+  .onboarding-page .onboarding__panel .age-choice--primary { transition: background-color 150ms ease, color 150ms ease; }
+  .onboarding-page .onboarding__panel .age-choice { transition: none; }
+}
+
+/* -- text options as one centered column of full-width rows (project kind, editor; pace below) -- */
+.onboarding-page:has(.choice-grid--kinds:not(.choice-grid--editors), .pace-choices) { --ob-fit-width: 32rem; }
+.onboarding__panel:has(.choice-grid--kinds:not(.choice-grid--editors), .pace-choices) .onboarding__header { text-align: center; }
+.onboarding__panel:has(.choice-grid--kinds:not(.choice-grid--editors), .pace-choices) .onboarding__actions { justify-content: center; }
+.onboarding-page .choice-grid--kinds, .onboarding-page .pace-choices { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; gap: var(--space-2); width: 100%; max-width: 32rem; margin-inline: auto; }
+.onboarding-page .choice-grid--kinds .choice:last-child:nth-child(odd) { grid-column: auto; }
+.onboarding-page .choice-grid--kinds .choice:last-child:not(:only-child) { margin-top: var(--space-3); } /* the opt-out row, set slightly apart */
+.onboarding-page .choice-grid--kinds .choice__body {
+  display: flex; align-items: center; justify-content: flex-start; text-align: left;
+  min-height: 3.25rem; height: auto;
+  padding: 0 calc(var(--card-badge) + var(--card-pad) * 2) 0 var(--space-4);
+  border-radius: var(--radius-md);
+}
+.onboarding-page .choice-grid--kinds .choice__name { text-align: left; }
+.onboarding-page .pace-choice { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); text-align: left; min-height: 4rem; padding: 0 var(--space-4); border-radius: var(--radius-md); }
+.pace-choice__days { text-align: right; }
+
+/* -- the body font for everything that is not a heading or a button label -- */
+.choice__name, .pace-choice__time, .onboarding__legend, .pace-choice__days, .reveal__estimate, .arrival__name, .onboarding-top__signin { font-family: var(--font-body); }
+.choice__name, .pace-choice__time { font-weight: 800; }
+.onboarding__legend { font-weight: 800; }
+
+/* -- hard shadows only: zero blur, a solid darker blue, a clear offset -- */
+/* The logo's white sticker edge against the pale ground: a thin hard edge on every side (zero blur), the lightest logo-family blue that is 3:1 against the white. */
+.onboarding-top__logo img, .transition__logo {
+  --edge: 1.5px;
+  filter: drop-shadow(var(--edge) 0 0 var(--color-logo-edge)) drop-shadow(calc(-1 * var(--edge)) 0 0 var(--color-logo-edge))
+          drop-shadow(0 var(--edge) 0 var(--color-logo-edge)) drop-shadow(0 calc(-1 * var(--edge)) 0 var(--color-logo-edge));
+}
+.transition__logo { --edge: 2px; }
+@media (max-width: 39.99rem) { .onboarding-top__logo img { --edge: 1px; } }
+
+/* -- one rule for a picked option: the container's colors, and every piece of text and every icon inside it inherits them (no per-element color to miss) -- */
+.onboarding-page .choice-grid .choice__input:checked + .choice__body,
+.onboarding-page .choice-grid .choice__input:checked + .choice__body :is(span, p, strong, b, em, small) { color: var(--pri-ink); }
+.onboarding-page .choice-grid .choice__input:checked + .choice__body { background: var(--pri-face); }
+.onboarding-page .choice-grid .choice:hover .choice__input:checked + .choice__body { background: var(--pri-face-step); }
+.onboarding-page .choice__input:checked + .choice__body .choice__meta, .onboarding-page .choice__input:checked + .choice__body .choice__desc { background: none; }

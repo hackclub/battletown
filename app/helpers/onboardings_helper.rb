@@ -77,6 +77,19 @@ module OnboardingsHelper
 
   def onboarding_copy(step) = STEP_COPY.fetch(step)
 
+  # Inline SVG icons for the onboarding, drawn on a 24-unit box with the shape centered in it, so a grid or flex box centers them exactly.
+  def onboarding_arrow
+    tag.svg(tag.path(d: "M5 12h14M13 6l6 6-6 6"), class: "btn__arrow", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": true, focusable: false)
+  end
+
+  # A button label with the arrow after it.
+  def onboarding_label(text) = safe_join([ text, onboarding_arrow ])
+
+  # The pick badge of a chosen card: a yellow circle with a navy check, shown only on the checked card (see onboarding_world.css).
+  def onboarding_check
+    tag.svg(tag.circle(cx: 12, cy: 12, r: 12) + tag.path(d: "M7 12.5l3.5 3.5 6.5-7.5"), class: "choice__check", viewBox: "0 0 24 24", "aria-hidden": true, focusable: false)
+  end
+
   PROJECT_PHRASES = {
     "game" => "a game", "website" => "a website", "app" => "an app", "tool" => "a tool or bot",
     "undecided" => "something, and aren't sure what yet"
@@ -222,10 +235,10 @@ module OnboardingsHelper
     [ (seconds / (minutes * 60)).ceil, 1 ].max
   end
 
-  # "About 14 days of coding" for a prize at a pace; nil when there is no paid prize to count toward.
+  # "About 14 days to your 8BitDo Pro 2" for a prize at a pace; nil when there is no paid prize to count toward.
   def onboarding_days_text(prize, minutes)
     days = onboarding_days_to_prize(prize, minutes)
-    "About #{pluralize(days, 'day')} of coding" if days
+    "About #{pluralize(days, 'day')} to your #{prize.name}" if days
   end
 
   # "1 hour 30 minutes" for a daily pace given in minutes (the select's option text).

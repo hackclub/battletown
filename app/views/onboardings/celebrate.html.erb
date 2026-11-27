@@ -32,7 +32,7 @@
 
     <%= form_with url: onboarding_step_path("celebrate"), method: :patch do |f| %>
       <div class="onboarding__actions">
-        <%= f.button "Enter Battletown", class: "btn btn--primary btn--lg" %>
+        <%= f.button onboarding_label("Enter Battletown"), class: "btn btn--primary btn--lg" %>
         <button type="button" class="btn celebration__sound" aria-pressed="true" data-onboarding-celebration-target="sound" data-action="onboarding-celebration#toggleSound">
           <span aria-hidden="true">♪</span><span>Sound <span data-state>on</span></span>
         </button>

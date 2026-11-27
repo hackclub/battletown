@@ -138,7 +138,7 @@ class OnboardingsController < ApplicationController
 
   def save_step
     user = subject
-    user.assign_attributes(step_params)
+    user.assign_attributes(step_attributes)
     user.valid?
     REQUIRED.fetch(@step, []).each { |attribute| user.errors.add(attribute, :blank) if user[attribute].blank? }
     user.errors.add(:coding_days, :blank) if @step == "schedule" && user.coding_days.zero? # worded by OnboardingsHelper
@@ -164,6 +164,28 @@ class OnboardingsController < ApplicationController
     editing = current_user&.onboarded?
     track_event(:onboarding_step_completed, step: @step, **Analytics::Journey.onboarding_props(@step, subject)) unless editing
     track_event(:settings_saved, section: "schedule") if editing && @step == "schedule"
+  end
+
+  # The schedule step sends the browser's own time zone (an IANA name such as America/New_York) and never asks. It is mapped to the zone
+  # name the app stores, checked against the known list, and never trusted raw: missing or unknown falls back to the zone already saved, else UTC.
+  def step_attributes
+    attributes = step_params
+    return attributes unless @step == "schedule" && attributes.key?(:time_zone)
+
+    attributes.merge(time_zone: stored_time_zone_name(attributes[:time_zone]))
+  end
+
+  IANA_LOOKING = %r{\A[A-Za-z_]+(/[A-Za-z0-9_+-]+)+\z}
+
+  def stored_time_zone_name(raw)
+    raw = raw.to_s.strip
+    zones = ActiveSupport::TimeZone.all
+    return raw if zones.any? { |zone| zone.name == raw } # a zone name from the settings-style picker
+    return "UTC" if %w[UTC Etc/UTC GMT Etc/GMT].include?(raw)
+    return zones.find { |zone| zone.tzinfo.name == raw }.name if zones.any? { |zone| zone.tzinfo.name == raw }
+    return raw unless raw.blank? || raw.match?(IANA_LOOKING) # not a zone name at all: let validation refuse it
+
+    subject.time_zone.presence || "UTC"
   end
 
   # An integer column quietly turns "15.5" into 15 and "15abc" into 15; only a plain whole number is an answer.

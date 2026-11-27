@@ -1,48 +1,33 @@
 <%# The first-run schedule step: one question, how long a coding day is. Days and time are not asked: they are sent with
     the answer (the days the person already has, else every day; the time they have, else 6 pm) so the same back end
     accepts them. Each choice is a submit button, so a tap answers and moves on, and a keyboard moves through them
-    without submitting. The time zone is the one the server derived or the browser reports. %>
+    without submitting. The time zone is the browser's own, sent in a hidden field. %>
 <% prize = onboarding_saved_prize if subject.prize_key_in_database.present? %>
 <% days = subject.coding_day_names.presence || User::DAYS %>
-<%= form_with model: subject, scope: :user, url: onboarding_step_path("schedule"), method: :patch, data: { controller: "timezone" } do |f| %>
+<%= form_with model: subject, scope: :user, url: onboarding_step_path("schedule"), method: :patch, data: { controller: "browser-time-zone" } do |f| %>
   <%= render "onboardings/errors" %>
   <% days.each do |day| %><%= hidden_field_tag "user[coding_day_names][]", day, id: nil %><% end %>
   <%= hidden_field_tag "user[coding_time]", subject.coding_time || OnboardingsHelper::DEFAULT_CODING_TIME, id: nil %>
   <%= tag.fieldset class: "onboarding__fieldset", aria: onboarding_aria(:pace_minutes, id: "pace").slice(:describedby) do %>
     <legend class="visually-hidden">Daily pace</legend>
     <%= onboarding_field_error(:pace_minutes, id: "pace") %>
-    <div class="pace-choices">
+    <%# One native radio group: the browser keeps one pick, restores it on Back, and moves with the arrow keys. The look of a pick comes only from :checked. %>
+    <div class="choice-grid pace-choices">
       <% OnboardingsHelper::ONBOARDING_PACES.each_with_index do |minutes, index| %>
-        <%= button_tag type: :submit, id: ("user_pace_minutes" if index.zero?), name: "user[pace_minutes]", value: minutes, class: "age-choice pace-choice", aria: { pressed: (subject.pace_minutes == minutes).to_s } do %>
-          <span class="pace-choice__time"><%= pace_text(minutes) %></span>
-          <% if (line = onboarding_days_text(prize, minutes)) %><span class="pace-choice__days"><%= line %></span><% end %>
-        <% end %>
+        <label class="choice">
+          <%= radio_button_tag "user[pace_minutes]", minutes, subject.pace_minutes == minutes, id: (index.zero? ? "user_pace_minutes" : "user_pace_minutes_#{minutes}"), class: "choice__input", data: { action: "change->onboarding-step#choose" } %>
+          <span class="choice__body pace-choice">
+            <span class="pace-choice__time"><%= pace_text(minutes) %></span>
+            <% if (line = onboarding_days_text(prize, minutes)) %><span class="pace-choice__days"><%= line %></span><% end %>
+          </span>
+        </label>
       <% end %>
     </div>
-    <p class="onboarding__hint" id="pace-hint">This is the pace your prize check on the dashboard uses. You can change it any time.</p>
-    <% if prize %><p class="onboarding__hint"><%= OnboardingDesignHelper::HOURS_NOTE %></p><% end %>
   <% end %>
+  <noscript><div class="onboarding__actions"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div></noscript>
 
-  <%# The time zone is derived from the address at sign-in; the select is tucked away but still submits with the form. %>
-  <% zone = onboarding_time_zone %>
-  <details class="timezone onboarding__field" data-timezone-target="details" <%= "open" if zone.nil? || subject.errors.key?(:time_zone) %>>
-    <summary class="timezone__summary">
-      <% if zone %>
-        We'll use <strong data-timezone-target="name"><%= zone.name %></strong> for your reminders. Not right? <span class="timezone__change">Change time zone</span>
-      <% else %>
-        Which time zone are you in? <span class="timezone__change">Choose time zone</span>
-      <% end %>
-    </summary>
-    <div class="timezone__body field <%= "field--invalid" if onboarding_errors(:time_zone).any? %>">
-      <%= f.label :time_zone, "Your time zone" %>
-      <%= f.select :time_zone, time_zone_options, { include_blank: "Choose your time zone" },
-            aria: onboarding_aria(:time_zone, id: "user_time_zone"), data: { timezone_target: "select", action: "timezone#update" } %>
-      <%= onboarding_field_error(:time_zone, id: "user_time_zone") %>
-    </div>
-  </details>
-
-  <p class="field__hint onboarding__note">We'll remind you with a Slack DM on your coding days. No email or phone number needed.</p>
-  <p class="field__hint onboarding__note">Until you change it, that is <%= days.size == 7 ? "every day" : days.map { |day| day_label(day) }.to_sentence %> at <%= coding_time_text(subject.coding_time || OnboardingsHelper::DEFAULT_CODING_TIME) %>.</p>
+  <%# No time zone is asked: the browser reports its own, and the server maps and checks it. %>
+  <%= hidden_field_tag "user[time_zone]", subject.time_zone, id: nil, data: { browser_time_zone_target: "field" } %>
   <% if signed_in? && current_user.slack_id.blank? %>
     <p class="alert alert--warning onboarding__note" role="note">Your Hack Club account isn't linked to a Slack account yet, so we can't DM you. Your plan is saved for when it is.</p>
   <% end %>

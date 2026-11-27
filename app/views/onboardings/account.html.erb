@@ -58,9 +58,9 @@
     <%# Continue shows once Hackatime works (the server refuses without it too). Someone editing their plan later always has it.
         While Hackatime is optional, anyone can carry on: "Skip for now" until it is connected. %>
     <% if state == :connected || current_user.onboarded? %>
-      <div class="onboarding__actions"><%= f.button "Continue", class: "btn btn--primary btn--lg" %></div>
+      <div class="onboarding__actions"><%= f.button onboarding_label("Continue"), class: "btn btn--primary btn--lg" %></div>
     <% elsif !required %>
-      <div class="onboarding__actions"><%= f.button "Skip for now", class: "btn btn--lg" %></div>
+      <div class="onboarding__actions"><%= f.button onboarding_label("Skip for now"), class: "btn btn--lg" %></div>
     <% end %>
   <% end %>
 <% end %>

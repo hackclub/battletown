@@ -50,15 +50,49 @@ class LandingSystemTest < ApplicationSystemTestCase
     assert_current_path "/onboarding/schedule"
     assert_selector ".transition--proof" # the "you'll be one of the first" moment plays over this step too
     assert_no_selector ".transition", wait: 6
-    # No address to take a zone from, and a CI browser's own zone (UTC) is not in the list: open the zone picker and choose one, then pick a pace (the pace button sends the step).
-    find("summary", text: "Choose time zone").click
-    select "Eastern Time (US & Canada)", from: "Your time zone"
-    click_button "1 hour"
+    # The browser's own zone is sent with the step; nothing is asked. A tap on a pace sends the step.
+    find("label.choice", text: "1 hour").click
 
     assert_current_path "/onboarding/signup"
     click_button "Sign up with Hack Club"
     assert_current_path "/onboarding/account"
     assert_equal 1, User.where(hca_uid: "ident!system-test").count
     assert_equal "game", User.find_by!(hca_uid: "ident!system-test").project_kind
+  end
+
+  # The selected look is only ever the inputs' state: pick, go on, come back, pick again, and exactly one option is selected,
+  # in white text on both lines, and the answer that is saved is the second pick.
+  test "going back and picking again leaves one pick, in white, and saves the new one" do
+    OmniAuth.config.mock_auth[:hack_club] = OmniAuth::AuthHash.new(provider: "hack_club", uid: "ident!back-test", extra: { raw_info: {} })
+    visit "/onboarding/age"
+    find(".transition--welcome").click
+    click_button "I'm a teen aged 13–18!"
+    find("label.choice", match: :first).click
+    click_button "Continue"
+    assert_current_path "/onboarding/project"
+    assert_no_selector ".transition", wait: 6
+    find("label.choice", text: "Game").click
+    click_button "Continue"
+    assert_current_path "/onboarding/schedule"
+    assert_no_selector ".transition", wait: 6
+
+    find("label.choice", text: "2 hours").click
+    assert_current_path "/onboarding/signup"
+    page.go_back
+    assert_current_path "/onboarding/schedule"
+    # Back shows the earlier pick: one selected option, white on both lines, and nothing else tinted as selected.
+    assert_selector "input[type=radio]:checked", count: 1
+    assert_equal "120", find("input[type=radio]:checked", visible: :all).value
+    white = "rgb(255, 255, 255)"
+    %w[.pace-choice__time .pace-choice__days].each do |line|
+      assert_equal white, page.evaluate_script("getComputedStyle(document.querySelector('input:checked + .choice__body #{line}')).color")
+    end
+    assert_no_selector "[class*=is-picked]"
+
+    find("label.choice", text: "30 minutes").click
+    assert_current_path "/onboarding/signup"
+    visit "/onboarding/schedule"
+    assert_selector "input[type=radio]:checked", count: 1
+    assert_equal "30", find("input[type=radio]:checked", visible: :all).value
   end
 end
