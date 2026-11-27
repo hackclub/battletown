@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= page_title %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%# A page that opts in to Basecoat loads the site's tokens and fonts (the theme reads them) and the Tailwind + Basecoat build
+        (bin/rails tailwindcss:build), and none of the site's other stylesheets: they share class names (.btn, .card, .input,
+        .select, .field, .alert ...) with Basecoat. Not linked by `stylesheet_link_tag :app`; see lib/tasks/tailwind.rake. %>
+    <%= stylesheet_link_tag "tokens", "fonts", "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    <%= javascript_import_module_tag "basecoat" %>
+  </head>
+
+  <body class="basecoat basecoat-ground">
+    <%= yield %>
+  </body>
+</html>

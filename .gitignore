@@ -25,6 +25,10 @@
 
 /public/assets
 
+# Tailwind + Basecoat build output (bin/rails tailwindcss:build); the .keep makes Propshaft see the directory at boot
+/vendor/assets/builds/*
+!/vendor/assets/builds/.keep
+
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 /config/credentials/*.key

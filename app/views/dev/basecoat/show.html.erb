@@ -1,0 +1,190 @@
+<% content_for :title, "Basecoat theme" %>
+<%# Development-only (the controller 404s elsewhere). The Battletown theme (app/assets/tailwind/battletown_theme.css) on
+    Basecoat's own markup. Every control here is Basecoat's documented HTML, themed; nothing in the app uses Basecoat yet. %>
+<main class="mx-auto flex w-full max-w-5xl flex-col gap-8 p-4 sm:p-8" data-controller="basecoat-toast">
+  <header class="flex flex-col gap-2">
+    <h1 class="text-3xl sm:text-5xl">Basecoat in the Battletown theme</h1>
+    <p class="text-muted-foreground max-w-prose">
+      Development only. Basecoat 1.3.0 (shadcn's components as plain HTML classes) on Tailwind, mapped onto the site's tokens.
+      The landing page's painted art stays hand-made; this is for forms, dialogs, menus, tabs and toasts.
+    </p>
+  </header>
+
+  <section class="card" aria-labelledby="bc-buttons">
+    <header>
+      <h2 id="bc-buttons">Buttons</h2>
+      <p>Flat fills, no outline, no shadow. Hover and press are one step darker.</p>
+    </header>
+    <section class="flex flex-wrap items-center gap-3">
+      <button type="button" class="btn">Primary</button>
+      <button type="button" class="btn" data-variant="secondary">Secondary</button>
+      <button type="button" class="btn" data-variant="blue">Blue</button>
+      <button type="button" class="btn" data-variant="ghost">Ghost</button>
+      <button type="button" class="btn" data-variant="destructive">Destructive</button>
+      <button type="button" class="btn" disabled>Disabled</button>
+      <button type="button" class="btn" data-size="lg">Large</button>
+      <span class="badge">Badge</span>
+      <span class="badge" data-variant="secondary">Secondary</span>
+      <span class="badge" data-variant="outline">Outline</span>
+    </section>
+  </section>
+
+  <section class="flex flex-col gap-6" aria-labelledby="bc-options">
+    <header>
+      <h2 id="bc-options">Choices</h2>
+      <p>A picked option is solid blue with all its text white. The native input's checked state does it, with no script.</p>
+    </header>
+    <section class="grid gap-8">
+      <fieldset class="option-list">
+        <legend class="label mb-3">One choice: full-width rows</legend>
+        <label class="option-row"><input type="radio" name="bc-pace" value="steady" checked><span>Steady</span><span class="option-row__note">About 5 hours a week</span></label>
+        <label class="option-row"><input type="radio" name="bc-pace" value="sprint"><span>Sprint</span><span class="option-row__note">About 10 hours a week</span></label>
+        <label class="option-row"><input type="radio" name="bc-pace" value="chill"><span>Chill</span><span class="option-row__note">An hour here and there</span></label>
+      </fieldset>
+
+      <fieldset class="option-list">
+        <legend class="label mb-3">Several choices: checkbox rows</legend>
+        <label class="option-row option-row--check"><input type="checkbox" name="bc-days[]" value="mon" checked><span class="option-row__mark" aria-hidden="true"></span><span>Monday</span><span class="option-row__note">After school</span></label>
+        <label class="option-row option-row--check"><input type="checkbox" name="bc-days[]" value="tue"><span class="option-row__mark" aria-hidden="true"></span><span>Tuesday</span></label>
+        <label class="option-row option-row--check"><input type="checkbox" name="bc-days[]" value="wed" checked><span class="option-row__mark" aria-hidden="true"></span><span>Wednesday</span></label>
+      </fieldset>
+
+      <fieldset class="option-cards">
+        <legend class="label mb-3">Picture cards (prizes)</legend>
+        <label class="option-card"><input type="radio" name="bc-prize" value="micro" checked><span class="option-card__art"><%= image_tag "prizes/placeholder/8bitdo-micro.webp", alt: "" %></span><span class="option-card__name">8BitDo Micro</span><span class="option-card__note">20 hours</span></label>
+        <label class="option-card"><input type="radio" name="bc-prize" value="pro2"><span class="option-card__art"><%= image_tag "prizes/placeholder/8bitdo-pro-2.webp", alt: "" %></span><span class="option-card__name">8BitDo Pro 2</span><span class="option-card__note">40 hours</span></label>
+        <label class="option-card"><input type="radio" name="bc-prize" value="ult2"><span class="option-card__art"><%= image_tag "prizes/placeholder/8bitdo-ultimate-2.webp", alt: "" %></span><span class="option-card__name">8BitDo Ultimate 2</span><span class="option-card__note">60 hours</span></label>
+      </fieldset>
+
+      <div class="grid gap-2">
+        <label for="bc-progress" class="label">Progress</label>
+        <progress id="bc-progress" class="progress" max="100" value="45">45 percent</progress>
+      </div>
+    </section>
+  </section>
+
+  <section class="card" aria-labelledby="bc-form">
+    <header>
+      <h2 id="bc-form">Form controls</h2>
+      <p>Input, select, textarea, checkbox, radio and switch.</p>
+    </header>
+    <section>
+      <form class="form grid gap-6 sm:max-w-md">
+        <div class="grid gap-2">
+          <label for="bc-name" class="label">Display name</label>
+          <input id="bc-name" type="text" class="input" placeholder="Pick a name">
+        </div>
+        <div class="grid gap-2">
+          <label for="bc-team" class="label">Team</label>
+          <select id="bc-team" class="select">
+            <option>Pink pirates</option>
+            <option>Blue wizards</option>
+            <option>Yellow knights</option>
+          </select>
+        </div>
+        <div class="grid gap-2">
+          <label for="bc-note" class="label">Note</label>
+          <textarea id="bc-note" class="textarea" rows="3" placeholder="What are you building?"></textarea>
+        </div>
+        <div class="grid gap-2">
+          <label for="bc-bad" class="label">Field with an error</label>
+          <input id="bc-bad" type="text" class="input" aria-invalid="true" value="Not valid">
+        </div>
+        <div class="flex items-center gap-3">
+          <input id="bc-check" type="checkbox" class="input" checked>
+          <label for="bc-check" class="label">Remind me before each ship</label>
+        </div>
+        <fieldset class="grid gap-3">
+          <legend class="label">Pace</legend>
+          <div class="flex items-center gap-3"><input id="bc-r1" name="pace" type="radio" class="input" checked><label for="bc-r1" class="label">Steady</label></div>
+          <div class="flex items-center gap-3"><input id="bc-r2" name="pace" type="radio" class="input"><label for="bc-r2" class="label">Sprint</label></div>
+        </fieldset>
+        <div class="flex items-center gap-3">
+          <input id="bc-switch" type="checkbox" role="switch" class="input" checked>
+          <label for="bc-switch" class="label">Show me on the board</label>
+        </div>
+        <button type="button" class="btn">Save</button>
+      </form>
+    </section>
+  </section>
+
+  <section class="card" aria-labelledby="bc-tabs">
+    <header>
+      <h2 id="bc-tabs">Tabs</h2>
+    </header>
+    <section>
+      <div class="tabs w-full" id="bc-tabs-demo">
+        <nav role="tablist" aria-orientation="horizontal">
+          <button type="button" role="tab" id="bc-tabs-demo-tab-1" aria-controls="bc-tabs-demo-panel-1" aria-selected="true" tabindex="0">Crew</button>
+          <button type="button" role="tab" id="bc-tabs-demo-tab-2" aria-controls="bc-tabs-demo-panel-2" aria-selected="false" tabindex="-1">Ships</button>
+          <button type="button" role="tab" id="bc-tabs-demo-tab-3" aria-controls="bc-tabs-demo-panel-3" aria-selected="false" tabindex="-1">Loot</button>
+        </nav>
+        <div role="tabpanel" id="bc-tabs-demo-panel-1" aria-labelledby="bc-tabs-demo-tab-1" tabindex="-1" class="pt-4">Your crew, ready to fight.</div>
+        <div role="tabpanel" id="bc-tabs-demo-panel-2" aria-labelledby="bc-tabs-demo-tab-2" tabindex="-1" class="pt-4" hidden>Everything you have shipped.</div>
+        <div role="tabpanel" id="bc-tabs-demo-panel-3" aria-labelledby="bc-tabs-demo-tab-3" tabindex="-1" class="pt-4" hidden>Coins and prizes.</div>
+      </div>
+    </section>
+  </section>
+
+  <section class="card" aria-labelledby="bc-overlays">
+    <header>
+      <h2 id="bc-overlays">Dialog, dropdown menu and toast</h2>
+    </header>
+    <section class="flex flex-wrap items-start gap-3">
+      <button type="button" class="btn" data-variant="outline" commandfor="bc-dialog" command="show-modal">Open dialog</button>
+
+      <div id="bc-menu" class="dropdown-menu">
+        <button type="button" id="bc-menu-trigger" class="btn" data-variant="secondary" aria-haspopup="menu" aria-controls="bc-menu-menu" aria-expanded="false">Menu</button>
+        <div id="bc-menu-popover" data-popover aria-hidden="true">
+          <div role="menu" id="bc-menu-menu" aria-labelledby="bc-menu-trigger">
+            <div role="group" aria-labelledby="bc-menu-group"><div role="heading" id="bc-menu-group">My crew</div>
+              <div role="menuitem">Profile</div>
+              <div role="menuitem">Settings</div>
+            </div>
+            <hr role="separator">
+            <div role="menuitem">Sign out</div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn" data-action="basecoat-toast#show">Show toast</button>
+    </section>
+  </section>
+
+  <dialog id="bc-dialog" class="dialog w-full sm:max-w-[425px]" aria-labelledby="bc-dialog-title" aria-describedby="bc-dialog-description">
+    <div>
+      <header>
+        <h2 id="bc-dialog-title">Rename your crew</h2>
+        <p id="bc-dialog-description">Pick something your friends will recognize.</p>
+      </header>
+      <section>
+        <form class="form grid gap-4" method="dialog">
+          <div class="grid gap-2">
+            <label for="bc-dialog-name" class="label">Crew name</label>
+            <input id="bc-dialog-name" type="text" class="input" value="The Brave Ones">
+          </div>
+        </form>
+      </section>
+      <footer>
+        <button type="button" class="btn" data-variant="outline" commandfor="bc-dialog" command="close">Cancel</button>
+        <button type="button" class="btn" commandfor="bc-dialog" command="close">Save changes</button>
+      </footer>
+      <button type="button" class="btn" data-variant="ghost" data-size="icon-sm" aria-label="Close dialog" commandfor="bc-dialog" command="close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+  </dialog>
+
+  <ol id="toaster" class="toaster" role="list" aria-label="Notifications" data-basecoat-toast-target="toaster"></ol>
+  <template data-basecoat-toast-target="template">
+    <li class="toast" data-category="success" data-duration="6000">
+      <div class="toast-content" role="status" aria-atomic="true">
+        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        <section>
+          <h2>Ship saved</h2>
+          <p>Your crew can see it on the board.</p>
+        </section>
+      </div>
+    </li>
+  </template>
+</main>

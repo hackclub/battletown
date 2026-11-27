@@ -1,0 +1,55 @@
+/*
+ * The Tailwind + Basecoat entry point. `bin/rails tailwindcss:build` (also run by assets:precompile) compiles it to
+ * vendor/assets/builds/tailwind.css. That output is NOT under app/assets, so `stylesheet_link_tag :app` never links it:
+ * only a layout or page that asks for `stylesheet_link_tag "tailwind"` loads it (today: layouts/basecoat, used by /dev/basecoat).
+ *
+ * Why it is built this way (see also the theme file next to this one):
+ *  - No preflight. Tailwind's reset restyles every bare element; the site has its own (application.css).
+ *  - theme(inline): Tailwind's default theme (--color-*, --text-*, --radius-*, --font-*, --spacing) is inlined into the
+ *    utilities instead of being emitted as :root variables, so nothing can overwrite the names tokens.css defines.
+ *  - source(none) + explicit @source: Tailwind only reads the files listed below. Auto-detection would scan the whole
+ *    app and emit utilities such as .container, .hidden and .flex, which already mean something on the site.
+ *  - Own layer names (tw-*, bc-reset, basecoat, battletown), so nothing joins the site's reset/base/layout/components/utilities.
+ *  - Basecoat's base/base.css is not imported (it styles *, html and body). The theme file supplies what it provided.
+ */
+@layer tw-theme, bc-reset, basecoat, battletown, tw-utilities;
+
+@import "tailwindcss/theme.css" layer(tw-theme) theme(inline);
+@import "tailwindcss/utilities.css" layer(tw-utilities) source(none);
+
+/* Basecoat 1.3.0 (MIT), vendored unmodified: structure per component, then the Vega style pack. */
+@import "../../../vendor/basecoat/components/alert.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/badge.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/button.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/button-group.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/card.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/checkbox.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/dialog.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/dropdown-menu.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/empty.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/field.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/input.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/input-group.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/kbd.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/label.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/native-select.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/popover.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/progress.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/radio.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/select.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/skeleton.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/switch.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/table.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/tabs.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/textarea.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/toast.css" layer(basecoat);
+@import "../../../vendor/basecoat/components/tooltip.css" layer(basecoat);
+@import "../../../vendor/basecoat/styles/vega.css" layer(basecoat);
+
+/* The Battletown theme: variable map, house rules, mini reset. Imported after the vendored files (imports come first). */
+@import "./battletown_theme.css";
+
+/* Where utilities are looked for. Add a directory here when another page opts in. */
+@source "../../views/dev/basecoat";
+@source "../../views/layouts/basecoat.html.erb";
+@source "../../javascript/controllers/basecoat_toast_controller.js";

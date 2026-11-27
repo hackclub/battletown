@@ -1,0 +1,270 @@
+/*
+ * The Battletown theme for Basecoat (shadcn's components as plain HTML classes). This is the one file that maps Basecoat's
+ * theme variables (--primary, --card, --border, --radius ...) and Tailwind's names (bg-primary, rounded-md, font-sans) onto the
+ * site's own tokens in app/assets/stylesheets/tokens.css. It points at the tokens with var(); it copies no color. The two
+ * exceptions are the check mark and the chevron below: they are data-URI images, which cannot read custom properties.
+ *
+ * Needs tokens.css and fonts.css on the page (layouts/basecoat links them). Everything is scoped to the `.basecoat` wrapper
+ * class, so a page that loads this build is untouched outside the wrapper.
+ *
+ * House rules this file keeps (Armand's, 2026-11-27 rulings):
+ *  - flat fills, no gradients; white text on pink and on blue, navy on yellow and on the light surfaces;
+ *  - no outline on buttons, no cream or white outline on any part; the one border is the 2px field border the site's own
+ *    fields use (non-text contrast 3:1);
+ *  - shadows are hard (zero blur), solid, in a darker shade of the thing; never soft;
+ *  - the display font only on headings and button labels;
+ *  - hover is an instant slight blue tint, no ring, no transition; keyboard focus is a ring on :focus-visible only;
+ *  - a picked option is solid blue with ALL its text white, and it comes from the native input's :checked state alone.
+ */
+
+/* Basecoat's Vega pack writes dark: variants. The site has no dark mode and never sets html.dark, so they never apply. */
+@custom-variant dark (&:is(html.dark *));
+
+/* Tailwind names -> the variables below (`inline`: utilities read the variable directly). Tailwind still emits a :root copy of
+   any of these names a rule uses through var(): today --color-primary, --color-secondary, --color-border, --radius-md and
+   --radius-lg, which tokens.css also defines. They land in the tw-theme layer and tokens.css is unlayered, so the site's
+   values win and nothing changes. That only holds while tokens.css stays unlayered and is loaded on the same page. */
+@theme inline {
+  --font-sans: var(--font-body);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* The mini reset Tailwind's preflight would have given Basecoat, scoped to the wrapper and at zero specificity. It sits in the
+   first layer, so every Basecoat rule and every house rule below overrides it. */
+@layer bc-reset {
+  .basecoat *, .basecoat ::before, .basecoat ::after { box-sizing: border-box; border-color: var(--border); }
+  .basecoat :where(h1, h2, h3, h4, h5, h6, p, blockquote, dl, dd, figure, hr, pre, ul, ol, menu, fieldset) { margin: 0; }
+  .basecoat :where(h1, h2, h3, h4, h5, h6) { font-size: inherit; font-weight: inherit; }
+  .basecoat :where(ul, ol, menu) { padding: 0; list-style: none; }
+  .basecoat :where(fieldset) { padding: 0; border: 0; min-width: 0; }
+  .basecoat :where(legend) { padding: 0; }
+  .basecoat :where(a) { color: inherit; text-decoration: inherit; }
+  .basecoat :where(button, input, select, optgroup, textarea) { font: inherit; letter-spacing: inherit; color: inherit; margin: 0; background-color: transparent; border-radius: 0; }
+  .basecoat :where(button, [role="button"], summary, label[for]) { cursor: pointer; }
+  .basecoat :where(button, input:where([type="button"], [type="reset"], [type="submit"])) { appearance: button; }
+  .basecoat :where(img, svg, video, canvas) { display: block; max-width: 100%; }
+  .basecoat :where(table) { border-collapse: collapse; text-indent: 0; border-color: inherit; }
+  .basecoat :where(textarea) { resize: vertical; }
+  .basecoat :where(input)::placeholder, .basecoat :where(textarea)::placeholder { color: var(--muted-foreground); opacity: 1; }
+  .basecoat :where([hidden]:not([hidden="until-found"])) { display: none !important; }
+}
+
+/* Variables. Pink is the primary, blue the secondary; white cards on the pale cool-blue ground; a slight blue tint for hover. */
+.basecoat {
+  --radius: var(--radius-md);
+  --background: var(--color-surface);
+  --foreground: var(--color-text);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-surface); /* white on pink */
+  --secondary: var(--color-secondary);
+  --secondary-foreground: var(--color-surface);
+  --muted: var(--color-cool-ground);
+  --muted-foreground: var(--color-text-muted);
+  --accent: color-mix(in srgb, var(--color-blue) 10%, var(--color-surface)); /* the slight blue tint of a hover */
+  --accent-foreground: var(--color-navy);
+  --destructive: var(--color-danger);
+  --border: var(--color-border);
+  --input: var(--color-field-border);
+  --ring: var(--color-focus);
+  --chart-1: var(--color-pink);
+  --chart-2: var(--color-blue);
+  --chart-3: var(--color-yellow);
+  --chart-4: var(--color-royal);
+  --chart-5: var(--color-navy);
+  --sidebar: var(--color-bg);
+  --sidebar-foreground: var(--color-text);
+  --sidebar-primary: var(--color-primary);
+  --sidebar-primary-foreground: var(--color-surface);
+  --sidebar-accent: color-mix(in srgb, var(--color-blue) 10%, var(--color-surface));
+  --sidebar-accent-foreground: var(--color-navy);
+  --sidebar-border: var(--color-border);
+  --sidebar-ring: var(--color-focus);
+  --sidebar-width: 16rem;
+  --sidebar-mobile-width: 18rem;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: var(--color-border);
+  --scrollbar-width: 0.625rem;
+  --scrollbar-sm-width: 0.375rem;
+  --scrollbar-radius: 9999px;
+  /* Data-URI icons cannot use var(): %2334476b is --color-text-muted (#34476b) and white is --color-surface. */
+  --chevron-down-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2334476b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
+  --chevron-down-icon-50: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2334476b" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
+  --check-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>');
+
+  /* The check drawn inside a picked checkbox row: blue (%231472d5 is --color-blue; a data URI cannot read var()). */
+  --bc-check-blue: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%231472d5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>');
+
+  font-family: var(--font-body);
+  font-synthesis: none; /* Poetsen One has one weight; never fake a bold */
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  color: var(--foreground);
+}
+
+/* The page ground of a standalone Basecoat page (layouts/basecoat): the pale cool blue every onboarding step uses. */
+.basecoat-ground { background: var(--color-cool-ground); min-height: 100vh; }
+
+/* House rules, after Basecoat's own rules (a later layer wins whatever the specificity). */
+@layer battletown {
+  /* Display font on headings and button labels only. Everything else (tabs, badges, card titles) is the body font. */
+  .basecoat :is(h1, h2, h3, h4) { font-family: var(--font-display); font-weight: 400; letter-spacing: normal; }
+  .basecoat .btn { font-family: var(--font-display); font-weight: 400; letter-spacing: normal; }
+  .basecoat :is(.tabs [role="tab"], .badge, .toast h2) { font-family: var(--font-body); font-weight: 700; }
+  .basecoat .card > header h2 { font-family: var(--font-display); font-weight: 400; }
+
+  /* Buttons: flat fill, own-color border, no edge, no shadow, no movement. Hover and press are one step darker through an
+     inset fill (hard, zero blur), the same as components.css .btn. Focus: a ring on :focus-visible only. */
+  .basecoat .btn {
+    --btn-bg: var(--color-primary);
+    --btn-fg: var(--color-surface);
+    --btn-step: 0 0 0 999px rgb(0 0 0 / 0);
+    border-color: var(--btn-bg);
+    background-color: var(--btn-bg);
+    color: var(--btn-fg);
+    box-shadow: inset var(--btn-step);
+    --tw-ring-shadow: 0 0 transparent;
+    transition: none;
+  }
+  .basecoat .btn[data-variant="secondary"] { --btn-bg: var(--color-cool-ground); --btn-fg: var(--color-navy); } /* pale blue, navy label */
+  .basecoat .btn[data-variant="blue"] { --btn-bg: var(--color-blue); --btn-fg: var(--color-surface); }
+  .basecoat .btn[data-variant="destructive"] { --btn-bg: var(--color-danger); --btn-fg: var(--color-surface); }
+  .basecoat .btn[data-variant="outline"] { --btn-bg: var(--color-surface); --btn-fg: var(--color-ink-blue); }
+  .basecoat .btn[data-variant="ghost"] { --btn-bg: transparent; --btn-fg: var(--color-ink-blue); }
+  .basecoat .btn[data-variant="link"] { --btn-bg: transparent; --btn-fg: var(--color-link); }
+  .basecoat .btn:hover:not(:disabled, [aria-disabled="true"]), .basecoat .btn[aria-expanded="true"] { background-color: var(--btn-bg); color: var(--btn-fg); --btn-step: 0 0 0 999px rgb(0 0 0 / 0.08); }
+  .basecoat .btn[data-variant="ghost"]:hover:not(:disabled), .basecoat .btn[data-variant="ghost"][aria-expanded="true"] { background-color: var(--color-accent); --btn-step: 0 0 0 999px rgb(0 0 0 / 0); }
+  .basecoat .btn[data-variant="link"]:hover:not(:disabled) { text-decoration: underline; --btn-step: 0 0 0 999px rgb(0 0 0 / 0); }
+  .basecoat .btn:active:not(:disabled, [aria-disabled="true"]) { --btn-step: 0 0 0 999px rgb(0 0 0 / 0.16); }
+  .basecoat .btn:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+  /* Fields: white, the 2px field border. No inset edge, no shadow. */
+  .basecoat :is(.input, .textarea, select.select),
+  .basecoat .field > :is(input:not([type="checkbox"], [type="radio"], [role="switch"]), textarea, select),
+  .basecoat .input-group {
+    border: 2px solid var(--color-field-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    box-shadow: none;
+    color: var(--color-text);
+  }
+  .basecoat :is(.input, .textarea, select.select, .field > :is(input, textarea, select)):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+  .basecoat :is(.input, .textarea, select.select, .field > :is(input, textarea, select))[aria-invalid="true"] { border-color: var(--color-danger); }
+
+  /* Checkbox, radio, switch: white box, pink when on, white check. */
+  .basecoat :is(input[type="checkbox"]:not([role="switch"]), input[type="radio"]) {
+    border: 2px solid var(--color-field-border);
+    background-color: var(--color-surface);
+    box-shadow: none;
+  }
+  .basecoat :is(input[type="checkbox"]:not([role="switch"]), input[type="radio"]):checked {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+  }
+  .basecoat input[role="switch"]:checked { background-color: var(--color-primary); }
+  .basecoat :is(input[type="checkbox"], input[type="radio"]):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+  /* Cards: white, flat, a hard base in the ground's darker shade. Dialogs, menus and toasts: white, a hard offset shadow in
+     a navy tint, zero blur. No border on any of them. */
+  .basecoat :is(.card, .dialog > div, [data-popover], .toast) { background-color: var(--color-surface); color: var(--color-text); border: 0; }
+  .basecoat .card { overflow: visible; /* a menu popover inside a card must not be clipped */ border-radius: var(--radius-lg); box-shadow: 0 0.25rem 0 var(--color-cool-tint-edge); }
+  .basecoat :is(.dialog > div, [data-popover], .toast) { box-shadow: 0.25rem 0.25rem 0 color-mix(in srgb, var(--color-navy) 28%, transparent); }
+  .basecoat .dialog > div { border-radius: var(--radius-lg); }
+  .basecoat .dialog::backdrop { background-color: color-mix(in srgb, var(--color-navy) 60%, transparent); backdrop-filter: none; }
+
+  /* Menu items: the slight blue tint on hover and keyboard focus, navy text, no ring. */
+  .basecoat :is([role="menuitem"], [role="option"]):is(:hover, :focus-visible, [aria-selected="true"], [data-active="true"]) { background-color: var(--color-accent); color: var(--color-navy); outline: none; }
+
+  /* Tabs: a pale pill list; the active tab is a flat white pill. */
+  .basecoat .tabs [role="tablist"]:not([data-variant="line"]) { background-color: var(--color-cool-ground); border-radius: var(--radius-lg); }
+  .basecoat .tabs [role="tab"][aria-selected="true"] { background-color: var(--color-surface); color: var(--color-text); border-color: transparent; box-shadow: none; }
+  .basecoat .tabs [role="tab"]:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+  /* Badges, toasts. */
+  .basecoat .badge:not([data-variant]), .basecoat .badge[data-variant="primary"] { background-color: var(--color-primary); color: var(--color-surface); border-color: transparent; }
+  .basecoat .badge[data-variant="secondary"] { background-color: var(--color-blue); color: var(--color-surface); border-color: transparent; }
+  .basecoat .badge[data-variant="outline"] { background-color: var(--color-cool-ground); color: var(--color-text); border-color: transparent; }
+  .basecoat .toast[data-category="success"] { border-left: 0.375rem solid var(--color-success); }
+  .basecoat .toast[data-category="error"] { border-left: 0.375rem solid var(--color-danger); }
+  .basecoat .toast[data-category="info"] { border-left: 0.375rem solid var(--color-blue); }
+  .basecoat .toast[data-category="warning"] { border-left: 0.375rem solid var(--color-yellow-edge); }
+
+  /* Progress: a native <progress class="progress" max value> (the CSP forbids the inline width Basecoat's span form needs). */
+  .basecoat progress.progress { display: block; appearance: none; width: 100%; height: 0.75rem; border: 0; border-radius: var(--radius-full); overflow: hidden; background: var(--color-cool-tint-edge); color: var(--color-primary); }
+  .basecoat progress.progress::-webkit-progress-bar { background: var(--color-cool-tint-edge); }
+  .basecoat progress.progress::-webkit-progress-value { background: var(--color-primary); border-radius: var(--radius-full); }
+  .basecoat progress.progress::-moz-progress-bar { background: var(--color-primary); border-radius: var(--radius-full); }
+
+  /* ---- Option rows and picture cards (Battletown's own; Basecoat has no equivalent) ----
+     One native input per option, inside its <label>. The state is the input's :checked, never a script. The input is
+     transparent and covers the whole label, so a click anywhere picks it and keyboard and screen readers see a real
+     radio or checkbox. Picked: solid blue, every piece of text white. Hover: an instant slight blue tint. */
+  .basecoat .option-list { display: grid; gap: var(--space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+  .basecoat .option-row {
+    position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+    width: 100%; min-height: var(--tap-size); padding: var(--space-4) var(--space-6);
+    border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);
+    font-family: var(--font-body); font-weight: 700; cursor: pointer;
+  }
+  .basecoat .option-row__note { font-weight: 500; color: var(--color-text-muted); text-align: right; }
+  .basecoat .option-row__mark { display: none; flex: none; width: 1.5rem; height: 1.5rem; border: 2px solid var(--color-field-border); border-radius: var(--radius-sm); background: var(--color-surface); }
+  .basecoat .option-row--check .option-row__mark { display: grid; place-items: center; }
+  .basecoat .option-row--check { justify-content: flex-start; }
+  .basecoat .option-row--check .option-row__note { margin-inline-start: auto; }
+  .basecoat .option-row > input, .basecoat .option-card > input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; appearance: none; }
+  .basecoat .option-row:hover, .basecoat .option-card:hover { background: var(--color-accent); }
+  .basecoat .option-row:has(> input:checked), .basecoat .option-card:has(> input:checked) { background: var(--color-blue); color: var(--color-surface); }
+  .basecoat .option-row:has(> input:checked) .option-row__note, .basecoat .option-card:has(> input:checked) :is(.option-card__name, .option-card__note) { color: var(--color-surface); }
+  .basecoat .option-row--check:has(> input:checked) .option-row__mark { background: var(--color-surface) var(--bc-check-blue) center / 1rem no-repeat; border-color: var(--color-surface); }
+  .basecoat .option-row:has(> input:focus-visible), .basecoat .option-card:has(> input:focus-visible) { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+  .basecoat .option-row:has(> input:disabled), .basecoat .option-card:has(> input:disabled) { opacity: 0.55; cursor: not-allowed; }
+
+  .basecoat .option-cards { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); margin: 0; padding: 0; border: 0; min-width: 0; }
+  .basecoat .option-card {
+    position: relative; display: grid; grid-template-rows: 1fr auto auto; gap: var(--space-2); justify-items: center; text-align: center;
+    padding: var(--space-4); border-radius: var(--radius-lg); background: var(--color-surface); color: var(--color-text); cursor: pointer;
+  }
+  .basecoat .option-card__art { display: grid; place-items: center; width: 100%; min-height: 6rem; }
+  .basecoat .option-card__art img { width: 100%; max-height: 7rem; object-fit: contain; }
+  .basecoat .option-card__name { font-weight: 700; }
+  .basecoat .option-card__note { font-size: var(--text-sm); color: var(--color-text-muted); }
+}
