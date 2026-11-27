@@ -240,6 +240,9 @@ module OnboardingsHelper
 
   # The pace question's choices, in minutes a coding day (all are in User::PACES).
   ONBOARDING_PACES = Onboarding::DailyTime::PACES
+  # The paces the first-run pace step offers for this prize (Onboarding::DailyTime.offered_paces).
+  def onboarding_offered_paces(prize) = Onboarding::DailyTime.offered_paces(prize&.hours)
+
   # What the days and time are before the person has chosen any: every day at 6 pm. The pace step does not ask for them
   # but the schedule still needs them (see OnboardingsController REQUIRED), so they are sent with the answer.
   DEFAULT_CODING_TIME = "18:00".freeze
