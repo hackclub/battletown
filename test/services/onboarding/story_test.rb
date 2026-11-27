@@ -98,4 +98,11 @@ class Onboarding::StoryTest < ActiveSupport::TestCase
     assert_includes lost, "Friday to Thursday"
     assert_includes lost, "5 and 10 hours"
   end
+
+  test "the obstacle entries carry the key of what stops them, in the order picked" do
+    entries = S.obstacle_entries(%w[lost none time], team: false)
+    assert_equal %w[lost time], entries.map(&:first)
+    assert_equal S.obstacle_lines(%w[lost none time], team: false), entries.map { |_, a, f| [ a, f ] }
+    assert_equal "stuck", S.obstacle_entries(%w[stuck], team: true).first.first
+  end
 end

@@ -790,6 +790,17 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   .how__step:nth-child(3) { animation-delay: 0.75s; } .how__step:nth-child(4) { animation-delay: 1s; }
 }
 @keyframes how-in { from { opacity: 0; translate: 0 0.75rem; } to { opacity: 1; translate: 0 0; } }
+/* stops_answer: a flat icon badge on each row; rows appear in order. The finished state is the base style. */
+.help__row { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-4); }
+.help__badge { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--color-blue); }
+.help__badge svg { display: block; width: 1.5rem; height: 1.5rem; }
+.help__white { fill: var(--color-surface); }
+.help__hand { fill: none; stroke: var(--color-blue); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.help__text { display: grid; gap: var(--space-1); }
+@media (prefers-reduced-motion: no-preference) {
+  .help__row { animation: how-in 0.35s ease-out both; }
+  .help__row:nth-child(1) { animation-delay: 0.25s; } .help__row:nth-child(2) { animation-delay: 0.5s; } .help__row:nth-child(3) { animation-delay: 0.75s; }
+}
 @media (max-width: 39.99rem) {
   .info { gap: var(--space-4); }
   .info__prize { width: min(14rem, 70%); }

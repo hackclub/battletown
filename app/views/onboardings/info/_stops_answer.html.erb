@@ -1,5 +1,21 @@
-<ul class="info__pairs">
-  <% Onboarding::Story.obstacle_lines(answers.multi("stops")).each do |acknowledgement, feature| %>
-    <li><strong><%= acknowledgement %></strong> <span><%= feature %></span></li>
+<%# One row per thing that stops them: a flat icon badge (drawings on a 24-unit box, each centered in it), then what helps. Rows appear in order (CSS only). %>
+<ul class="info__pairs help">
+  <% Onboarding::Story.obstacle_entries(answers.multi("stops")).each do |key, acknowledgement, feature| %>
+    <li class="help__row">
+      <span class="help__badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <% case key %>
+          <% when "time" %>
+            <circle class="help__white" cx="12" cy="12" r="9"/><path class="help__hand" d="M12 7v5l3 2"/>
+          <% when "lost" %>
+            <path class="help__white" d="M13 3L6 13.5h5L10 21l8-11h-5.5z"/>
+          <% else %>
+            <circle class="help__white" cx="8" cy="8.5" r="3"/><circle class="help__white" cx="16" cy="8.5" r="3"/>
+            <path class="help__white" d="M3.5 19a4.5 4.5 0 0 1 9 0zM11.5 19a4.5 4.5 0 0 1 9 0z"/>
+          <% end %>
+        </svg>
+      </span>
+      <span class="help__text"><strong><%= acknowledgement %></strong> <span><%= feature %></span></span>
+    </li>
   <% end %>
 </ul>

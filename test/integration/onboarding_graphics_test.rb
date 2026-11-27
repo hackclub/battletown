@@ -44,4 +44,15 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     assert_select "ol.how li:nth-child(4) .how__text", "Coins pay for your prize."
     assert_no_inline_style
   end
+
+  test "each thing that stops them gets a row with an icon badge, in the order picked, and no statistic" do
+    begin_quiz
+    reach_quiz_step("stops")
+    patch onboarding_step_path("stops"), params: { answer: { values: %w[lost time] } }
+    get onboarding_step_path("stops_answer")
+    assert_select "ul.help li.help__row", 2
+    assert_select "ul.help li.help__row .help__badge svg", 2
+    assert_select "ul.help li.help__row:first-child strong", "Losing motivation?"
+    assert_no_inline_style
+  end
 end
