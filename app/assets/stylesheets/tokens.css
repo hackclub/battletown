@@ -162,8 +162,8 @@
      --radius-inner-min is the floor, so a thin gap never produces a square corner. A child flush with the edge (gap 0)
      takes --radius itself. Pills (--radius-full) are exempt. Rules: .claude/skills/verify/ui-brief.md "Design fundamentals". */
   --radius-inner-min: 0.25rem;
-  --shadow-sm: 0 1px 2px rgb(16 40 90 / 0.18); /* derived: navy-tinted soft shadow (was a warm brown) */
-  --shadow-md: 0 8px 24px rgb(16 40 90 / 0.16); /* derived */
+  --shadow-sm: none; /* Armand, 2026-11-27: "battletown always has hard shadows". Cards take their depth from their own chunky edge, so there is no small shadow; the name stays for the places that still reference it */
+  --shadow-md: 0 0.25rem 0 var(--color-navy-edge); /* the one hard shadow for things that float over the page (menus, popovers): zero blur, the palette's dark blue. Every shadow on the site is hard: zero blur, a solid darker shade of the thing's own color or this one */
   --edge-shade: rgb(0 0 0 / 0.28); /* derived: the darker bottom edge under a filled button or pill (primary, danger, onboarding); not a colour token, it is a translucent shade */
   --shadow-button-edge: inset 0 -8px 0 rgb(0 0 0 / 0.41); /* Figma: pressed edge on the pink button (71:1001) */
   --border-chunky: 0.375rem; /* Figma: 6px cream button bottom edge (71:1000); the bottom edge of cards and panels */

@@ -175,7 +175,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .hero__sticker-img {
   position: absolute; left: 0; bottom: calc(var(--lift) + var(--depth)); display: block; max-width: none; height: auto; pointer-events: none;
   translate: -50% 0; transform-origin: 50% calc(100% + var(--depth)); transform: rotate(var(--turn));
-  filter: drop-shadow(0 0.15rem 0.3rem rgb(10 30 60 / 0.35));
+  filter: drop-shadow(0 0.15rem 0 var(--color-navy-edge));
 }
 .landing .hero__sticker-img--red { width: 7.8em; --lift: 0.75em; --turn: 3deg; }
 .landing .hero__sticker-img--mac { width: 4.3em; --lift: 0.2em; --turn: -22deg; }
@@ -297,7 +297,7 @@ body:has(.landing) .site-footer :focus-visible { outline-color: var(--navy); } /
 .landing .prize h3 { color: var(--stone-text); font: 400 1.25rem/1.15 var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; } /* a long name wraps inside its card at large text sizes */
 .landing .prize__hours { display: block; margin-top: 0.15rem; color: var(--stone-text); font-size: var(--text-sm); line-height: 1.2; overflow-wrap: anywhere; }
 @media (max-width: 39.99rem) { .landing .prizes .slab > .in { padding-bottom: calc(var(--next, 0px) * 0.55 + 2.5rem); } .landing .shelf { --u: calc(var(--wu) * 1.15); --lw: 10rem; gap: calc(var(--u) * 20) calc(var(--u) * 14); } }
-@media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(var(--space-4), calc(100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
+@media (min-width: 75rem) { .landing .shelf { padding-inline: min(var(--side), max(var(--space-4), calc((100% - var(--wu) * 1050) / 2))); } } /* five stones then four: the row is never wide enough for a sixth */
 @media (min-width: 40rem) {
   .landing .prize h3 { font-size: 1.375rem; }
   .landing .prize__hours { font-size: 0.9375rem; }

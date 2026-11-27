@@ -82,7 +82,7 @@
   margin-bottom: var(--space-3);
   font-size: clamp(2rem, 1.2rem + 3.6vw, var(--text-3xl));
   letter-spacing: var(--tracking-display);
-  text-shadow: 0 0.06em 0.3em rgb(10 26 64 / 0.45);
+  text-shadow: 0 0.06em 0 var(--color-navy-edge);
 }
 .boss-card__lead { max-width: 32rem; font-size: var(--text-lg); }
 

@@ -19,12 +19,11 @@ class DesignLiteralsTest < ActiveSupport::TestCase
 
   ALLOWED = {
     "admin.css" => [
-      "font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem)",
-      "margin: 1.5rem 0 0.5rem",
+      "font-size: clamp(var(--text-xl), 1.2rem + 2.4vw, var(--text-2xl))",
       "font-size: 1.125rem"
     ],
     "application.css" => [
-      "font-size: clamp(2rem, 1.2rem + 3.6vw, 3rem)",
+      "font-size: clamp(2rem, 1.2rem + 3.6vw, var(--text-display))",
       "font-size: 0.9em",
       "margin: -1px",
       "column-gap: 0.3em"
@@ -39,7 +38,7 @@ class DesignLiteralsTest < ActiveSupport::TestCase
       "margin-top: 0.1rem",
       "gap: 0.4em",
       "padding: 0.3em 1em 0.4em",
-      "margin-top: clamp(2rem, 6vw, 5rem)",
+      "margin-top: clamp(var(--space-8), 6vw, 5rem)",
       "gap: 0.35em"
     ],
     "dashboard.css" => [
@@ -52,38 +51,29 @@ class DesignLiteralsTest < ActiveSupport::TestCase
     "landing.css" => [
       "border-radius: 0.58em",
       "gap: 0.36em",
-      "padding: 0.5em 0.75em calc(0.56em + var(--press))",
-      "font-size: clamp(1.25rem, 6.2vw, 1.625rem)",
+      "padding: 0.5em 0.75em calc(0.56em - var(--cta-edge))",
+      "font-size: clamp(var(--text-lg), 6.2vw, 1.625rem)",
       "padding: 0.04em 0.4em 0.1em",
-      "border-radius: 999px",
-      "margin-top: -1.5rem",
-      "gap: 1rem",
       "padding: 1.25rem var(--side) 0",
-      "padding-left: 0.5rem",
       "margin-bottom: -1px",
-      "padding-block: 4rem var(--swoosh-overlap)",
       "gap: 1.25rem",
       "font-size: 2rem",
       "margin-top: 3.4rem",
       "font-size: 0.95rem",
       "margin-top: 3.25rem",
       "font-size: 1.1rem",
-      "padding: 0 0.5rem calc(var(--edge-a) * 0.72 + 1.5vw)",
       "margin-top: -2.25rem",
       "margin-top: -10.5rem",
-      "padding: clamp(2.5rem, 5vw, 4.5rem) 0 calc(var(--next, 0px) + clamp(3rem, 6vw, 5rem))",
+      "padding: clamp(2.5rem, 5vw, 4.5rem) 0 calc(var(--next, 0px) + clamp(var(--space-12), 6vw, 5rem))",
       "margin-top: 1.25rem",
       "padding: 0.3em 1.4em",
       "margin-top: clamp(2.5rem, 5vw, 3.5rem)",
       "margin-top: 0.6rem",
-      "padding-inline: 0.25rem",
       "margin-top: 0.15rem",
-      "font-size: 0.875rem",
       "padding-bottom: calc(var(--next, 0px) * 0.55 + 2.5rem)",
-      "padding-inline: min(var(--side), max(1rem, calc(100% - var(--wu) * 1050) / 2)))",
       "font-size: 1.375rem",
       "font-size: 0.9375rem",
-      "font-size: clamp(2.5rem, 5.4vw, 4.25rem)",
+      "font-size: clamp(var(--text-2xl), 5.4vw, 4.25rem)",
       "gap: 0.9rem",
       "border-radius: 0.7rem",
       "padding: 0 1.15rem 0.42rem",
@@ -93,39 +83,29 @@ class DesignLiteralsTest < ActiveSupport::TestCase
       "padding: 0.85rem 0 0.9rem",
       "font-size: 1.1em",
       "border-radius: 0.4rem",
-      "margin-top: -0.25rem",
-      "padding-bottom: 1rem",
-      "font-size: 1rem",
-      "gap: 0.5rem",
-      "padding: 0 0 1rem 1.25rem",
+      "padding: 0 0 var(--space-4) 1.25rem",
       "font-size: clamp(2.75rem, 6vw, 4.75rem)",
-      "margin-top: clamp(1.5rem, 3vw, 2.25rem)",
-      "font-size: clamp(1.5rem, 2.4vw, 1.75rem)",
-      "margin-top: 1rem",
-      "padding-bottom: clamp(5rem, 9vw, 8rem)"
+      "margin-top: clamp(var(--space-6), 3vw, 2.25rem)",
+      "padding-bottom: clamp(5rem, 9vw, var(--space-32))"
     ],
     "landing_world_cave.css" => [
       "font-size: 0.65rem"
     ],
     "landing_world_cliff.css" => [
-      "padding: 0.5rem 0.6rem 0.7rem",
+      "padding: var(--space-2) 0.6rem 0.7rem",
       "border-radius: 0.5rem",
       "font-size: 1.375rem",
       "margin: 0.15rem 0 0",
-      "font-size: 0.75rem",
       "padding-bottom: 0.6rem",
-      "font-size: 1.25rem",
       "font-size: 0.6875rem"
     ],
     "landing_world_floor.css" => [
       "padding-top: calc(clamp(2.5rem, 5vw, 4.5rem) + var(--wu) * 50)",
-      "padding-bottom: calc(var(--next, 0px) + clamp(3rem, 6vw, 5rem) + var(--wu) * 30)",
-      "padding-bottom: calc(var(--next, 0px) + clamp(3rem, 6vw, 5rem) + var(--wu) * 70)"
+      "padding-bottom: calc(var(--next, 0px) + clamp(var(--space-12), 6vw, 5rem) + var(--wu) * 30)",
+      "padding-bottom: calc(var(--next, 0px) + clamp(var(--space-12), 6vw, 5rem) + var(--wu) * 70)"
     ],
     "landing_world_sand.css" => [
-      "margin-bottom: 1.5rem",
       "padding-bottom: calc(var(--wu) * 230 + 2.5rem)",
-      "padding-bottom: calc(var(--wu) * 230 + 3rem)",
       "padding-top: calc(clamp(2.5rem, 5vw, 4.5rem) + var(--wu) * 68)",
       "padding-bottom: calc(var(--wu) * 162 + 2.5rem)"
     ],
@@ -143,13 +123,8 @@ class DesignLiteralsTest < ActiveSupport::TestCase
     "styleguide.css" => [
       "padding: 0 0.3em",
       "font-size: 0.85em",
-      "font-size: 0.75rem",
       "padding: 0.1em 0.6em",
-      "font-size: clamp(3rem, 12vw, var(--text-sign-number))",
-      "font-size: clamp(2.5rem, 9vw, var(--text-hero-title))",
-      "font-size: clamp(2rem, 7vw, var(--text-sign-title))",
-      "font-size: clamp(1.75rem, 6vw, var(--text-display))",
-      "font-size: clamp(1.5rem, 5vw, var(--text-sign-body))"
+      "font-size: clamp(2rem, 7vw, var(--text-sign-title))"
     ]
   }.freeze
 
@@ -187,6 +162,84 @@ class DesignLiteralsTest < ActiveSupport::TestCase
     found = self.class.offenders.map { |file, entry| "#{file} | #{entry}" }
     allowed = ALLOWED.flat_map { |file, entries| entries.map { |entry| "#{file} | #{entry}" } }
     assert_empty allowed - found, "These allowlist entries are fixed (or gone); delete them:"
+  end
+
+  # --- Hard shadows only (Armand, 2026-11-27: "battletown always has hard shadows") ---------------------------------------
+  # A shadow has zero blur and a solid color. Checked on every stylesheet, tokens.css included. Rings (0 0 0 Npx) are a
+  # separate taste question and are not blur; the audit lists them.
+  # onboarding_world.css belongs to the onboarding agent, who is moving it to the light theme; the logo drop shadows go there.
+  BLUR_ALLOWED = [
+    "onboarding_world.css | filter: drop-shadow(0 2px 5px rgb(16 40 90 / 0.3))",
+    "onboarding_world.css | filter: drop-shadow(0 4px 10px rgb(16 40 90 / 0.3))",
+    "onboarding_world.css | filter: drop-shadow(0 1px 3px rgb(16 40 90 / 0.3))"
+  ].freeze
+
+  def self.blurred_shadows
+    Dir[STYLESHEETS.join("*.css")].sort.flat_map do |path|
+      declarations(File.read(path)).flat_map do |prop, value|
+        next [] unless prop.match?(/\A(?:box-shadow|text-shadow|--shadow-[a-z-]+)\z/) || (prop == "filter" && value.include?("drop-shadow"))
+
+        layers = prop == "filter" ? value.scan(/drop-shadow\((.*?)\)(?=\s|\z)/).flatten : split_top_level(value, ",")
+        layers.filter_map do |layer|
+          parts = split_top_level(layer.strip, " ").reject { |part| part == "inset" }
+          blur = parts[2]
+          "#{File.basename(path)} | #{prop}: #{value}" if blur && blur.match?(/\A-?(?:\d*\.\d+|[1-9]\d*)(?:rem|em|px)?\z/) && blur.to_f != 0
+        end
+      end.uniq
+    end
+  end
+
+  def self.split_top_level(text, separator)
+    depth = 0
+    pieces = [ +"" ]
+    text.each_char do |char|
+      depth += 1 if char == "("
+      depth -= 1 if char == ")"
+      if depth.zero? && char == separator
+        pieces << +"" unless pieces.last.empty?
+        next
+      else
+        pieces.last << char
+      end
+    end
+    pieces.map(&:strip).reject(&:empty?)
+  end
+
+  test "every shadow is hard: zero blur" do
+    assert_empty self.class.blurred_shadows - BLUR_ALLOWED, "Shadows are hard (zero blur, solid color; a darker shade of the thing's own color or --color-navy-edge):"
+  end
+
+  test "the blur allowlist has no stale entries" do
+    assert_empty BLUR_ALLOWED - self.class.blurred_shadows
+  end
+
+  # --- Declarations the browser would drop -------------------------------------------------------------------------------
+  # A stray bracket makes the browser throw the whole declaration away (landing.css once lost its side inset to one extra
+  # ")"). This checks, per stylesheet, that braces balance and that every declaration value has balanced (), [] and quotes.
+  # It does not check that property names or values are valid (the asset build and the browser do that: see audit.py
+  # --css, which runs CSS.supports on each declaration in a real browser).
+  def self.unbalanced
+    Dir[STYLESHEETS.join("*.css")].sort.flat_map do |path|
+      css = File.read(path).gsub(%r{/\*.*?\*/}m, "")
+      problems = []
+      problems << "braces do not balance (#{css.count('{')} open, #{css.count('}')} close)" if css.count("{") != css.count("}")
+      css.scan(/([a-z-]+)\s*:\s*([^;{}]+)(?=;|})/).each do |prop, value|
+        problems << "#{prop}: #{value.strip} (parentheses)" if value.count("(") != value.count(")")
+        problems << "#{prop}: #{value.strip} (brackets)" if value.count("[") != value.count("]")
+        problems << "#{prop}: #{value.strip} (quotes)" if value.count('"').odd? || value.count("'").odd?
+      end
+      problems.map { |problem| "#{File.basename(path)} | #{problem}" }
+    end
+  end
+
+  test "no stylesheet has unbalanced brackets, parentheses or quotes in a declaration" do
+    assert_empty self.class.unbalanced
+  end
+
+  test "the design fundamentals and the lint agree on what counts as a shadow" do
+    assert_equal [ "0", "0", "0" ], self.class.split_top_level("0 0 0 red", " ").first(3)
+    assert_equal [ "0 2px 0 red", "inset 0 -1px 0 blue" ], self.class.split_top_level("0 2px 0 red, inset 0 -1px 0 blue", ",")
+    assert_equal 1, self.class.split_top_level("calc(1px + 2px) 0 0 red", " ").index("0")
   end
 
   test "tokens.css has the scales and the concentric floor" do

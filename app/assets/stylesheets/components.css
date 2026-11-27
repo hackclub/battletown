@@ -392,7 +392,7 @@
     border: 3px solid var(--progress-track); /* its own track color, so there is no dark outline; the soft inset shadow gives it depth */
     border-radius: var(--radius-full);
     background: var(--progress-track);
-    box-shadow: inset 0 2px 3px rgb(16 40 90 / 0.18);
+    box-shadow: inset 0 2px 0 color-mix(in srgb, var(--color-progress-track) 78%, var(--color-navy));
     overflow: hidden;
   }
   .progress__bar::-webkit-progress-bar { background: var(--progress-track); }
