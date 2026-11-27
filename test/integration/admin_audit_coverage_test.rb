@@ -12,6 +12,7 @@ class AdminAuditCoverageTest < ActionDispatch::IntegrationTest
   include AdminSignIn
   include ShipsTestSupport
   include ShopTestHelper
+  include BossesHelper
 
   WRITE_VERBS = %w[POST PATCH PUT DELETE].freeze
 
@@ -34,6 +35,8 @@ class AdminAuditCoverageTest < ActionDispatch::IntegrationTest
     verified!(@teen)
     give_coins(@teen, 500)
     @boss = Bosses::Seed.call && Boss.chronological.last
+    # The seeded weeks run out as the calendar moves on, and the quest rows need two future boss weeks: add them after the last one.
+    2.times { make_boss(starts_on: [ Boss.chronological.last.ends_on + 1, friday_on_or_before(Date.current) + 7 ].max) if Boss.where(starts_on: Date.current.next_day..).count < 2 }
     as_admin(@admin)
   end
 
