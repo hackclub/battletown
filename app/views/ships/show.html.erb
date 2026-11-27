@@ -1,5 +1,5 @@
 <% content_for :title, "Ship: #{@ship.project.name}" %>
-<div class="container projects projects--narrow stack stack--lg">
+<div class="container container--narrow projects stack stack--lg">
   <p class="projects-back"><%= link_to "Back to your ships", ships_path %></p>
   <header class="page-header ship__head ship__head--page">
     <h1><%= @ship.project.name %></h1>
@@ -40,7 +40,7 @@
 
   <section class="card ship-facts stack" aria-labelledby="ship-facts-heading">
     <h2 id="ship-facts-heading" class="card__title">What you sent</h2>
-    <dl class="ship-dl">
+    <dl class="dl">
       <dt>Hours coded</dt><dd><%= ship_hours(@ship.coded_seconds) %> (<%= ship_dates_text(@ship.window_start_date, @ship.window_end_date) %>)</dd>
       <% if @ship.submitted_at %><dt>Submitted</dt><dd><%= ship_submitted_on(@ship, year: true) %></dd><% end %>
       <dt>Description</dt><dd class="ship-dl__text"><%= @ship.description.presence || "Not written yet" %></dd>

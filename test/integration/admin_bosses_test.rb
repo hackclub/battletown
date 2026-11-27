@@ -122,7 +122,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
 
       patch "/admin/bosses/#{@boss.id}", params: update_params(name: "Renamed", hp_hours: "1")
       assert_response :unprocessable_content
-      assert_select ".admin-form__errors", text: /can't change once the boss has started/
+      assert_select ".error-summary", text: /can't change once the boss has started/
       assert_equal 500 * HOUR, @boss.reload.hp_seconds
       assert_equal "Boss 2", @boss.name, "nothing is saved when any field is refused"
 
@@ -151,7 +151,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
     travel_to Time.utc(2026, 11, 12, 12) do
       patch "/admin/bosses/#{@boss.id}", params: update_params(name: "", hp_hours: "0")
       assert_response :unprocessable_content
-      assert_select ".admin-form__errors li", minimum: 2
+      assert_select ".error-summary li", minimum: 2
 
       patch "/admin/bosses/#{@boss.id}", params: update_params(hp_hours: "lots")
       assert_response :unprocessable_content
@@ -333,7 +333,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
       create_boss(starts_on: "2026-11-28", name: "Saturday boss")
     end
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li a[href='#boss_starts_on']", text: /must be a Friday/
+    assert_select ".error-summary li a[href='#boss_starts_on']", text: /must be a Friday/
     assert_select "input[name='boss[name]'][value='Saturday boss']", 1, "what was typed stays in the form"
     assert_select "select#boss_starts_on[aria-invalid=true]"
   end
@@ -344,7 +344,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
       [ "1999-01-01", "9999-12-31", "2026-11-13", "2026-11-20" ].each do |friday|
         create_boss(starts_on: friday)
         assert_response :unprocessable_content, friday
-        assert_select ".admin-form__errors li a[href='#boss_starts_on']", text: /isn't one of the weeks on offer/
+        assert_select ".error-summary li a[href='#boss_starts_on']", text: /isn't one of the weeks on offer/
       end
     end
     create_boss(starts_on: "2026-11-27")
@@ -357,7 +357,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
       create_boss(starts_on: "2026-11-20")
     end
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", text: /already been taken|overlap/
+    assert_select ".error-summary li", text: /already been taken|overlap/
 
     assert_no_difference "Boss.count" do
       create_boss(starts_on: "")
@@ -374,7 +374,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
       create_boss(art_upload: bad, art_alt: "Anything")
     end
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li a[href='#boss_art_upload']", text: /The picture: /
+    assert_select ".error-summary li a[href='#boss_art_upload']", text: /The picture: /
     assert_select "input[name='boss[name]'][value='The Linter']", 1
   end
 
@@ -388,7 +388,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
       end
     end
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", text: /The picture: That file is .*the limit is/
+    assert_select ".error-summary li", text: /The picture: That file is .*the limit is/
   end
 
   test "alt text is needed with a picture and cannot be longer than 200 characters" do
@@ -396,11 +396,11 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
     assert_no_difference "Boss.count" do
       create_boss(art_upload: png_upload)
       assert_response :unprocessable_content
-      assert_select ".admin-form__errors li a[href='#boss_art_alt']", text: /Alt text is needed to describe the picture/
+      assert_select ".error-summary li a[href='#boss_art_alt']", text: /Alt text is needed to describe the picture/
 
       create_boss(art_upload: png_upload, art_alt: "a" * 201)
       assert_response :unprocessable_content
-      assert_select ".admin-form__errors li", text: /Alt text is too long/
+      assert_select ".error-summary li", text: /Alt text is too long/
       assert_select "input#boss_art_alt[aria-invalid=true]"
     end
 
@@ -426,7 +426,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
       create_boss(name: "n" * 61)
       assert_response :unprocessable_content
     end
-    assert_select ".admin-form__errors li a[href='#boss_name']"
+    assert_select ".error-summary li a[href='#boss_name']"
   end
 
   test "dates and the art key cannot be forced through the create form" do
@@ -569,7 +569,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
       patch "/admin/bosses/#{@boss.id}", params: { boss: { name: "Changed", hp_hours: "1", art_upload: upload_file("GIF89a-not-really", name: "x.gif", type: "image/gif"), art_alt: "x" } }
     end
     assert_response :unprocessable_content
-    assert_select ".admin-form__errors li", text: /The picture: /
+    assert_select ".error-summary li", text: /The picture: /
     @boss.reload
     assert_equal "Boss 2", @boss.name
     assert_equal "Old words", @boss.art_alt
@@ -587,7 +587,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
 
       patch "/admin/bosses/#{@boss.id}", params: { boss: { name: "Boss 2", art_alt: "" } }
       assert_response :unprocessable_content
-      assert_select ".admin-form__errors li a[href='#boss_art_alt']"
+      assert_select ".error-summary li a[href='#boss_art_alt']"
       assert_equal "Better words", @boss.reload.art_alt
     end
   end
@@ -612,7 +612,7 @@ class AdminBossesTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_select "img.admin-boss-art[src=?][alt=?]", stored_path, "Old words"
     assert_select ".admin-form__hint", text: /An uploaded picture \(40 by 20 pixels\)/
-    assert_select ".admin-form__errors li a[href='#boss_art_upload']", text: /was not kept\. Choose it again/
+    assert_select ".error-summary li a[href='#boss_art_upload']", text: /was not kept\. Choose it again/
     assert_select "input#boss_remove_art", 1
   end
 

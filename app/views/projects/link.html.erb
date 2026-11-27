@@ -1,5 +1,5 @@
 <% content_for :title, "Link Hackatime" %>
-<div class="container projects projects--narrow stack">
+<div class="container container--narrow projects stack">
   <header class="page-header">
     <h1>Link your Hackatime projects</h1>
     <p class="lead">Time you log on them counts toward shipping <%= @project.name_was.presence || "this project" %>.</p>
@@ -8,7 +8,7 @@
   <div class="card">
     <%= form_with url: link_project_path(@project), method: :patch, class: "projects-form stack" do %>
       <% if @error %>
-        <div class="alert alert--danger projects-errors" role="alert"><p class="alert__title"><%= @error %></p></div>
+        <%= render "shared/error_summary", title: @error %>
       <% end %>
 
       <div class="field">

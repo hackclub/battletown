@@ -9,7 +9,9 @@
       <p class="admin-dashboard__note">Adds or takes off coins for <%= admin_person_name(@user.display_name, @user.id) %>. It is a new entry in the coin ledger (earlier entries are never edited) and it is written to the audit trail with your reason. Their balance can never go below zero.</p>
     </header>
 
-    <%= render "admin/shared/adjustment_errors", adjustment: adjustment %>
+    <% if adjustment.errors.any? %>
+      <%= render "shared/error_summary", title: "Nothing was changed.", id: "adjustment-errors", css: "admin-form__errors", items: adjustment.errors.full_messages.map { |message| [ message, nil ] } %>
+    <% end %>
     <% if @user.id == current_user.id %>
       <div class="alert alert--warning admin-warning" role="note">
         <p class="alert__title admin-warning__title">This is your own account</p>

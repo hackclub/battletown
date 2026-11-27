@@ -136,8 +136,8 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     [ "7", "abc", "-30", "15.5", "15abc" ].each do |odd|
       schedule_with_pace(odd)
       assert_response :unprocessable_content, odd
-      assert_select ".onboarding__errors", /Pick a pace from the list/, odd
-      assert_select ".onboarding__errors a[href='#user_pace_minutes']"
+      assert_select ".error-summary", /Pick a pace from the list/, odd
+      assert_select ".error-summary a[href='#user_pace_minutes']"
       assert_select "#user_pace_minutes" # the link lands on the first pace button
       assert_select "fieldset[aria-describedby=pace-error] #pace-error", /Pick a pace from the list/
       assert_nil draft_pace, odd
@@ -159,7 +159,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
 
     step("schedule", coding_day_names: %w[monday friday], coding_time: "18:30", time_zone: "UTC", pace_minutes: "7")
     assert_response :unprocessable_content
-    assert_select ".onboarding__errors", /Pick a pace from the list/
+    assert_select ".error-summary", /Pick a pace from the list/
     assert_equal 120, user.reload.pace_minutes
 
     step("schedule", coding_day_names: %w[monday friday], coding_time: "18:30", time_zone: "UTC")
@@ -222,8 +222,8 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     sign_in_as users(:onboarded)
     schedule(days: %w[monday friday], times: { "monday" => "25:99" })
     assert_response :unprocessable_content
-    assert_select ".onboarding__errors", /Check Monday's time: use something like 5:30 pm/
-    assert_select ".onboarding__errors a[href='#day-times-hint']"
+    assert_select ".error-summary", /Check Monday's time: use something like 5:30 pm/
+    assert_select ".error-summary a[href='#day-times-hint']"
     assert_select "details.day-times[open] .field__error"
     assert_select "input#user_coding_times_monday[aria-invalid=true]"
   end
@@ -232,7 +232,7 @@ class OnboardingScheduleTest < ActionDispatch::IntegrationTest
     visitor_through_project
     schedule(days: %w[monday friday], times: { "monday" => "25:99" })
     assert_response :unprocessable_content
-    assert_select ".onboarding__errors", /Check Monday's time/
+    assert_select ".error-summary", /Check Monday's time/
     assert_equal({}, draft_times)
     walk_quiz_to("signup")
     get onboarding_step_path("signup")

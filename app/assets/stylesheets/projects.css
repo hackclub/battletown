@@ -1,6 +1,5 @@
 /* Projects: list, new/edit form, Hackatime links and the "is this yours?" callout. Only what differs from the shared
    components (components.css); tokens only. Ships reuse the header, actions and list classes. */
-.projects--narrow { max-width: 48rem; }
 .projects > * { min-width: 0; }
 
 .projects-header {
@@ -63,8 +62,6 @@
 .suggestion { padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); font-weight: 500; }
 .suggestion__text { margin-bottom: var(--space-3); }
 .suggestion .chip-name { font-weight: 700; }
-
-.projects-errors ul { margin: 0; padding-inline-start: var(--space-6); font-weight: 500; }
 
 /* A card whose title sits right above a form (not a .stack): give the title room. */
 .card > .card__title + form, .card > .card__title + .projects-form { margin-top: var(--space-4); }

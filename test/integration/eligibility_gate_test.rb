@@ -286,7 +286,7 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
       assert_select "#order-#{order.id}", text: /Identity: verified\z|Identity: verified(?!, )/
       assert_select "#order-#{order.id}", text: /YSWS/, count: 0
       get admin_ship_path(ship)
-      assert_select ".admin-dl", text: /YSWS/, count: 0
+      assert_select ".dl", text: /YSWS/, count: 0
     end
 
     with_feature(:eligibility_gate) do
@@ -294,20 +294,20 @@ class EligibilityGateTest < ActionDispatch::IntegrationTest
       get admin_orders_path
       assert_select "#order-#{order.id}", text: /Identity: verified, YSWS eligible: no/
       get admin_ship_path(ship)
-      assert_select ".admin-dl", text: /Verified\s+YSWS eligible: no \(coins stay locked\)/
+      assert_select ".dl", text: /Verified\s+YSWS eligible: no \(coins stay locked\)/
 
       buyer.update_columns(ysws_eligible: true)
       get admin_orders_path
       assert_select "#order-#{order.id}", text: /Identity: verified, YSWS eligible: yes/
       assert_select "#order-#{order.id}", text: /needs re-check/, count: 0
       get admin_ship_path(ship)
-      assert_select ".admin-dl", text: /YSWS eligible: yes/
+      assert_select ".dl", text: /YSWS eligible: yes/
 
       buyer.update_columns(verification_checked_at: 45.days.ago)
       get admin_orders_path
       assert_select "#order-#{order.id}", text: /needs re-check/
       get admin_ship_path(ship)
-      assert_select ".admin-dl", text: /verification needs a re-check/
+      assert_select ".dl", text: /verification needs a re-check/
     end
   end
 

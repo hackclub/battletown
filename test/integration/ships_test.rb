@@ -211,9 +211,9 @@ class ShipsTest < ActionDispatch::IntegrationTest
       post project_ships_path(@project), params: { ship: { description: "", repo_url: "https://example.com/not-github", demo_url: "http://insecure.example" }, ship_action: "submit" }
     end
     assert_response :unprocessable_content
-    assert_select ".projects-errors li", text: /GitHub link should look like/
-    assert_select ".projects-errors li", text: /Demo link should be a full link/
-    assert_select ".projects-errors li", text: /Description needs a few words/
+    assert_select ".error-summary li", text: /GitHub link should look like/
+    assert_select ".error-summary li", text: /Demo link should be a full link/
+    assert_select ".error-summary li", text: /Description needs a few words/
     assert_select "input[name='ship[repo_url]'][value=?]", "https://example.com/not-github"
   end
 
