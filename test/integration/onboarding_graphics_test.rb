@@ -35,4 +35,13 @@ class OnboardingGraphicsTest < ActionDispatch::IntegrationTest
     assert_select ".blocks__group", 10
     assert_select ".blocks--cols-5"
   end
+
+  test "how it works shows the four steps as numbered tiles with a drawing each, in order, with the same words" do
+    open_step("how")
+    assert_select "ol.how li.how__step", 4
+    assert_select "ol.how li svg.how__art", 4
+    assert_select "ol.how li:nth-child(1) .how__text", "Code, with Hackatime counting the time."
+    assert_select "ol.how li:nth-child(4) .how__text", "Coins pay for your prize."
+    assert_no_inline_style
+  end
 end

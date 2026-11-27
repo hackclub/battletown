@@ -673,12 +673,9 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
 .info__line { margin: 0; font-weight: 700; color: var(--color-ink-blue); text-wrap: balance; }
 .info__prize { width: min(22rem, 100%); max-height: 22rem; object-fit: contain; }
 /* one column for every screen: the same width, radius and padding as an option row */
-.info__pairs, .info__steps { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; text-align: left; width: 100%; }
-.info__pairs li, .info__steps li { padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); }
+.info__pairs { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; text-align: left; width: 100%; }
+.info__pairs li { padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); }
 .info__pairs li { display: grid; gap: var(--space-1); }
-.info__steps { counter-reset: step; }
-.info__steps li { counter-increment: step; display: flex; align-items: center; gap: var(--space-3); font-weight: 700; }
-.info__steps li::before { content: counter(step); flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--color-blue); color: var(--color-surface); font-family: var(--font-body); font-weight: 800; }
 /* today and then: a winding path of flat stepping stones. Positions are percentages of the drawing (wide on a desktop, taller on a phone). */
 .summary { display: grid; justify-items: center; gap: var(--space-4); width: 100%; }
 .trail {
@@ -777,10 +774,26 @@ html:has(.onboarding-page), body:has(.onboarding-page) { background: var(--color
   .blocks__block { animation: block-in 0.25s cubic-bezier(.3, 1.4, .5, 1) calc(0.1s + var(--g, 0) * 0.14s + var(--j, 0) * 0.025s) both; }
 }
 @keyframes block-in { from { scale: 1 0; opacity: 0; } to { scale: 1 1; opacity: 1; } }
+/* how it works: four numbered flat tiles in a row (two by two on a phone), each with a small drawing. The finished state is the base style. */
+.how { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin: 0; padding: 0; list-style: none; width: 100%; }
+.how__step { display: grid; justify-items: center; align-content: start; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-surface); text-align: center; }
+.how__num { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--color-blue); color: var(--color-surface); font-family: var(--font-body); font-weight: 800; font-size: var(--text-sm); line-height: 1; }
+.how__art { display: block; width: 3.5rem; height: 3.5rem; }
+.how__text { font-weight: 700; color: var(--color-text); text-wrap: balance; }
+.how__navy { fill: var(--color-navy); } .how__blue { fill: var(--color-blue); } .how__blue-edge { fill: var(--color-blue-edge); }
+.how__yellow { fill: var(--color-yellow); } .how__yellow-edge { fill: var(--color-yellow-edge); }
+.how__line { fill: none; stroke: var(--color-surface); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 39.99rem) { .how { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: no-preference) {
+  .how__step { animation: how-in 0.35s ease-out both; }
+  .how__step:nth-child(1) { animation-delay: 0.25s; } .how__step:nth-child(2) { animation-delay: 0.5s; }
+  .how__step:nth-child(3) { animation-delay: 0.75s; } .how__step:nth-child(4) { animation-delay: 1s; }
+}
+@keyframes how-in { from { opacity: 0; translate: 0 0.75rem; } to { opacity: 1; translate: 0 0; } }
 @media (max-width: 39.99rem) {
   .info { gap: var(--space-4); }
   .info__prize { width: min(14rem, 70%); }
-  .info__pairs li, .info__steps li { padding: var(--space-3) var(--space-4); }
+  .info__pairs li { padding: var(--space-3) var(--space-4); }
 }
 /* one gap under the heading block on every step, with or without a second line, at every width */
 .onboarding__panel > .onboarding__header { margin-bottom: var(--space-4); }
