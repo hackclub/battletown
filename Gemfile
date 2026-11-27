@@ -85,3 +85,5 @@ gem "omniauth-oauth2", "~> 1.9"
 gem "flipper", "~> 1.4"
 gem "flipper-active_record", "~> 1.4", require: false # required lazily by config/initializers/flipper.rb
 gem "flipper-ui", "~> 1.4"
+
+gem "tailwindcss-rails", "~> 4.7"

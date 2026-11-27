@@ -1,0 +1,6 @@
+basecoat-css 1.3.0 (MIT, see LICENSE.md), copied unmodified from the npm package dist/ folder:
+  components/*.css, styles/vega.css (the Vega style pack)  ->  vendor/basecoat/
+  js/all.min.js                                           ->  vendor/javascript/basecoat.js
+Source: https://github.com/hunvreus/basecoat  Docs: https://basecoatui.com
+To upgrade: download the new npm tarball, replace these files, rebuild (bin/rails tailwindcss:build) and re-check /dev/basecoat.
+Not vendored on purpose: dist/base/base.css (it sets *, html and body); app/assets/tailwind/battletown_theme.css replaces it.

@@ -1,0 +1,243 @@
+/*
+ * The Battletown theme for Basecoat (shadcn's components as plain HTML classes). This is the one file that maps Basecoat's
+ * theme variables (--primary, --card, --border, --radius ...) and Tailwind's names (bg-primary, rounded-md, font-sans) onto the
+ * site's own tokens in app/assets/stylesheets/tokens.css. It points at the tokens with var(); it copies no color. The two
+ * exceptions are the check mark and the chevron below: they are data-URI images, which cannot read custom properties.
+ *
+ * Needs tokens.css and fonts.css on the page (layouts/basecoat links them). Everything is scoped to the `.basecoat` wrapper
+ * class, so a page that loads this build is untouched outside the wrapper.
+ *
+ * House rules this file keeps (the owner's):
+ *  - white text on pink (--primary-foreground is --color-surface, the white token, not the cream --color-primary-contrast);
+ *    navy text on yellow and on the light surfaces;
+ *  - no thick dark outlines, no hard offset shadows, no cream or white outlines on UI parts, no outline on buttons: a raised
+ *    thing (button, field) gets its edge from a darker shade of its own color, drawn as an inset bottom edge, the way
+ *    components.css builds .btn (--color-pink-edge, --color-blue-edge, --color-cream-edge, --edge-shade);
+ *  - a visible keyboard focus ring stays (accessibility), in the focus blue, only on :focus-visible.
+ * Form fields keep the 2px --color-field-border the site's own fields use (a non-text contrast of 3:1 needs it).
+ */
+
+/* Basecoat's Vega pack writes dark: variants. The site has no dark mode and never sets html.dark, so they never apply. */
+@custom-variant dark (&:is(html.dark *));
+
+/* Tailwind names -> the variables below (`inline`: utilities read the variable directly). Tailwind still emits a :root copy of
+   any of these names a rule uses through var(): today --color-primary, --color-secondary, --color-border, --radius-md and
+   --radius-lg, which tokens.css also defines. They land in the tw-theme layer and tokens.css is unlayered, so the site's
+   values win and nothing changes. That only holds while tokens.css stays unlayered and is loaded on the same page. */
+@theme inline {
+  --font-sans: var(--font-body);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* The mini reset Tailwind's preflight would have given Basecoat, scoped to the wrapper and at zero specificity. It sits in the
+   first layer, so every Basecoat rule and every house rule below overrides it. */
+@layer bc-reset {
+  .basecoat *, .basecoat ::before, .basecoat ::after { box-sizing: border-box; border-color: var(--border); }
+  .basecoat :where(h1, h2, h3, h4, h5, h6, p, blockquote, dl, dd, figure, hr, pre, ul, ol, menu, fieldset) { margin: 0; }
+  .basecoat :where(h1, h2, h3, h4, h5, h6) { font-size: inherit; font-weight: inherit; }
+  .basecoat :where(ul, ol, menu) { padding: 0; list-style: none; }
+  .basecoat :where(fieldset) { padding: 0; border: 0; min-width: 0; }
+  .basecoat :where(legend) { padding: 0; }
+  .basecoat :where(a) { color: inherit; text-decoration: inherit; }
+  .basecoat :where(button, input, select, optgroup, textarea) { font: inherit; letter-spacing: inherit; color: inherit; margin: 0; background-color: transparent; border-radius: 0; }
+  .basecoat :where(button, [role="button"], summary, label[for]) { cursor: pointer; }
+  .basecoat :where(button, input:where([type="button"], [type="reset"], [type="submit"])) { appearance: button; }
+  .basecoat :where(img, svg, video, canvas) { display: block; max-width: 100%; }
+  .basecoat :where(table) { border-collapse: collapse; text-indent: 0; border-color: inherit; }
+  .basecoat :where(textarea) { resize: vertical; }
+  .basecoat :where(input)::placeholder, .basecoat :where(textarea)::placeholder { color: var(--muted-foreground); opacity: 1; }
+  .basecoat :where([hidden]:not([hidden="until-found"])) { display: none !important; }
+}
+
+/* Variables. Pink is the primary; blue the secondary; yellow the accent (menu hover, highlight); cream the surfaces. */
+.basecoat {
+  --radius: var(--radius-md);
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-bg);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-bg);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-surface); /* white on pink */
+  --secondary: var(--color-secondary);
+  --secondary-foreground: var(--color-surface);
+  --muted: var(--color-surface-raised);
+  --muted-foreground: var(--color-text-muted);
+  --accent: var(--color-highlight);
+  --accent-foreground: var(--color-navy); /* navy on yellow */
+  --destructive: var(--color-danger);
+  --border: var(--color-border);
+  --input: var(--color-field-border);
+  --ring: var(--color-focus);
+  --chart-1: var(--color-pink);
+  --chart-2: var(--color-blue);
+  --chart-3: var(--color-yellow);
+  --chart-4: var(--color-royal);
+  --chart-5: var(--color-navy);
+  --sidebar: var(--color-bg);
+  --sidebar-foreground: var(--color-text);
+  --sidebar-primary: var(--color-primary);
+  --sidebar-primary-foreground: var(--color-surface);
+  --sidebar-accent: var(--color-highlight);
+  --sidebar-accent-foreground: var(--color-navy);
+  --sidebar-border: var(--color-border);
+  --sidebar-ring: var(--color-focus);
+  --sidebar-width: 16rem;
+  --sidebar-mobile-width: 18rem;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: var(--color-border);
+  --scrollbar-width: 0.625rem;
+  --scrollbar-sm-width: 0.375rem;
+  --scrollbar-radius: 9999px;
+  /* Data-URI icons cannot use var(): %2334476b is --color-text-muted (#34476b) and white is --color-surface. */
+  --chevron-down-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2334476b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
+  --chevron-down-icon-50: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2334476b" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
+  --check-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>');
+
+  font-family: var(--font-body);
+  font-synthesis: none; /* Poetsen One has one weight; never fake a bold */
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  color: var(--foreground);
+}
+
+/* The page ground a standalone Basecoat page (layouts/basecoat) uses: the sky the whole site sits on. */
+.basecoat-ground { background: var(--color-page); min-height: 100vh; }
+
+/* House rules, after Basecoat's own rules (a later layer wins whatever the specificity). */
+@layer battletown {
+  /* Headings and buttons use the display face, like the rest of the site. */
+  .basecoat :is(h1, h2, h3, h4, .font-display, .btn, .tabs [role="tab"], .badge) {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: normal;
+  }
+
+  /* Buttons: a face, a label, an inset bottom edge in a darker shade of the face. No border, no outline, no offset shadow. */
+  .basecoat .btn {
+    --btn-bg: var(--color-primary);
+    --btn-fg: var(--color-surface);
+    --btn-edge: var(--color-pink-edge);
+    --btn-edge-size: 0.2em;
+    border-color: transparent;
+    background-color: var(--btn-bg);
+    color: var(--btn-fg);
+    box-shadow: inset 0 calc(var(--btn-edge-size) * -1) 0 var(--btn-edge);
+    --tw-ring-shadow: 0 0 transparent; /* Basecoat's soft focus halo and aria-invalid ring are replaced by the outline below */
+  }
+  .basecoat .btn[data-variant="secondary"] { --btn-bg: var(--color-secondary); --btn-fg: var(--color-surface); --btn-edge: var(--color-blue-edge); }
+  .basecoat .btn[data-variant="destructive"] { --btn-bg: var(--color-danger); --btn-fg: var(--color-surface); --btn-edge: var(--edge-shade); }
+  .basecoat .btn[data-variant="outline"] { --btn-bg: var(--color-bg); --btn-fg: var(--color-ink-blue); --btn-edge: var(--color-cream-edge); }
+  .basecoat .btn[data-variant="ghost"] { --btn-bg: transparent; --btn-fg: var(--color-ink-blue); --btn-edge: transparent; }
+  .basecoat .btn[data-variant="link"] { --btn-bg: transparent; --btn-fg: var(--color-link); --btn-edge: transparent; }
+  .basecoat .btn:hover, .basecoat .btn[aria-expanded="true"] { background-color: var(--btn-bg); color: var(--btn-fg); filter: brightness(1.06); }
+  .basecoat .btn[data-variant="ghost"]:hover, .basecoat .btn[data-variant="ghost"][aria-expanded="true"] { background-color: var(--color-surface-raised); filter: none; }
+  .basecoat .btn[data-variant="link"]:hover { filter: none; text-decoration: underline; }
+  .basecoat .btn:active { --btn-edge-size: 0.1em; transform: translateY(0.08em); }
+  .basecoat .btn:disabled, .basecoat .btn[aria-disabled="true"] { filter: none; transform: none; }
+  .basecoat .btn:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+  /* Fields: white, the 2px field border the site uses, an inset bottom edge in the cream's darker shade. */
+  .basecoat :is(.input, .textarea, select.select),
+  .basecoat .field > :is(input:not([type="checkbox"], [type="radio"], [role="switch"]), textarea, select),
+  .basecoat .input-group {
+    border-width: 2px;
+    border-color: var(--color-field-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    box-shadow: inset 0 -0.2rem 0 var(--color-surface-raised);
+    color: var(--color-text);
+  }
+  .basecoat :is(.input, .textarea, select.select, .field > :is(input, textarea, select)):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+  .basecoat :is(.input, .textarea, select.select, .field > :is(input, textarea, select))[aria-invalid="true"] {
+    border-color: var(--color-danger);
+    box-shadow: inset 0 -0.2rem 0 var(--color-danger-bg);
+  }
+
+  /* Checkbox, radio, switch: white box, pink when on, white check. */
+  .basecoat :is(input[type="checkbox"]:not([role="switch"]), input[type="radio"]) {
+    border: 2px solid var(--color-field-border);
+    background-color: var(--color-surface);
+    box-shadow: none;
+  }
+  .basecoat :is(input[type="checkbox"]:not([role="switch"]), input[type="radio"]):checked {
+    border-color: var(--color-pink-edge);
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+  }
+  .basecoat input[role="switch"]:checked { background-color: var(--color-primary); }
+  .basecoat :is(input[type="checkbox"], input[type="radio"]):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+  /* Cards, dialogs, popovers and menus: a surface step and a soft shadow, a thin border in the border token. No ink outline. */
+  .basecoat :is(.card, .dialog > div, [data-popover], .toast) {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-navy) 14%, transparent);
+  }
+  .basecoat .card { overflow: visible; /* a menu popover inside a card must not be clipped */ border-radius: var(--radius-lg); box-shadow: none; border: 0; border-bottom: 0.25rem solid var(--color-border); background-color: var(--color-surface); }
+  .basecoat .dialog > div { border-radius: var(--radius-lg); }
+  .basecoat .dialog::backdrop { background-color: color-mix(in srgb, var(--color-navy) 60%, transparent); }
+
+  /* Menu items and options: yellow on hover and keyboard focus, navy text. */
+  .basecoat :is([role="menuitem"], [role="option"]):is(:hover, :focus-visible, [aria-selected="true"], [data-active="true"]) {
+    background-color: var(--color-highlight);
+    color: var(--color-navy);
+    outline: none;
+  }
+
+  /* Tabs: a pill list in the muted surface; the active tab is a raised cream pill with the cream's darker edge. */
+  .basecoat .tabs [role="tablist"]:not([data-variant="line"]) { background-color: var(--color-surface-raised); border-radius: var(--radius-lg); }
+  .basecoat .tabs [role="tab"][aria-selected="true"] {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-color: transparent;
+    box-shadow: inset 0 -0.2rem 0 var(--color-cream-edge);
+  }
+  .basecoat .tabs [role="tab"]:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+  /* Badges and toasts by category. */
+  .basecoat .badge:not([data-variant]), .basecoat .badge[data-variant="primary"] { background-color: var(--color-primary); color: var(--color-surface); border-color: transparent; }
+  .basecoat .badge[data-variant="secondary"] { background-color: var(--color-secondary); color: var(--color-surface); border-color: transparent; }
+  .basecoat .badge[data-variant="outline"] { background-color: var(--color-surface-raised); color: var(--color-text); border-color: transparent; }
+  .basecoat .toast[data-category="success"] { border-left: 0.375rem solid var(--color-success); }
+  .basecoat .toast[data-category="error"] { border-left: 0.375rem solid var(--color-danger); }
+  .basecoat .toast[data-category="info"] { border-left: 0.375rem solid var(--color-blue); }
+  .basecoat .toast[data-category="warning"] { border-left: 0.375rem solid var(--color-yellow-edge); }
+}
