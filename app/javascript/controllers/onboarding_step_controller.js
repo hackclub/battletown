@@ -16,13 +16,11 @@ document.addEventListener("turbo:visit", () => { previewed = false; pending = nu
 // The ghost goes in after the swap, not into the incoming body: that body belongs to a parsed copy of the page, and an animation started there never runs.
 document.addEventListener("turbo:render", () => {
   if (!pending) return
-  const { ghost, to } = pending
+  const { host, ghost, to } = pending
   pending = null
-  const page = document.querySelector(".onboarding-page")
-  if (!page) return
-  page.append(ghost)
+  document.body.append(host)
   const fade = ghost.animate([ { opacity: 1, translate: "0 0" }, { opacity: 0, translate: to } ], { duration: MOVE, easing: "ease", fill: "forwards" })
-  const remove = () => ghost.remove()
+  const remove = () => host.remove()
   fade.addEventListener("finish", remove)
   setTimeout(remove, MOVE + 150)
 })
@@ -94,7 +92,14 @@ export default class extends Controller {
     ghost.setAttribute("inert", "")
     ghost.setAttribute("data-turbo-temporary", "")
     Object.assign(ghost.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px` })
-    pending = { ghost, to: this.restoring ? "0 6px" : "0 -6px" }
+    // laid outside the new page: inside it, the copy's cards would change what the new page's own rules (:has) measure
+    const host = this.element.cloneNode(false)
+    for (const name of host.getAttributeNames()) if (name.startsWith("data-")) host.removeAttribute(name)
+    host.classList.add("ob-ghost-host")
+    host.setAttribute("aria-hidden", "true")
+    host.setAttribute("data-turbo-temporary", "")
+    host.append(ghost)
+    pending = { host, ghost, to: this.restoring ? "0 6px" : "0 -6px" }
   }
 
   // A page back from the browser's cache comes back as it was left: drop any animation still on it, so nothing is stuck half-faded.

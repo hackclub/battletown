@@ -10,9 +10,17 @@ const MIN_MARGIN = 0.06 // crop only when at least this much of a side is empty
 export default class extends Controller {
   static targets = ["image"]
 
+  // The picture stays invisible until it is measured (or has failed to load), so it never shows whole and then jumps to its crop after the step is on screen.
   connect() {
-    if (this.imageTarget.complete && this.imageTarget.naturalWidth) this.measure()
-    else this.imageTarget.addEventListener("load", () => this.measure(), { once: true })
+    const img = this.imageTarget
+    this.element.classList.add("choice__crop--pending")
+    const ready = () => this.element.classList.remove("choice__crop--pending")
+    if (img.complete && img.naturalWidth) { this.measure(); ready() }
+    else if (img.complete) ready()
+    else {
+      img.addEventListener("load", () => { this.measure(); ready() }, { once: true })
+      img.addEventListener("error", ready, { once: true })
+    }
   }
 
   measure() {

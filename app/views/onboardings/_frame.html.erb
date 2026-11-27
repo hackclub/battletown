@@ -20,8 +20,9 @@
   <%= render "onboardings/transition", kind: @transition if @transition %>
 
   <%# The picked prize, docked at the top left on every step after the pick. Kept by Turbo like the strip; when the pick changes, the prize-dock controller swaps the picture and flies it in from the card. The name is the picture's alt text and tooltip. %>
-  <% if index.positive? && index < total - 1 && show_prize && (prize = onboarding_saved_prize) && prize.image.present? %>
-    <div class="onboarding-dock" id="onboarding-prize-dock" data-turbo-permanent data-controller="prize-dock" data-prize-key="<%= prize.key %>"
+  <% if index.positive? && index < total - 1 && (prize = onboarding_saved_prize) && prize.image.present? %>
+    <%# On the steps that show the prize picture themselves the dock stays in place and fades out (and back in on the next step), so it is never removed and re-made. %>
+    <div class="onboarding-dock<%= " onboarding-dock--away" unless show_prize %>" id="onboarding-prize-dock" data-turbo-permanent data-controller="prize-dock" data-prize-key="<%= prize.key %>"
          data-action="turbo:before-render@document->prize-dock#prepare turbo:render@document->prize-dock#update" title="<%= prize.name %>, <%= onboarding_hours_text(prize) %>">
       <%= image_tag prize.image, alt: prize.name, class: "onboarding-dock__image", data: { prize_dock_target: "image" } %>
     </div>
