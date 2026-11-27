@@ -8,10 +8,7 @@ class SelectionStateTest < ActiveSupport::TestCase
   JAVASCRIPT = Rails.root.join("app/javascript")
   STATE_CLASS = /classList\.(?:add|toggle|replace)\([^)]*["'`][\w-]*(?:picked|selected|checked|chosen|active)[\w-]*["'`]/i
 
-  # The onboarding agent owns this one and is replacing it with :checked CSS; delete the entry when it goes.
-  ALLOWED = [
-    "controllers/onboarding_step_controller.js"
-  ].freeze
+  ALLOWED = [].freeze
 
   def self.offenders
     Dir[JAVASCRIPT.join("**/*.js")].sort.filter_map do |path|
