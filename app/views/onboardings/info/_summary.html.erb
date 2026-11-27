@@ -4,21 +4,21 @@
 <% prize = answers.prize %>
 <% phrase = onboarding_project_phrase || "Your project" %>
 <% date = (Onboarding::Story.date_text(onboarding_prize_date) if prize) %>
-<%# Stone centers and half-sizes in each drawing's own units (wide 400x240, tall 240x400): [x, y, rx, ry]. The path runs through them in order. %>
+<%# Stone centers and sizes in each drawing's own units: [x, y, rx, ry, edge depth]. Stones are spaced with equal edge gaps; the path runs from the first stone's center to the last's. %>
 <% shapes = {
-     wide: { box: "0 0 400 240", path: "M-10 232 C 25 226 35 212 45 205 C 75 190 90 180 115 170 C 150 156 160 192 190 192 C 220 192 232 158 258 150 C 290 140 315 150 340 140",
-             stones: [ [ 45, 205, 38, 13 ], [ 115, 170, 38, 13 ], [ 190, 192, 38, 13 ], [ 258, 150, 38, 13 ], [ 340, 140, 62, 17 ] ] },
-     tall: { box: "0 0 240 400", path: "M-10 392 C 20 385 40 375 50 365 C 80 350 120 345 150 322 C 175 300 60 305 75 270 C 90 240 150 255 160 222 C 170 195 100 205 110 178",
-             stones: [ [ 50, 365, 36, 12 ], [ 150, 322, 36, 12 ], [ 75, 270, 36, 12 ], [ 160, 222, 36, 12 ], [ 110, 178, 52, 15 ] ] }
+     wide: { box: "0 0 400 189", stroke: 16, path: "M38.0 163.3 C48.8 159.0 81.1 137.2 102.7 137.2 C124.2 137.2 145.8 163.3 167.3 163.3 C188.9 163.3 205.8 147.7 232.0 137.2 C258.1 126.6 308.7 106.2 324.0 100.0",
+             stones: [ [ 38.0, 163.3, 24, 10.1, 7 ], [ 102.7, 137.2, 24, 10.1, 7 ], [ 167.3, 163.3, 24, 10.1, 7 ], [ 232.0, 137.2, 24, 10.1, 7 ], [ 324.0, 100.0, 62, 26.0, 10 ] ] },
+     tall: { box: "0 0 240 370", stroke: 13, path: "M73.5 343.6 C90.2 336.1 174.0 313.8 174.0 298.8 C174.0 283.9 73.5 269.0 73.5 254.1 C73.5 239.2 166.6 234.3 174.0 209.3 C181.4 184.3 127.3 121.6 118.0 104.0",
+             stones: [ [ 73.5, 343.6, 22, 8.4, 6 ], [ 174.0, 298.8, 22, 8.4, 6 ], [ 73.5, 254.1, 22, 8.4, 6 ], [ 174.0, 209.3, 22, 8.4, 6 ], [ 118.0, 104.0, 74, 28.1, 9 ] ] }
    } %>
 <div class="summary">
   <div class="trail" role="img" aria-label="<%= "You today, and your #{prize&.name} on #{date}" if prize %>">
     <% shapes.each do |name, shape| %>
       <svg class="trail__svg trail__svg--<%= name %>" viewBox="<%= shape[:box] %>" aria-hidden="true" focusable="false">
-        <path class="trail__path" d="<%= shape[:path] %>" pathLength="1"/>
-        <% shape[:stones].each_with_index do |(x, y, rx, ry), i| %>
+        <path class="trail__path" d="<%= shape[:path] %>" pathLength="1" stroke-width="<%= shape[:stroke] %>"/>
+        <% shape[:stones].each_with_index do |(x, y, rx, ry, edge), i| %>
           <g class="trail__stone trail__stone--<%= i + 1 %>">
-            <ellipse class="trail__edge" cx="<%= x %>" cy="<%= y + 7 %>" rx="<%= rx %>" ry="<%= ry %>"/>
+            <ellipse class="trail__edge" cx="<%= x %>" cy="<%= y + edge %>" rx="<%= rx %>" ry="<%= ry %>"/>
             <ellipse class="trail__top" cx="<%= x %>" cy="<%= y %>" rx="<%= rx %>" ry="<%= ry %>"/>
           </g>
         <% end %>
